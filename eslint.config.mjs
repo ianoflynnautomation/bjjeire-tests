@@ -64,7 +64,14 @@ export default [
       'playwright/no-skipped-test': 'warn',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',
-      'playwright/expect-expect': 'error',
+      'playwright/expect-expect': ['error', { assertFunctionNames: ['expect'], assertFunctionPatterns: ['^expect'] }],
+      'no-console': 'off',
+    },
+  },
+
+  {
+    files: ['src/**/setup/*.ts'],
+    rules: {
       'no-console': 'off',
     },
   },
