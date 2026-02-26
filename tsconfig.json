@@ -12,18 +12,10 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@pages/*": [
-        "src/bjjeire-playwright/pages/*"
-      ],
-      "@fixtures/*": [
-        "src/bjjeire-playwright/fixtures/*"
-      ],
-      "@helpers/*": [
-        "src/bjjeire-playwright/helpers/*"
-      ],
-      "@testdata/*": [
-        "tests/testdata/*"
-      ]
+      "@pages/*": ["src/bjjeire-playwright/pages/*"],
+      "@fixtures/*": ["src/bjjeire-playwright/fixtures/*"],
+      "@helpers/*": ["src/bjjeire-playwright/helpers/*"],
+      "@testdata/*": ["tests/testdata/*"]
     },
     "strict": true,
     "strictNullChecks": true,
@@ -38,17 +30,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "playwright.config.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

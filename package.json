@@ -5,8 +5,13 @@
   "main": "index.js",
   "type": "commonjs",
   "lint-staged": {
-    "*.{json,md}": ["prettier --write"],
-    "*.{ts}": ["prettier --write", "eslint --fix"]
+    "*.{json,md}": [
+      "prettier --write"
+    ],
+    "*.{ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   },
   "scripts": {
     "build": "tsc",
