@@ -36,7 +36,6 @@ permissions:
 
 env:
   NODE_VERSION: '22'
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
 jobs:
   lint:
@@ -44,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.2
+        uses: actions/checkout@v6
 
       - name: Setup Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -66,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.2
+        uses: actions/checkout@v6
 
       - name: Setup Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -84,6 +83,11 @@ jobs:
     name: 'Playwright — Shard ${{ matrix.shard }}/4'
     runs-on: ubuntu-latest
     needs: [lint, build]
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.51.0-noble
+      options: --ipc=host
+
     strategy:
       fail-fast: false
       matrix:
@@ -91,42 +95,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.2
-
-      - name: Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
-
-      - name: Resolve Playwright version
-        id: pw-version
-        run: |
-          echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" \
-            >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        id: pw-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: pw-browsers-${{ steps.pw-version.outputs.version }}-${{ runner.os }}
-
-      - name: Install Playwright browsers + OS dependencies
-        if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
-      - name: Install Playwright OS dependencies only
-        if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       # - name: Run Playwright tests
       #   run: npx playwright test --shard=${{ matrix.shard }}/4 --reporter=blob
       #   env:
-      #     CI: "true"
+      #     CI: 'true'
       #     BASE_URL: ${{ vars.BASE_URL }}
       #     TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
       #     TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
@@ -177,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.2
+        uses: actions/checkout@v6
 
       - name: Setup Node ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -263,6 +242,6 @@ jobs:
         run: |
           echo "### Live Playwright Report" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "🌐 **[Open Trace Viewer →](${{ steps.deploy.outputs.page_url }})**" >> "$GITHUB_STEP_SUMMARY"
+          echo "**[Open Trace Viewer →](${{ steps.deploy.outputs.page_url }})**" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "_Click any failed test in the report to inspect its trace inline._" >> "$GITHUB_STEP_SUMMARY"
