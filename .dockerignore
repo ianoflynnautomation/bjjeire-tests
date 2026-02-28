@@ -1,0 +1,45 @@
+# ── Dependency directories ────────────────────────────────────────────────────
+# Never copy host node_modules — they may contain platform-specific binaries
+# compiled for macOS that will not work inside a Linux container.
+node_modules/
+.npm/
+
+# ── Build outputs ─────────────────────────────────────────────────────────────
+dist/
+build/
+
+# ── Test outputs (regenerated on every run) ───────────────────────────────────
+test-results/
+playwright-report/
+blob-report/
+allure-results/
+allure-report/
+
+# ── Secrets and local environment ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Version control ───────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+
+# ── CI / Git hooks ────────────────────────────────────────────────────────────
+.github/
+.husky/
+
+# ── Editor and OS artefacts ───────────────────────────────────────────────────
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# ── Docker files themselves ───────────────────────────────────────────────────
+# No need to bake these into the image.
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+*.md

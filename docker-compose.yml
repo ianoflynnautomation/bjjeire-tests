@@ -1,0 +1,31 @@
+name: bjjeire-tests
+
+services:
+  playwright:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bjjeire-tests:local
+    ipc: host
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - ./playwright-report:/home/pwuser/app/playwright-report
+      - ./test-results:/home/pwuser/app/test-results
+      - ./blob-report:/home/pwuser/app/blob-report
+      - ./allure-results:/home/pwuser/app/allure-results
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+      - /home/pwuser/.npm:size=64m
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      CI: 'true'
+      BASE_URL: ${BASE_URL:-}
+      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-}
+      TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
