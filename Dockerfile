@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.51.0-noble
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 LABEL org.opencontainers.image.title="bjjeire/playwright" \
       org.opencontainers.image.description="Playwright system test runner" \

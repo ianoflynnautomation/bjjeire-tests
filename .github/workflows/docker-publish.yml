@@ -4,22 +4,22 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Dockerfile'
-      - '.dockerignore'
-      - 'package*.json'
-      - 'src/**'
-      - 'tests/**'
-      - 'playwright.config.ts'
-      - 'tsconfig.json'
-      - '.github/workflows/docker-publish.yml'
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package*.json"
+      - "src/**"
+      - "tests/**"
+      - "playwright.config.ts"
+      - "tsconfig.json"
+      - ".github/workflows/docker-publish.yml"
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   pull_request:
     branches: [main]
     paths:
-      - 'Dockerfile'
-      - '.dockerignore'
-      - 'package*.json'
+      - "Dockerfile"
+      - ".dockerignore"
+      - "package*.json"
   workflow_dispatch:
 
 concurrency:
@@ -35,6 +35,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/playwright
+  PLAYWRIGHT_VERSION: v1.58.2-noble
 
 jobs:
   build-and-push:
@@ -54,6 +55,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ env.PLAYWRIGHT_VERSION }},enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,prefix=sha-,format=short
             type=ref,event=pr
 
