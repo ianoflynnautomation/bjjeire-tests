@@ -4,22 +4,22 @@ on:
   push:
     branches: [main]
     paths:
-      - "Dockerfile"
-      - ".dockerignore"
-      - "package*.json"
-      - "src/**"
-      - "tests/**"
-      - "playwright.config.ts"
-      - "tsconfig.json"
-      - ".github/workflows/docker-publish.yml"
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'package*.json'
+      - 'src/**'
+      - 'tests/**'
+      - 'playwright.config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/docker-publish.yml'
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
   pull_request:
     branches: [main]
     paths:
-      - "Dockerfile"
-      - ".dockerignore"
-      - "package*.json"
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'package*.json'
   workflow_dispatch:
 
 concurrency:
