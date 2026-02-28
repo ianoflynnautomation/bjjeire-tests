@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "commonjs",
   "lint-staged": {
-    "*.{json,md}": [
+    "*.{json,md,yml,yaml}": [
       "prettier --write"
     ],
     "*.{ts}": [
