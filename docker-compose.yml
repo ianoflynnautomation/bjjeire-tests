@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: bjjeire-tests:local
+    image: ghcr.io/bjjeire/playwright:local
     ipc: host
     security_opt:
       - no-new-privileges:true
