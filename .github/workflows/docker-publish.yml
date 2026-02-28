@@ -34,7 +34,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: bjjeire/playwright
+  IMAGE_NAME: ${{ github.repository_owner }}/playwright
 
 jobs:
   build-and-push:
