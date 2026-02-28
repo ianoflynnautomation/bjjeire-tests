@@ -1,4 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
+import { type WaitForLoadStateOptions } from './src/bjjeire-playwright/setup/optional-parameter-types';
+import { EXPECT_TIMEOUT } from './src/bjjeire-playwright/constants/timeout-constants';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,9 +12,10 @@ const startLocalHost = process.env.BASE_URL?.includes('localhost');
 const ACTION_TIMEOUT = 10_000;
 const NAVIGATION_TIMEOUT = 30_000;
 
+export const LOADSTATE: WaitForLoadStateOptions = 'domcontentloaded';
+
 export default defineConfig({
   testDir: './tests',
-
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,
@@ -25,13 +28,21 @@ export default defineConfig({
     ['allure-playwright', { resultsDir: 'allure-results' }],
     ['./src/bjjeire-playwright/setup/custom-logger.ts'],
   ],
-
+  globalSetup: require.resolve('./src/bjjeire-playwright/setup/global-setup.ts'),
+  globalTeardown: require.resolve('./src/bjjeire-playwright/setup/global-teardown.ts'),
+  expect: {
+    timeout: EXPECT_TIMEOUT,
+  },
   use: {
     headless: true,
+    // extraHTTPHeaders: {
+    //   'CF-Access-Client-Id': process.env.CF_CLIENT_ID || '',
+    //   'CF-Access-Client-Secret': process.env.CF_CLIENT_SECRET || '',
+    // },
     ignoreHTTPSErrors: true,
     acceptDownloads: true,
+    testIdAttribute: 'test-id',
     baseURL: BASE_URL,
-
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: IS_CI ? 'on-first-retry' : 'off',
@@ -49,7 +60,7 @@ export default defineConfig({
         launchOptions: {
           // Remove --disable-web-security for production tests; use only for
           // local CORS-blocked environments.
-          // args: ['--disable-web-security'],
+          // args: ["--disable-web-security","--auto-open-devtools-for-tabs"],
           slowMo: 0,
         },
       },
