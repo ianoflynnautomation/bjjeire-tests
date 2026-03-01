@@ -12,13 +12,13 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@api/*":       ["src/api/*"],
-      "@fixtures/*":  ["src/fixtures/*"],
-      "@pages/*":     ["src/pages/*"],
-      "@utils/*":     ["src/utils/*"],
-      "@config/*":    ["src/config/*"],
+      "@api/*": ["src/api/*"],
+      "@fixtures/*": ["src/fixtures/*"],
+      "@pages/*": ["src/pages/*"],
+      "@utils/*": ["src/utils/*"],
+      "@config/*": ["src/config/*"],
       "@reporters/*": ["src/reporters/*"],
-      "@testdata/*":  ["tests/testdata/*"]
+      "@testdata/*": ["tests/testdata/*"]
     },
     "strict": true,
     "strictNullChecks": true,
@@ -33,19 +33,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "playwright.config.ts",
-    "global-setup.ts",
-    "global-teardown.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "global-setup.ts", "global-teardown.ts"],
+  "exclude": ["node_modules", "dist"]
 }
