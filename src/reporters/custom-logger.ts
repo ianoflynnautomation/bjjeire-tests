@@ -1,10 +1,5 @@
 import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestResult } from '@playwright/test/reporter';
 
-/**
- * Custom structured reporter.
- * Referenced in playwright.config.ts reporter array.
- * Logs a concise one-liner per test with status, duration, and any error.
- */
 class CustomLogger implements Reporter {
   private startTime = Date.now();
 

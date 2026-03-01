@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 LABEL org.opencontainers.image.title="bjjeire/playwright" \
       org.opencontainers.image.description="Playwright system test runner" \
-      org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.51.0-noble"
+      org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.58.2-noble"
 
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     NODE_ENV=test

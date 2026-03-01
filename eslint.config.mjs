@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser';
 import playwright from 'eslint-plugin-playwright';
 import prettierPlugin from 'eslint-plugin-prettier';
 import prettierConfig from 'eslint-config-prettier';
+import importPlugin from 'eslint-plugin-import';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -17,7 +18,6 @@ export default [
       'allure-results/**',
       'allure-report/**',
       '**/*.js',
-      '**/*.mjs',
     ],
   },
 
@@ -37,6 +37,14 @@ export default [
     plugins: {
       '@typescript-eslint': tsPlugin,
       prettier: prettierPlugin,
+      import: importPlugin,
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          project: './tsconfig.json',
+        },
+      },
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
@@ -53,6 +61,7 @@ export default [
 
       'no-console': 'warn',
       eqeqeq: ['error', 'always'],
+      'import/no-cycle': 'error',
     },
   },
 
@@ -64,13 +73,17 @@ export default [
       'playwright/no-skipped-test': 'warn',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',
-      'playwright/expect-expect': ['error', { assertFunctionNames: ['expect'], assertFunctionPatterns: ['^expect'] }],
+      'playwright/expect-expect': [
+        'error',
+        { assertFunctionNames: ['expect'], assertFunctionPatterns: ['^expect', 'verify'] },
+      ],
       'no-console': 'off',
     },
   },
 
   {
-    files: ['src/**/setup/*.ts'],
+    // Allow console in reporter, utilities (error logging), and lifecycle hooks
+    files: ['src/reporters/**/*.ts', 'src/utils/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
     rules: {
       'no-console': 'off',
     },

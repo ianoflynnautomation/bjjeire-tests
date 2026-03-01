@@ -1,18 +1,12 @@
 import { defineConfig, devices } from '@playwright/test';
-import { type WaitForLoadStateOptions } from './src/bjjeire-playwright/setup/optional-parameter-types';
-import { EXPECT_TIMEOUT } from './src/bjjeire-playwright/constants/timeout-constants';
+import { ACTION_TIMEOUT, EXPECT_TIMEOUT, NAVIGATION_TIMEOUT } from './src/config/timeout-constants';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:60743';
+const BASE_URL = process.env.BASE_URL || 'https://www.saucedemo.com/';
 const IS_CI = !!process.env.CI;
 const startLocalHost = process.env.BASE_URL?.includes('localhost');
-
-const ACTION_TIMEOUT = 10_000;
-const NAVIGATION_TIMEOUT = 30_000;
-
-export const LOADSTATE: WaitForLoadStateOptions = 'domcontentloaded';
 
 export default defineConfig({
   testDir: './tests',
@@ -26,13 +20,16 @@ export default defineConfig({
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
     ['allure-playwright', { resultsDir: 'allure-results' }],
-    ['./src/bjjeire-playwright/setup/custom-logger.ts'],
+    ['./src/reporters/custom-logger.ts'],
   ],
-  globalSetup: require.resolve('./src/bjjeire-playwright/setup/global-setup.ts'),
-  globalTeardown: require.resolve('./src/bjjeire-playwright/setup/global-teardown.ts'),
+
+  globalSetup: './global-setup.ts',
+  globalTeardown: './global-teardown.ts',
+
   expect: {
     timeout: EXPECT_TIMEOUT,
   },
+
   use: {
     headless: true,
     // extraHTTPHeaders: {
@@ -50,6 +47,8 @@ export default defineConfig({
     actionTimeout: ACTION_TIMEOUT,
     navigationTimeout: NAVIGATION_TIMEOUT,
   },
+
+  captureGitInfo: { commit: true, diff: true },
 
   projects: [
     {
