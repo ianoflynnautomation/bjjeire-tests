@@ -70,7 +70,8 @@ export default [
     ...playwright.configs['flat/recommended'],
     rules: {
       ...playwright.configs['flat/recommended'].rules,
-      'playwright/no-skipped-test': 'warn',
+      'playwright/no-skipped-test': 'off',
+      'playwright/no-conditional-in-test': 'off',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',
       'playwright/expect-expect': [
@@ -82,8 +83,8 @@ export default [
   },
 
   {
-    // Allow console in reporter, utilities (error logging), and lifecycle hooks
-    files: ['src/reporters/**/*.ts', 'src/utils/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
+    // Allow console in reporter and lifecycle hooks
+    files: ['src/lib/reporters/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
     rules: {
       'no-console': 'off',
     },

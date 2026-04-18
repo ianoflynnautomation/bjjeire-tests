@@ -3,26 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'playwright.config.ts'
-      - 'tsconfig.json'
-      - 'eslint.config.mjs'
-      - '.prettierrc'
-      - 'package*.json'
-      - '.github/workflows/**'
   pull_request:
     branches: [main]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'playwright.config.ts'
-      - 'tsconfig.json'
-      - 'eslint.config.mjs'
-      - '.prettierrc'
-      - 'package*.json'
-      - '.github/workflows/**'
   workflow_dispatch:
 
 concurrency:
@@ -36,53 +18,27 @@ permissions:
 
 env:
   NODE_VERSION: '22'
+  SHARDS: 6
 
 jobs:
   lint:
-    name: Lint
+    name: Lint + Typecheck
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: ESLint
-        run: npm run lint
-
-      - name: Prettier check
-        run: npx prettier --check .
-
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Compile TypeScript
-        run: npm run build
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npx prettier --check .
 
   test:
-    name: 'Playwright — Shard ${{ matrix.shard }}/4'
+    name: 'Playwright — shard ${{ matrix.shard }}/6'
     runs-on: ubuntu-latest
-    needs: [lint, build]
+    needs: [lint]
 
     container:
       image: mcr.microsoft.com/playwright:v1.58.2-noble
@@ -91,22 +47,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
+
+    env:
+      CI: 'true'
+      APP_ENV: ephemeral
+      BASE_URL: ${{ secrets.EPHEMERAL_BASE_URL }}
+      API_URL: ${{ secrets.EPHEMERAL_API_URL }}
+      MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
+      MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
+      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
+      - uses: actions/checkout@v6
+      - run: npm ci --ignore-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-
-      - name: Run Playwright tests
-        run: npx playwright test --shard=${{ matrix.shard }}/4 --reporter=blob
-        env:
-          CI: 'true'
-
+      - name: Run Playwright tests (shard ${{ matrix.shard }}/${{ env.SHARDS }})
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ env.SHARDS }}
       - name: Upload blob report
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,7 +77,6 @@ jobs:
           path: blob-report/
           retention-days: 1
           if-no-files-found: ignore
-
       - name: Upload traces
         if: failure()
         uses: actions/upload-artifact@v4
@@ -125,74 +86,40 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Upload screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-screenshots-shard-${{ matrix.shard }}
-          path: test-results/**/*.png
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Upload videos
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-videos-shard-${{ matrix.shard }}
-          path: test-results/**/*.webm
-          retention-days: 7
-          if-no-files-found: ignore
-
   report:
-    name: Merge Reports
+    name: Merge reports
     runs-on: ubuntu-latest
     needs: [test]
     if: always()
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-
-      - name: Prepare blob reports directory
-        run: mkdir -p all-blob-reports
-
-      - name: Download all blob reports
-        uses: actions/download-artifact@v4
+      - run: npm ci --ignore-scripts
+      - run: mkdir -p all-blob-reports
+      - uses: actions/download-artifact@v4
         with:
           pattern: blob-report-shard-*
           merge-multiple: true
           path: all-blob-reports
         continue-on-error: true
-
-      - name: Merge blob reports → HTML + JSON
-        id: merge
+      - id: merge
         run: |
           if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
-            echo "No blob reports found — skipping merge."
             echo "skipped=true" >> "$GITHUB_OUTPUT"
           else
             npx playwright merge-reports --reporter html,json ./all-blob-reports
             echo "skipped=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Upload unified HTML report (with embedded Trace Viewer)
+      - name: Upload merged HTML report
         if: steps.merge.outputs.skipped == 'false'
-        id: upload-report
         uses: actions/upload-artifact@v4
         with:
           name: playwright-html-report
           path: playwright-report/
           retention-days: 30
-
       - name: Upload merged JSON results
         if: steps.merge.outputs.skipped == 'false'
         uses: actions/upload-artifact@v4
@@ -201,42 +128,16 @@ jobs:
           path: test-results/results.json
           retention-days: 30
 
-  deploy-report:
-    name: Deploy Report to GitHub Pages
+  release-gate:
+    name: Pre-release gate
     runs-on: ubuntu-latest
-    needs: [report]
-    if: >
-      needs.report.result == 'success' &&
-      github.event_name != 'pull_request' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-
+    needs: [test]
+    if: always()
     steps:
-      - name: Download HTML report
-        uses: actions/download-artifact@v4
-        with:
-          name: playwright-html-report
-          path: playwright-report
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload report to Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: playwright-report
-
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
-
-      - name: Report deployment URL
+      - name: Require all shards to pass
         run: |
-          echo "### Live Playwright Report" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**[Open Trace Viewer →](${{ steps.deploy.outputs.page_url }})**" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "_Click any failed test in the report to inspect its trace inline._" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Not all shards passed — release blocked."
+            exit 1
+          fi
+          echo "All shards green — release gate open."

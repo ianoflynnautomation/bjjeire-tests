@@ -1,10 +1,14 @@
-/**
- * global-setup.ts: This module is responsible for setting up the global state before all tests start.
- * It includes a default export function that runs before all tests, setting up any necessary global context.
- * By centralizing these setup operations, it ensures a consistent starting point for all tests, improving test reliability.
- * You can add any initialization setup code within this function.
- */
+import { env } from './src/lib/config/env';
+import { setStartedMongo } from './src/lib/config/lifecycle';
+import { startMongoContainer } from './src/lib/db/testcontainers';
 
-export default () => {
-  // console.log("Add any initialization setup here");
+export default async (): Promise<void> => {
+  console.log(`[global-setup] profile=${env.profile} baseUrl=${env.baseUrl} apiUrl=${env.apiUrl}`);
+
+  if (env.profile === 'testcontainers') {
+    const mongo = await startMongoContainer();
+    process.env.MONGO_URL = mongo.connectionString;
+    setStartedMongo(mongo);
+    console.log(`[global-setup] testcontainers Mongo started at ${mongo.connectionString}`);
+  }
 };

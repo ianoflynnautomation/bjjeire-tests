@@ -1,91 +1,71 @@
-import { defineConfig, devices } from '@playwright/test';
-import { ACTION_TIMEOUT, EXPECT_TIMEOUT, NAVIGATION_TIMEOUT } from './src/config/timeout-constants';
-import dotenv from 'dotenv';
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
+import { env } from './src/lib/config/env';
+import { TIMEOUTS } from './src/lib/config/timeouts';
 
-dotenv.config();
+const IS_CI = env.isCI;
 
-const BASE_URL = process.env.BASE_URL || 'https://www.saucedemo.com/';
-const IS_CI = !!process.env.CI;
-const startLocalHost = process.env.BASE_URL?.includes('localhost');
+const ciReporters: ReporterDescription[] = [
+  ['blob'],
+  ['junit', { outputFile: 'test-results/junit.xml' }],
+  ['./src/lib/reporters/custom-logger.ts'],
+];
+
+const localReporters: ReporterDescription[] = [
+  ['list'],
+  ['html', { open: 'never', outputFolder: 'playwright-report' }],
+  ['json', { outputFile: 'test-results/results.json' }],
+  ['junit', { outputFile: 'test-results/junit.xml' }],
+  ['allure-playwright', { resultsDir: 'allure-results' }],
+  ['./src/lib/reporters/custom-logger.ts'],
+];
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/features',
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,
-  workers: IS_CI ? '50%' : undefined,
-
-  reporter: [
-    ['dot'],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['allure-playwright', { resultsDir: 'allure-results' }],
-    ['./src/reporters/custom-logger.ts'],
-  ],
-
+  workers: IS_CI ? '100%' : undefined,
+  timeout: TIMEOUTS.test,
+  reporter: IS_CI ? ciReporters : localReporters,
   globalSetup: './global-setup.ts',
   globalTeardown: './global-teardown.ts',
 
   expect: {
-    timeout: EXPECT_TIMEOUT,
+    timeout: TIMEOUTS.expect,
   },
 
   use: {
     headless: true,
-    // extraHTTPHeaders: {
-    //   'CF-Access-Client-Id': process.env.CF_CLIENT_ID || '',
-    //   'CF-Access-Client-Secret': process.env.CF_CLIENT_SECRET || '',
-    // },
-    ignoreHTTPSErrors: true,
+    ignoreHTTPSErrors: env.acceptInvalidCerts,
     acceptDownloads: true,
-    testIdAttribute: 'test-id',
-    baseURL: BASE_URL,
+    testIdAttribute: 'data-testid',
+    baseURL: env.baseUrl,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: IS_CI ? 'on-first-retry' : 'off',
-
-    actionTimeout: ACTION_TIMEOUT,
-    navigationTimeout: NAVIGATION_TIMEOUT,
+    actionTimeout: TIMEOUTS.action,
+    navigationTimeout: TIMEOUTS.navigation,
   },
 
   captureGitInfo: { commit: true, diff: true },
 
   projects: [
     {
-      name: 'chromium',
+      name: 'api',
+      testMatch: /.*\.api\.spec\.ts$/,
+      use: {
+        baseURL: env.apiUrl,
+        ignoreHTTPSErrors: env.acceptInvalidCerts,
+      },
+    },
+    {
+      name: 'ui-chromium',
+      testMatch: /.*\.spec\.ts$/,
+      testIgnore: /.*\.api\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1600, height: 1000 },
-        launchOptions: {
-          // Remove --disable-web-security for production tests; use only for
-          // local CORS-blocked environments.
-          // args: ["--disable-web-security","--auto-open-devtools-for-tabs"],
-          slowMo: 0,
-        },
       },
     },
-
-    // Uncomment to enable cross-browser coverage:
-    // { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    // { name: 'webkit',  use: { ...devices['Desktop Safari']  } },
-
-    // Mobile viewports:
-    // { name: 'Mobile Chrome', use: { ...devices['Pixel 5']    } },
-    // { name: 'Mobile Safari', use: { ...devices['iPhone 12']  } },
-
-    // Branded channels:
-    // { name: 'edge',   use: { ...devices['Desktop Edge'],   channel: 'msedge' } },
-    // { name: 'chrome', use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
   ],
-
-  ...(startLocalHost && {
-    webServer: {
-      command: 'cd ~/repos/ui && npm start ui-server',
-      port: 9002,
-      timeout: 60_000,
-      reuseExistingServer: !IS_CI,
-      stdout: 'pipe',
-      stderr: 'pipe',
-    },
-  }),
 });

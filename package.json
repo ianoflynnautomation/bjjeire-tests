@@ -1,7 +1,7 @@
 {
   "name": "bjjeire.web.systemtests",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "BjjEire acceptance tests — function-based, parallel-safe, Playwright + TypeScript",
   "main": "index.js",
   "type": "commonjs",
   "lint-staged": {
@@ -14,15 +14,24 @@
     ]
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "playwright test",
-    "test:chromium": "playwright test --retries 0 --project=chromium",
-    "test:chromium-headed": "playwright test -j 1 --retries 0 --headed --project=chromium",
-    "test:reg": "playwright test --project=chromium -g '@reg'",
-    "test:smoke": "playwright test --project=chromium -g '@smoke'",
+    "test:local": "APP_ENV=local playwright test",
+    "test:docker": "APP_ENV=docker playwright test",
+    "test:testcontainers": "APP_ENV=testcontainers playwright test",
+    "test:staging": "APP_ENV=staging playwright test",
+    "test:smoke": "playwright test -g @smoke",
+    "test:reg": "playwright test -g @regression",
+    "test:acceptance": "playwright test -g '@smoke|@regression'",
+    "test:api": "playwright test --project=api",
+    "test:ui": "playwright test --project=ui-chromium",
+    "test:feature": "playwright test -g",
+    "test:shard": "playwright test --shard",
     "ui": "playwright test --ui-port 0",
     "trace": "playwright show-trace --port 0",
     "play-report": "playwright show-report playwright-report",
+    "merge-reports": "playwright merge-reports --reporter html,json ./all-blob-reports",
     "allure-report": "allure generate ./allure-results --clean",
     "open-report": "npm run allure-report && allure open ./allure-report",
     "lint": "eslint .",
@@ -36,11 +45,19 @@
   "keywords": [
     "playwright",
     "playwright-test",
-    "allure report",
-    "web test automation"
+    "allure-report",
+    "web-test-automation",
+    "typescript"
   ],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@azure/msal-node": "^5.1.3",
+    "@testcontainers/mongodb": "^11.14.0",
+    "mongodb": "^7.1.1",
+    "testcontainers": "^11.14.0",
+    "zod": "^4.3.6"
+  },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^22.15.18",
