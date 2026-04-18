@@ -1,0 +1,458 @@
+# Reusable workflow: Playwright Tests (API + UI) against Docker or Terraform-provisioned environments.
+#
+# Consumers call this with `uses: <org>/<test-repo>/.github/workflows/playwright-tests.yml@<ref>`.
+# See examples/consumer-docker.yml and examples/consumer-terraform.yml in this repo.
+#
+# Versioning: pin to a SHA in production, a `v1` floating tag in dev/acceptance.
+# Cross-repo callers must allow this workflow under "Actions → Access" at the org level.
+
+name: Playwright Tests
+
+on:
+  workflow_call:
+    inputs:
+      environment_type:
+        description: 'How the system-under-test is provisioned: docker | terraform | external'
+        type: string
+        required: false
+        default: 'external'
+
+      base_url:
+        description: 'Override BASE_URL for tests. If empty, derived from provisioning step or EPHEMERAL_BASE_URL secret.'
+        type: string
+        required: false
+        default: ''
+      api_base_url:
+        description: 'Override API_URL for tests. If empty, derived from provisioning step or EPHEMERAL_API_URL secret.'
+        type: string
+        required: false
+        default: ''
+
+      compose_file:
+        description: 'Path (relative to caller checkout) to docker-compose.yml. Required when environment_type=docker.'
+        type: string
+        required: false
+        default: 'docker-compose.yml'
+      compose_health_url:
+        description: 'URL polled until 200-OK before tests start. Required when environment_type=docker.'
+        type: string
+        required: false
+        default: ''
+
+      terraform_dir:
+        description: 'Path (relative to caller checkout) to Terraform root module. Required when environment_type=terraform.'
+        type: string
+        required: false
+        default: 'infra'
+      terraform_workspace:
+        description: 'Terraform workspace to use (typically the PR or branch name).'
+        type: string
+        required: false
+        default: 'default'
+      terraform_var_file:
+        description: 'Optional .tfvars file (relative to terraform_dir).'
+        type: string
+        required: false
+        default: ''
+
+      test_tags:
+        description: 'Playwright grep filter, e.g. "@smoke|@regression". Empty = run all.'
+        type: string
+        required: false
+        default: ''
+      shard_total:
+        description: 'Number of parallel shards per project.'
+        type: number
+        required: false
+        default: 6
+      playwright_projects:
+        description: 'JSON array of Playwright project names to run, e.g. ''["api","ui-chromium"]''.'
+        type: string
+        required: false
+        default: '["api","ui-chromium"]'
+
+      node_version:
+        description: 'Node.js version for setup-node and merge job.'
+        type: string
+        required: false
+        default: '22'
+      playwright_image:
+        description: 'Container image used for the test job. Pin to your @playwright/test version.'
+        type: string
+        required: false
+        default: 'mcr.microsoft.com/playwright:v1.58.2-noble'
+
+      test_repo:
+        description: 'Owner/repo holding the test code. Empty = caller repo (self-call from this repo).'
+        type: string
+        required: false
+        default: ''
+      test_repo_ref:
+        description: 'Git ref of the test repo to check out (tag, branch, or SHA).'
+        type: string
+        required: false
+        default: 'main'
+
+    secrets:
+      EPHEMERAL_BASE_URL:
+        required: false
+      EPHEMERAL_API_URL:
+        required: false
+      EPHEMERAL_MONGO_URL:
+        required: false
+      EPHEMERAL_MONGO_DB:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_CLIENT_SECRET:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_API_SCOPE:
+        required: false
+      AZURE_AUTHORITY:
+        required: false
+      GHCR_TOKEN:
+        required: false
+
+    outputs:
+      test_status:
+        description: 'success | failure — aggregated result of the matrix test job.'
+        value: ${{ jobs.gate.outputs.status }}
+      failed_count:
+        description: 'Number of failed tests across all shards (0 on green).'
+        value: ${{ jobs.merge-reports.outputs.failed_count }}
+      report_artifact_name:
+        description: 'Name of the merged HTML report artifact.'
+        value: ${{ jobs.merge-reports.outputs.report_artifact_name }}
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  checks: write
+
+jobs:
+  setup:
+    name: Plan matrix
+    runs-on: ubuntu-latest
+    outputs:
+      shard_matrix: ${{ steps.plan.outputs.shard_matrix }}
+      project_matrix: ${{ steps.plan.outputs.project_matrix }}
+    steps:
+      - id: plan
+        shell: bash
+        run: |
+          shards=$(seq 1 ${{ inputs.shard_total }} | jq -R -s -c 'split("\n")[:-1] | map(tonumber)')
+          echo "shard_matrix=${shards}" >> "$GITHUB_OUTPUT"
+          echo "project_matrix=${{ toJSON(inputs.playwright_projects) }}" >> "$GITHUB_OUTPUT"
+
+  provision-env:
+    name: Provision (${{ inputs.environment_type }})
+    runs-on: ubuntu-latest
+    needs: [setup]
+    if: inputs.environment_type != 'external'
+    outputs:
+      base_url: ${{ steps.urls.outputs.base_url }}
+      api_base_url: ${{ steps.urls.outputs.api_base_url }}
+    steps:
+      - name: Checkout caller repo (compose / terraform sources)
+        uses: actions/checkout@v6
+
+      - name: Azure OIDC login
+        if: inputs.environment_type == 'terraform'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        if: inputs.environment_type == 'terraform'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform apply
+        if: inputs.environment_type == 'terraform'
+        id: tf
+        working-directory: ${{ inputs.terraform_dir }}
+        shell: bash
+        run: |
+          terraform init -input=false
+          terraform workspace select -or-create "${{ inputs.terraform_workspace }}"
+          if [ -n "${{ inputs.terraform_var_file }}" ]; then
+            terraform apply -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
+          else
+            terraform apply -auto-approve -input=false
+          fi
+          {
+            echo "base_url=$(terraform output -raw base_url)"
+            echo "api_base_url=$(terraform output -raw api_base_url)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR (for docker mode)
+        if: inputs.environment_type == 'docker' && env.GHCR_TOKEN != ''
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Docker compose up
+        if: inputs.environment_type == 'docker'
+        id: compose
+        shell: bash
+        run: |
+          docker compose -f "${{ inputs.compose_file }}" up -d --wait
+          docker compose -f "${{ inputs.compose_file }}" ps
+
+      - name: Wait for health
+        if: inputs.environment_type == 'docker' && inputs.compose_health_url != ''
+        shell: bash
+        run: |
+          url="${{ inputs.compose_health_url }}"
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 3 "$url" >/dev/null 2>&1; then
+              echo "health OK after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Health check failed for $url" >&2
+          docker compose -f "${{ inputs.compose_file }}" logs --tail=200 || true
+          exit 1
+
+      - name: Resolve URLs
+        id: urls
+        shell: bash
+        run: |
+          base="${{ inputs.base_url }}"
+          api="${{ inputs.api_base_url }}"
+          if [ "${{ inputs.environment_type }}" = "terraform" ]; then
+            base="${base:-${{ steps.tf.outputs.base_url }}}"
+            api="${api:-${{ steps.tf.outputs.api_base_url }}}"
+          fi
+          echo "base_url=${base}" >> "$GITHUB_OUTPUT"
+          echo "api_base_url=${api}" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Test ${{ matrix.project }} ${{ matrix.shard }}/${{ inputs.shard_total }}
+    runs-on: ubuntu-latest
+    needs: [setup, provision-env]
+    if: |
+      always() &&
+      needs.setup.result == 'success' &&
+      (needs.provision-env.result == 'success' || needs.provision-env.result == 'skipped')
+
+    container:
+      image: ${{ inputs.playwright_image }}
+      options: --ipc=host
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.setup.outputs.project_matrix) }}
+        shard: ${{ fromJson(needs.setup.outputs.shard_matrix) }}
+
+    env:
+      CI: 'true'
+      APP_ENV: ${{ inputs.environment_type == 'external' && 'ephemeral' || inputs.environment_type }}
+      BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || needs.provision-env.outputs.base_url || secrets.EPHEMERAL_BASE_URL }}
+      API_URL: ${{ inputs.api_base_url != '' && inputs.api_base_url || needs.provision-env.outputs.api_base_url || secrets.EPHEMERAL_API_URL }}
+      MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
+      MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
+      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.test_repo }}
+          ref: ${{ inputs.test_repo_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ inputs.playwright_image }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers (cache miss only)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: |
+          args=(--project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ inputs.shard_total }})
+          if [ -n "${{ inputs.test_tags }}" ]; then
+            args+=(--grep="${{ inputs.test_tags }}")
+          fi
+          npx playwright test "${args[@]}"
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.project }}-shard-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 1
+          if-no-files-found: ignore
+
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traces-${{ matrix.project }}-shard-${{ matrix.shard }}
+          path: test-results/**/*.zip
+          retention-days: 7
+          if-no-files-found: ignore
+
+  merge-reports:
+    name: Merge reports
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+    outputs:
+      failed_count: ${{ steps.summary.outputs.failed_count }}
+      report_artifact_name: playwright-html-report
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.test_repo }}
+          ref: ${{ inputs.test_repo_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci --ignore-scripts
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          merge-multiple: true
+          path: all-blob-reports
+        continue-on-error: true
+
+      - name: Merge into HTML + JSON
+        id: merge
+        shell: bash
+        run: |
+          if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          npx playwright merge-reports --reporter html,json ./all-blob-reports
+          echo "skipped=false" >> "$GITHUB_OUTPUT"
+
+      - name: Compute summary
+        id: summary
+        if: steps.merge.outputs.skipped == 'false'
+        shell: bash
+        run: |
+          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
+          echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload HTML report
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload JSON results
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-json-results
+          path: test-results/results.json
+          retention-days: 30
+
+  teardown:
+    name: Teardown (${{ inputs.environment_type }})
+    runs-on: ubuntu-latest
+    needs: [provision-env, test]
+    if: always() && needs.provision-env.result != 'skipped'
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@v6
+
+      - name: Azure OIDC login
+        if: inputs.environment_type == 'terraform'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        if: inputs.environment_type == 'terraform'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform destroy
+        if: inputs.environment_type == 'terraform'
+        working-directory: ${{ inputs.terraform_dir }}
+        shell: bash
+        run: |
+          terraform init -input=false
+          terraform workspace select "${{ inputs.terraform_workspace }}"
+          if [ -n "${{ inputs.terraform_var_file }}" ]; then
+            terraform destroy -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
+          else
+            terraform destroy -auto-approve -input=false
+          fi
+
+      - name: Docker compose down
+        if: inputs.environment_type == 'docker'
+        shell: bash
+        run: docker compose -f "${{ inputs.compose_file }}" down -v --remove-orphans
+
+  gate:
+    name: Result gate
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+    outputs:
+      status: ${{ steps.eval.outputs.status }}
+    steps:
+      - id: eval
+        shell: bash
+        run: |
+          result="${{ needs.test.result }}"
+          if [ "$result" = "success" ]; then
+            echo "status=success" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "status=failure" >> "$GITHUB_OUTPUT"
+          echo "Test job result: $result" >&2
+          exit 1

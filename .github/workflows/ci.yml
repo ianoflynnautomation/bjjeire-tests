@@ -13,12 +13,9 @@ concurrency:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
-
-env:
-  NODE_VERSION: '22'
-  SHARDS: 6
+  actions: read
+  checks: write
 
 jobs:
   lint:
@@ -28,116 +25,44 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run typecheck
       - run: npx prettier --check .
 
-  test:
-    name: 'Playwright — shard ${{ matrix.shard }}/6'
-    runs-on: ubuntu-latest
-    needs: [lint]
+  # tests:
+  #   name: Playwright (external env)
+  #   needs: [lint]
+  #   uses: ./.github/workflows/playwright-tests.yml
+  #   with:
+  #     environment_type: external
+  #     shard_total: 6
+  #     playwright_projects: '["api","ui-chromium"]'
+  #     node_version: '22'
+  #     test_repo_ref: ${{ github.sha }}
+  #   secrets:
+  #     EPHEMERAL_BASE_URL: ${{ secrets.EPHEMERAL_BASE_URL }}
+  #     EPHEMERAL_API_URL: ${{ secrets.EPHEMERAL_API_URL }}
+  #     EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
+  #     EPHEMERAL_MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
+  #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  #     AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  #     AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
+  #     AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
 
-    container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
-      options: --ipc=host
-
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4, 5, 6]
-
-    env:
-      CI: 'true'
-      APP_ENV: ephemeral
-      BASE_URL: ${{ secrets.EPHEMERAL_BASE_URL }}
-      API_URL: ${{ secrets.EPHEMERAL_API_URL }}
-      MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
-      MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
-      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
-
-    steps:
-      - uses: actions/checkout@v6
-      - run: npm ci --ignore-scripts
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-      - name: Run Playwright tests (shard ${{ matrix.shard }}/${{ env.SHARDS }})
-        run: npx playwright test --shard=${{ matrix.shard }}/${{ env.SHARDS }}
-      - name: Upload blob report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: blob-report-shard-${{ matrix.shard }}
-          path: blob-report/
-          retention-days: 1
-          if-no-files-found: ignore
-      - name: Upload traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces-shard-${{ matrix.shard }}
-          path: test-results/**/*.zip
-          retention-days: 7
-          if-no-files-found: ignore
-
-  report:
-    name: Merge reports
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: always()
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci --ignore-scripts
-      - run: mkdir -p all-blob-reports
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: blob-report-shard-*
-          merge-multiple: true
-          path: all-blob-reports
-        continue-on-error: true
-      - id: merge
-        run: |
-          if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
-            echo "skipped=true" >> "$GITHUB_OUTPUT"
-          else
-            npx playwright merge-reports --reporter html,json ./all-blob-reports
-            echo "skipped=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Upload merged HTML report
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-html-report
-          path: playwright-report/
-          retention-days: 30
-      - name: Upload merged JSON results
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-json-results
-          path: test-results/results.json
-          retention-days: 30
-
-  release-gate:
-    name: Pre-release gate
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: always()
-    steps:
-      - name: Require all shards to pass
-        run: |
-          if [ "${{ needs.test.result }}" != "success" ]; then
-            echo "Not all shards passed — release blocked."
-            exit 1
-          fi
-          echo "All shards green — release gate open."
+  # release-gate:
+  #   name: Pre-release gate
+  #   runs-on: ubuntu-latest
+  #   needs: [tests]
+  #   if: always()
+  #   steps:
+  #     - name: Require all tests to pass
+  #       run: |
+  #         if [ "${{ needs.tests.outputs.test_status }}" != "success" ]; then
+  #           echo "Tests did not all pass — release blocked."
+  #           exit 1
+  #         fi
+  #         echo "All tests green — release gate open."

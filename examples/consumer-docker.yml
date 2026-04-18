@@ -1,0 +1,27 @@
+name: E2E (docker)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  checks: write
+
+jobs:
+  e2e:
+    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-tests.yml@v1
+    with:
+      environment_type: docker
+      compose_file: docker-compose.yml
+      compose_health_url: http://localhost:5003/healthz
+      test_tags: '@smoke|@regression'
+      shard_total: 4
+      playwright_projects: '["api","ui-chromium"]'
+      test_repo: bjjeire/bjjeire-tests
+      test_repo_ref: v1
+    secrets:
+      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
