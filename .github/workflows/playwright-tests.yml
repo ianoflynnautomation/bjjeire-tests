@@ -48,6 +48,11 @@ on:
         type: string
         required: false
         default: ''
+      seed_data:
+        description: seed test data
+        type: boolean
+        required: false
+        default: false
 
       terraform_dir:
         description: 'Path (relative to caller checkout) to Terraform root module. Required when environment_type=terraform.'
@@ -163,9 +168,6 @@ jobs:
     name: Provision (${{ inputs.environment_type }})
     runs-on: ubuntu-latest
     needs: [setup]
-    # Docker mode is handled end-to-end by the docker-test job on a single
-    # runner — splitting provision/test/teardown across runners can't share
-    # the compose stack's network.
     if: inputs.environment_type == 'terraform'
     outputs:
       base_url: ${{ steps.urls.outputs.base_url }}
@@ -369,6 +371,12 @@ jobs:
         run: |
           docker compose $COMPOSE_ARGS up -d --build --wait --wait-timeout 300
           docker compose $COMPOSE_ARGS ps
+
+      - name: Run Seed Data
+        if: inputs.seed_data == true
+        shell: bash
+        run: |
+          docker compose $COMPOSE_ARGS run --rm seeder
 
       - name: Wait for health URL
         if: inputs.compose_health_url != ''
