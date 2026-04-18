@@ -7,6 +7,7 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/bjjeire/playwright:local
     ipc: host
+    network_mode: ${NETWORK_MODE:-bridge}
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -24,7 +25,12 @@ services:
         required: false
     environment:
       CI: 'true'
-      BASE_URL: ${BASE_URL:-}
+      APP_ENV: ${APP_ENV:-docker}
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      API_URL: ${API_URL:-http://localhost:5003}
+      ACCEPT_INVALID_CERTS: ${ACCEPT_INVALID_CERTS:-true}
+      TEST_TAGS: ${TEST_TAGS:-}
+      PLAYWRIGHT_PROJECTS: ${PLAYWRIGHT_PROJECTS:-}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-}
       TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}

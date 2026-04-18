@@ -27,6 +27,7 @@ jobs:
       test_tags: '@smoke'
       shard_total: 6
       playwright_projects: '["api","ui-chromium"]'
+      playwright_image: mcr.microsoft.com/playwright:v1.58.2-noble
       test_repo: bjjeire/bjjeire-tests
       test_repo_ref: v1
     secrets:

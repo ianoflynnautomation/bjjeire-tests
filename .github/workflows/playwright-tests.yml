@@ -305,7 +305,7 @@ jobs:
           if-no-files-found: ignore
 
   docker-test:
-    name: Docker compose + tests
+    name: Docker compose + tests (containerised runner)
     runs-on: ubuntu-latest
     needs: [setup]
     if: inputs.environment_type == 'docker'
@@ -401,29 +401,26 @@ jobs:
           ref: ${{ inputs.test_repo_ref }}
           path: tests-checkout
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node_version }}
-          cache: 'npm'
-          cache-dependency-path: tests-checkout/package-lock.json
-
-      - name: Install test dependencies
+      - name: Build test-runner image
         shell: bash
         working-directory: tests-checkout
-        env:
-          HUSKY: '0'
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: npm ci --ignore-scripts
+        run: |
+          docker build \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --tag bjjeire-playwright:ci \
+            --file Dockerfile \
+            .
 
-      - name: Install Playwright browsers
+      - name: Prepare report dirs
         shell: bash
-        working-directory: tests-checkout
-        run: npx playwright install --with-deps chromium
+        run: |
+          mkdir -p tests-checkout/playwright-report \
+                   tests-checkout/test-results \
+                   tests-checkout/blob-report \
+                   tests-checkout/allure-results
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests (in container)
         shell: bash
-        working-directory: tests-checkout
         run: |
           args=()
           while IFS= read -r project; do
@@ -433,7 +430,28 @@ jobs:
           if [ -n "${{ inputs.test_tags }}" ]; then
             args+=(--grep="${{ inputs.test_tags }}")
           fi
-          npx playwright test "${args[@]}"
+
+          docker run --rm \
+            --network host \
+            --ipc host \
+            -v "${{ github.workspace }}/tests-checkout/playwright-report:/home/pwuser/app/playwright-report" \
+            -v "${{ github.workspace }}/tests-checkout/test-results:/home/pwuser/app/test-results" \
+            -v "${{ github.workspace }}/tests-checkout/blob-report:/home/pwuser/app/blob-report" \
+            -v "${{ github.workspace }}/tests-checkout/allure-results:/home/pwuser/app/allure-results" \
+            -e CI=true \
+            -e APP_ENV="${APP_ENV}" \
+            -e BASE_URL="${BASE_URL}" \
+            -e API_URL="${API_URL}" \
+            -e ACCEPT_INVALID_CERTS="${ACCEPT_INVALID_CERTS}" \
+            -e MONGO_URL="${MONGO_URL}" \
+            -e MONGO_DB="${MONGO_DB}" \
+            -e AZURE_TENANT_ID="${AZURE_TENANT_ID}" \
+            -e AZURE_CLIENT_ID="${AZURE_CLIENT_ID}" \
+            -e AZURE_CLIENT_SECRET="${AZURE_CLIENT_SECRET}" \
+            -e AZURE_API_SCOPE="${AZURE_API_SCOPE}" \
+            -e AZURE_AUTHORITY="${AZURE_AUTHORITY}" \
+            bjjeire-playwright:ci \
+            test "${args[@]}"
 
       - name: Upload blob report
         if: always()
