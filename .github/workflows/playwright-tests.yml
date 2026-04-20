@@ -1,90 +1,46 @@
-# Reusable workflow: Playwright Tests (API + UI) against Docker or Terraform-provisioned environments.
+# Reusable workflow: Playwright test runner for already-available environments.
 #
 # Consumers call this with `uses: <org>/<test-repo>/.github/workflows/playwright-tests.yml@<ref>`.
-# See examples/consumer-docker.yml and examples/consumer-terraform.yml in this repo.
-#
-# Versioning: pin to a SHA in production, a `v1` floating tag in dev/acceptance.
-# Cross-repo callers must allow this workflow under "Actions → Access" at the org level.
+# This workflow is intentionally provisioning-agnostic: callers provide URLs and
+# an app profile, and this workflow handles matrix execution, report merging, and
+# result gating.
 
 name: Playwright Tests
 
 on:
   workflow_call:
     inputs:
-      environment_type:
-        description: 'How the system-under-test is provisioned: docker | terraform | external'
+      app_env:
+        description: 'Playwright app profile: local | staging | docker'
         type: string
         required: false
-        default: 'external'
-
+        default: 'local'
       base_url:
-        description: 'Override BASE_URL for tests. If empty, derived from provisioning step or EPHEMERAL_BASE_URL secret.'
+        description: 'BASE_URL for tests.'
         type: string
         required: false
         default: ''
       api_base_url:
-        description: 'Override API_URL for tests. If empty, derived from provisioning step or EPHEMERAL_API_URL secret.'
-        type: string
-        required: false
-        default: ''
-
-      compose_file:
-        description: 'Path (relative to caller checkout) to docker-compose.yml. Ignored when compose_files is set.'
-        type: string
-        required: false
-        default: 'docker-compose.yml'
-      compose_files:
-        description: 'Newline-separated list of compose files (relative to caller checkout), stacked left-to-right. Takes precedence over compose_file.'
-        type: string
-        required: false
-        default: ''
-      compose_pre_up_script:
-        description: 'Path (relative to caller checkout) to a bash script run before docker compose up. Typical use: generate secret files and export env via $GITHUB_ENV.'
-        type: string
-        required: false
-        default: ''
-      compose_health_url:
-        description: 'URL polled until 200-OK before tests start. Required when environment_type=docker.'
-        type: string
-        required: false
-        default: ''
-      seed_data:
-        description: seed test data
-        type: boolean
-        required: false
-        default: false
-
-      terraform_dir:
-        description: 'Path (relative to caller checkout) to Terraform root module. Required when environment_type=terraform.'
-        type: string
-        required: false
-        default: 'infra'
-      terraform_workspace:
-        description: 'Terraform workspace to use (typically the PR or branch name).'
-        type: string
-        required: false
-        default: 'default'
-      terraform_var_file:
-        description: 'Optional .tfvars file (relative to terraform_dir).'
+        description: 'API_URL for tests.'
         type: string
         required: false
         default: ''
 
       test_tags:
-        description: 'Playwright grep filter, e.g. "@smoke|@regression". Empty = run all.'
+        description: 'Playwright grep filter, e.g. "@smoke|@regression".'
         type: string
         required: false
-        default: ''
+        default: '@smoke|@regression'
       shard_total:
         description: 'Number of parallel shards per project.'
         type: number
         required: false
         default: 6
       playwright_projects:
-        description: 'JSON array of Playwright project names to run, e.g. ''["api","ui-chromium"]''.'
+        description: 'JSON array of Playwright project names to run, e.g. ''["api","chromium-desktop","firefox-desktop"]''.'
         type: string
         required: false
-        default: '["api","ui-chromium"]'
+        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
 
       node_version:
         description: 'Node.js version for setup-node and merge job.'
@@ -109,10 +65,6 @@ on:
         default: 'main'
 
     secrets:
-      EPHEMERAL_BASE_URL:
-        required: false
-      EPHEMERAL_API_URL:
-        required: false
       EPHEMERAL_MONGO_URL:
         required: false
       EPHEMERAL_MONGO_DB:
@@ -123,13 +75,9 @@ on:
         required: false
       AZURE_CLIENT_SECRET:
         required: false
-      AZURE_SUBSCRIPTION_ID:
-        required: false
       AZURE_API_SCOPE:
         required: false
       AZURE_AUTHORITY:
-        required: false
-      GHCR_TOKEN:
         required: false
 
     outputs:
@@ -161,70 +109,19 @@ jobs:
         shell: bash
         run: |
           shards=$(seq 1 ${{ inputs.shard_total }} | jq -R -s -c 'split("\n")[:-1] | map(tonumber)')
+          projects='${{ inputs.playwright_projects }}'
+          project_matrix=$(echo "${projects}" | jq -c 'map({
+            name: .,
+            config: (if . == "api" then "playwright.api.config.ts" else "playwright.ui.config.ts" end)
+          })')
+
           echo "shard_matrix=${shards}" >> "$GITHUB_OUTPUT"
-          echo "project_matrix=${{ toJSON(inputs.playwright_projects) }}" >> "$GITHUB_OUTPUT"
-
-  provision-env:
-    name: Provision (${{ inputs.environment_type }})
-    runs-on: ubuntu-latest
-    needs: [setup]
-    if: inputs.environment_type == 'terraform'
-    outputs:
-      base_url: ${{ steps.urls.outputs.base_url }}
-      api_base_url: ${{ steps.urls.outputs.api_base_url }}
-    steps:
-      - name: Checkout caller repo (terraform sources)
-        uses: actions/checkout@v6
-
-      - name: Azure OIDC login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform apply
-        id: tf
-        working-directory: ${{ inputs.terraform_dir }}
-        shell: bash
-        run: |
-          terraform init -input=false
-          terraform workspace select -or-create "${{ inputs.terraform_workspace }}"
-          if [ -n "${{ inputs.terraform_var_file }}" ]; then
-            terraform apply -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
-          else
-            terraform apply -auto-approve -input=false
-          fi
-          {
-            echo "base_url=$(terraform output -raw base_url)"
-            echo "api_base_url=$(terraform output -raw api_base_url)"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Resolve URLs
-        id: urls
-        shell: bash
-        run: |
-          base="${{ inputs.base_url }}"
-          api="${{ inputs.api_base_url }}"
-          base="${base:-${{ steps.tf.outputs.base_url }}}"
-          api="${api:-${{ steps.tf.outputs.api_base_url }}}"
-          echo "base_url=${base}" >> "$GITHUB_OUTPUT"
-          echo "api_base_url=${api}" >> "$GITHUB_OUTPUT"
+          echo "project_matrix=${project_matrix}" >> "$GITHUB_OUTPUT"
 
   test:
-    name: Test ${{ matrix.project }} ${{ matrix.shard }}/${{ inputs.shard_total }}
+    name: Test ${{ matrix.project.name }} ${{ matrix.shard }}/${{ inputs.shard_total }}
     runs-on: ubuntu-latest
-    needs: [setup, provision-env]
-    if: |
-      always() &&
-      inputs.environment_type != 'docker' &&
-      needs.setup.result == 'success' &&
-      (needs.provision-env.result == 'success' || needs.provision-env.result == 'skipped')
+    needs: [setup]
 
     container:
       image: ${{ inputs.playwright_image }}
@@ -238,9 +135,9 @@ jobs:
 
     env:
       CI: 'true'
-      APP_ENV: ${{ inputs.environment_type == 'external' && 'ephemeral' || inputs.environment_type }}
-      BASE_URL: ${{ inputs.base_url != '' && inputs.base_url || needs.provision-env.outputs.base_url || secrets.EPHEMERAL_BASE_URL }}
-      API_URL: ${{ inputs.api_base_url != '' && inputs.api_base_url || needs.provision-env.outputs.api_base_url || secrets.EPHEMERAL_API_URL }}
+      APP_ENV: ${{ inputs.app_env }}
+      BASE_URL: ${{ inputs.base_url }}
+      API_URL: ${{ inputs.api_base_url }}
       MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
       MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -280,7 +177,11 @@ jobs:
 
       - name: Run Playwright tests
         run: |
-          args=(--project="${{ matrix.project }}" --shard=${{ matrix.shard }}/${{ inputs.shard_total }})
+          args=(
+            -c "${{ matrix.project.config }}"
+            --project="${{ matrix.project.name }}"
+            --shard=${{ matrix.shard }}/${{ inputs.shard_total }}
+          )
           if [ -n "${{ inputs.test_tags }}" ]; then
             args+=(--grep="${{ inputs.test_tags }}")
           fi
@@ -290,7 +191,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.project }}-shard-${{ matrix.shard }}
+          name: blob-report-${{ matrix.project.name }}-shard-${{ matrix.shard }}
           path: blob-report/
           retention-days: 1
           if-no-files-found: ignore
@@ -299,194 +200,15 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: traces-${{ matrix.project }}-shard-${{ matrix.shard }}
+          name: traces-${{ matrix.project.name }}-shard-${{ matrix.shard }}
           path: test-results/**/*.zip
           retention-days: 7
           if-no-files-found: ignore
 
-  docker-test:
-    name: Docker compose + tests (containerised runner)
-    runs-on: ubuntu-latest
-    needs: [setup]
-    if: inputs.environment_type == 'docker'
-    timeout-minutes: 30
-    env:
-      CI: 'true'
-      APP_ENV: docker
-      BASE_URL: ${{ inputs.base_url }}
-      API_URL: ${{ inputs.api_base_url }}
-      ACCEPT_INVALID_CERTS: 'true'
-      MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
-      MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
-      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
-    steps:
-      - name: Checkout caller repo (compose sources)
-        uses: actions/checkout@v6
-
-      - name: Login to GHCR
-        if: env.GHCR_TOKEN != ''
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Compute compose file args
-        id: compose_args
-        shell: bash
-        run: |
-          args=""
-          files_input='${{ inputs.compose_files }}'
-          if [ -n "${files_input}" ]; then
-            while IFS= read -r line; do
-              trimmed="$(echo "$line" | xargs)"
-              [ -z "$trimmed" ] && continue
-              args="${args} -f ${trimmed}"
-            done <<< "${files_input}"
-          else
-            args="-f ${{ inputs.compose_file }}"
-          fi
-          args="$(echo "$args" | sed 's/^ *//')"
-          echo "COMPOSE_ARGS=${args}" >> "$GITHUB_ENV"
-          echo "Using: ${args}"
-
-      - name: Run pre-up script
-        if: inputs.compose_pre_up_script != ''
-        shell: bash
-        run: |
-          chmod +x "${{ inputs.compose_pre_up_script }}"
-          "${{ inputs.compose_pre_up_script }}"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Docker compose up (build + wait for healthy)
-        shell: bash
-        run: |
-          docker compose $COMPOSE_ARGS up -d --build --wait --wait-timeout 300
-          docker compose $COMPOSE_ARGS ps
-
-      - name: Run Seed Data
-        if: inputs.seed_data == true
-        shell: bash
-        run: |
-          docker compose $COMPOSE_ARGS run --rm seeder
-
-      - name: Wait for health URL
-        if: inputs.compose_health_url != ''
-        shell: bash
-        run: |
-          url="${{ inputs.compose_health_url }}"
-          for i in $(seq 1 60); do
-            if curl -fsS --max-time 3 "$url" >/dev/null 2>&1; then
-              echo "health OK after ${i}s"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "::error::Health check failed for $url within 120s"
-          docker compose $COMPOSE_ARGS logs --tail=500 || true
-          exit 1
-
-      - name: Checkout test repo
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ inputs.test_repo }}
-          ref: ${{ inputs.test_repo_ref }}
-          path: tests-checkout
-
-      - name: Build test-runner image
-        shell: bash
-        working-directory: tests-checkout
-        run: |
-          docker build \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --tag bjjeire-playwright:ci \
-            --file Dockerfile \
-            .
-
-      - name: Prepare report dirs
-        shell: bash
-        run: |
-          mkdir -p tests-checkout/playwright-report \
-                   tests-checkout/test-results \
-                   tests-checkout/blob-report \
-                   tests-checkout/allure-results
-
-      - name: Run Playwright tests (in container)
-        shell: bash
-        run: |
-          args=()
-          while IFS= read -r project; do
-            [ -z "$project" ] && continue
-            args+=(--project="$project")
-          done < <(echo '${{ inputs.playwright_projects }}' | jq -r '.[]')
-          if [ -n "${{ inputs.test_tags }}" ]; then
-            args+=(--grep="${{ inputs.test_tags }}")
-          fi
-
-          docker run --rm \
-            --network host \
-            --ipc host \
-            -v "${{ github.workspace }}/tests-checkout/playwright-report:/home/pwuser/app/playwright-report" \
-            -v "${{ github.workspace }}/tests-checkout/test-results:/home/pwuser/app/test-results" \
-            -v "${{ github.workspace }}/tests-checkout/blob-report:/home/pwuser/app/blob-report" \
-            -v "${{ github.workspace }}/tests-checkout/allure-results:/home/pwuser/app/allure-results" \
-            -e CI=true \
-            -e APP_ENV="${APP_ENV}" \
-            -e BASE_URL="${BASE_URL}" \
-            -e API_URL="${API_URL}" \
-            -e ACCEPT_INVALID_CERTS="${ACCEPT_INVALID_CERTS}" \
-            -e MONGO_URL="${MONGO_URL}" \
-            -e MONGO_DB="${MONGO_DB}" \
-            -e AZURE_TENANT_ID="${AZURE_TENANT_ID}" \
-            -e AZURE_CLIENT_ID="${AZURE_CLIENT_ID}" \
-            -e AZURE_CLIENT_SECRET="${AZURE_CLIENT_SECRET}" \
-            -e AZURE_API_SCOPE="${AZURE_API_SCOPE}" \
-            -e AZURE_AUTHORITY="${AZURE_AUTHORITY}" \
-            bjjeire-playwright:ci \
-            test "${args[@]}"
-
-      - name: Upload blob report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: blob-report-docker
-          path: tests-checkout/blob-report/
-          retention-days: 1
-          if-no-files-found: ignore
-
-      - name: Upload traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: traces-docker
-          path: tests-checkout/test-results/**/*.zip
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Dump compose logs on failure
-        if: failure()
-        shell: bash
-        run: |
-          docker compose $COMPOSE_ARGS ps || true
-          docker compose $COMPOSE_ARGS logs --no-color --tail=500 || true
-
-      - name: Docker compose down
-        if: always()
-        shell: bash
-        run: docker compose $COMPOSE_ARGS down -v --remove-orphans || true
-
   merge-reports:
     name: Merge reports
     runs-on: ubuntu-latest
-    needs: [test, docker-test]
+    needs: [test]
     if: always()
     outputs:
       failed_count: ${{ steps.summary.outputs.failed_count }}
@@ -552,45 +274,10 @@ jobs:
           path: test-results/results.json
           retention-days: 30
 
-  teardown:
-    name: Teardown (terraform)
-    runs-on: ubuntu-latest
-    needs: [provision-env, test]
-    # Docker teardown is colocated in docker-test so the compose stack tears
-    # down on the same runner it was created on.
-    if: always() && inputs.environment_type == 'terraform' && needs.provision-env.result != 'skipped'
-    steps:
-      - name: Checkout caller repo
-        uses: actions/checkout@v6
-
-      - name: Azure OIDC login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform destroy
-        working-directory: ${{ inputs.terraform_dir }}
-        shell: bash
-        run: |
-          terraform init -input=false
-          terraform workspace select "${{ inputs.terraform_workspace }}"
-          if [ -n "${{ inputs.terraform_var_file }}" ]; then
-            terraform destroy -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
-          else
-            terraform destroy -auto-approve -input=false
-          fi
-
   gate:
     name: Result gate
     runs-on: ubuntu-latest
-    needs: [test, docker-test]
+    needs: [test]
     if: always()
     outputs:
       status: ${{ steps.eval.outputs.status }}
@@ -599,17 +286,9 @@ jobs:
         shell: bash
         run: |
           test_result="${{ needs.test.result }}"
-          docker_result="${{ needs.docker-test.result }}"
-          echo "test=${test_result} docker-test=${docker_result}"
+          echo "test=${test_result}"
 
-          if [ "$test_result" = "skipped" ] && [ "$docker_result" = "skipped" ]; then
-            echo "status=failure" >> "$GITHUB_OUTPUT"
-            echo "::error::Neither test nor docker-test ran — check environment_type input"
-            exit 1
-          fi
-
-          if [ "$test_result" = "failure" ] || [ "$docker_result" = "failure" ] || \
-             [ "$test_result" = "cancelled" ] || [ "$docker_result" = "cancelled" ]; then
+          if [ "$test_result" = "failure" ] || [ "$test_result" = "cancelled" ]; then
             echo "status=failure" >> "$GITHUB_OUTPUT"
             exit 1
           fi

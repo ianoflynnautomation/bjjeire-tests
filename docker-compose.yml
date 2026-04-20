@@ -7,7 +7,6 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/bjjeire/playwright:local
     ipc: host
-    network_mode: ${NETWORK_MODE:-bridge}
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -26,12 +25,17 @@ services:
     environment:
       CI: 'true'
       APP_ENV: ${APP_ENV:-docker}
-      BASE_URL: ${BASE_URL:-http://localhost:3000}
-      API_URL: ${API_URL:-http://localhost:5003}
+      BASE_URL: ${BASE_URL:-}
+      API_URL: ${API_URL:-}
       ACCEPT_INVALID_CERTS: ${ACCEPT_INVALID_CERTS:-true}
-      TEST_TAGS: ${TEST_TAGS:-}
-      PLAYWRIGHT_PROJECTS: ${PLAYWRIGHT_PROJECTS:-}
+      MONGO_URL: ${MONGO_URL:-}
+      MONGO_DB: ${MONGO_DB:-}
       TEST_USER_EMAIL: ${TEST_USER_EMAIL:-}
       TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_API_SCOPE: ${AZURE_API_SCOPE:-}
+      AZURE_AUTHORITY: ${AZURE_AUTHORITY:-}

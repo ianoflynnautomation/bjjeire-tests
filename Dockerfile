@@ -3,7 +3,7 @@
 FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 LABEL org.opencontainers.image.title="bjjeire/playwright" \
-      org.opencontainers.image.description="Playwright system test runner (Node + Chromium)" \
+      org.opencontainers.image.description="Playwright system test runner (Node + Playwright browsers)" \
       org.opencontainers.image.source="https://github.com/bjjeire/bjjeire-tests" \
       org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.58.2-noble"
 

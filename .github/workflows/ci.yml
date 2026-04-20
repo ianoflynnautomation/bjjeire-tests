@@ -37,14 +37,14 @@ jobs:
   #   needs: [lint]
   #   uses: ./.github/workflows/playwright-tests.yml
   #   with:
-  #     environment_type: external
+  #     app_env: staging
+  #     base_url: ${{ secrets.EPHEMERAL_BASE_URL }}
+  #     api_base_url: ${{ secrets.EPHEMERAL_API_URL }}
   #     shard_total: 6
-  #     playwright_projects: '["api","ui-chromium"]'
+  #     playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
   #     node_version: '22'
   #     test_repo_ref: ${{ github.sha }}
   #   secrets:
-  #     EPHEMERAL_BASE_URL: ${{ secrets.EPHEMERAL_BASE_URL }}
-  #     EPHEMERAL_API_URL: ${{ secrets.EPHEMERAL_API_URL }}
   #     EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
   #     EPHEMERAL_MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
   #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}

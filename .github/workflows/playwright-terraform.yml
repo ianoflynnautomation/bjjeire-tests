@@ -1,0 +1,210 @@
+# Reusable workflow: Terraform-provisioned Playwright tests.
+#
+# Applies Terraform in the caller's repo, resolves URL outputs, delegates test
+# execution/reporting to the generic Playwright runner, then always destroys.
+
+name: Playwright Tests (Terraform)
+
+on:
+  workflow_call:
+    inputs:
+      base_url:
+        description: 'Optional BASE_URL override. Falls back to terraform output.'
+        type: string
+        required: false
+        default: ''
+      api_base_url:
+        description: 'Optional API_URL override. Falls back to terraform output.'
+        type: string
+        required: false
+        default: ''
+      terraform_dir:
+        description: 'Path (relative to caller checkout) to Terraform root module.'
+        type: string
+        required: false
+        default: 'infra'
+      terraform_workspace:
+        description: 'Terraform workspace to use.'
+        type: string
+        required: false
+        default: 'default'
+      terraform_var_file:
+        description: 'Optional .tfvars file (relative to terraform_dir).'
+        type: string
+        required: false
+        default: ''
+      test_tags:
+        description: 'Playwright grep filter, e.g. "@smoke|@regression".'
+        type: string
+        required: false
+        default: '@smoke|@regression'
+      shard_total:
+        description: 'Number of parallel shards per project.'
+        type: number
+        required: false
+        default: 6
+      playwright_projects:
+        description: 'JSON array of Playwright project names to run.'
+        type: string
+        required: false
+        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
+      node_version:
+        description: 'Node.js version for setup-node.'
+        type: string
+        required: false
+        default: '22'
+      playwright_image:
+        description: 'Container image used by the generic runner workflow.'
+        type: string
+        required: false
+        default: 'mcr.microsoft.com/playwright:v1.58.2-noble'
+      test_repo:
+        description: 'Owner/repo holding the test code.'
+        type: string
+        required: false
+        default: ''
+      test_repo_ref:
+        description: 'Git ref of the test repo to check out.'
+        type: string
+        required: false
+        default: 'main'
+
+    secrets:
+      EPHEMERAL_MONGO_URL:
+        required: false
+      EPHEMERAL_MONGO_DB:
+        required: false
+      AZURE_TENANT_ID:
+        required: false
+      AZURE_CLIENT_ID:
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        required: false
+      AZURE_API_SCOPE:
+        required: false
+      AZURE_AUTHORITY:
+        required: false
+
+    outputs:
+      test_status:
+        description: 'success | failure — aggregated result of the matrix test job.'
+        value: ${{ jobs.e2e.outputs.test_status }}
+      failed_count:
+        description: 'Number of failed tests across all shards (0 on green).'
+        value: ${{ jobs.e2e.outputs.failed_count }}
+      report_artifact_name:
+        description: 'Name of the merged HTML report artifact.'
+        value: ${{ jobs.e2e.outputs.report_artifact_name }}
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  checks: write
+
+jobs:
+  provision-env:
+    name: Provision terraform env
+    runs-on: ubuntu-latest
+    outputs:
+      base_url: ${{ steps.urls.outputs.base_url }}
+      api_base_url: ${{ steps.urls.outputs.api_base_url }}
+    steps:
+      - name: Checkout caller repo (terraform sources)
+        uses: actions/checkout@v6
+
+      - name: Azure OIDC login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform apply
+        id: tf
+        working-directory: ${{ inputs.terraform_dir }}
+        shell: bash
+        run: |
+          terraform init -input=false
+          terraform workspace select -or-create "${{ inputs.terraform_workspace }}"
+          if [ -n "${{ inputs.terraform_var_file }}" ]; then
+            terraform apply -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
+          else
+            terraform apply -auto-approve -input=false
+          fi
+          {
+            echo "base_url=$(terraform output -raw base_url)"
+            echo "api_base_url=$(terraform output -raw api_base_url)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve URLs
+        id: urls
+        shell: bash
+        run: |
+          base="${{ inputs.base_url }}"
+          api="${{ inputs.api_base_url }}"
+          base="${base:-${{ steps.tf.outputs.base_url }}}"
+          api="${api:-${{ steps.tf.outputs.api_base_url }}}"
+          echo "base_url=${base}" >> "$GITHUB_OUTPUT"
+          echo "api_base_url=${api}" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    name: Run Playwright matrix
+    needs: [provision-env]
+    uses: ./.github/workflows/playwright-tests.yml
+    with:
+      app_env: staging
+      base_url: ${{ needs.provision-env.outputs.base_url }}
+      api_base_url: ${{ needs.provision-env.outputs.api_base_url }}
+      test_tags: ${{ inputs.test_tags }}
+      shard_total: ${{ inputs.shard_total }}
+      playwright_projects: ${{ inputs.playwright_projects }}
+      node_version: ${{ inputs.node_version }}
+      playwright_image: ${{ inputs.playwright_image }}
+      test_repo: ${{ inputs.test_repo }}
+      test_repo_ref: ${{ inputs.test_repo_ref }}
+    secrets:
+      EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
+      EPHEMERAL_MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
+      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+
+  teardown:
+    name: Teardown terraform env
+    runs-on: ubuntu-latest
+    needs: [provision-env, e2e]
+    if: always() && needs.provision-env.result == 'success'
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@v6
+
+      - name: Azure OIDC login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform destroy
+        working-directory: ${{ inputs.terraform_dir }}
+        shell: bash
+        run: |
+          terraform init -input=false
+          terraform workspace select "${{ inputs.terraform_workspace }}"
+          if [ -n "${{ inputs.terraform_var_file }}" ]; then
+            terraform destroy -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
+          else
+            terraform destroy -auto-approve -input=false
+          fi
