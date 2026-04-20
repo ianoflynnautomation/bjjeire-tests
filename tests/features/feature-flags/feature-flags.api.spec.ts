@@ -1,5 +1,5 @@
-import { test } from '@fixtures/base';
-import { expectApi, featureFlagMapSchema } from '@lib/api';
+import { test } from '@core/fixtures/app-fixtures';
+import { expectApi, featureFlagMapSchema } from '@shared/api';
 
 test.describe('Feature flags API @feature-flags @smoke @api', () => {
   test('GET /api/FeatureFlag returns a { [name]: bool } map @smoke', async ({ apiClient }) => {

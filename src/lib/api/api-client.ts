@@ -26,13 +26,17 @@ export function createApiClient(ctx: APIRequestContext): ApiClient {
 
   return {
     request: ctx,
-    get: (path, query) => ctx.get(path, { params: toParams(query) }),
+    get: (path, query) => {
+      const params = toParams(query);
+      return ctx.get(path, params ? { params } : {});
+    },
     post: (path, body) => ctx.post(path, body === undefined ? {} : { data: body }),
     put: (path, body) => ctx.put(path, body === undefined ? {} : { data: body }),
     patch: (path, body) => ctx.patch(path, body === undefined ? {} : { data: body }),
     delete: path => ctx.delete(path),
     async getJson<T>(path: string, schema: ZodType<T>, query?: QueryParams): Promise<T> {
-      const response = await ctx.get(path, { params: toParams(query) });
+      const params = toParams(query);
+      const response = await ctx.get(path, params ? { params } : {});
       await verifyStatusCode(response, 200);
       return verifyResponseBody(response, schema);
     },

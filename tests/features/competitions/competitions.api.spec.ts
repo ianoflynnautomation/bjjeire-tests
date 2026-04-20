@@ -1,5 +1,5 @@
-import { test } from '@fixtures/base';
-import { competitionSchema, expectApi, pagedResponseSchema } from '@lib/api';
+import { test } from '@core/fixtures/app-fixtures';
+import { competitionSchema, expectApi, pagedResponseSchema } from '@shared/api';
 
 test.describe('Competitions API @competitions @api', () => {
   test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke', async ({ apiClient }) => {

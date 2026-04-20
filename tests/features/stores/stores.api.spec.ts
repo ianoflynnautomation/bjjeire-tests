@@ -1,5 +1,5 @@
-import { test } from '@fixtures/base';
-import { expectApi, pagedResponseSchema, storeSchema } from '@lib/api';
+import { test } from '@core/fixtures/app-fixtures';
+import { expectApi, pagedResponseSchema, storeSchema } from '@shared/api';
 
 test.describe('Stores API @stores @api', () => {
   test('GET /api/Store returns PagedResponse<StoreDto> @smoke', async ({ apiClient }) => {

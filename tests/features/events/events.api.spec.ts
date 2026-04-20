@@ -1,5 +1,5 @@
-import { test } from '@fixtures/bjjeire';
-import { bjjEventSchema, expectApi, pagedResponseSchema } from '@lib/api';
+import { test } from '@core/fixtures/app-fixtures';
+import { bjjEventSchema, expectApi, pagedResponseSchema } from '@shared/api';
 
 test.describe('Events API @events @api', () => {
   test.beforeEach(({ featureFlags }) => {

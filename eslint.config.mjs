@@ -58,6 +58,7 @@ export default [
       ],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
 
       'no-console': 'warn',
       eqeqeq: ['error', 'always'],

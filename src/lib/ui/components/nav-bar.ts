@@ -1,13 +1,6 @@
-import { expect, type Locator, type Page } from '@playwright/test';
-
-const NAV_TEST_IDS = {
-  root: 'navigation',
-  logoLink: 'navigation-logo-link',
-  desktopLink: 'navigation-desktop-link',
-  mobileToggle: 'navigation-mobile-toggle',
-  mobilePanel: 'navigation-mobile-panel',
-  mobileLink: 'navigation-mobile-link',
-} as const;
+import type { Locator, Page } from '@playwright/test';
+import { createScreenActions } from '@lib/ui/actions';
+import { createScreenAssertions } from '@lib/ui/assertions';
 
 export type NavBar = Readonly<{
   root: Locator;
@@ -18,21 +11,24 @@ export type NavBar = Readonly<{
 }>;
 
 export function createNavBar(page: Page): NavBar {
-  const root = page.getByTestId(NAV_TEST_IDS.root);
-  const desktopLinks = page.getByTestId(NAV_TEST_IDS.desktopLink);
+  const actions = createScreenActions(page);
+  const assertions = createScreenAssertions(page);
+  const root = page.getByRole('navigation');
+  const desktopLinks = root.getByRole('link');
+  const firstLink = root.getByRole('link').first();
 
   return {
     root,
     desktopLinks,
     async verifyIsLoaded() {
-      await expect(root).toBeVisible();
-      await expect(page.getByTestId(NAV_TEST_IDS.logoLink)).toBeVisible();
+      await assertions.expectElementVisible(root);
+      await assertions.expectElementVisible(firstLink);
     },
     async goTo(label) {
-      await desktopLinks.filter({ hasText: label }).first().click();
+      await actions.click(root.getByRole('link', { name: label, exact: true }).first());
     },
     async expectLinkVisible(label) {
-      await expect(desktopLinks.filter({ hasText: label }).first()).toBeVisible();
+      await assertions.expectElementVisible(root.getByRole('link', { name: label, exact: true }).first());
     },
   };
 }

@@ -12,6 +12,19 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@core/*": ["src/core/*"],
+      "@core/config": ["src/core/config"],
+      "@core/fixtures": ["src/core/fixtures"],
+      "@core/types": ["src/core/types"],
+      "@shared/*": ["src/shared/*"],
+      "@shared/api": ["src/shared/api"],
+      "@shared/assertions": ["src/shared/assertions"],
+      "@shared/auth": ["src/shared/auth"],
+      "@shared/config": ["src/shared/config"],
+      "@shared/db": ["src/shared/db"],
+      "@shared/factories": ["src/shared/factories"],
+      "@shared/ui": ["src/shared/ui"],
+      "@features/*": ["src/features/*"],
       "@lib/*": ["src/lib/*"],
       "@lib/api": ["src/lib/api"],
       "@lib/auth": ["src/lib/auth"],
@@ -21,14 +34,15 @@
       "@lib/factories": ["src/lib/factories"],
       "@lib/config": ["src/lib/config"],
       "@lib/types": ["src/lib/types"],
-      "@fixtures/*": ["src/fixtures/*"],
-      "@features/*": ["tests/features/*"]
+      "@fixtures/*": ["src/fixtures/*"]
     },
     "strict": true,
     "strictNullChecks": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -38,6 +52,15 @@
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "playwright.config.ts", "global-setup.ts", "global-teardown.ts"],
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "playwright.config.ts",
+    "playwright.base.config.ts",
+    "playwright.ui.config.ts",
+    "playwright.api.config.ts",
+    "global-setup.ts",
+    "global-teardown.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

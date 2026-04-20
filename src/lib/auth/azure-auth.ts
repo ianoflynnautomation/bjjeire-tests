@@ -68,7 +68,7 @@ export type StorageStateOptions = {
 export async function writeAzureStorageState(options: StorageStateOptions): Promise<string> {
   const origin = options.origin ?? env.baseUrl;
   const key = options.tokenStorageKey ?? 'access_token';
-  const token = await acquireAzureToken({ role: options.role });
+  const token = await acquireAzureToken(options.role ? { role: options.role } : {});
 
   const ctx = await request.newContext({
     baseURL: env.baseUrl,

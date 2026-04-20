@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { gotoURL } from '@lib/ui/actions';
+import { createScreenActions } from '@lib/ui/actions';
+import { createScreenAssertions } from '@lib/ui/assertions';
 import { TIMEOUTS } from '@lib/config';
 
 function routeToLabel(route: string): string {
@@ -26,17 +27,19 @@ export type ListView = Readonly<{
   navigate: () => Promise<void>;
   verifyIsLoaded: () => Promise<void>;
   verifyListSettled: () => Promise<void>;
-  expectAtLeastOneResult: () => Promise<void>;
-  expectNoResults: () => Promise<void>;
   searchFor: (term: string) => Promise<void>;
   clearSearch: () => Promise<void>;
   expectSearchValue: (term: string) => Promise<void>;
-  expectHeaderVisible: () => Promise<void>;
 }>;
 
 export function createListView(page: Page, ids: ListViewIds): ListView {
+  const actions = createScreenActions(page);
+  const assertions = createScreenAssertions(page);
   const items = page.getByTestId(ids.listItem);
   const searchInput = page.getByTestId(ids.search).getByRole('searchbox');
+  const header = page.getByTestId(ids.header);
+  const headerTitle = page.getByTestId(ids.headerTitle);
+  const search = page.getByTestId(ids.search);
 
   const api: ListView = {
     ids,
@@ -50,7 +53,7 @@ export function createListView(page: Page, ids: ListViewIds): ListView {
         })
         .catch(() => null);
 
-      await gotoURL(page, ids.route);
+      await actions.navigate(ids.route);
       await flagsReady;
 
       if (new URL(page.url()).pathname !== ids.route) {
@@ -61,9 +64,9 @@ export function createListView(page: Page, ids: ListViewIds): ListView {
     },
 
     async verifyIsLoaded() {
-      await expect(page.getByTestId(ids.header)).toBeVisible();
-      await expect(page.getByTestId(ids.headerTitle)).toBeVisible();
-      await expect(page.getByTestId(ids.search)).toBeVisible();
+      await assertions.expectElementVisible(header);
+      await assertions.expectElementVisible(headerTitle);
+      await assertions.expectElementVisible(search);
     },
 
     async verifyListSettled() {
@@ -79,37 +82,20 @@ export function createListView(page: Page, ids: ListViewIds): ListView {
         )
         .toBe(true);
       if ((await items.count()) > 0) {
-        await expect(items.first()).toBeVisible();
+        await assertions.expectElementVisible(items.first());
       }
-    },
-
-    async expectAtLeastOneResult() {
-      await expect(items.first()).toBeVisible();
-      expect(await items.count()).toBeGreaterThan(0);
-    },
-
-    async expectNoResults() {
-      if (!ids.listEmpty) {
-        await expect(items).toHaveCount(0);
-        return;
-      }
-      await expect(page.getByTestId(ids.listEmpty)).toBeVisible();
     },
 
     async searchFor(term) {
-      await searchInput.fill(term);
+      await actions.fill(searchInput, term);
     },
 
     async clearSearch() {
-      await searchInput.fill('');
+      await actions.clear(searchInput);
     },
 
     async expectSearchValue(term) {
-      await expect(searchInput).toHaveValue(term);
-    },
-
-    async expectHeaderVisible() {
-      await expect(page.getByTestId(ids.header)).toBeVisible();
+      await assertions.expectToHaveValue(searchInput, term);
     },
   };
 
