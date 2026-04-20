@@ -1,4 +1,4 @@
-name: E2E (docker)
+name: Smoke Tests (Docker Compose)
 
 on:
   pull_request:
@@ -12,20 +12,21 @@ permissions:
   checks: write
 
 jobs:
-  e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-tests.yml@v1
+  smoke_tests:
+    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-docker.yml@v1
     with:
-      environment_type: docker
-      compose_file: docker-compose.yml
-      compose_health_url: http://localhost:5003/healthz
+      compose_files: |
+        docker-compose.yml
+        docker-compose.override.local.yml
+        docker-compose.override.ci.yml
+      compose_pre_up_script: .github/scripts/smoke-pre-up.sh
       seed_data: true
+      compose_health_url: http://localhost:5003/health
       base_url: http://localhost:3000
       api_base_url: http://localhost:5003
-      test_tags: '@smoke|@regression'
-      shard_total: 4
-      playwright_projects: '["api","ui-chromium"]'
+      test_tags: '@smoke'
+      playwright_projects: '["api","chromium-desktop"]'
       playwright_image: mcr.microsoft.com/playwright:v1.58.2-noble
       test_repo: bjjeire/bjjeire-tests
       test_repo_ref: v1
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    secrets: inherit

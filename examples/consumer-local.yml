@@ -1,14 +1,7 @@
-name: E2E (terraform)
+name: E2E (local)
 
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
-    inputs:
-      workspace:
-        description: 'Terraform workspace (defaults to PR ref).'
-        required: false
-        default: ''
 
 permissions:
   contents: read
@@ -18,11 +11,11 @@ permissions:
 
 jobs:
   e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-terraform.yml@v1
+    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-tests.yml@v1
     with:
-      terraform_dir: infra
-      terraform_workspace: ${{ inputs.workspace || github.head_ref || github.ref_name }}
-      terraform_var_file: pr.tfvars
+      app_env: local
+      base_url: http://localhost:3000
+      api_base_url: http://localhost:5000
       test_tags: '@smoke|@regression'
       shard_total: 6
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
@@ -32,6 +25,6 @@ jobs:
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
       AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
