@@ -23,7 +23,7 @@ jobs:
       terraform_dir: infra
       terraform_workspace: ${{ inputs.workspace || github.head_ref || github.ref_name }}
       terraform_var_file: pr.tfvars
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       shard_total: 6
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
       playwright_image: mcr.microsoft.com/playwright:v1.58.2-noble

@@ -16,7 +16,7 @@ jobs:
       app_env: local
       base_url: http://localhost:3000
       api_base_url: http://localhost:5000
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       shard_total: 6
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
       playwright_image: mcr.microsoft.com/playwright:v1.58.2-noble

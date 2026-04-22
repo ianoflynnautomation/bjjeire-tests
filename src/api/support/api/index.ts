@@ -1,4 +1,3 @@
-export * from './api-client';
 export * from './assertions';
 export * from './common-contracts';
 export * from './http';

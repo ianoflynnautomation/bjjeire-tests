@@ -2,8 +2,8 @@ import { test } from '@api/fixtures/app-fixtures';
 import { getGyms, type GymDto } from '@api/features/gyms/gyms.api';
 import { expectApi, problemDetailsSchema } from '@api/support/api';
 
-test.describe('Gyms API @gyms @api', () => {
-  test('GET /api/Gym returns PagedResponse<GymDto> @smoke', async ({ request }) => {
+test.describe('Gyms API Acceptance @gyms @api', () => {
+  test('GET /api/Gym returns PagedResponse<GymDto> @smoke @acceptance', async ({ request }) => {
     const response = await getGyms(request, { page: 1, pageSize: 25 });
 
     test.expect(response.pagination.currentPage).toBe(1);
@@ -19,7 +19,7 @@ test.describe('Gyms API @gyms @api', () => {
     }
   });
 
-  test('write operation in read-only mode returns RFC 7807 ProblemDetails @regression', async ({ request }) => {
+  test('write operation in read-only mode returns RFC 7807 ProblemDetails @acceptance', async ({ request }) => {
     const response = await request.post('/api/gym', { data: {}, failOnStatusCode: false });
     const problem = await expectApi(response).status(405).contentType('application/json').body(problemDetailsSchema);
     test.expect(problem.status).toBe(405);

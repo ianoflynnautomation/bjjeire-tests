@@ -11,11 +11,6 @@ export function resolveProfile(): Profile {
   throw new Error(`APP_ENV must be one of ${PROFILES.join(', ')} — got '${raw}'.`);
 }
 
-/**
- * Load env files in precedence order (first wins, dotenv does not override).
- * Order:  .env.<profile>.local → .env.<profile> → .env.local → .env
- * This mirrors Vite/Next conventions so the .local variants stay gitignored.
- */
 export function loadEnvForProfile(profile: Profile = resolveProfile(), cwd: string = process.cwd()): void {
   const files = [`.env.${profile}.local`, `.env.${profile}`, `.env.local`, `.env`];
   for (const file of files) {

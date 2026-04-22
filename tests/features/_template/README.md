@@ -10,6 +10,6 @@ Layout:
 
 For this template specifically:
 
-- keep `_template.ui.spec.ts` and `_template.api.spec.ts` in `tests/features/_template`
+- keep `_template.ui.acceptance.spec.ts` and `_template.api.acceptance.spec.ts` in `tests/features/_template`
 - keep `_template.screen.ts` and `_template.fixture.ts` in `src/ui/features/_template`
 - keep `_template.factory.ts` in `src/api/features/_template`

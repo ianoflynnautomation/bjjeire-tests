@@ -5,18 +5,18 @@ function partialName(name: string): string {
   return name.slice(0, Math.max(3, Math.min(12, name.length)));
 }
 
-test.describe('Events @events @desktop', () => {
+test.describe('Events UI Acceptance @events @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
     test.skip(!featureFlags.BjjEvents, "feature 'BjjEvents' disabled");
   });
 
-  test('loads the events list @smoke @mobile', async ({ eventsScreen }) => {
+  test('loads the events list @smoke @acceptance @mobile', async ({ eventsScreen }) => {
     await eventsScreen.navigate();
     await eventsScreen.verifyIsLoaded();
     await eventsScreen.expectHeaderVisible();
   });
 
-  test('search filters the rendered events list @regression', async ({ eventsScreen }) => {
+  test('search filters the rendered events list @acceptance', async ({ eventsScreen }) => {
     await eventsScreen.navigate();
     await eventsScreen.searchFor('zzz-no-match-xyz');
     await eventsScreen.expectNoResults();
@@ -24,7 +24,7 @@ test.describe('Events @events @desktop', () => {
     await eventsScreen.expectAtLeastOneResult();
   });
 
-  test('search by event name shows that event only @regression', async ({ eventsScreen }) => {
+  test('search by event name shows that event only @acceptance', async ({ eventsScreen }) => {
     const EXPECTED_BJJEVENT_CARD: BjjEventCard = {
       name: 'ADCC Irish Cup Championship 2026',
       type: '',
@@ -39,7 +39,7 @@ test.describe('Events @events @desktop', () => {
     await eventsScreen.expectCardData(EXPECTED_BJJEVENT_CARD.name, EXPECTED_BJJEVENT_CARD);
   });
 
-  test('search by partial event name shows that event only @regression', async ({ eventsScreen }) => {
+  test('search by partial event name shows that event only @acceptance', async ({ eventsScreen }) => {
     const EXPECTED_BJJEVENT_CARD: BjjEventCard = {
       name: 'ADCC Irish Cup Championship 2026',
       type: '',

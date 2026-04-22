@@ -5,18 +5,18 @@ function partialName(name: string): string {
   return name.slice(0, Math.max(3, Math.min(12, name.length)));
 }
 
-test.describe('Stores @stores @desktop', () => {
+test.describe('Stores UI Acceptance @stores @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
     test.skip(!featureFlags.Stores, "feature 'Stores' disabled");
   });
 
-  test('loads the stores list @smoke @mobile', async ({ storesScreen }) => {
+  test('loads the stores list @smoke @acceptance @mobile', async ({ storesScreen }) => {
     await storesScreen.navigate();
     await storesScreen.verifyIsLoaded();
     await storesScreen.expectHeaderVisible();
   });
 
-  test('search with no match shows the empty state @regression', async ({ storesScreen }) => {
+  test('search with no match shows the empty state @acceptance', async ({ storesScreen }) => {
     await storesScreen.navigate();
     await storesScreen.searchFor('zzz-no-match-xyz');
     await storesScreen.expectNoResults();
@@ -24,7 +24,7 @@ test.describe('Stores @stores @desktop', () => {
     await storesScreen.expectAtLeastOneResult();
   });
 
-  test('search by store name shows that store only @regression', async ({ storesScreen }) => {
+  test('search by store name shows that store only @acceptance', async ({ storesScreen }) => {
     const EXPECTED_STORE_CARD: StoreCard = {
       name: 'BJJ Cork',
       description: '',
@@ -35,15 +35,14 @@ test.describe('Stores @stores @desktop', () => {
     await storesScreen.expectSearchValue(EXPECTED_STORE_CARD.name);
   });
 
-  test('search by partial store name shows that store only @regression', async ({ storesScreen }) => {
-    await storesScreen.navigate();
-
+  test('search by partial store name shows that store only @acceptance', async ({ storesScreen }) => {
     const EXPECTED_STORE_CARD: StoreCard = {
       name: 'BJJ Cork',
       description: '',
     };
     const expectedPartialName = partialName(EXPECTED_STORE_CARD.name);
 
+    await storesScreen.navigate();
     await storesScreen.navigate();
     await storesScreen.searchFor(expectedPartialName);
     await storesScreen.expectSearchValue(expectedPartialName);

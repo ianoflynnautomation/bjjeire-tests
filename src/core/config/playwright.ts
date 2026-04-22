@@ -61,7 +61,7 @@ export function createUiProjects(): Project[] {
   return [
     {
       name: 'chromium-desktop',
-      testMatch: /.*\.ui\.spec\.ts$/,
+      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
@@ -69,7 +69,7 @@ export function createUiProjects(): Project[] {
     },
     {
       name: 'firefox-desktop',
-      testMatch: /.*\.ui\.spec\.ts$/,
+      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1440, height: 900 },
@@ -77,7 +77,7 @@ export function createUiProjects(): Project[] {
     },
     {
       name: 'webkit-desktop',
-      testMatch: /.*\.ui\.spec\.ts$/,
+      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1440, height: 900 },
@@ -85,8 +85,8 @@ export function createUiProjects(): Project[] {
     },
     {
       name: 'chromium-wide',
-      testMatch: /.*\.ui\.spec\.ts$/,
-      grep: /@desktop|@smoke|@regression/,
+      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
+      grep: /@desktop|@smoke|@acceptance/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1728, height: 1117 },
@@ -115,7 +115,7 @@ export function createApiProjects(): Project[] {
   return [
     {
       name: 'api',
-      testMatch: /.*\.api\.spec\.ts$/,
+      testMatch: /.*\.api\.acceptance\.spec\.ts$/,
       use: {
         baseURL: env.apiUrl,
         ignoreHTTPSErrors: env.acceptInvalidCerts,

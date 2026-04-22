@@ -64,7 +64,7 @@ This repo ships reusable GitHub Actions workflows that other repos (app, infra, 
 | `app_env`             | `local`                                                                                                 | `local` \| `staging` \| `docker`                   |
 | `base_url`            | `''`                                                                                                    | Target app URL for already-available environments. |
 | `api_base_url`        | `''`                                                                                                    | Target API URL for already-available environments. |
-| `test_tags`           | `'@smoke\|@regression'`                                                                                 | Playwright `--grep`, e.g. `@smoke\|@regression`.   |
+| `test_tags`           | `'@smoke\|@acceptance'`                                                                                 | Playwright `--grep`, e.g. `@smoke\|@acceptance`.   |
 | `shard_total`         | `6`                                                                                                     | Parallel shards per project.                       |
 | `playwright_projects` | `'["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'` | JSON array of project names.                       |
 | `node_version`        | `22`                                                                                                    |                                                    |
@@ -106,7 +106,7 @@ jobs:
       compose_health_url: http://localhost:5003/healthz
       base_url: http://localhost:3000
       api_base_url: http://localhost:5003
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       shard_total: 4
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
       test_repo: bjjeire/bjjeire-tests
@@ -127,7 +127,7 @@ jobs:
       terraform_dir: infra
       terraform_workspace: ${{ github.head_ref || github.ref_name }}
       terraform_var_file: pr.tfvars
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -149,7 +149,7 @@ jobs:
       app_env: local
       base_url: http://localhost:3000
       api_base_url: http://localhost:5000
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -169,7 +169,7 @@ jobs:
       app_env: staging
       base_url: ${{ secrets.EPHEMERAL_BASE_URL }}
       api_base_url: ${{ secrets.EPHEMERAL_API_URL }}
-      test_tags: '@smoke|@regression'
+      test_tags: '@smoke|@acceptance'
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
     secrets:
       EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}

@@ -3,21 +3,12 @@ import type { ZodType } from 'zod';
 
 export type HeaderMatcher = string | RegExp;
 
-export async function verifyStatusCode(response: APIResponse, expected: number): Promise<void> {
-  const actual = response.status();
-  if (actual !== expected) {
-    const body = await safeText(response);
-    expect.soft(actual, `Expected status ${expected} but got ${actual}. Body: ${body}`).toBe(expected);
-    expect(actual).toBe(expected);
-  }
+export function verifyStatusCode(response: APIResponse, expected: number): void {
+  expect(response.status()).toBe(expected);
 }
 
-export async function verifyStatusCodeIn(response: APIResponse, expected: readonly number[]): Promise<void> {
-  const actual = response.status();
-  if (!expected.includes(actual)) {
-    const body = await safeText(response);
-    throw new Error(`Expected status in [${expected.join(', ')}] but got ${actual}. Body: ${body}`);
-  }
+export function verifyStatusCodeIn(response: APIResponse, expected: readonly number[]): void {
+  expect(expected).toContain(response.status());
 }
 
 export function verifyResponseHeader(response: APIResponse, name: string, expected: HeaderMatcher): void {
@@ -64,11 +55,11 @@ export type ApiExpect = {
 function createApiExpect(response: APIResponse): ApiExpect {
   const chain: ApiExpect = {
     status(expected) {
-      void verifyStatusCode(response, expected);
+      verifyStatusCode(response, expected);
       return chain;
     },
     statusIn(expected) {
-      void verifyStatusCodeIn(response, expected);
+      verifyStatusCodeIn(response, expected);
       return chain;
     },
     header(name, matcher) {
@@ -87,12 +78,4 @@ function createApiExpect(response: APIResponse): ApiExpect {
     },
   };
   return chain;
-}
-
-async function safeText(response: APIResponse): Promise<string> {
-  try {
-    return (await response.text()).slice(0, 500);
-  } catch {
-    return '<no body>';
-  }
 }

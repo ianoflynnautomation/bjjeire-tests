@@ -1,7 +1,7 @@
 import { test } from '@ui/features/_template/_template.fixture';
 
-test.describe('Template @template @desktop', () => {
-  test('loads the feature screen @smoke', async ({ templateScreen }) => {
+test.describe('Template UI Acceptance @template @ui @desktop', () => {
+  test('loads the feature screen @smoke @acceptance', async ({ templateScreen }) => {
     await test.step('Open the feature route', async () => {
       await templateScreen.navigate();
     });
