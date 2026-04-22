@@ -32,8 +32,8 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     workers: IS_CI ? ciWorkers : localWorkers,
     timeout: TIMEOUTS.test,
     reporter: IS_CI ? ciReporters : localReporters,
-    globalSetup: './global-setup.ts',
-    globalTeardown: './global-teardown.ts',
+    // globalSetup: './global-setup.ts',
+    // globalTeardown: './global-teardown.ts',
     expect: {
       timeout: TIMEOUTS.expect,
     },

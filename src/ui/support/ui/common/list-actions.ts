@@ -31,43 +31,24 @@ export async function navigateToRoute(
   await page.waitForURL(new RegExp(`${route}(?:[/?#]|$)`));
 }
 
-export async function waitForSearchReady(input: Locator): Promise<void> {
+async function ensureSearchInputReady(input: Locator): Promise<void> {
   await expect(input).toBeVisible();
   await expect(input).toBeEditable();
 }
 
 export async function search(input: Locator, value: string): Promise<void> {
-  await waitForSearchReady(input);
-  await input.click();
+  await ensureSearchInputReady(input);
   await input.fill(value);
 }
 
 export async function clearSearch(input: Locator, clearButton?: Locator): Promise<void> {
-  await waitForSearchReady(input);
+  await ensureSearchInputReady(input);
 
   if (clearButton && (await clearButton.isVisible().catch(() => false))) {
     await clearButton.click();
-    return;
+  } else {
+    await input.fill('');
   }
 
-  await input.fill('');
-}
-
-export async function filterBy(select: Locator, value: string): Promise<void> {
-  await expect(select).toBeVisible();
-  await select.selectOption({ label: value });
-}
-
-export async function resetFilter(select: Locator): Promise<void> {
-  await expect(select).toBeVisible();
-  await select.selectOption({ index: 0 });
-}
-
-export async function clickRow(row: Locator): Promise<void> {
-  await expect(row).toBeVisible();
-  await row.click();
-}
-
-export async function getRowCount(rows: Locator): Promise<number> {
-  return rows.count();
+  await expect(input).toHaveValue('');
 }
