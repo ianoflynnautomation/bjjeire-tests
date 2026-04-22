@@ -1,21 +1,15 @@
 import type { StartedMongo } from '../db/testcontainers';
 
-type Lifecycle = {
-  mongo: StartedMongo | undefined;
-};
-
-const state: Lifecycle = {
-  mongo: undefined,
-};
+let startedMongo: StartedMongo | undefined;
 
 export function setStartedMongo(mongo: StartedMongo): void {
-  state.mongo = mongo;
+  startedMongo = mongo;
 }
 
 export function getStartedMongo(): StartedMongo | undefined {
-  return state.mongo;
+  return startedMongo;
 }
 
 export function clearLifecycle(): void {
-  state.mongo = undefined;
+  startedMongo = undefined;
 }

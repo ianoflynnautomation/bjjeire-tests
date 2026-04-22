@@ -15,5 +15,3 @@ export const TIMEOUTS = {
   navigation: 30_000,
   test: 2 * 60_000,
 } as const;
-
-export type TimeoutKey = keyof typeof TIMEOUTS;

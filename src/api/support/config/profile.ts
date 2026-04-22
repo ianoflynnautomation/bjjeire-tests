@@ -1,5 +1,5 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import dotenv from 'dotenv';
 
 export const PROFILES = ['local', 'docker', 'testcontainers', 'staging', 'production'] as const;
@@ -14,11 +14,9 @@ export function resolveProfile(): Profile {
 export function loadEnvForProfile(profile: Profile = resolveProfile(), cwd: string = process.cwd()): void {
   const files = [`.env.${profile}.local`, `.env.${profile}`, `.env.local`, `.env`];
   for (const file of files) {
-    const fullPath = path.resolve(cwd, file);
-    if (fs.existsSync(fullPath)) dotenv.config({ path: fullPath });
+    const fullPath = resolve(cwd, file);
+    if (existsSync(fullPath)) {
+      dotenv.config({ path: fullPath });
+    }
   }
-}
-
-export function isContainerProfile(profile: Profile = resolveProfile()): boolean {
-  return profile === 'testcontainers';
 }
