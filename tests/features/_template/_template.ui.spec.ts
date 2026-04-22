@@ -1,4 +1,4 @@
-import { test } from '@features/_template/_template.fixture';
+import { test } from '@ui/features/_template/_template.fixture';
 
 test.describe('Template @template @desktop', () => {
   test('loads the feature screen @smoke', async ({ templateScreen }) => {

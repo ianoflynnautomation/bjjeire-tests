@@ -1,6 +1,6 @@
 import { defineConfig, devices, type PlaywrightTestConfig, type Project } from '@playwright/test';
-import { env } from '@shared/config';
-import { TIMEOUTS } from '../../lib/config/timeouts';
+import { env } from '@api/support/config';
+import { TIMEOUTS } from '@api/support/config';
 
 const IS_CI = env.isCI;
 

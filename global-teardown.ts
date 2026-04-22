@@ -1,4 +1,4 @@
-import { clearLifecycle, getStartedMongo } from './src/lib/config/lifecycle';
+import { clearLifecycle, getStartedMongo } from './src/api/support/config/lifecycle';
 
 export default async (): Promise<void> => {
   const mongo = getStartedMongo();

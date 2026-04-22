@@ -1,15 +1,19 @@
-import { test } from '@core/fixtures/app-fixtures';
-import { competitionSchema, expectApi, pagedResponseSchema } from '@shared/api';
+import { test } from '@api/fixtures/app-fixtures';
+import { getCompetitions, type CompetitionDto } from '@api/features/competitions/competitions.api';
 
 test.describe('Competitions API @competitions @api', () => {
-  test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke', async ({ apiClient }) => {
-    const response = await apiClient.get('/api/competition', { page: 1, pageSize: 25 });
-    const body = await expectApi(response)
-      .status(200)
-      .contentType('application/json')
-      .body(pagedResponseSchema(competitionSchema));
+  test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke', async ({ request }) => {
+    const response = await getCompetitions(request, { page: 1, pageSize: 25 });
 
-    test.expect(body.pagination.currentPage).toBe(1);
-    test.expect(body.data.length).toBeLessThanOrEqual(25);
+    test.expect(response.pagination.currentPage).toBe(1);
+    test.expect(response.pagination.pageSize).toBe(25);
+    test.expect(response.data.length).toBeLessThanOrEqual(25);
+
+    for (const competition of response.data) {
+      const typedCompetition: CompetitionDto = competition;
+      test.expect(typedCompetition.name).toBeTruthy();
+      test.expect(Array.isArray(typedCompetition.tags)).toBeTruthy();
+      test.expect(typeof typedCompetition.isActive).toBe('boolean');
+    }
   });
 });

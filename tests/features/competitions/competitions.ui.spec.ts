@@ -1,36 +1,55 @@
-import { test } from '@core/fixtures';
+import { test } from '@ui/fixtures';
+import type { CompetitionCard } from '@ui/features/competitions/competition-card.screen';
 
 test.describe('Competitions @competitions @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
     test.skip(!featureFlags.Competitions, "feature 'Competitions' disabled");
   });
 
-  test('loads the competitions list and shows header + search @smoke @mobile', async ({ competitionsScreen }) => {
-    await test.step('Open the competitions route', async () => {
-      await competitionsScreen.navigate();
-      await competitionsScreen.verifyIsLoaded();
-      await competitionsScreen.verifyListSettled();
-    });
-
-    await test.step('Verify the screen shell is present', async () => {
-      await competitionsScreen.expectHeaderVisible();
-    });
+  test('loads the competitions list @smoke @mobile', async ({ competitionsScreen }) => {
+    await competitionsScreen.navigate();
+    await competitionsScreen.verifyIsLoaded();
+    await competitionsScreen.expectHeaderVisible();
   });
 
-  test('search filters the rendered competitions list @regression', async ({ competitionsScreen }) => {
-    await test.step('Open the competitions list', async () => {
-      await competitionsScreen.navigate();
-      await competitionsScreen.verifyListSettled();
-    });
+  test('No results message should display when user search for competition not in the list @regression', async ({
+    competitionsScreen,
+  }) => {
+    await competitionsScreen.navigate();
+    await competitionsScreen.searchFor('ADCC london');
+    await competitionsScreen.expectNoResults();
+    await competitionsScreen.clearSearch();
+    await competitionsScreen.expectAtLeastOneResult();
+  });
 
-    await test.step('Apply a no-match search term', async () => {
-      await competitionsScreen.searchFor('zzz-no-match-xyz');
-      await competitionsScreen.expectNoResults();
-    });
+  test('Search filter should display competitions by name @regression', async ({ competitionsScreen }) => {
+    const EXPECTED_COMPETITION_CARD: CompetitionCard = {
+      name: 'ADCC Irish Cup Championship 2026',
+      organisation: '',
+      date: '',
+      description: '',
+      tags: [],
+    };
 
-    await test.step('Clear the search and recover results', async () => {
-      await competitionsScreen.clearSearch();
-      await competitionsScreen.expectAtLeastOneResult();
-    });
+    await competitionsScreen.navigate();
+    await competitionsScreen.searchFor(EXPECTED_COMPETITION_CARD.name!);
+    await competitionsScreen.expectSearchValue(EXPECTED_COMPETITION_CARD.name!);
+    await competitionsScreen.expectCardData(EXPECTED_COMPETITION_CARD.name, EXPECTED_COMPETITION_CARD);
+  });
+
+  test('Search filter should display competitions by partial name @regression', async ({ competitionsScreen }) => {
+    const EXPECTED_COMPETITION_CARD: CompetitionCard = {
+      name: 'ADCC Irish Cup Championship 2026',
+      organisation: '',
+      date: '',
+      description: '',
+      tags: [],
+    };
+    const EXPECTED_COMPETITION_PARTIAL_NAME = 'ADCC Irish Cup Champi';
+
+    await competitionsScreen.navigate();
+    await competitionsScreen.searchFor(EXPECTED_COMPETITION_PARTIAL_NAME);
+    await competitionsScreen.expectSearchValue(EXPECTED_COMPETITION_PARTIAL_NAME);
+    await competitionsScreen.expectCardData(EXPECTED_COMPETITION_CARD.name, EXPECTED_COMPETITION_CARD);
   });
 });

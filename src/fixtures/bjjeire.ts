@@ -1,1 +1,1 @@
-export { test, expect } from '@core/fixtures';
+export { test, expect } from '@ui/fixtures';

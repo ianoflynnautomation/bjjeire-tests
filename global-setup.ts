@@ -1,6 +1,6 @@
-import { env } from './src/lib/config/env';
-import { setStartedMongo } from './src/lib/config/lifecycle';
-import { startMongoContainer } from './src/lib/db/testcontainers';
+import { env } from './src/api/support/config/env';
+import { setStartedMongo } from './src/api/support/config/lifecycle';
+import { startMongoContainer } from './src/api/support/db/testcontainers';
 
 export default async (): Promise<void> => {
   console.log(`[global-setup] profile=${env.profile} baseUrl=${env.baseUrl} apiUrl=${env.apiUrl}`);

@@ -1,19 +1,24 @@
-import { test } from '@core/fixtures/app-fixtures';
-import { bjjEventSchema, expectApi, pagedResponseSchema } from '@shared/api';
+import { test } from '@api/fixtures/app-fixtures';
+import { getBjjEvents, type BjjEventDto } from '@api/features/events/events.api';
 
 test.describe('Events API @events @api', () => {
   test.beforeEach(({ featureFlags }) => {
     test.skip(!featureFlags.BjjEvents, "feature 'BjjEvents' disabled");
   });
 
-  test('GET /api/BjjEvent returns PagedResponse<BjjEventDto> @smoke', async ({ apiClient }) => {
-    const response = await apiClient.get('/api/bjjevent', { page: 1, pageSize: 10 });
-    const body = await expectApi(response)
-      .status(200)
-      .contentType('application/json')
-      .body(pagedResponseSchema(bjjEventSchema));
+  test('GET /api/BjjEvent returns PagedResponse<BjjEventDto> @smoke', async ({ request }) => {
+    const response = await getBjjEvents(request, { page: 1, pageSize: 25 });
 
-    test.expect(body.pagination.currentPage).toBe(1);
-    test.expect(body.data.length).toBeLessThanOrEqual(10);
+    test.expect(response.pagination.currentPage).toBe(1);
+    test.expect(response.pagination.pageSize).toBe(25);
+    test.expect(response.data.length).toBeLessThanOrEqual(25);
+
+    for (const event of response.data) {
+      const typedEvent: BjjEventDto = event;
+      test.expect(typedEvent.name).toBeTruthy();
+      test.expect(typeof typedEvent.type).toBe('number');
+      test.expect(typedEvent.socialMedia).toBeTruthy();
+      test.expect(Array.isArray(typedEvent.schedule.hours)).toBeTruthy();
+    }
   });
 });

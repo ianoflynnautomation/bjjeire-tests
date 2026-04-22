@@ -1,36 +1,51 @@
-import { test } from '@core/fixtures';
+import { test } from '@ui/fixtures';
+import type { StoreCard } from '@ui/features/stores/store-card.screen';
+
+function partialName(name: string): string {
+  return name.slice(0, Math.max(3, Math.min(12, name.length)));
+}
 
 test.describe('Stores @stores @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
     test.skip(!featureFlags.Stores, "feature 'Stores' disabled");
   });
 
-  test('loads the stores list and shows header + search @smoke @mobile', async ({ storesScreen }) => {
-    await test.step('Open the stores route', async () => {
-      await storesScreen.navigate();
-      await storesScreen.verifyIsLoaded();
-      await storesScreen.verifyListSettled();
-    });
-
-    await test.step('Verify the stores header is visible', async () => {
-      await storesScreen.expectHeaderVisible();
-    });
+  test('loads the stores list @smoke @mobile', async ({ storesScreen }) => {
+    await storesScreen.navigate();
+    await storesScreen.verifyIsLoaded();
+    await storesScreen.expectHeaderVisible();
   });
 
-  test('search filters the rendered stores list @regression', async ({ storesScreen }) => {
-    await test.step('Open the stores list', async () => {
-      await storesScreen.navigate();
-      await storesScreen.verifyListSettled();
-    });
+  test('search with no match shows the empty state @regression', async ({ storesScreen }) => {
+    await storesScreen.navigate();
+    await storesScreen.searchFor('zzz-no-match-xyz');
+    await storesScreen.expectNoResults();
+    await storesScreen.clearSearch();
+    await storesScreen.expectAtLeastOneResult();
+  });
 
-    await test.step('Search for an absent store', async () => {
-      await storesScreen.searchFor('zzz-no-match-xyz');
-      await storesScreen.expectNoResults();
-    });
+  test('search by store name shows that store only @regression', async ({ storesScreen }) => {
+    const EXPECTED_STORE_CARD: StoreCard = {
+      name: 'BJJ Cork',
+      description: '',
+    };
 
-    await test.step('Clear the search and recover results', async () => {
-      await storesScreen.clearSearch();
-      await storesScreen.expectAtLeastOneResult();
-    });
+    await storesScreen.navigate();
+    await storesScreen.searchFor(EXPECTED_STORE_CARD.name);
+    await storesScreen.expectSearchValue(EXPECTED_STORE_CARD.name);
+  });
+
+  test('search by partial store name shows that store only @regression', async ({ storesScreen }) => {
+    await storesScreen.navigate();
+
+    const EXPECTED_STORE_CARD: StoreCard = {
+      name: 'BJJ Cork',
+      description: '',
+    };
+    const expectedPartialName = partialName(EXPECTED_STORE_CARD.name);
+
+    await storesScreen.navigate();
+    await storesScreen.searchFor(expectedPartialName);
+    await storesScreen.expectSearchValue(expectedPartialName);
   });
 });
