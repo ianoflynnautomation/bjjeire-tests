@@ -1,5 +1,5 @@
 import { request, type APIRequestContext } from '@playwright/test';
-import { env } from '@api/support/config';
+import { env } from '@shared/config';
 
 export type RequestContextOptions = {
   readonly baseURL?: string;

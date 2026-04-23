@@ -1,23 +1,17 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { TIMEOUTS } from '@api/support/config';
+import { TIMEOUTS } from '@shared/config';
 
 function routeToLabel(route: string): string {
   const trimmed = route.replace(/^\//, '');
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
-export async function navigateToRoute(
-  page: Page,
-  route: string,
-  options: Readonly<{ waitForFeatureFlags?: boolean }> = {},
-): Promise<void> {
-  const flagsReady = options.waitForFeatureFlags
-    ? page
-        .waitForResponse(resp => /\/api\/featureflag/i.test(resp.url()) && resp.ok(), {
-          timeout: TIMEOUTS.navigation,
-        })
-        .catch(() => null)
-    : null;
+export async function navigateToRoute(page: Page, route: string): Promise<void> {
+  const flagsReady = page
+    .waitForResponse(resp => /\/api\/featureflag/i.test(resp.url()) && resp.ok(), {
+      timeout: TIMEOUTS.navigation,
+    })
+    .catch(() => null);
 
   await page.goto(route);
   await flagsReady;

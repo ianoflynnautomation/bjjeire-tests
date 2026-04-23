@@ -6,7 +6,7 @@ function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
 
-function readOptional(name: string, fallback: string): string {
+function pick(name: string, fallback: string): string {
   const raw = process.env[name]?.trim();
   return raw && raw.length > 0 ? raw : fallback;
 }
@@ -25,7 +25,9 @@ function readFlag(name: string, fallback: boolean): boolean {
 
 const PROFILE: Profile = resolveProfile();
 
-const PROFILE_DEFAULTS: Record<Profile, { baseUrl: string; apiUrl: string; mongoUrl: string }> = {
+type ProfileDefaults = { baseUrl: string; apiUrl: string; mongoUrl: string };
+
+const PROFILE_DEFAULTS: Record<Profile, ProfileDefaults> = {
   local: {
     baseUrl: 'http://localhost:3000',
     apiUrl: 'http://localhost:5000',
@@ -41,36 +43,37 @@ const PROFILE_DEFAULTS: Record<Profile, { baseUrl: string; apiUrl: string; mongo
     apiUrl: 'http://localhost:5000',
     mongoUrl: '',
   },
-  staging: {
-    baseUrl: '',
-    apiUrl: '',
-    mongoUrl: '',
-  },
-  production: {
-    baseUrl: '',
-    apiUrl: '',
-    mongoUrl: '',
-  },
+  staging: { baseUrl: '', apiUrl: '', mongoUrl: '' },
+  production: { baseUrl: '', apiUrl: '', mongoUrl: '' },
 };
 
 const defaults = PROFILE_DEFAULTS[PROFILE];
+const remoteProfile = PROFILE === 'staging' || PROFILE === 'production';
 
-export const env = {
+const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
+const apiUrl = stripTrailingSlash(pick('API_URL', defaults.apiUrl));
+
+if (remoteProfile) {
+  if (!baseUrl) throw new Error(`BASE_URL is required for profile '${PROFILE}'`);
+  if (!apiUrl) throw new Error(`API_URL is required for profile '${PROFILE}'`);
+}
+
+export const env = Object.freeze({
   profile: PROFILE,
-  baseUrl: stripTrailingSlash(readOptional('BASE_URL', defaults.baseUrl)),
-  apiUrl: stripTrailingSlash(readOptional('API_URL', defaults.apiUrl)),
-  mongoUrl: readOptional('MONGO_URL', defaults.mongoUrl),
-  mongoDb: readOptional('MONGO_DB', 'bjjeire'),
+  baseUrl,
+  apiUrl,
+  mongoUrl: pick('MONGO_URL', defaults.mongoUrl),
+  mongoDb: pick('MONGO_DB', 'bjjeire'),
   isCI: !!process.env.CI,
   acceptInvalidCerts: readFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
-  azure: {
+  azure: Object.freeze({
     tenantId: process.env.AZURE_TENANT_ID?.trim() ?? '',
     clientId: process.env.AZURE_CLIENT_ID?.trim() ?? '',
     clientSecret: process.env.AZURE_CLIENT_SECRET?.trim() ?? '',
     apiScope: process.env.AZURE_API_SCOPE?.trim() ?? '',
     authority: process.env.AZURE_AUTHORITY?.trim() ?? '',
-  },
-} as const;
+  }),
+});
 
 export type Env = typeof env;
 
@@ -81,11 +84,12 @@ export function requireAzureConfig(): {
   apiScope: string;
   authority: string;
 } {
+  const tenantId = readRequired('AZURE_TENANT_ID');
   return {
-    tenantId: readRequired('AZURE_TENANT_ID'),
+    tenantId,
     clientId: readRequired('AZURE_CLIENT_ID'),
     clientSecret: readRequired('AZURE_CLIENT_SECRET'),
     apiScope: readRequired('AZURE_API_SCOPE'),
-    authority: env.azure.authority || `https://login.microsoftonline.com/${readRequired('AZURE_TENANT_ID')}`,
+    authority: env.azure.authority || `https://login.microsoftonline.com/${tenantId}`,
   };
 }

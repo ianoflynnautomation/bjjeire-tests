@@ -1,6 +1,6 @@
 import { defineConfig, devices, type PlaywrightTestConfig, type Project } from '@playwright/test';
-import { env } from '@api/support/config';
-import { TIMEOUTS } from '@api/support/config';
+import { env } from './env';
+import { TIMEOUTS } from './timeouts';
 
 const IS_CI = env.isCI;
 
@@ -32,8 +32,6 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     workers: IS_CI ? ciWorkers : localWorkers,
     timeout: TIMEOUTS.test,
     reporter: IS_CI ? ciReporters : localReporters,
-    // globalSetup: './global-setup.ts',
-    // globalTeardown: './global-teardown.ts',
     expect: {
       timeout: TIMEOUTS.expect,
     },
@@ -92,22 +90,6 @@ export function createUiProjects(): Project[] {
         viewport: { width: 1728, height: 1117 },
       },
     },
-    // {
-    //   name: 'iphone-15',
-    //   testMatch: /.*\.ui\.spec\.ts$/,
-    //   grep: /@mobile|@smoke/,
-    //   use: {
-    //     ...devices['iPhone 15'],
-    //   },
-    // },
-    // {
-    //   name: 'pixel-8',
-    //   testMatch: /.*\.ui\.spec\.ts$/,
-    //   grep: /@mobile|@smoke/,
-    //   use: {
-    //     ...devices['Pixel 7'],
-    //   },
-    // },
   ];
 }
 

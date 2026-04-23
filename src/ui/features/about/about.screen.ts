@@ -9,7 +9,7 @@ export type AboutScreen = Readonly<{
   verifyContactSection: () => Promise<void>;
 }>;
 
-export function getAboutLocators(page: Page) {
+function getAboutLocators(page: Page) {
   return {
     main: page.getByRole('main'),
     missionHeading: page.getByRole('heading', { name: 'Our Mission', level: 2 }),
@@ -19,7 +19,6 @@ export function getAboutLocators(page: Page) {
     valuesHeading: page.getByRole('heading', { name: 'Open Source Philosophy', level: 2 }),
     contactHeading: page.getByRole('heading', { name: 'Get Involved', level: 2 }),
     contactParagraph: page.getByTestId('about-paragraph-text'),
-    emailLink: page.getByRole('link', { name: '/send an email/i' }),
   };
 }
 
@@ -61,7 +60,6 @@ export function createAboutScreen(page: Page): AboutScreen {
       await expect(locators.contactParagraph).toHaveText(
         'Have a gym to add, a correction to report, or want to contribute? Email info@bjj-eire.com.',
       );
-      //await expect(locators.emailLink).toBeVisible();
     },
   };
 }

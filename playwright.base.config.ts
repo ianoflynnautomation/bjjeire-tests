@@ -1,3 +1,3 @@
-import { createBaseConfig } from './src/core/config/playwright';
+import { createBaseConfig } from './src/shared/config/playwright';
 
 export default createBaseConfig();

@@ -1,9 +1,6 @@
 import { test } from '@ui/fixtures';
 import type { StoreCard } from '@ui/features/stores/store-card.screen';
-
-function partialName(name: string): string {
-  return name.slice(0, Math.max(3, Math.min(12, name.length)));
-}
+import { partialName } from '../../testdata/strings';
 
 test.describe('Stores UI Acceptance @stores @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
@@ -42,7 +39,6 @@ test.describe('Stores UI Acceptance @stores @ui @desktop', () => {
     };
     const expectedPartialName = partialName(EXPECTED_STORE_CARD.name);
 
-    await storesScreen.navigate();
     await storesScreen.navigate();
     await storesScreen.searchFor(expectedPartialName);
     await storesScreen.expectSearchValue(expectedPartialName);

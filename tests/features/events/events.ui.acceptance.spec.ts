@@ -1,9 +1,6 @@
 import { test } from '@ui/fixtures';
 import type { BjjEventCard } from '@ui/features/events/event-card.screen';
-
-function partialName(name: string): string {
-  return name.slice(0, Math.max(3, Math.min(12, name.length)));
-}
+import { partialName } from '../../testdata/strings';
 
 test.describe('Events UI Acceptance @events @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {

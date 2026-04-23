@@ -1,5 +1,5 @@
 import { createEntityId } from '@api/support/factories';
-import type { RunId } from '@core/types';
+import type { RunId } from '@shared/types';
 import { GymStatus, type GymDto } from './gyms.api';
 
 export type NewGym = Omit<GymDto, 'id'> & { id: string };

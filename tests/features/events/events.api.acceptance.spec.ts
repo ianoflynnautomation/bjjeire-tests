@@ -1,4 +1,4 @@
-import { test } from '@api/fixtures/app-fixtures';
+import { test } from '@shared/fixtures';
 import { getBjjEvents, type BjjEventDto } from '@api/features/events/events.api';
 
 test.describe('Events API Acceptance @events @api', () => {
@@ -6,8 +6,8 @@ test.describe('Events API Acceptance @events @api', () => {
     test.skip(!featureFlags.BjjEvents, "feature 'BjjEvents' disabled");
   });
 
-  test('GET /api/BjjEvent returns PagedResponse<BjjEventDto> @smoke @acceptance', async ({ request }) => {
-    const response = await getBjjEvents(request, { page: 1, pageSize: 25 });
+  test('GET /api/BjjEvent returns PagedResponse<BjjEventDto> @smoke @acceptance', async ({ apiClient }) => {
+    const response = await getBjjEvents(apiClient, { page: 1, pageSize: 25 });
 
     test.expect(response.pagination.currentPage).toBe(1);
     test.expect(response.pagination.pageSize).toBe(25);

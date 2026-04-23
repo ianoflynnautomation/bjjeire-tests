@@ -41,14 +41,7 @@ export type GetByRoleTypes = Parameters<Locator['getByRole']>[0];
 export type GetByRoleOptions = Parameters<Locator['getByRole']>[1];
 export type GetByTextOptions = Parameters<Locator['getByText']>[1];
 
-export type Brand<T, B extends string> = T & { readonly __brand: B };
-export type RunId = Brand<string, 'RunId'>;
-export type EntityId = Brand<string, 'EntityId'>;
 export type LocatorLike = Page | Locator | string;
 export type LocatorOrPage = Page | Locator;
 export type ResolvedTarget = { page: Page; locator: Locator };
 export type ShortcutKey = string | readonly string[];
-
-export type DeepReadonly<T> = {
-  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
-};

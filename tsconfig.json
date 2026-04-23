@@ -12,9 +12,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@core/config": ["src/core/config"],
-      "@core/types": ["src/core/types"],
+      "@shared/*": ["src/shared/*"],
       "@api/*": ["src/api/*"],
       "@ui/*": ["src/ui/*"],
       "@fixtures/*": ["src/fixtures/*"]

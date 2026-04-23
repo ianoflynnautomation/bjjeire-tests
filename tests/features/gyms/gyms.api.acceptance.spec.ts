@@ -1,10 +1,10 @@
-import { test } from '@api/fixtures/app-fixtures';
+import { test } from '@shared/fixtures';
 import { getGyms, type GymDto } from '@api/features/gyms/gyms.api';
-import { expectApi, problemDetailsSchema } from '@api/support/api';
+import { expectApi, problemDetailsSchema, rawRequest } from '@api/support/api';
 
 test.describe('Gyms API Acceptance @gyms @api', () => {
-  test('GET /api/Gym returns PagedResponse<GymDto> @smoke @acceptance', async ({ request }) => {
-    const response = await getGyms(request, { page: 1, pageSize: 25 });
+  test('GET /api/Gym returns PagedResponse<GymDto> @smoke @acceptance', async ({ apiClient }) => {
+    const response = await getGyms(apiClient, { page: 1, pageSize: 25 });
 
     test.expect(response.pagination.currentPage).toBe(1);
     test.expect(response.pagination.pageSize).toBe(25);
@@ -19,8 +19,8 @@ test.describe('Gyms API Acceptance @gyms @api', () => {
     }
   });
 
-  test('write operation in read-only mode returns RFC 7807 ProblemDetails @acceptance', async ({ request }) => {
-    const response = await request.post('/api/gym', { data: {}, failOnStatusCode: false });
+  test('write operation in read-only mode returns RFC 7807 ProblemDetails @acceptance', async ({ apiClient }) => {
+    const response = await rawRequest(apiClient, 'POST', '/api/gym', { data: {} });
     const problem = await expectApi(response).status(405).contentType('application/json').body(problemDetailsSchema);
     test.expect(problem.status).toBe(405);
     test.expect(problem.title).toBeTruthy();

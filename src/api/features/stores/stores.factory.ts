@@ -1,5 +1,5 @@
 import { createEntityId } from '@api/support/factories';
-import type { RunId } from '@core/types';
+import type { RunId } from '@shared/types';
 import type { StoreDto } from './stores.api';
 
 export function buildStore(runId: RunId, overrides: Partial<StoreDto> = {}): StoreDto {

@@ -1,4 +1,4 @@
-import { expect, type Locator } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 
 export type CompetitionCard = Readonly<{
   name: string;
@@ -8,40 +8,32 @@ export type CompetitionCard = Readonly<{
   tags: string[];
 }>;
 
-export function getCompetitionCardLocators(root: Locator) {
-  return {
-    root,
-    name: root.getByTestId('competition-card-name'),
-    organisation: root.getByTestId('competition-card-organisation'),
-    date: root.getByTestId('competition-card-date'),
-    description: root.getByTestId('competition-card-description'),
-    tags: root.getByTestId('competition-card-tags'),
-    expectVisible: async () => await expect(root).toBeVisible(),
-  };
-}
-
-async function readCompetitionCardTags(root: Locator): Promise<string[]> {
-  const tagsContainer = root.getByTestId('competition-card-tags');
-  if (!(await tagsContainer.isVisible())) return [];
-  return tagsContainer.getByTestId('competition-card-tag-item').allInnerTexts();
+async function readTags(root: Locator): Promise<string[]> {
+  const tags = root.getByTestId('competition-card-tags');
+  if (!(await tags.isVisible())) return [];
+  return tags.getByTestId('competition-card-tag-item').allInnerTexts();
 }
 
 export async function readCompetitionCard(root: Locator): Promise<CompetitionCard> {
-  const locators = getCompetitionCardLocators(root);
+  const date = root.getByTestId('competition-card-date');
+  const description = root.getByTestId('competition-card-description');
 
-  const [name, organisation, date, description, tags] = await Promise.all([
-    locators.name.innerText(),
-    locators.organisation.innerText().catch(() => 'Unknown'),
-    locators.date.isVisible().then(v => (v ? locators.date.innerText() : null)),
-    locators.description.isVisible().then(v => (v ? locators.description.innerText() : null)),
-    readCompetitionCardTags(root),
+  const [name, organisation, dateText, descriptionText, tags] = await Promise.all([
+    root.getByTestId('competition-card-name').innerText(),
+    root
+      .getByTestId('competition-card-organisation')
+      .innerText()
+      .catch(() => 'Unknown'),
+    date.isVisible().then(v => (v ? date.innerText() : null)),
+    description.isVisible().then(v => (v ? description.innerText() : null)),
+    readTags(root),
   ]);
 
   return {
     name: name.trim(),
     organisation: organisation.trim(),
-    date: date?.trim() ?? null,
-    description: description?.trim() ?? null,
+    date: dateText?.trim() ?? null,
+    description: descriptionText?.trim() ?? null,
     tags,
   };
 }

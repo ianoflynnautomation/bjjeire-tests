@@ -1,5 +1,5 @@
 import { createEntityId } from '@api/support/factories';
-import type { RunId } from '@core/types';
+import type { RunId } from '@shared/types';
 import { BjjEventType, EventStatus, PricingType, type BjjEventDto } from './events.api';
 
 export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}): BjjEventDto {

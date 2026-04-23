@@ -6,8 +6,8 @@ import {
   type Filter,
   type OptionalUnlessRequiredId,
 } from 'mongodb';
-import { env } from '@api/support/config';
-import type { RunId } from '@api/support/types';
+import { env } from '@shared/config';
+import type { RunId } from '@shared/types';
 
 export type MongoConfig = {
   readonly url?: string;

@@ -1,9 +1,9 @@
-import { test } from '@api/fixtures/app-fixtures';
+import { test } from '@shared/fixtures';
 import { getCompetitions, type CompetitionDto } from '@api/features/competitions/competitions.api';
 
 test.describe('Competitions API Acceptance @competitions @api', () => {
-  test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke @acceptance', async ({ request }) => {
-    const response = await getCompetitions(request, { page: 1, pageSize: 25 });
+  test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke @acceptance', async ({ apiClient }) => {
+    const response = await getCompetitions(apiClient, { page: 1, pageSize: 25 });
 
     test.expect(response.pagination.currentPage).toBe(1);
     test.expect(response.pagination.pageSize).toBe(25);

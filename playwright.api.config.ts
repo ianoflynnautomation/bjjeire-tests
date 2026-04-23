@@ -1,4 +1,4 @@
-import { createBaseConfig, createApiProjects } from './src/core/config/playwright';
+import { createApiProjects, createBaseConfig } from './src/shared/config/playwright';
 
 export default createBaseConfig({
   projects: createApiProjects(),

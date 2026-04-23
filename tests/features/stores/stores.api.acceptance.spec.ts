@@ -1,9 +1,9 @@
-import { test } from '@api/fixtures/app-fixtures';
+import { test } from '@shared/fixtures';
 import { getStores, type StoreDto } from '@api/features/stores/stores.api';
 
 test.describe('Stores API Acceptance @stores @api', () => {
-  test('GET /api/Store returns PagedResponse<StoreDto> @smoke @acceptance', async ({ request }) => {
-    const response = await getStores(request, { page: 1, pageSize: 25 });
+  test('GET /api/Store returns PagedResponse<StoreDto> @smoke @acceptance', async ({ apiClient }) => {
+    const response = await getStores(apiClient, { page: 1, pageSize: 25 });
 
     test.expect(response.pagination.currentPage).toBe(1);
     test.expect(response.pagination.pageSize).toBe(25);
