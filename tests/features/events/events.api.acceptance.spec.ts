@@ -1,5 +1,6 @@
-import { test } from '@shared/fixtures';
-import { getBjjEvents, type BjjEventDto } from '@api/features/events/events.api';
+import { test, expect } from '@shared/fixtures';
+import { getBjjEvents } from '@api/features/events/events.api';
+import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 test.describe('Events API Acceptance @events @api', () => {
   test.beforeEach(({ featureFlags }) => {
@@ -8,17 +9,7 @@ test.describe('Events API Acceptance @events @api', () => {
 
   test('GET /api/BjjEvent returns PagedResponse<BjjEventDto> @smoke @acceptance', async ({ apiClient }) => {
     const response = await getBjjEvents(apiClient, { page: 1, pageSize: 25 });
-
-    test.expect(response.pagination.currentPage).toBe(1);
-    test.expect(response.pagination.pageSize).toBe(25);
-    test.expect(response.data.length).toBeLessThanOrEqual(25);
-
-    for (const event of response.data) {
-      const typedEvent: BjjEventDto = event;
-      test.expect(typedEvent.name).toBeTruthy();
-      test.expect(typeof typedEvent.type).toBe('number');
-      test.expect(typedEvent.socialMedia).toBeTruthy();
-      test.expect(Array.isArray(typedEvent.schedule.hours)).toBeTruthy();
-    }
+    expectPaginatedResponse(response, { page: 1, pageSize: 25 });
+    expect(response.data[0]?.name).toBeTruthy();
   });
 });

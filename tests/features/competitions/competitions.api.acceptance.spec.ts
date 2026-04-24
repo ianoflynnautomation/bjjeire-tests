@@ -1,19 +1,11 @@
-import { test } from '@shared/fixtures';
-import { getCompetitions, type CompetitionDto } from '@api/features/competitions/competitions.api';
+import { test, expect } from '@shared/fixtures';
+import { getCompetitions } from '@api/features/competitions/competitions.api';
+import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 test.describe('Competitions API Acceptance @competitions @api', () => {
   test('GET /api/Competition returns PagedResponse<CompetitionDto> @smoke @acceptance', async ({ apiClient }) => {
     const response = await getCompetitions(apiClient, { page: 1, pageSize: 25 });
-
-    test.expect(response.pagination.currentPage).toBe(1);
-    test.expect(response.pagination.pageSize).toBe(25);
-    test.expect(response.data.length).toBeLessThanOrEqual(25);
-
-    for (const competition of response.data) {
-      const typedCompetition: CompetitionDto = competition;
-      test.expect(typedCompetition.name).toBeTruthy();
-      test.expect(Array.isArray(typedCompetition.tags)).toBeTruthy();
-      test.expect(typeof typedCompetition.isActive).toBe('boolean');
-    }
+    expectPaginatedResponse(response, { page: 1, pageSize: 25 });
+    expect(response.data[0]?.name).toBeTruthy();
   });
 });

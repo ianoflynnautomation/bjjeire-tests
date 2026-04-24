@@ -1,6 +1,5 @@
 import { test } from '@ui/fixtures';
-import type { StoreCard } from '@ui/features/stores/store-card.screen';
-import { partialName } from '../../testdata/strings';
+import { SEEDED_STORE_BJJ_CORK, SEEDED_STORE_BJJ_CORK_PARTIAL } from '../../testdata/stores';
 
 test.describe('Stores UI Acceptance @stores @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
@@ -21,26 +20,15 @@ test.describe('Stores UI Acceptance @stores @ui @desktop', () => {
     await storesScreen.expectAtLeastOneResult();
   });
 
-  test('search by store name shows that store only @acceptance', async ({ storesScreen }) => {
-    const EXPECTED_STORE_CARD: StoreCard = {
-      name: 'BJJ Cork',
-      description: '',
-    };
-
+  test('search by store name narrows the search input @acceptance', async ({ storesScreen }) => {
     await storesScreen.navigate();
-    await storesScreen.searchFor(EXPECTED_STORE_CARD.name);
-    await storesScreen.expectSearchValue(EXPECTED_STORE_CARD.name);
+    await storesScreen.searchFor(SEEDED_STORE_BJJ_CORK.name);
+    await storesScreen.expectSearchValue(SEEDED_STORE_BJJ_CORK.name);
   });
 
-  test('search by partial store name shows that store only @acceptance', async ({ storesScreen }) => {
-    const EXPECTED_STORE_CARD: StoreCard = {
-      name: 'BJJ Cork',
-      description: '',
-    };
-    const expectedPartialName = partialName(EXPECTED_STORE_CARD.name);
-
+  test('search by partial store name narrows the search input @acceptance', async ({ storesScreen }) => {
     await storesScreen.navigate();
-    await storesScreen.searchFor(expectedPartialName);
-    await storesScreen.expectSearchValue(expectedPartialName);
+    await storesScreen.searchFor(SEEDED_STORE_BJJ_CORK_PARTIAL);
+    await storesScreen.expectSearchValue(SEEDED_STORE_BJJ_CORK_PARTIAL);
   });
 });

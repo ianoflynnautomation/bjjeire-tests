@@ -1,6 +1,5 @@
 import { test } from '@ui/fixtures';
-import type { BjjEventCard } from '@ui/features/events/event-card.screen';
-import { partialName } from '../../testdata/strings';
+import { SEEDED_EVENT_ADCC, SEEDED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
 
 test.describe('Events UI Acceptance @events @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
@@ -13,7 +12,7 @@ test.describe('Events UI Acceptance @events @ui @desktop', () => {
     await eventsScreen.expectHeaderVisible();
   });
 
-  test('search filters the rendered events list @acceptance', async ({ eventsScreen }) => {
+  test('search with no match shows the empty state @acceptance', async ({ eventsScreen }) => {
     await eventsScreen.navigate();
     await eventsScreen.searchFor('zzz-no-match-xyz');
     await eventsScreen.expectNoResults();
@@ -22,34 +21,16 @@ test.describe('Events UI Acceptance @events @ui @desktop', () => {
   });
 
   test('search by event name shows that event only @acceptance', async ({ eventsScreen }) => {
-    const EXPECTED_BJJEVENT_CARD: BjjEventCard = {
-      name: 'ADCC Irish Cup Championship 2026',
-      type: '',
-      county: '',
-      pricing: '',
-      schedule: '',
-    };
-
     await eventsScreen.navigate();
-    await eventsScreen.searchFor(EXPECTED_BJJEVENT_CARD.name);
-    await eventsScreen.expectSearchValue(EXPECTED_BJJEVENT_CARD.name);
-    await eventsScreen.expectCardData(EXPECTED_BJJEVENT_CARD.name, EXPECTED_BJJEVENT_CARD);
+    await eventsScreen.searchFor(SEEDED_EVENT_ADCC.name);
+    await eventsScreen.expectSearchValue(SEEDED_EVENT_ADCC.name);
+    await eventsScreen.expectCardData(SEEDED_EVENT_ADCC.name, SEEDED_EVENT_ADCC);
   });
 
   test('search by partial event name shows that event only @acceptance', async ({ eventsScreen }) => {
-    const EXPECTED_BJJEVENT_CARD: BjjEventCard = {
-      name: 'ADCC Irish Cup Championship 2026',
-      type: '',
-      county: '',
-      pricing: '',
-      schedule: '',
-    };
-
-    const expectedPartialName = partialName(EXPECTED_BJJEVENT_CARD.name);
-
     await eventsScreen.navigate();
-    await eventsScreen.searchFor(expectedPartialName);
-    await eventsScreen.expectSearchValue(expectedPartialName);
-    await eventsScreen.expectCardData(EXPECTED_BJJEVENT_CARD.name, EXPECTED_BJJEVENT_CARD);
+    await eventsScreen.searchFor(SEEDED_EVENT_ADCC_PARTIAL);
+    await eventsScreen.expectSearchValue(SEEDED_EVENT_ADCC_PARTIAL);
+    await eventsScreen.expectCardData(SEEDED_EVENT_ADCC.name, SEEDED_EVENT_ADCC);
   });
 });

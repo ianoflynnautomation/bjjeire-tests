@@ -1,6 +1,5 @@
 import { test } from '@ui/fixtures';
-import type { GymCard } from '@ui/features/gyms/gym-card.screen';
-import { GymStatus } from '@api/features/gyms/gyms.types';
+import { SEEDED_GYM_BJJ_CORK, SEEDED_GYM_BJJ_CORK_PARTIAL } from '../../testdata/gyms';
 
 test.describe('Gyms UI Acceptance @gyms @ui @desktop', () => {
   test.beforeEach(({ featureFlags }) => {
@@ -21,33 +20,17 @@ test.describe('Gyms UI Acceptance @gyms @ui @desktop', () => {
     await gymsScreen.expectAtLeastOneResult();
   });
 
-  test('search by gym name shows that gym in the list @acceptance', async ({ gymsScreen }) => {
-    const EXPECTED_GYM_CARD: GymCard = {
-      name: 'BJJ Cork',
-      status: GymStatus.Active.toUpperCase(),
-      county: 'Cork County',
-      classes: ['BJJ Gi (All Levels)', 'BJJ No-Gi (All Levels)'],
-    };
-
+  test('search by gym name shows that gym only @acceptance', async ({ gymsScreen }) => {
     await gymsScreen.navigate();
-    await gymsScreen.searchFor(EXPECTED_GYM_CARD.name);
-    await gymsScreen.expectSearchValue(EXPECTED_GYM_CARD.name);
-    await gymsScreen.expectCardData(EXPECTED_GYM_CARD.name, EXPECTED_GYM_CARD);
+    await gymsScreen.searchFor(SEEDED_GYM_BJJ_CORK.name);
+    await gymsScreen.expectSearchValue(SEEDED_GYM_BJJ_CORK.name);
+    await gymsScreen.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
   });
 
   test('search by partial gym name shows that gym only @acceptance', async ({ gymsScreen }) => {
-    const EXPECTED_GYM_CARD: GymCard = {
-      name: 'BJJ Cork',
-      status: GymStatus.Active.toUpperCase(),
-      county: 'Cork County',
-      classes: ['BJJ Gi (All Levels)', 'BJJ No-Gi (All Levels)'],
-    };
-
-    const expectedPartialName = 'BJJ C';
-
     await gymsScreen.navigate();
-    await gymsScreen.searchFor(expectedPartialName);
-    await gymsScreen.expectSearchValue(expectedPartialName);
-    await gymsScreen.expectCardData(EXPECTED_GYM_CARD.name, EXPECTED_GYM_CARD);
+    await gymsScreen.searchFor(SEEDED_GYM_BJJ_CORK_PARTIAL);
+    await gymsScreen.expectSearchValue(SEEDED_GYM_BJJ_CORK_PARTIAL);
+    await gymsScreen.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
   });
 });
