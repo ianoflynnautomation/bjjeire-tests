@@ -19,7 +19,7 @@ jobs:
       test_tags: '@smoke|@acceptance'
       shard_total: 6
       playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
-      playwright_image: mcr.microsoft.com/playwright:v1.58.2-noble
+      playwright_image: mcr.microsoft.com/playwright:v1.59.1-noble
       test_repo: bjjeire/bjjeire-tests
       test_repo_ref: v1
     secrets:

@@ -33,7 +33,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/playwright
-  PLAYWRIGHT_VERSION: v1.58.2-noble
+  PLAYWRIGHT_VERSION: v1.59.1-noble
 
 jobs:
   build-and-push:

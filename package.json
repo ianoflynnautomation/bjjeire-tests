@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@playwright/mcp": "^0.0.70",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^22.15.18",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

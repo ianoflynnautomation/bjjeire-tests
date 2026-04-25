@@ -68,7 +68,7 @@ This repo ships reusable GitHub Actions workflows that other repos (app, infra, 
 | `shard_total`         | `6`                                                                                                     | Parallel shards per project.                       |
 | `playwright_projects` | `'["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'` | JSON array of project names.                       |
 | `node_version`        | `22`                                                                                                    |                                                    |
-| `playwright_image`    | `mcr.microsoft.com/playwright:v1.58.2-noble`                                                            | Pin to your `@playwright/test` version.            |
+| `playwright_image`    | `mcr.microsoft.com/playwright:v1.59.1-noble`                                                            | Pin to your `@playwright/test` version.            |
 | `test_repo`           | `''`                                                                                                    | Owner/repo of tests; empty = caller.               |
 | `test_repo_ref`       | `main`                                                                                                  | Tag, branch, or SHA.                               |
 
