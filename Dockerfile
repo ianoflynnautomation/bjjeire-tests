@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM mcr.microsoft.com/playwright:v1.58.2-noble
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
 LABEL org.opencontainers.image.title="bjjeire/playwright" \
       org.opencontainers.image.description="Playwright system test runner (Node + Playwright browsers)" \
