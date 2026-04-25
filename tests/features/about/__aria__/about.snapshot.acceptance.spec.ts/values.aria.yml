@@ -1,0 +1,7 @@
+- region "Open Source Philosophy":
+  - heading "Open Source Philosophy" [level=2]
+  - list:
+    - listitem: BJJ Éire is fully open source — the code, the data model, and the roadmap are all public.
+    - listitem: "Anyone can contribute: add a gym, report a correction, suggest a feature, or submit a pull request."
+    - listitem: No ads, no paywalls, no trackers — built by the community, for the community.
+    - listitem: The project grows through participation. If you train BJJ in Ireland, this is your directory too.

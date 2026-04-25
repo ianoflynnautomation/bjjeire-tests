@@ -1,0 +1,8 @@
+- region "Get Involved":
+  - heading "Get Involved" [level=2]
+  - paragraph:
+    - text: Have a gym to add, a correction to report, or want to contribute? Email
+    - link "Send an email to info@bjj-eire.com":
+      - /url: mailto:info@bjj-eire.com
+      - text: ""
+    - text: .

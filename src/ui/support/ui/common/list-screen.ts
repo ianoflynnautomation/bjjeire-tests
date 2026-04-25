@@ -6,9 +6,11 @@ import {
   expectListShell,
   expectResultCount,
   expectSearchValue,
+  expectTitle,
   navigateToRoute,
   search,
 } from '.';
+import { stabilizeForSnapshot, type SnapshotMaskOption } from '../snapshot';
 
 export type ListScreenTestIds = Readonly<{
   header: string;
@@ -25,12 +27,20 @@ export type ListScreenConfig<TCard extends object> = Readonly<{
   readCard: (root: Locator) => Promise<TCard>;
 }>;
 
+export type ListScreenRegion = 'header' | 'list' | 'emptyState';
+
+export type ScreenshotOptions = SnapshotMaskOption &
+  Readonly<{
+    region?: ListScreenRegion;
+  }>;
+
 export type ListScreen<TCard extends object> = Readonly<{
   firstCard: Locator;
   navigate: () => Promise<void>;
   verifyIsLoaded: () => Promise<void>;
   searchFor: (term: string) => Promise<void>;
   clearSearch: () => Promise<void>;
+  expectTitle: (title: string) => Promise<void>;
   expectSearchValue: (term: RegExp | string) => Promise<void>;
   expectHeaderVisible: () => Promise<void>;
   expectNoResults: () => Promise<void>;
@@ -38,6 +48,9 @@ export type ListScreen<TCard extends object> = Readonly<{
   expectResultCount: (count: number) => Promise<void>;
   readCard: (name: string) => Promise<TCard>;
   expectCardData: (name: string, expected: Partial<TCard>) => Promise<void>;
+  stabilize: () => Promise<void>;
+  expectScreenshot: (name: string, options?: ScreenshotOptions) => Promise<void>;
+  expectAriaTree: (region: ListScreenRegion, name: string) => Promise<void>;
 }>;
 
 export function listScreenTestIds(plural: string, singular: string): ListScreenTestIds {
@@ -62,6 +75,12 @@ export function createListScreen<TCard extends object>(page: Page, config: ListS
   const cardByName = (name: string): Locator =>
     items.filter({ has: page.getByTestId(testIds.cardName).filter({ hasText: name }) });
 
+  const regionLocator: Record<ListScreenRegion, Locator> = {
+    header,
+    list: items.first().locator('xpath=..'),
+    emptyState,
+  };
+
   return {
     firstCard: items.first(),
     navigate: () => navigateToRoute(page, route),
@@ -69,6 +88,7 @@ export function createListScreen<TCard extends object>(page: Page, config: ListS
     searchFor: term => search(searchInput, term),
     clearSearch: () => clearSearch(searchInput, clearSearchButton),
     expectSearchValue: term => expectSearchValue(searchInput, term),
+    expectTitle: title => expectTitle(headerTitle, title),
     expectHeaderVisible: () => expect(header).toBeVisible(),
     expectNoResults: () => expectEmptyState(emptyState, items),
     expectAtLeastOneResult: () => expectAtLeastOneRow(items),
@@ -83,6 +103,15 @@ export function createListScreen<TCard extends object>(page: Page, config: ListS
       await expect(card).toBeVisible();
       const actual = (await readCard(card)) as Record<string, unknown>;
       expect(actual).toMatchObject(expected as Record<string, unknown>);
+    },
+    stabilize: () => stabilizeForSnapshot(page),
+    async expectScreenshot(name: string, options: ScreenshotOptions = {}) {
+      await stabilizeForSnapshot(page);
+      const target = options.region ? regionLocator[options.region] : page;
+      await expect(target).toHaveScreenshot(name, options.mask ? { mask: [...options.mask] } : undefined);
+    },
+    async expectAriaTree(region: ListScreenRegion, name: string) {
+      await expect(regionLocator[region]).toMatchAriaSnapshot({ name });
     },
   };
 }

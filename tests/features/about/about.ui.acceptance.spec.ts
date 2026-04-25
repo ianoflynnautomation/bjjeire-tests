@@ -9,9 +9,6 @@ test.describe('About UI Acceptance', { tag: ['@about', '@ui', '@desktop'] }, () 
     async ({ aboutScreen }) => {
       await aboutScreen.navigate();
       await aboutScreen.verifyIsLoaded();
-      await aboutScreen.verifyOurMissionSection();
-      await aboutScreen.verifyValuesSection();
-      await aboutScreen.verifyContactSection();
     },
   );
 });

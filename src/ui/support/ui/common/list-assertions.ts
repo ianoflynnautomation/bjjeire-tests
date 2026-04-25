@@ -6,6 +6,10 @@ export async function expectListShell(header: Locator, headerTitle: Locator, sea
   await expect(searchContainer).toBeVisible();
 }
 
+export async function expectTitle(input: Locator, value: RegExp | string): Promise<void> {
+  await expect(input).toHaveValue(value);
+}
+
 export async function expectSearchValue(input: Locator, value: RegExp | string): Promise<void> {
   await expect(input).toHaveValue(value);
 }

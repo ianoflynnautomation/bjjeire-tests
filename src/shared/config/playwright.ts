@@ -34,7 +34,19 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     reporter: IS_CI ? ciReporters : localReporters,
     expect: {
       timeout: TIMEOUTS.expect,
+      toHaveScreenshot: {
+        animations: 'disabled',
+        caret: 'hide',
+        scale: 'css',
+        maxDiffPixelRatio: 0.01,
+        threshold: 0.2,
+      },
+      toMatchAriaSnapshot: {
+        pathTemplate: '{testDir}/{testFileDir}/__aria__/{testFileName}/{arg}{ext}',
+      },
     },
+    snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}{ext}',
+    updateSnapshots: IS_CI ? 'missing' : 'missing',
     use: {
       baseURL: env.baseUrl,
       headless: true,
@@ -60,6 +72,14 @@ export function createUiProjects(): Project[] {
     {
       name: 'chromium-desktop',
       testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: 'snapshots',
+      testMatch: /.*\.snapshot\.acceptance\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },

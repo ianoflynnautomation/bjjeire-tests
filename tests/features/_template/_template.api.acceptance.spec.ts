@@ -7,8 +7,8 @@ type TemplateDto = Readonly<{
   name: string;
 }>;
 
-test.describe('Template API Acceptance @template @api', () => {
-  test('GET /api/template returns PaginatedResponse @smoke @acceptance', async ({ apiClient }) => {
+test.describe('Template API Acceptance', { tag: ['@template', '@api'] }, () => {
+  test('GET /api/template returns PaginatedResponse', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
     const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, '/api/template', {
       params: { page: 1, pageSize: 25 },
     });
