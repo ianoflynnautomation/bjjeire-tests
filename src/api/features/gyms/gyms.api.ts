@@ -4,7 +4,7 @@ import type { GetGymsByCountyPaginationQuery, GymDto } from './gyms.types';
 
 export { GymStatus, type GymDto } from './gyms.types';
 
-const endpoint: string = '/api/gym';
+const endpoint: string = '/api/v1/gym';
 
 export async function getGyms(
   request: APIRequestContext,
