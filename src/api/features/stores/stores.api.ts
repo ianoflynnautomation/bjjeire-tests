@@ -4,7 +4,7 @@ import type { GetStorePaginationQuery, StoreDto } from './stores.types';
 
 export type { StoreDto } from './stores.types';
 
-const endpoint: string = '/api/store';
+const endpoint: string = '/api/v1/store';
 
 export async function getStores(
   request: APIRequestContext,

@@ -4,7 +4,7 @@ import type { BjjEventDto, GetBjjEventsPaginationQuery } from './events.types';
 
 export { BjjEventType, EventStatus, PricingType, type BjjEventDto } from './events.types';
 
-const endpoint: string = '/api/bjjevent';
+const endpoint: string = '/api/v1/bjjevent';
 
 export async function getBjjEvents(
   request: APIRequestContext,

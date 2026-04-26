@@ -23,7 +23,7 @@ export const test = base.extend<SharedFixtures, SharedWorkerFixtures>({
     async ({}, use) => {
       const ctx = await createRequestContext();
       try {
-        const response = await ctx.get('/api/FeatureFlag');
+        const response = await ctx.get('/api/v1/FeatureFlag');
         const flags: FeatureFlagMap = response.ok() ? ((await response.json()) as FeatureFlagMap) : {};
         await use(flags);
       } finally {

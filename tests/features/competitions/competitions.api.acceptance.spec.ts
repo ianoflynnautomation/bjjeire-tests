@@ -4,7 +4,7 @@ import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 test.describe('Competitions API Acceptance', { tag: ['@competitions', '@api'] }, () => {
   test(
-    'GET /api/Competition returns PagedResponse<CompetitionDto>',
+    'GET /api/v1/Competition returns PagedResponse<CompetitionDto>',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await getCompetitions(apiClient, { page: 1, pageSize: 25 });

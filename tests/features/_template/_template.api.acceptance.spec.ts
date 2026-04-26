@@ -8,8 +8,8 @@ type TemplateDto = Readonly<{
 }>;
 
 test.describe('Template API Acceptance', { tag: ['@template', '@api'] }, () => {
-  test('GET /api/template returns PaginatedResponse', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
-    const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, '/api/template', {
+  test('GET /api/v1/template returns PaginatedResponse', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
+    const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, '/api/v1/template', {
       params: { page: 1, pageSize: 25 },
     });
 

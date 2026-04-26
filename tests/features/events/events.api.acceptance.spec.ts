@@ -8,7 +8,7 @@ test.describe('Events API Acceptance', { tag: ['@events', '@api'] }, () => {
   });
 
   test(
-    'GET /api/BjjEvent returns PagedResponse<BjjEventDto>',
+    'GET /api/v1/BjjEvent returns PagedResponse<BjjEventDto>',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await getBjjEvents(apiClient, { page: 1, pageSize: 25 });

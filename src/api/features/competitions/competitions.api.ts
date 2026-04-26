@@ -4,7 +4,7 @@ import type { CompetitionDto, GetCompetitionsPaginationQuery } from './competiti
 
 export type { CompetitionDto } from './competitions.types';
 
-const endpoint: string = '/api/competition';
+const endpoint: string = '/api/v1/competition';
 
 export async function getCompetitions(
   request: APIRequestContext,
