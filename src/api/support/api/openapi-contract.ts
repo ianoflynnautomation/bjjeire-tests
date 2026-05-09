@@ -7,7 +7,7 @@ const SCHEMA_REF_PREFIX = '#/components/schemas/';
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
-type JsonObject = { [key: string]: JsonValue };
+type JsonObject = Record<string, JsonValue>;
 
 export type OpenApiDocument = {
   openapi: string;
@@ -169,12 +169,16 @@ export function assertJsonMatchesSchema(
     case 'object':
       assertObjectMatchesSchema(value, resolved, document, path);
       return;
-    case 'array':
+    case 'array': {
       if (!Array.isArray(value)) throw new Error(`${path} should be an array.`);
-      if (resolved.items) {
-        value.forEach((item, index) => assertJsonMatchesSchema(item, resolved.items!, document, `${path}[${index}]`));
+      const itemsSchema = resolved.items;
+      if (itemsSchema) {
+        value.forEach((item, index) => {
+          assertJsonMatchesSchema(item, itemsSchema, document, `${path}[${index}]`);
+        });
       }
       return;
+    }
     case 'string':
       if (typeof value !== 'string') throw new Error(`${path} should be a string.`);
       assertEnumValue(value, resolved, path);

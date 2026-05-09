@@ -4,7 +4,7 @@ import * as Footer from '@ui/components/footer.component';
 import type { FooterQuickLinkName } from '@ui/components/footer.component';
 import { getPage, gotoURL } from '@ui/support/ui';
 
-const FOOTER_LINKS: ReadonlyArray<{ name: FooterQuickLinkName; path: string }> = [
+const FOOTER_LINKS: readonly { name: FooterQuickLinkName; path: string }[] = [
   { name: 'Gyms', path: '/gyms' },
   { name: 'Competitions', path: '/competitions' },
   { name: 'Stores', path: '/stores' },

@@ -70,6 +70,6 @@ export type BjjEventDto = BaseApiEntityModel &
 
 export type GetBjjEventsPaginationQuery = PaginationQuery &
   Readonly<{
-    county?: string | 'all';
-    type?: BjjEventType | 'all';
+    county?: 'all' | (string & {});
+    type?: 'all' | BjjEventType;
   }>;

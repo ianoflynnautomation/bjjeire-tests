@@ -3,7 +3,7 @@ import { env } from '@shared/config';
 const REQUIRED_PROFILE = 'staging';
 const STAGING_HOST_MARKER = /staging/i;
 
-export default async function globalSetup(): Promise<void> {
+export default function globalSetup(): void {
   if (env.profile !== REQUIRED_PROFILE) {
     throw new Error(
       `Security suite refused to run: APP_ENV='${env.profile}' is not permitted. ` +

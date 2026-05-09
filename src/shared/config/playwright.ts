@@ -19,7 +19,8 @@ const API_TEST_MATCH = [
 ];
 
 const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
-const IGNORED_TAGS_GREP = /@bjj-events/;
+
+const IGNORED_TAGS_GREP = process.env.RUN_SLOW === '1' ? /@bjj-events/ : /@bjj-events|@slow/;
 
 const CUSTOM_LOGGER = './src/lib/reporters/custom-logger.ts';
 

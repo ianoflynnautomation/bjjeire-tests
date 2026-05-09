@@ -25,6 +25,7 @@
     "test:smoke:api": "playwright test -c playwright.api.config.ts tests/smoke -g @smoke",
     "test:reg": "playwright test -c playwright.ui.config.ts -g @acceptance",
     "test:acceptance": "playwright test -c playwright.ui.config.ts -g '@smoke|@acceptance'",
+    "test:slow": "RUN_SLOW=1 playwright test -c playwright.ui.config.ts -g @slow",
     "test:api": "playwright test -c playwright.api.config.ts",
     "test:contract": "playwright test -c playwright.api.config.ts tests/contract",
     "test:pact:provider": "node src/contracts/pact/verify-provider-pacts.cjs",

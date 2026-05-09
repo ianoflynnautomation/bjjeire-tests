@@ -4,7 +4,7 @@ export type TemplateEntity = Readonly<{
   name: string;
 }>;
 
-const templateEntityFactory = defineFactory<void, TemplateEntity>({
+const templateEntityFactory = defineFactory<undefined, TemplateEntity>({
   defaults: () => ({
     name: 'template-entity',
   }),

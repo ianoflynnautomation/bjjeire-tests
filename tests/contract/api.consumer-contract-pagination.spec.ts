@@ -5,7 +5,7 @@ import { consumerPagedEndpoints } from './support/consumer-contract-cases';
 
 test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@contract'] }, () => {
   for (const { path } of consumerPagedEndpoints) {
-    test.describe(`${path}`, path === API_ROUTES.bjjEvents ? { tag: '@bjj-events' } : {}, () => {
+    test.describe(path, path === API_ROUTES.bjjEvents ? { tag: '@bjj-events' } : {}, () => {
       test('page 1 with pageSize=1 returns valid pagination metadata', async ({ apiClient }) => {
         const response = await rawRequest(apiClient, 'GET', path, {
           params: { page: 1, pageSize: 1 },

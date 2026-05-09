@@ -30,9 +30,7 @@ test.describe('BjjEire API OpenAPI spec quality', { tag: ['@api', '@contract'] }
 
     for (const [path, pathItem] of Object.entries(contract.paths)) {
       for (const [method, operation] of Object.entries(pathItem)) {
-        const op = operation as {
-          responses?: Record<string, { content?: Record<string, { schema?: { $ref?: string } }> }>;
-        };
+        const op = operation;
         if (!op.responses) continue;
 
         for (const [status, response] of Object.entries(op.responses)) {
@@ -73,8 +71,8 @@ test.describe('BjjEire API OpenAPI spec quality', { tag: ['@api', '@contract'] }
 
     for (const name of pagedSchemas) {
       const schema = contract.components?.schemas?.[name];
-      expect(schema?.properties?.['data'], `${name} should have 'data' property`).toBeDefined();
-      expect(schema?.properties?.['pagination'], `${name} should have 'pagination' property`).toBeDefined();
+      expect(schema?.properties?.data, `${name} should have 'data' property`).toBeDefined();
+      expect(schema?.properties?.pagination, `${name} should have 'pagination' property`).toBeDefined();
     }
   });
 });

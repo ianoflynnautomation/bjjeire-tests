@@ -1,11 +1,4 @@
-import {
-  MongoClient,
-  type Db,
-  type Collection,
-  type Document,
-  type Filter,
-  type OptionalUnlessRequiredId,
-} from 'mongodb';
+import { MongoClient, type Db, type Collection, type Document, type Filter } from 'mongodb';
 import { env } from '@shared/config';
 import type { RunId } from '@shared/types';
 
@@ -45,7 +38,7 @@ export async function seedCollection<T extends Document>(
 ): Promise<TaggedDoc<T>[]> {
   if (docs.length === 0) return [];
   const tagged = docs.map(doc => ({ ...doc, __runId: runId })) as TaggedDoc<T>[];
-  await db.collection<Document>(collection).insertMany(tagged as unknown as OptionalUnlessRequiredId<Document>[]);
+  await db.collection(collection).insertMany(tagged);
   return tagged;
 }
 

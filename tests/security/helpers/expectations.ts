@@ -1,7 +1,7 @@
 import { expect, type APIResponse } from '@playwright/test';
 
 const SERVER_ERROR_THRESHOLD = 500;
-const GATED_STATUSES: ReadonlyArray<number> = [401, 403, 404];
+const GATED_STATUSES: readonly number[] = [401, 403, 404];
 
 export function expectNoServerError(response: APIResponse, context?: string): void {
   const status = response.status();

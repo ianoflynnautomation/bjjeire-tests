@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 
-const LEAK_PATTERNS: ReadonlyArray<{ readonly label: string; readonly pattern: RegExp }> = [
+const LEAK_PATTERNS: readonly { readonly label: string; readonly pattern: RegExp }[] = [
   // Stack traces
   { label: 'stack trace frame (.NET)', pattern: /\bat\s+[A-Za-z_][\w.]*\s+in\s+.*:line\s+\d+/i },
   { label: 'stack trace frame (JS)', pattern: /\n\s+at\s+\S+.*:\d+:\d+/ },

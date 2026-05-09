@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-const SECRET_PATTERNS: ReadonlyArray<RegExp> = [
+const SECRET_PATTERNS: readonly RegExp[] = [
   /AKIA[0-9A-Z]{16}/,
   /mongodb:\/\/\S+/i,
   /client_secret/i,

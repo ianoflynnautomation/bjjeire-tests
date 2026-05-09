@@ -15,7 +15,7 @@ export async function createRequestContext(options: RequestContextOptions = {}):
     ...options.extraHeaders,
   };
   if (options.token) {
-    extraHTTPHeaders['authorization'] = `Bearer ${options.token}`;
+    extraHTTPHeaders.authorization = `Bearer ${options.token}`;
   }
   return request.newContext({
     baseURL: options.baseURL ?? env.apiUrl,

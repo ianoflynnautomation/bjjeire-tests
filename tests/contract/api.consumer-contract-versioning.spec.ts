@@ -23,7 +23,7 @@ test.describe('BjjEire API consumer contract — versioning', { tag: ['@api', '@
   test('v1 read endpoints return 200', async ({ apiClient }) => {
     const defaultReadEndpoints = consumerReadEndpoints.filter(([, path]) => path !== API_ROUTES.bjjEvents);
     for (const [method, path] of defaultReadEndpoints) {
-      const response = await rawRequest(apiClient, method as 'GET', path);
+      const response = await rawRequest(apiClient, method, path);
       expect(response.status(), `${method} ${path} should return 200`).toBe(200);
     }
   });

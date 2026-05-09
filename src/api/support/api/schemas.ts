@@ -176,7 +176,7 @@ export const problemDetailsSchema = z
     detail: z.string().optional(),
     instance: z.string().optional(),
   })
-  .passthrough();
+  .loose();
 
 // ─── Inferred types ──────────────────────────────────────────────────────────
 

@@ -47,7 +47,8 @@ export default [
       },
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
+      ...tsPlugin.configs['strict-type-checked'].rules,
+      ...tsPlugin.configs['stylistic-type-checked'].rules,
 
       'prettier/prettier': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
@@ -56,9 +57,14 @@ export default [
         'error',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        { allowNumber: true, allowBoolean: true, allowRegExp: true },
+      ],
 
       'no-console': 'warn',
       eqeqeq: ['error', 'always'],
@@ -75,6 +81,12 @@ export default [
       'playwright/no-conditional-in-test': 'off',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',
+      'playwright/no-networkidle': 'error',
+      'playwright/no-force-option': 'error',
+      'playwright/no-element-handle': 'error',
+      'playwright/no-page-pause': 'error',
+      'playwright/no-useless-await': 'error',
+      'playwright/no-useless-not': 'error',
       'playwright/expect-expect': [
         'error',
         { assertFunctionNames: ['expect'], assertFunctionPatterns: ['^expect', 'verify'] },

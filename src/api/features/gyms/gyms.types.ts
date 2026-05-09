@@ -63,5 +63,5 @@ export type GymDto = BaseApiEntityModel &
 
 export type GetGymsByCountyPaginationQuery = PaginationQuery &
   Readonly<{
-    county?: string | 'all';
+    county?: 'all' | (string & {});
   }>;

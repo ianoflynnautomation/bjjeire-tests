@@ -5,7 +5,7 @@ export function expectObjectSubset<TActual extends object>(
   expected: Partial<TActual>,
   label: string,
 ): void {
-  for (const fieldName of Object.keys(expected) as Array<keyof TActual>) {
+  for (const fieldName of Object.keys(expected) as (keyof TActual)[]) {
     assert.deepStrictEqual(
       actual[fieldName],
       expected[fieldName],
