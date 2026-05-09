@@ -2,10 +2,10 @@
 
 This repo uses two complementary snapshot kinds:
 
-| Kind | Matcher | What it covers | When to add |
-|---|---|---|---|
-| **ARIA** | `expect(locator).toMatchAriaSnapshot()` | DOM role / accessible name / hierarchy | Structural regressions on stable regions (page header, list shell, empty state) |
-| **Image** | `expect(target).toHaveScreenshot()` | Pixels: layout, spacing, colors | Brand-critical or visually-stable surfaces only |
+| Kind      | Matcher                                 | What it covers                         | When to add                                                                     |
+| --------- | --------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
+| **ARIA**  | `expect(locator).toMatchAriaSnapshot()` | DOM role / accessible name / hierarchy | Structural regressions on stable regions (page header, list shell, empty state) |
+| **Image** | `expect(target).toHaveScreenshot()`     | Pixels: layout, spacing, colors        | Brand-critical or visually-stable surfaces only                                 |
 
 If an assertion fits in one line of `expect(...)`, **don't snapshot it**. Snapshots earn their cost when they replace many fragile assertions on a stable region.
 

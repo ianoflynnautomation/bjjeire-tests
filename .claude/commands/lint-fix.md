@@ -1,6 +1,7 @@
 Run lint and typecheck, auto-fix what's possible, and report remaining issues.
 
 Steps:
+
 1. Run `npx eslint . --fix` to auto-fix lint errors
 2. Run `npx tsc --noEmit` to typecheck
 3. Run `npx prettier --check .` to verify formatting

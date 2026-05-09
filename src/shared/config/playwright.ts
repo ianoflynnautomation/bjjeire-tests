@@ -45,7 +45,7 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     grepInvert: IGNORED_TAGS_GREP,
     fullyParallel: true,
     forbidOnly: IS_CI,
-    retries: IS_CI ? 2 : 0,
+    retries: IS_CI ? 1 : 0,
     maxFailures: MAX_FAILURES,
     workers: IS_CI ? WORKERS.ci : WORKERS.local,
     timeout: TIMEOUTS.test,
@@ -65,6 +65,7 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     },
     snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}{ext}',
     updateSnapshots: 'missing',
+    reportSlowTests: { max: 10, threshold: 30_000 },
     use: {
       baseURL: env.baseUrl,
       headless: true,
@@ -76,11 +77,20 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
       testIdAttribute: 'data-testid',
       trace: 'on-first-retry',
       screenshot: 'only-on-failure',
-      video: 'on-first-retry',
+      video: 'retain-on-failure',
       actionTimeout: TIMEOUTS.action,
       navigationTimeout: TIMEOUTS.navigation,
+      bypassCSP: true,
+      serviceWorkers: 'block',
+      colorScheme: 'light',
+      contextOptions: {
+        reducedMotion: 'reduce',
+      },
+      launchOptions: {
+        args: ['--disable-dev-shm-usage'],
+      },
     },
-    captureGitInfo: { commit: true, diff: true },
+    captureGitInfo: { commit: true, diff: !IS_CI },
     ...overrides,
   });
 }

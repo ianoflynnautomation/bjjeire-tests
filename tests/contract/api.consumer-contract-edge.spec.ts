@@ -52,9 +52,7 @@ test.describe('BjjEire API consumer contract — edge cases', { tag: ['@api', '@
   test.describe('enum coverage', () => {
     test('string enum fields in the OpenAPI schema declare enum value arrays', async ({ apiClient }) => {
       const contract = await loadOpenApiContract(apiClient);
-      const enumFields = consumerSchemaFields.filter(f =>
-        ['status', 'county', 'type'].includes(f.fieldName),
-      );
+      const enumFields = consumerSchemaFields.filter(f => ['status', 'county', 'type'].includes(f.fieldName));
       const failures: string[] = [];
 
       for (const { schemaName, fieldName } of enumFields) {

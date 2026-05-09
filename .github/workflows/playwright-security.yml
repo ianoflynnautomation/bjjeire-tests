@@ -1,0 +1,184 @@
+# Reusable workflow: Playwright security regression for a deployed staging env.
+#
+# Small, focused suite: API-only, no sharding. Uses rate-limit serial mode; all
+# tests run in one job. Gated by the in-repo staging guard (refuses to run
+# against non-staging hosts).
+#
+# Typical consumer:
+#   security:
+#     needs: [deploy-staging]
+#     uses: <owner>/<test-repo>/.github/workflows/playwright-security.yml@<ref>
+#     with:
+#       api_base_url: https://api.staging.bjjeire.com
+#       base_url: https://staging.bjjeire.com
+
+name: Playwright Tests (Security)
+
+on:
+  workflow_call:
+    inputs:
+      api_base_url:
+        description: 'API_URL for the staging environment. Must contain "staging" in hostname.'
+        type: string
+        required: true
+      base_url:
+        description: 'BASE_URL for the staging frontend (used as trusted CORS origin).'
+        type: string
+        required: false
+        default: ''
+      readonly_disabled:
+        description: 'Set true to enable auth-bypass probes (alg:none, tampered/expired JWT). Requires the staging variant to have read-only mode OFF.'
+        type: boolean
+        required: false
+        default: false
+      test_tags:
+        description: 'Playwright grep filter. Default runs the full @security suite.'
+        type: string
+        required: false
+        default: '@security'
+      node_version:
+        description: 'Node.js version.'
+        type: string
+        required: false
+        default: '22'
+      playwright_image:
+        description: 'Container image. Pin to your @playwright/test version.'
+        type: string
+        required: false
+        default: 'mcr.microsoft.com/playwright:v1.59.1-noble'
+      test_repo:
+        description: 'Owner/repo holding the test code. Empty = caller repo.'
+        type: string
+        required: false
+        default: ''
+      test_repo_ref:
+        description: 'Git ref of the test repo to check out (tag, branch, or SHA).'
+        type: string
+        required: false
+        default: 'main'
+
+    outputs:
+      test_status:
+        description: 'success | failure — result of the security job.'
+        value: ${{ jobs.gate.outputs.status }}
+      failed_count:
+        description: 'Number of failed security tests (0 on green).'
+        value: ${{ jobs.security.outputs.failed_count }}
+      report_artifact_name:
+        description: 'Name of the HTML report artifact.'
+        value: playwright-security-report
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+  checks: write
+
+jobs:
+  security:
+    name: Security regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      failed_count: ${{ steps.summary.outputs.failed_count }}
+
+    container:
+      image: ${{ inputs.playwright_image }}
+      options: --ipc=host
+
+    env:
+      CI: 'true'
+      APP_ENV: staging
+      BASE_URL: ${{ inputs.base_url }}
+      API_URL: ${{ inputs.api_base_url }}
+      SECURITY_READONLY_DISABLED: ${{ inputs.readonly_disabled && '1' || '' }}
+
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.test_repo }}
+          ref: ${{ inputs.test_repo_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ inputs.playwright_image }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci --ignore-scripts
+
+      - name: Install Playwright browsers (cache miss only)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run security suite
+        run: |
+          args=(-c playwright.security.config.ts)
+          if [ -n "${{ inputs.test_tags }}" ]; then
+            args+=(--grep="${{ inputs.test_tags }}")
+          fi
+          npx playwright test "${args[@]}"
+
+      - name: Compute summary
+        id: summary
+        if: always()
+        shell: bash
+        run: |
+          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
+          echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-security-report
+          path: playwright-report/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload JSON results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-security-json
+          path: test-results/results.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-security-junit
+          path: test-results/junit.xml
+          retention-days: 30
+          if-no-files-found: ignore
+
+  gate:
+    name: Security gate
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always()
+    outputs:
+      status: ${{ steps.eval.outputs.status }}
+    steps:
+      - id: eval
+        shell: bash
+        run: |
+          result="${{ needs.security.result }}"
+          if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "status=success" >> "$GITHUB_OUTPUT"

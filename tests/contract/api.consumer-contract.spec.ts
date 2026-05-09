@@ -131,7 +131,9 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
       async ({ apiClient }) => {
         const contract = await loadOpenApiContract(apiClient);
         const event = buildBjjEvent(runId);
-        expectRequestBodyMatchesOpenApi(contract, 'POST', API_ROUTES.bjjEvents, { data: event } as unknown as JsonValue);
+        expectRequestBodyMatchesOpenApi(contract, 'POST', API_ROUTES.bjjEvents, {
+          data: event,
+        } as unknown as JsonValue);
       },
     );
 

@@ -17,8 +17,20 @@
     { "schemaName": "GymDto", "fieldName": "createdOnUtc", "type": "string", "nullable": false, "required": false },
     { "schemaName": "GymDto", "fieldName": "updatedOnUtc", "type": "string", "nullable": true, "required": false },
 
-    { "schemaName": "PagedResponseOfGymDto", "fieldName": "data", "type": "array", "nullable": false, "required": false },
-    { "schemaName": "PagedResponseOfGymDto", "fieldName": "pagination", "type": "object", "nullable": false, "required": false },
+    {
+      "schemaName": "PagedResponseOfGymDto",
+      "fieldName": "data",
+      "type": "array",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "PagedResponseOfGymDto",
+      "fieldName": "pagination",
+      "type": "object",
+      "nullable": false,
+      "required": false
+    },
 
     { "schemaName": "BjjEventDto", "fieldName": "id", "type": "string", "nullable": false, "required": true },
     { "schemaName": "BjjEventDto", "fieldName": "name", "type": "string", "nullable": false, "required": false },
@@ -34,30 +46,102 @@
     { "schemaName": "BjjEventDto", "fieldName": "organiser", "type": "object", "nullable": false, "required": false },
     { "schemaName": "BjjEventDto", "fieldName": "eventUrl", "type": "string", "nullable": false, "required": false },
     { "schemaName": "BjjEventDto", "fieldName": "imageUrl", "type": "string", "nullable": false, "required": false },
-    { "schemaName": "BjjEventDto", "fieldName": "createdOnUtc", "type": "string", "nullable": false, "required": false },
+    {
+      "schemaName": "BjjEventDto",
+      "fieldName": "createdOnUtc",
+      "type": "string",
+      "nullable": false,
+      "required": false
+    },
     { "schemaName": "BjjEventDto", "fieldName": "updatedOnUtc", "type": "string", "nullable": true, "required": false },
 
-    { "schemaName": "PagedResponseOfBjjEventDto", "fieldName": "data", "type": "array", "nullable": false, "required": false },
-    { "schemaName": "PagedResponseOfBjjEventDto", "fieldName": "pagination", "type": "object", "nullable": false, "required": false },
+    {
+      "schemaName": "PagedResponseOfBjjEventDto",
+      "fieldName": "data",
+      "type": "array",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "PagedResponseOfBjjEventDto",
+      "fieldName": "pagination",
+      "type": "object",
+      "nullable": false,
+      "required": false
+    },
 
     { "schemaName": "CompetitionDto", "fieldName": "id", "type": "string", "nullable": false, "required": true },
     { "schemaName": "CompetitionDto", "fieldName": "slug", "type": "string", "nullable": false, "required": false },
     { "schemaName": "CompetitionDto", "fieldName": "name", "type": "string", "nullable": false, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "description", "type": "string", "nullable": true, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "organisation", "type": "string", "nullable": false, "required": false },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "description",
+      "type": "string",
+      "nullable": true,
+      "required": false
+    },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "organisation",
+      "type": "string",
+      "nullable": false,
+      "required": false
+    },
     { "schemaName": "CompetitionDto", "fieldName": "country", "type": "string", "nullable": false, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "websiteUrl", "type": "string", "nullable": false, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "registrationUrl", "type": "string", "nullable": true, "required": false },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "websiteUrl",
+      "type": "string",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "registrationUrl",
+      "type": "string",
+      "nullable": true,
+      "required": false
+    },
     { "schemaName": "CompetitionDto", "fieldName": "logoUrl", "type": "string", "nullable": true, "required": false },
     { "schemaName": "CompetitionDto", "fieldName": "tags", "type": "array", "nullable": false, "required": false },
     { "schemaName": "CompetitionDto", "fieldName": "startDate", "type": "string", "nullable": true, "required": false },
     { "schemaName": "CompetitionDto", "fieldName": "endDate", "type": "string", "nullable": true, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "isActive", "type": "boolean", "nullable": false, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "createdOnUtc", "type": "string", "nullable": false, "required": false },
-    { "schemaName": "CompetitionDto", "fieldName": "updatedOnUtc", "type": "string", "nullable": true, "required": false },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "isActive",
+      "type": "boolean",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "createdOnUtc",
+      "type": "string",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "CompetitionDto",
+      "fieldName": "updatedOnUtc",
+      "type": "string",
+      "nullable": true,
+      "required": false
+    },
 
-    { "schemaName": "PagedResponseOfCompetitionDto", "fieldName": "data", "type": "array", "nullable": false, "required": false },
-    { "schemaName": "PagedResponseOfCompetitionDto", "fieldName": "pagination", "type": "object", "nullable": false, "required": false },
+    {
+      "schemaName": "PagedResponseOfCompetitionDto",
+      "fieldName": "data",
+      "type": "array",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "PagedResponseOfCompetitionDto",
+      "fieldName": "pagination",
+      "type": "object",
+      "nullable": false,
+      "required": false
+    },
 
     { "schemaName": "StoreDto", "fieldName": "id", "type": "string", "nullable": false, "required": true },
     { "schemaName": "StoreDto", "fieldName": "name", "type": "string", "nullable": false, "required": false },
@@ -68,7 +152,19 @@
     { "schemaName": "StoreDto", "fieldName": "createdOnUtc", "type": "string", "nullable": false, "required": false },
     { "schemaName": "StoreDto", "fieldName": "updatedOnUtc", "type": "string", "nullable": true, "required": false },
 
-    { "schemaName": "PagedResponseOfStoreDto", "fieldName": "data", "type": "array", "nullable": false, "required": false },
-    { "schemaName": "PagedResponseOfStoreDto", "fieldName": "pagination", "type": "object", "nullable": false, "required": false }
+    {
+      "schemaName": "PagedResponseOfStoreDto",
+      "fieldName": "data",
+      "type": "array",
+      "nullable": false,
+      "required": false
+    },
+    {
+      "schemaName": "PagedResponseOfStoreDto",
+      "fieldName": "pagination",
+      "type": "object",
+      "nullable": false,
+      "required": false
+    }
   ]
 }

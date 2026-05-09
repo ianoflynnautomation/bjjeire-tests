@@ -3,6 +3,7 @@ Scaffold a new feature slice following the project template.
 Usage: /add-feature <feature-name>
 
 Steps:
+
 1. Read `tests/features/_template/README.md` for the canonical layout
 2. Create the feature directory structure:
    - `tests/features/$ARGUMENTS/` — spec files

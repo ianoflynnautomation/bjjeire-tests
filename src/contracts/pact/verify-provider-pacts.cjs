@@ -45,10 +45,7 @@ function buildOptions() {
     options.pactBrokerUrl = pactBrokerUrl;
     options.enablePending = true;
     options.includeWipPactsSince = process.env.PACT_INCLUDE_WIP_SINCE || undefined;
-    options.consumerVersionSelectors = [
-      { mainBranch: true },
-      { deployedOrReleased: true },
-    ];
+    options.consumerVersionSelectors = [{ mainBranch: true }, { deployedOrReleased: true }];
   }
 
   if (process.env.PACT_BROKER_TOKEN) {

@@ -11,16 +11,17 @@ function routeToLabel(route: string): string {
 export async function navigateToRoute(page: Page, route: string): Promise<void> {
   const flagsReady = page
     .waitForResponse(resp => FEATURE_FLAGS_URL_PATTERN.test(resp.url()) && resp.ok(), {
-      timeout: TIMEOUTS.navigation,
+      timeout: TIMEOUTS.standard,
     })
     .catch(() => null);
 
   await page.goto(route);
-  await flagsReady;
 
   if (new URL(page.url()).pathname === route) {
     return;
   }
+
+  await flagsReady;
 
   const label = routeToLabel(route);
   await page.getByRole('navigation').getByRole('link', { name: label, exact: true }).first().click();

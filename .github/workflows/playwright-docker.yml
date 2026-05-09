@@ -47,10 +47,15 @@ on:
         required: false
         default: '@smoke|@regression'
       shard_total:
-        description: 'Number of parallel shards per project.'
+        description: 'Default number of parallel shards per project (overridable via project_shard_overrides).'
         type: number
         required: false
         default: 6
+      project_shard_overrides:
+        description: 'JSON object mapping project name to shard count. Projects not listed use shard_total. Example: {"api":3,"webkit-desktop":2}.'
+        type: string
+        required: false
+        default: '{"api":3,"firefox-desktop":4,"webkit-desktop":3,"chromium-wide":3}'
       playwright_projects:
         description: 'JSON array of Playwright project names to run.'
         type: string
@@ -76,6 +81,21 @@ on:
         type: string
         required: false
         default: 'main'
+      verify_provider_pacts:
+        description: 'When true, verify external consumer Pact contracts against the running API.'
+        type: boolean
+        required: false
+        default: false
+      pact_urls:
+        description: 'Newline- or comma-separated pact JSON URLs. Used when no Pact Broker is configured.'
+        type: string
+        required: false
+        default: ''
+      pact_broker_url:
+        description: 'Pact Broker URL for provider verification.'
+        type: string
+        required: false
+        default: ''
 
     secrets:
       GHCR_TOKEN:
@@ -94,6 +114,8 @@ on:
         required: false
       AZURE_AUTHORITY:
         required: false
+      PACT_BROKER_TOKEN:
+        required: false
 
     outputs:
       test_status:
@@ -111,6 +133,7 @@ permissions:
   id-token: write
   actions: read
   checks: write
+  packages: write
 
 jobs:
   setup:
@@ -118,30 +141,100 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       shard_matrix: ${{ steps.plan.outputs.shard_matrix }}
-      project_matrix: ${{ steps.plan.outputs.project_matrix }}
     steps:
       - id: plan
         shell: bash
+        env:
+          PROJECTS: ${{ inputs.playwright_projects }}
+          OVERRIDES: ${{ inputs.project_shard_overrides }}
+          DEFAULT_SHARDS: ${{ inputs.shard_total }}
         run: |
-          shards=$(seq 1 ${{ inputs.shard_total }} | jq -R -s -c 'split("\n")[:-1] | map(tonumber)')
-          projects='${{ inputs.playwright_projects }}'
-          project_matrix=$(echo "${projects}" | jq -c 'map({
-            name: .,
-            config: (if . == "api" then "playwright.api.config.ts" else "playwright.ui.config.ts" end)
-          })')
+          # Expand projects × per-project shard counts into a flat matrix.
+          # Each entry: { name, config, shard, shard_total }.
+          matrix=$(jq -nc \
+            --argjson projects "${PROJECTS}" \
+            --argjson overrides "${OVERRIDES:-{}}" \
+            --argjson defaultShards ${DEFAULT_SHARDS} '
+            $projects
+            | map(. as $p
+                | (($overrides[$p]) // $defaultShards) as $total
+                | [range(1; $total + 1)] | map({
+                    name: $p,
+                    config: (if $p == "api" then "playwright.api.config.ts" else "playwright.ui.config.ts" end),
+                    shard: .,
+                    shard_total: $total
+                  })
+              )
+            | add
+          ')
+          echo "shard_matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "Planned $(echo "${matrix}" | jq 'length') shard jobs"
 
-          echo "shard_matrix=${shards}" >> "$GITHUB_OUTPUT"
-          echo "project_matrix=${project_matrix}" >> "$GITHUB_OUTPUT"
+  build-image:
+    name: Build test-runner image
+    runs-on: ubuntu-latest
+    outputs:
+      image_ref: ${{ steps.image.outputs.ref }}
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.test_repo }}
+          ref: ${{ inputs.test_repo_ref }}
+
+      - name: Compute image ref
+        id: image
+        shell: bash
+        run: |
+          # Hash content that affects the image. Same hash = same image, reused across commits.
+          hash=$(sha256sum Dockerfile package-lock.json package.json | sha256sum | cut -c1-12)
+          owner_lc=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          ref="ghcr.io/${owner_lc}/bjjeire-playwright:${hash}"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "Image ref: ${ref}"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN || github.token }}
+
+      - name: Check if image already exists
+        id: check
+        shell: bash
+        run: |
+          if docker manifest inspect "${{ steps.image.outputs.ref }}" >/dev/null 2>&1; then
+            echo "Image already exists in GHCR — skipping build."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Image missing — will build and push."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.check.outputs.exists == 'false'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        if: steps.check.outputs.exists == 'false'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ steps.image.outputs.ref }}
+          push: true
+          cache-from: type=gha,scope=playwright-runner
+          cache-to: type=gha,scope=playwright-runner,mode=max
 
   docker-test:
-    name: Docker ${{ matrix.project.name }} ${{ matrix.shard }}/${{ inputs.shard_total }}
+    name: Docker ${{ matrix.shard.name }} ${{ matrix.shard.shard }}/${{ matrix.shard.shard_total }}
     runs-on: ubuntu-latest
-    needs: [setup]
+    needs: [setup, build-image]
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        project: ${{ fromJson(needs.setup.outputs.project_matrix) }}
         shard: ${{ fromJson(needs.setup.outputs.shard_matrix) }}
     env:
       CI: 'true'
@@ -157,17 +250,18 @@ jobs:
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
       AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+      PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+      RUNNER_IMAGE: ${{ needs.build-image.outputs.image_ref }}
     steps:
       - name: Checkout caller repo (compose sources)
         uses: actions/checkout@v6
 
       - name: Login to GHCR
-        if: env.GHCR_TOKEN != ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ env.GHCR_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN || github.token }}
 
       - name: Compute compose file args
         id: compose_args
@@ -194,9 +288,6 @@ jobs:
         run: |
           chmod +x "${{ inputs.compose_pre_up_script }}"
           "${{ inputs.compose_pre_up_script }}"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Docker compose up (build + wait for healthy)
         shell: bash
@@ -233,15 +324,51 @@ jobs:
           ref: ${{ inputs.test_repo_ref }}
           path: tests-checkout
 
-      - name: Build test-runner image
+      - name: Pull test-runner image
         shell: bash
-        working-directory: tests-checkout
         run: |
-          docker build \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --tag bjjeire-playwright:ci \
-            --file Dockerfile \
-            .
+          echo "Pulling ${RUNNER_IMAGE}"
+          docker pull "${RUNNER_IMAGE}"
+
+      - name: Download OpenAPI contract for API contract checks
+        if: matrix.shard.name == 'api'
+        shell: bash
+        run: |
+          curl -fsSL "${API_URL}/openapi/v1.json" -o tests-checkout/openapi-v1.json
+
+      - name: Lint OpenAPI contract
+        if: matrix.shard.name == 'api' && matrix.shard.shard == 1
+        shell: bash
+        run: |
+          docker run --rm \
+            --network host \
+            --ipc host \
+            -v "${{ github.workspace }}/tests-checkout/openapi-v1.json:/home/pwuser/app/openapi-v1.json:ro" \
+            -e CI=true \
+            "${RUNNER_IMAGE}" \
+            npm run lint:openapi
+
+      - name: Verify external consumer Pact contracts
+        if: inputs.verify_provider_pacts == true && matrix.shard.name == 'api' && matrix.shard.shard == 1
+        shell: bash
+        env:
+          PACT_URLS: ${{ inputs.pact_urls }}
+          PACT_BROKER_URL: ${{ inputs.pact_broker_url }}
+        run: |
+          docker run --rm \
+            --network host \
+            --ipc host \
+            -e CI=true \
+            -e API_URL="${API_URL}" \
+            -e PACT_URLS="${PACT_URLS}" \
+            -e PACT_BROKER_URL="${PACT_BROKER_URL}" \
+            -e PACT_BROKER_TOKEN="${PACT_BROKER_TOKEN}" \
+            -e PACT_PROVIDER_NAME="BjjEireApi" \
+            -e PACT_PUBLISH_VERIFICATION="true" \
+            -e GITHUB_SHA="${GITHUB_SHA}" \
+            -e GITHUB_REF_NAME="${GITHUB_REF_NAME}" \
+            "${RUNNER_IMAGE}" \
+            npm run test:pact:provider
 
       - name: Prepare report dirs
         shell: bash
@@ -254,24 +381,35 @@ jobs:
       - name: Run Playwright tests (in container)
         shell: bash
         run: |
-          name='${{ matrix.project.name }}'
-          config='${{ matrix.project.config }}'
+          name='${{ matrix.shard.name }}'
+          config='${{ matrix.shard.config }}'
+          shard='${{ matrix.shard.shard }}'
+          shard_total='${{ matrix.shard.shard_total }}'
 
-          echo "Running ${name} shard ${{ matrix.shard }}/${{ inputs.shard_total }} with ${config}"
+          echo "Running ${name} shard ${shard}/${shard_total} with ${config}"
 
           args=(
             test
             -c "$config"
             --project="$name"
-            --shard=${{ matrix.shard }}/${{ inputs.shard_total }}
+            --shard=${shard}/${shard_total}
           )
           if [ -n "${{ inputs.test_tags }}" ]; then
             args+=(--grep="${{ inputs.test_tags }}")
           fi
 
+          openapi_mount=()
+          if [ -f "${{ github.workspace }}/tests-checkout/openapi-v1.json" ]; then
+            openapi_mount=(
+              -v "${{ github.workspace }}/tests-checkout/openapi-v1.json:/home/pwuser/app/openapi-v1.json:ro"
+              -e OPENAPI_CONTRACT_PATH="/home/pwuser/app/openapi-v1.json"
+            )
+          fi
+
           docker run --rm \
             --network host \
             --ipc host \
+            "${openapi_mount[@]}" \
             -v "${{ github.workspace }}/tests-checkout/playwright-report:/home/pwuser/app/playwright-report" \
             -v "${{ github.workspace }}/tests-checkout/test-results:/home/pwuser/app/test-results" \
             -v "${{ github.workspace }}/tests-checkout/blob-report:/home/pwuser/app/blob-report" \
@@ -288,14 +426,14 @@ jobs:
             -e AZURE_CLIENT_SECRET="${AZURE_CLIENT_SECRET}" \
             -e AZURE_API_SCOPE="${AZURE_API_SCOPE}" \
             -e AZURE_AUTHORITY="${AZURE_AUTHORITY}" \
-            bjjeire-playwright:ci \
+            "${RUNNER_IMAGE}" \
             "${args[@]}"
 
       - name: Upload blob report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.project.name }}-shard-${{ matrix.shard }}-docker
+          name: blob-report-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: tests-checkout/blob-report/
           retention-days: 1
           if-no-files-found: ignore
@@ -304,7 +442,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: traces-${{ matrix.project.name }}-shard-${{ matrix.shard }}-docker
+          name: traces-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: tests-checkout/test-results/**/*.zip
           retention-days: 7
           if-no-files-found: ignore
