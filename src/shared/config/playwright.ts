@@ -26,6 +26,7 @@ const CUSTOM_LOGGER = './src/lib/reporters/custom-logger.ts';
 
 const CI_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['blob'],
+  ['github'],
   ['junit', { outputFile: 'test-results/junit.xml' }],
   [CUSTOM_LOGGER],
 ];

@@ -130,10 +130,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write
   actions: read
-  checks: write
-  packages: write
 
 jobs:
   setup:
@@ -173,6 +170,10 @@ jobs:
   build-image:
     name: Build test-runner image
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     outputs:
       image_ref: ${{ steps.image.outputs.ref }}
     steps:
@@ -186,12 +187,13 @@ jobs:
         id: image
         shell: bash
         run: |
-          # Hash content that affects the image. Same hash = same image, reused across commits.
+          set -euo pipefail
+          # Hash content that affects the image. Same hash means same image, reused across commits.
           hash=$(sha256sum Dockerfile package-lock.json package.json | sha256sum | cut -c1-12)
           owner_lc=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           ref="ghcr.io/${owner_lc}/bjjeire-playwright:${hash}"
           echo "ref=${ref}" >> "$GITHUB_OUTPUT"
-          echo "Image ref: ${ref}"
+          echo "::notice title=Runner image::${ref}"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -204,11 +206,12 @@ jobs:
         id: check
         shell: bash
         run: |
+          set -eo pipefail
           if docker manifest inspect "${{ steps.image.outputs.ref }}" >/dev/null 2>&1; then
-            echo "Image already exists in GHCR — skipping build."
+            echo "::notice title=Image cache hit::Skipping build; image already in GHCR"
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Image missing — will build and push."
+            echo "::notice title=Image cache miss::Building and pushing runner image"
             echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -232,6 +235,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, build-image]
     timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+      checks: write
     strategy:
       fail-fast: false
       matrix:
@@ -267,6 +274,7 @@ jobs:
         id: compose_args
         shell: bash
         run: |
+          set -eo pipefail
           args=""
           files_input='${{ inputs.compose_files }}'
           if [ -n "${files_input}" ]; then
@@ -280,20 +288,26 @@ jobs:
           fi
           args="$(echo "$args" | sed 's/^ *//')"
           echo "COMPOSE_ARGS=${args}" >> "$GITHUB_ENV"
-          echo "Using: ${args}"
+          echo "::notice title=Compose args::${args}"
 
       - name: Run pre-up script
         if: inputs.compose_pre_up_script != ''
         shell: bash
         run: |
+          set -euo pipefail
           chmod +x "${{ inputs.compose_pre_up_script }}"
           "${{ inputs.compose_pre_up_script }}"
 
       - name: Docker compose up (build + wait for healthy)
         shell: bash
         run: |
+          set -eo pipefail
+          echo "::group::docker compose up"
           docker compose $COMPOSE_ARGS up -d --build --wait --wait-timeout 300
+          echo "::endgroup::"
+          echo "::group::docker compose ps"
           docker compose $COMPOSE_ARGS ps
+          echo "::endgroup::"
 
       - name: Run Seed Data
         if: inputs.seed_data == true
@@ -305,16 +319,19 @@ jobs:
         if: inputs.compose_health_url != ''
         shell: bash
         run: |
+          set -eo pipefail
           url="${{ inputs.compose_health_url }}"
           for i in $(seq 1 60); do
             if curl -fsS --max-time 3 "$url" >/dev/null 2>&1; then
-              echo "health OK after ${i}s"
+              echo "::notice title=Health check::OK after ${i}s"
               exit 0
             fi
             sleep 2
           done
-          echo "::error::Health check failed for $url within 120s"
+          echo "::error title=Health check failed::No 200 from $url within 120s"
+          echo "::group::compose logs (tail 500)"
           docker compose $COMPOSE_ARGS logs --tail=500 || true
+          echo "::endgroup::"
           exit 1
 
       - name: Checkout test repo
@@ -327,8 +344,10 @@ jobs:
       - name: Pull test-runner image
         shell: bash
         run: |
-          echo "Pulling ${RUNNER_IMAGE}"
+          set -euo pipefail
+          echo "::group::docker pull ${RUNNER_IMAGE}"
           docker pull "${RUNNER_IMAGE}"
+          echo "::endgroup::"
 
       - name: Download OpenAPI contract for API contract checks
         if: matrix.shard.name == 'api'
@@ -381,12 +400,13 @@ jobs:
       - name: Run Playwright tests (in container)
         shell: bash
         run: |
+          set -eo pipefail
           name='${{ matrix.shard.name }}'
           config='${{ matrix.shard.config }}'
           shard='${{ matrix.shard.shard }}'
           shard_total='${{ matrix.shard.shard_total }}'
 
-          echo "Running ${name} shard ${shard}/${shard_total} with ${config}"
+          echo "::notice title=Shard::${name} ${shard}/${shard_total} (${config})"
 
           args=(
             test
@@ -406,6 +426,7 @@ jobs:
             )
           fi
 
+          echo "::group::playwright test (${name} ${shard}/${shard_total})"
           docker run --rm \
             --network host \
             --ipc host \
@@ -428,6 +449,7 @@ jobs:
             -e AZURE_AUTHORITY="${AZURE_AUTHORITY}" \
             "${RUNNER_IMAGE}" \
             "${args[@]}"
+          echo "::endgroup::"
 
       - name: Upload blob report
         if: always()
@@ -436,6 +458,7 @@ jobs:
           name: blob-report-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: tests-checkout/blob-report/
           retention-days: 1
+          compression-level: 9
           if-no-files-found: ignore
 
       - name: Upload traces
@@ -445,14 +468,19 @@ jobs:
           name: traces-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: tests-checkout/test-results/**/*.zip
           retention-days: 7
+          compression-level: 9
           if-no-files-found: ignore
 
       - name: Dump compose logs on failure
         if: failure()
         shell: bash
         run: |
+          echo "::group::docker compose ps"
           docker compose $COMPOSE_ARGS ps || true
+          echo "::endgroup::"
+          echo "::group::docker compose logs (tail 500)"
           docker compose $COMPOSE_ARGS logs --no-color --tail=500 || true
+          echo "::endgroup::"
 
       - name: Docker compose down
         if: always()
@@ -464,8 +492,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-test]
     if: always()
+    permissions:
+      contents: read
+      checks: write
     outputs:
       failed_count: ${{ steps.summary.outputs.failed_count }}
+      flaky_count: ${{ steps.summary.outputs.flaky_count }}
       report_artifact_name: playwright-html-report
     steps:
       - name: Checkout test repo
@@ -493,15 +525,21 @@ jobs:
           path: all-blob-reports
         continue-on-error: true
 
-      - name: Merge into HTML + JSON
+      - name: Merge reports (html + json + junit + github + custom summary + flakiness)
         id: merge
         shell: bash
         run: |
+          set -eo pipefail
           if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
+            echo "::warning title=Merge skipped::No blob reports found; nothing to merge"
             echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          npx playwright merge-reports --reporter html,json ./all-blob-reports
+          echo "::group::playwright merge-reports"
+          npx playwright merge-reports \
+            --reporter "html,json,junit,github,./src/lib/reporters/github-summary-reporter.ts,./src/lib/reporters/flakiness-reporter.ts" \
+            ./all-blob-reports
+          echo "::endgroup::"
           echo "skipped=false" >> "$GITHUB_OUTPUT"
 
       - name: Compute summary
@@ -509,8 +547,18 @@ jobs:
         if: steps.merge.outputs.skipped == 'false'
         shell: bash
         run: |
+          set -eo pipefail
           failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
+          flaky=$(jq '.totals.flaky // 0' test-results/flake-report.json 2>/dev/null || echo 0)
           echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
+          echo "flaky_count=${flaky:-0}" >> "$GITHUB_OUTPUT"
+          if [ "${failed:-0}" -gt 0 ]; then
+            echo "::error title=Tests failed::${failed} failed, ${flaky} flaky"
+          elif [ "${flaky:-0}" -gt 0 ]; then
+            echo "::warning title=Flaky tests::${flaky} test(s) passed only after retry"
+          else
+            echo "::notice title=All tests passed::0 failed, 0 flaky"
+          fi
 
       - name: Upload HTML report
         if: steps.merge.outputs.skipped == 'false'
@@ -519,6 +567,7 @@ jobs:
           name: playwright-html-report
           path: playwright-report/
           retention-days: 30
+          compression-level: 9
 
       - name: Upload JSON results
         if: steps.merge.outputs.skipped == 'false'
@@ -527,12 +576,105 @@ jobs:
           name: playwright-json-results
           path: test-results/results.json
           retention-days: 30
+          compression-level: 9
+
+      - name: Upload JUnit report
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit
+          path: test-results/junit.xml
+          retention-days: 90
+          compression-level: 9
+          if-no-files-found: ignore
+
+      - name: Upload flake report
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-flake-report
+          path: test-results/flake-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  pr-comment:
+    name: PR comment
+    runs-on: ubuntu-latest
+    needs: [merge-reports, gate]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # Posts (or updates in place) a single PR comment per workflow using the
+      # native GitHub REST API via actions/github-script. Idempotency comes
+      # from a hidden HTML marker in the comment body.
+      - name: Upsert PR comment
+        uses: actions/github-script@v7
+        env:
+          STATUS: ${{ needs.gate.outputs.status }}
+          FAILED: ${{ needs.merge-reports.outputs.failed_count }}
+          FLAKY: ${{ needs.merge-reports.outputs.flaky_count }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPORT_NAME: ${{ needs.merge-reports.outputs.report_artifact_name }}
+        with:
+          script: |
+            const marker = '<!-- playwright-docker-report -->';
+            const status = process.env.STATUS || 'unknown';
+            const failed = process.env.FAILED || '0';
+            const flaky = process.env.FLAKY || '0';
+            const runUrl = process.env.RUN_URL || '';
+            const reportName = process.env.REPORT_NAME || '';
+            const label = status === 'success' ? 'PASS' : 'FAIL';
+
+            const body = [
+              marker,
+              `## Playwright Docker tests: ${label}`,
+              '',
+              '| Result | Failed | Flaky |',
+              '|--------|-------:|------:|',
+              `| \`${status}\` | ${failed} | ${flaky} |`,
+              '',
+              `HTML report artifact: \`${reportName}\` (download from the run page)`,
+              `Workflow run: ${runUrl}`,
+            ].join('\n');
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              core.notice(`Updated PR comment ${existing.id} on #${issue_number}`);
+            } else {
+              const { data: created } = await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+              core.notice(`Created PR comment ${created.id} on #${issue_number}`);
+            }
 
   gate:
     name: Result gate
     runs-on: ubuntu-latest
     needs: [docker-test]
     if: always()
+    permissions:
+      contents: read
     outputs:
       status: ${{ steps.eval.outputs.status }}
     steps:
