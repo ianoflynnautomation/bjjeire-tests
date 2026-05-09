@@ -96,16 +96,18 @@ on:
         description: 'Name of the merged HTML report artifact.'
         value: ${{ jobs.e2e.outputs.report_artifact_name }}
 
+# Top-level permissions are the floor. Each job overrides downward.
 permissions:
   contents: read
-  id-token: write
   actions: read
-  checks: write
 
 jobs:
   provision-env:
     name: Provision terraform env
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       base_url: ${{ steps.urls.outputs.base_url }}
       api_base_url: ${{ steps.urls.outputs.api_base_url }}
@@ -130,13 +132,20 @@ jobs:
         working-directory: ${{ inputs.terraform_dir }}
         shell: bash
         run: |
+          set -eo pipefail
+          echo "::group::terraform init"
           terraform init -input=false
+          echo "::endgroup::"
+          echo "::group::terraform workspace"
           terraform workspace select -or-create "${{ inputs.terraform_workspace }}"
+          echo "::endgroup::"
+          echo "::group::terraform apply"
           if [ -n "${{ inputs.terraform_var_file }}" ]; then
             terraform apply -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
           else
             terraform apply -auto-approve -input=false
           fi
+          echo "::endgroup::"
           {
             echo "base_url=$(terraform output -raw base_url)"
             echo "api_base_url=$(terraform output -raw api_base_url)"
@@ -146,12 +155,14 @@ jobs:
         id: urls
         shell: bash
         run: |
+          set -eo pipefail
           base="${{ inputs.base_url }}"
           api="${{ inputs.api_base_url }}"
           base="${base:-${{ steps.tf.outputs.base_url }}}"
           api="${api:-${{ steps.tf.outputs.api_base_url }}}"
           echo "base_url=${base}" >> "$GITHUB_OUTPUT"
           echo "api_base_url=${api}" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Provisioned URLs::base=${base} api=${api}"
 
   e2e:
     name: Run Playwright matrix
@@ -181,6 +192,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [provision-env, e2e]
     if: always() && needs.provision-env.result == 'success'
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout caller repo
         uses: actions/checkout@v6
@@ -201,10 +215,16 @@ jobs:
         working-directory: ${{ inputs.terraform_dir }}
         shell: bash
         run: |
+          set -eo pipefail
+          echo "::group::terraform init"
           terraform init -input=false
+          echo "::endgroup::"
           terraform workspace select "${{ inputs.terraform_workspace }}"
+          echo "::group::terraform destroy"
           if [ -n "${{ inputs.terraform_var_file }}" ]; then
             terraform destroy -auto-approve -input=false -var-file="${{ inputs.terraform_var_file }}"
           else
             terraform destroy -auto-approve -input=false
           fi
+          echo "::endgroup::"
+          echo "::notice title=Teardown complete::workspace ${{ inputs.terraform_workspace }} destroyed"
