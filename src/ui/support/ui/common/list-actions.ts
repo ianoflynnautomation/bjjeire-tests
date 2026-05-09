@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { TIMEOUTS } from '@shared/config';
 
-const FEATURE_FLAGS_URL_PATTERN = /\/api\/featureflag/i;
+const FEATURE_FLAGS_URL_PATTERN = /\/api\/(?:v\d+\/)?featureflag/i;
 
 function routeToLabel(route: string): string {
   const trimmed = route.replace(/^\//, '');
@@ -17,11 +17,13 @@ export async function navigateToRoute(page: Page, route: string): Promise<void> 
 
   await page.goto(route);
 
+  // Feature-flagged routes redirect to /about during the first render (before
+  // flags load). Wait for flags so the redirect settles before we check URL.
+  await flagsReady;
+
   if (new URL(page.url()).pathname === route) {
     return;
   }
-
-  await flagsReady;
 
   const label = routeToLabel(route);
   await page.getByRole('navigation').getByRole('link', { name: label, exact: true }).first().click();
