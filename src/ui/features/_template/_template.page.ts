@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
-import { getPage, gotoURL } from '@ui/support/ui';
+import { getLocatorByRole, getPage, gotoURL } from '@ui/support/ui';
 
-const main = () => getPage().getByRole('main');
+const main = () => getLocatorByRole('main');
 
 export async function navigate(): Promise<void> {
   await gotoURL(getPage(), '/template');

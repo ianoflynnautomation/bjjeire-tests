@@ -9,6 +9,7 @@ import {
   expectResultCount as expectRowCount,
   expectSearchValue as expectInputValue,
   expectTitle as expectLocatorTitle,
+  getLocatorByTestId,
   getPage,
   navigateToRoute,
   search as fillSearchInput,
@@ -42,17 +43,17 @@ const EMPTY_STATE = {
   messageLine2: 'Try adjusting your filters or check back later.',
 } as const;
 
-const header = () => getPage().getByTestId(TEST_IDS.header);
-const headerTitle = () => getPage().getByTestId(TEST_IDS.headerTitle);
-const searchContainer = () => getPage().getByTestId(TEST_IDS.search);
+const header = () => getLocatorByTestId(TEST_IDS.header);
+const headerTitle = () => getLocatorByTestId(TEST_IDS.headerTitle);
+const searchContainer = () => getLocatorByTestId(TEST_IDS.search);
 const searchInput = () => searchContainer().getByTestId(TEST_IDS.searchInput);
 const clearSearchButton = () => searchContainer().getByTestId(TEST_IDS.clearSearchButton);
-const list = () => getPage().getByTestId(TEST_IDS.list);
-const listItems = () => getPage().getByTestId(TEST_IDS.listItem);
-const emptyState = () => getPage().getByTestId(TEST_IDS.emptyState);
-const emptyStateTitle = () => getPage().getByTestId(TEST_IDS.emptyStateTitle);
-const emptyStateMessage1 = () => getPage().getByTestId(TEST_IDS.emptyStateMessageLine1);
-const emptyStateMessage2 = () => getPage().getByTestId(TEST_IDS.emptyStateMessageLine2);
+const list = () => getLocatorByTestId(TEST_IDS.list);
+const listItems = () => getLocatorByTestId(TEST_IDS.listItem);
+const emptyState = () => getLocatorByTestId(TEST_IDS.emptyState);
+const emptyStateTitle = () => getLocatorByTestId(TEST_IDS.emptyStateTitle);
+const emptyStateMessage1 = () => getLocatorByTestId(TEST_IDS.emptyStateMessageLine1);
+const emptyStateMessage2 = () => getLocatorByTestId(TEST_IDS.emptyStateMessageLine2);
 const competitionCard = (name: string) => cardByName(getPage(), listItems(), TEST_IDS.cardName, name);
 
 function snapshotRegion(region: ListPageRegion): Locator {

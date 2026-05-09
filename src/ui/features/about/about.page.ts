@@ -1,14 +1,21 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { getPage, gotoURL, stabilizeForSnapshot, type SnapshotMaskOption } from '@ui/support/ui';
+import {
+  getLocatorByRole,
+  getLocatorByTestId,
+  getPage,
+  gotoURL,
+  stabilizeForSnapshot,
+  type SnapshotMaskOption,
+} from '@ui/support/ui';
 
 export type AboutScreenshotRegion = 'page' | 'mission' | 'values' | 'contact' | 'headerTitle';
 export type AboutAriaRegion = Exclude<AboutScreenshotRegion, 'page'>;
 
-const main = () => getPage().getByRole('main');
-const headerTitle = () => getPage().getByTestId('about-page-header-title');
-const mission = () => getPage().getByTestId('about-mission-section');
-const values = () => getPage().getByTestId('about-values-section');
-const contact = () => getPage().getByTestId('about-contact-section');
+const main = () => getLocatorByRole('main');
+const headerTitle = () => getLocatorByTestId('about-page-header-title');
+const mission = () => getLocatorByTestId('about-mission-section');
+const values = () => getLocatorByTestId('about-values-section');
+const contact = () => getLocatorByTestId('about-contact-section');
 
 function ariaRegion(region: AboutAriaRegion): Locator {
   const regions: Record<AboutAriaRegion, Locator> = {
