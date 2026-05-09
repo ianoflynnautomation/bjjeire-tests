@@ -1,9 +1,10 @@
-import { createEntityId } from '@api/support/factories';
+import { createEntityId, defineFactory } from '@api/support/factories';
 import type { RunId } from '@shared/types';
-import { BjjEventType, EventStatus, PricingType, type BjjEventDto } from './events.api';
+import { BjjEventType, EventStatus, PricingType } from './events.api';
+import type { BjjEventDto } from './events.api';
 
-export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}): BjjEventDto {
-  return {
+const bjjEventFactory = defineFactory<RunId, BjjEventDto>({
+  defaults: runId => ({
     id: createEntityId(),
     name: `Test Event ${runId}`,
     description: 'Event created by test factory',
@@ -25,9 +26,7 @@ export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}
         longitude: -6.2395,
       },
     },
-    schedule: {
-      hours: [],
-    },
+    schedule: { hours: [] },
     pricing: {
       type: PricingType.Free,
       amount: 0,
@@ -35,6 +34,7 @@ export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}
     },
     eventUrl: 'https://example.com/events/test-event',
     imageUrl: 'https://example.com/images/test-event.jpg',
-    ...overrides,
-  };
-}
+  }),
+});
+
+export const buildBjjEvent = bjjEventFactory.build;

@@ -2,6 +2,44 @@ import { loadEnvForProfile, resolveProfile, type Profile } from './profile';
 
 loadEnvForProfile();
 
+const REMOTE_PROFILES: readonly Profile[] = ['staging', 'production'];
+
+const DEFAULT_AZURE_AUTHORITY_PREFIX = 'https://login.microsoftonline.com';
+
+export type AzureConfig = Readonly<{
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  apiScope: string;
+  authority: string;
+}>;
+
+type ProfileDefaults = Readonly<{
+  baseUrl: string;
+  apiUrl: string;
+  mongoUrl: string;
+}>;
+
+const PROFILE_DEFAULTS: Record<Profile, ProfileDefaults> = {
+  local: {
+    baseUrl: 'http://localhost:3000',
+    apiUrl: 'http://localhost:5000',
+    mongoUrl: 'mongodb://localhost:27017',
+  },
+  docker: {
+    baseUrl: 'http://localhost:3000',
+    apiUrl: 'http://localhost:5003',
+    mongoUrl: 'mongodb://localhost:27017',
+  },
+  testcontainers: {
+    baseUrl: 'http://localhost:3000',
+    apiUrl: 'http://localhost:5000',
+    mongoUrl: '',
+  },
+  staging: { baseUrl: '', apiUrl: '', mongoUrl: '' },
+  production: { baseUrl: '', apiUrl: '', mongoUrl: '' },
+};
+
 function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
@@ -23,37 +61,17 @@ function readFlag(name: string, fallback: boolean): boolean {
   return raw === 'true' || raw === '1' || raw === 'yes';
 }
 
+function isRemoteProfile(profile: Profile): boolean {
+  return REMOTE_PROFILES.includes(profile);
+}
+
 const PROFILE: Profile = resolveProfile();
-
-type ProfileDefaults = { baseUrl: string; apiUrl: string; mongoUrl: string };
-
-const PROFILE_DEFAULTS: Record<Profile, ProfileDefaults> = {
-  local: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: 'mongodb://localhost:27017',
-  },
-  docker: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: 'mongodb://localhost:27017',
-  },
-  testcontainers: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: '',
-  },
-  staging: { baseUrl: '', apiUrl: '', mongoUrl: '' },
-  production: { baseUrl: '', apiUrl: '', mongoUrl: '' },
-};
-
 const defaults = PROFILE_DEFAULTS[PROFILE];
-const remoteProfile = PROFILE === 'staging' || PROFILE === 'production';
 
 const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
 const apiUrl = stripTrailingSlash(pick('API_URL', defaults.apiUrl));
 
-if (remoteProfile) {
+if (isRemoteProfile(PROFILE)) {
   if (!baseUrl) throw new Error(`BASE_URL is required for profile '${PROFILE}'`);
   if (!apiUrl) throw new Error(`API_URL is required for profile '${PROFILE}'`);
 }
@@ -77,19 +95,13 @@ export const env = Object.freeze({
 
 export type Env = typeof env;
 
-export function requireAzureConfig(): {
-  tenantId: string;
-  clientId: string;
-  clientSecret: string;
-  apiScope: string;
-  authority: string;
-} {
+export function requireAzureConfig(): AzureConfig {
   const tenantId = readRequired('AZURE_TENANT_ID');
   return {
     tenantId,
     clientId: readRequired('AZURE_CLIENT_ID'),
     clientSecret: readRequired('AZURE_CLIENT_SECRET'),
     apiScope: readRequired('AZURE_API_SCOPE'),
-    authority: env.azure.authority || `https://login.microsoftonline.com/${tenantId}`,
+    authority: env.azure.authority || `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
   };
 }

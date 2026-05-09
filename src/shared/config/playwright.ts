@@ -4,34 +4,52 @@ import { TIMEOUTS } from './timeouts';
 
 const IS_CI = env.isCI;
 
-export const localWorkers = '50%';
-export const ciWorkers = '100%';
+const WORKERS = { local: '50%', ci: '100%' } as const;
+const MAX_FAILURES = 1;
 
-export const ciReporters: NonNullable<PlaywrightTestConfig['reporter']> = [
-  ['blob'],
-  ['junit', { outputFile: 'test-results/junit.xml' }],
-  ['./src/lib/reporters/custom-logger.ts'],
+const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
+const WIDE_VIEWPORT = { width: 1728, height: 1117 };
+
+const UI_TEST_MATCH = /.*\.ui\.acceptance\.spec\.ts$/;
+const SNAPSHOT_TEST_MATCH = /.*\.snapshot\.acceptance\.spec\.ts$/;
+const API_TEST_MATCH = [
+  /.*\.api\.acceptance\.spec\.ts$/,
+  /.*\.api\.smoke\.spec\.ts$/,
+  /.*consumer-contract.*\.spec\.ts$/,
 ];
 
-export const localReporters: NonNullable<PlaywrightTestConfig['reporter']> = [
+const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
+const IGNORED_TAGS_GREP = /@bjj-events/;
+
+const CUSTOM_LOGGER = './src/lib/reporters/custom-logger.ts';
+
+const CI_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
+  ['blob'],
+  ['junit', { outputFile: 'test-results/junit.xml' }],
+  [CUSTOM_LOGGER],
+];
+
+const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['list'],
   ['html', { open: 'never', outputFolder: 'playwright-report' }],
   ['json', { outputFile: 'test-results/results.json' }],
   ['junit', { outputFile: 'test-results/junit.xml' }],
   ['allure-playwright', { resultsDir: 'allure-results' }],
-  ['./src/lib/reporters/custom-logger.ts'],
+  [CUSTOM_LOGGER],
 ];
 
 export function createBaseConfig(overrides: PlaywrightTestConfig = {}): PlaywrightTestConfig {
   return defineConfig({
-    testDir: './tests/features',
+    testDir: './tests',
     testIgnore: /.*\/_template\/.*/,
+    grepInvert: IGNORED_TAGS_GREP,
     fullyParallel: true,
     forbidOnly: IS_CI,
     retries: IS_CI ? 2 : 0,
-    workers: IS_CI ? ciWorkers : localWorkers,
+    maxFailures: MAX_FAILURES,
+    workers: IS_CI ? WORKERS.ci : WORKERS.local,
     timeout: TIMEOUTS.test,
-    reporter: IS_CI ? ciReporters : localReporters,
+    reporter: IS_CI ? CI_REPORTERS : LOCAL_REPORTERS,
     expect: {
       timeout: TIMEOUTS.expect,
       toHaveScreenshot: {
@@ -46,13 +64,13 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
       },
     },
     snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}{ext}',
-    updateSnapshots: IS_CI ? 'missing' : 'missing',
+    updateSnapshots: 'missing',
     use: {
       baseURL: env.baseUrl,
       headless: true,
       locale: 'en-IE',
       timezoneId: 'Europe/Dublin',
-      viewport: { width: 1440, height: 900 },
+      viewport: DESKTOP_VIEWPORT,
       ignoreHTTPSErrors: env.acceptInvalidCerts,
       acceptDownloads: true,
       testIdAttribute: 'data-testid',
@@ -71,44 +89,29 @@ export function createUiProjects(): Project[] {
   return [
     {
       name: 'chromium-desktop',
-      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: { width: 1440, height: 900 },
-      },
+      testMatch: UI_TEST_MATCH,
+      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT },
     },
     {
       name: 'snapshots',
-      testMatch: /.*\.snapshot\.acceptance\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: { width: 1440, height: 900 },
-      },
+      testMatch: SNAPSHOT_TEST_MATCH,
+      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT },
     },
     {
       name: 'firefox-desktop',
-      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Firefox'],
-        viewport: { width: 1440, height: 900 },
-      },
+      testMatch: UI_TEST_MATCH,
+      use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT },
     },
     {
       name: 'webkit-desktop',
-      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
-      use: {
-        ...devices['Desktop Safari'],
-        viewport: { width: 1440, height: 900 },
-      },
+      testMatch: UI_TEST_MATCH,
+      use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT },
     },
     {
       name: 'chromium-wide',
-      testMatch: /.*\.ui\.acceptance\.spec\.ts$/,
-      grep: /@desktop|@smoke|@acceptance/,
-      use: {
-        ...devices['Desktop Chrome'],
-        viewport: { width: 1728, height: 1117 },
-      },
+      testMatch: UI_TEST_MATCH,
+      grep: WIDE_TAGS_GREP,
+      use: { ...devices['Desktop Chrome'], viewport: WIDE_VIEWPORT },
     },
   ];
 }
@@ -117,7 +120,7 @@ export function createApiProjects(): Project[] {
   return [
     {
       name: 'api',
-      testMatch: /.*\.api\.acceptance\.spec\.ts$/,
+      testMatch: API_TEST_MATCH,
       use: {
         baseURL: env.apiUrl,
         ignoreHTTPSErrors: env.acceptInvalidCerts,

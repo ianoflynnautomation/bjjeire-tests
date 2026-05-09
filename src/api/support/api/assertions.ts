@@ -3,15 +3,17 @@ import type { ZodType } from 'zod';
 
 export type HeaderMatcher = string | RegExp;
 
-export function verifyStatusCode(response: APIResponse, expected: number): void {
+const CONTENT_TYPE_HEADER = 'content-type';
+
+function verifyStatusCode(response: APIResponse, expected: number): void {
   expect(response.status()).toBe(expected);
 }
 
-export function verifyStatusCodeIn(response: APIResponse, expected: readonly number[]): void {
+function verifyStatusCodeIn(response: APIResponse, expected: readonly number[]): void {
   expect(expected).toContain(response.status());
 }
 
-export function verifyResponseHeader(response: APIResponse, name: string, expected: HeaderMatcher): void {
+function verifyResponseHeader(response: APIResponse, name: string, expected: HeaderMatcher): void {
   const headers = response.headers();
   const actual = headers[name.toLowerCase()];
   expect(actual, `Header '${name}' missing from response`).toBeDefined();
@@ -22,7 +24,7 @@ export function verifyResponseHeader(response: APIResponse, name: string, expect
   }
 }
 
-export async function verifyResponseBody<T>(response: APIResponse, schema: ZodType<T>): Promise<T> {
+async function verifyResponseBody<T>(response: APIResponse, schema: ZodType<T>): Promise<T> {
   const json = (await response.json()) as unknown;
   const parsed = schema.safeParse(json);
   if (!parsed.success) {
@@ -34,25 +36,21 @@ export async function verifyResponseBody<T>(response: APIResponse, schema: ZodTy
   return parsed.data;
 }
 
-export async function verifyResponseJson(response: APIResponse, expected: Record<string, unknown>): Promise<void> {
+async function verifyResponseJson(response: APIResponse, expected: Record<string, unknown>): Promise<void> {
   const json = (await response.json()) as Record<string, unknown>;
   expect(json).toMatchObject(expected);
 }
 
+export type ApiExpect = Readonly<{
+  status: (expected: number) => ApiExpect;
+  statusIn: (expected: readonly number[]) => ApiExpect;
+  header: (name: string, matcher: HeaderMatcher) => ApiExpect;
+  contentType: (matcher: HeaderMatcher) => ApiExpect;
+  body: <T>(schema: ZodType<T>) => Promise<T>;
+  matches: (shape: Record<string, unknown>) => Promise<void>;
+}>;
+
 export function expectApi(response: APIResponse): ApiExpect {
-  return createApiExpect(response);
-}
-
-export type ApiExpect = {
-  readonly status: (expected: number) => ApiExpect;
-  readonly statusIn: (expected: readonly number[]) => ApiExpect;
-  readonly header: (name: string, matcher: HeaderMatcher) => ApiExpect;
-  readonly contentType: (matcher: HeaderMatcher) => ApiExpect;
-  readonly body: <T>(schema: ZodType<T>) => Promise<T>;
-  readonly matches: (shape: Record<string, unknown>) => Promise<void>;
-};
-
-function createApiExpect(response: APIResponse): ApiExpect {
   const chain: ApiExpect = {
     status(expected) {
       verifyStatusCode(response, expected);
@@ -67,14 +65,14 @@ function createApiExpect(response: APIResponse): ApiExpect {
       return chain;
     },
     contentType(matcher) {
-      verifyResponseHeader(response, 'content-type', matcher);
+      verifyResponseHeader(response, CONTENT_TYPE_HEADER, matcher);
       return chain;
     },
-    async body<T>(schema: ZodType<T>) {
+    body(schema) {
       return verifyResponseBody(response, schema);
     },
-    async matches(shape) {
-      await verifyResponseJson(response, shape);
+    matches(shape) {
+      return verifyResponseJson(response, shape);
     },
   };
   return chain;

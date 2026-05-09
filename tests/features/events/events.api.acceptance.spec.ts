@@ -2,11 +2,7 @@ import { test, expect } from '@shared/fixtures';
 import { getBjjEvents } from '@api/features/events/events.api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
-test.describe('Events API Acceptance', { tag: ['@events', '@api'] }, () => {
-  test.beforeEach(({ featureFlags }) => {
-    test.skip(!featureFlags.BjjEvents, "feature 'BjjEvents' disabled");
-  });
-
+test.describe('Events API Acceptance', { tag: ['@bjj-events', '@events', '@api'] }, () => {
   test(
     'GET /api/v1/BjjEvent returns PagedResponse<BjjEventDto>',
     { tag: ['@smoke', '@acceptance'] },

@@ -1,6 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { TIMEOUTS } from '@shared/config';
 
+const FEATURE_FLAGS_URL_PATTERN = /\/api\/featureflag/i;
+
 function routeToLabel(route: string): string {
   const trimmed = route.replace(/^\//, '');
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
@@ -8,7 +10,7 @@ function routeToLabel(route: string): string {
 
 export async function navigateToRoute(page: Page, route: string): Promise<void> {
   const flagsReady = page
-    .waitForResponse(resp => /\/api\/featureflag/i.test(resp.url()) && resp.ok(), {
+    .waitForResponse(resp => FEATURE_FLAGS_URL_PATTERN.test(resp.url()) && resp.ok(), {
       timeout: TIMEOUTS.navigation,
     })
     .catch(() => null);

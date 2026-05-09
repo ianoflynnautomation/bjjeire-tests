@@ -1,6 +1,7 @@
 import type { Page, Response } from '@playwright/test';
-import type { GotoOptions } from '@ui/support/types';
 import { LOADSTATE } from '@shared/config';
+
+type GotoOptions = Parameters<Page['goto']>[1];
 
 export async function gotoURL(
   page: Page,

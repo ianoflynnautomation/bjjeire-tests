@@ -1,16 +1,14 @@
 import type { APIRequestContext } from '@playwright/test';
-import { getTyped, type PaginatedResponse } from '@api/support/api';
+import { API_ROUTES, getTyped, type PaginatedResponse } from '@api/support/api';
 import type { CompetitionDto, GetCompetitionsPaginationQuery } from './competitions.types';
 
 export type { CompetitionDto } from './competitions.types';
-
-const endpoint: string = '/api/v1/competition';
 
 export async function getCompetitions(
   request: APIRequestContext,
   { page = 1, pageSize = 25 }: GetCompetitionsPaginationQuery = {},
 ): Promise<PaginatedResponse<CompetitionDto>> {
-  return getTyped<PaginatedResponse<CompetitionDto>>(request, endpoint, {
+  return getTyped<PaginatedResponse<CompetitionDto>>(request, API_ROUTES.competitions, {
     params: { page, pageSize },
   });
 }

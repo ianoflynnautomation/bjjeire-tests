@@ -1,11 +1,10 @@
-import { createEntityId } from '@api/support/factories';
+import { createEntityId, defineFactory } from '@api/support/factories';
 import type { RunId } from '@shared/types';
-import { GymStatus, type GymDto } from './gyms.api';
+import { GymStatus } from './gyms.api';
+import type { GymDto } from './gyms.api';
 
-export type NewGym = Omit<GymDto, 'id'> & { id: string };
-
-export function buildGym(runId: RunId, overrides: Partial<GymDto> = {}): NewGym {
-  return {
+const gymFactory = defineFactory<RunId, GymDto>({
+  defaults: runId => ({
     id: createEntityId(),
     name: `Test Gym ${runId}`,
     status: GymStatus.Active,
@@ -21,16 +20,9 @@ export function buildGym(runId: RunId, overrides: Partial<GymDto> = {}): NewGym 
         longitude: -6.2395,
       },
     },
-    trialOffer: {
-      isAvailable: false,
-    },
+    trialOffer: { isAvailable: false },
     offeredClasses: [],
-    ...overrides,
-  };
-}
+  }),
+});
 
-export function buildGyms(runId: RunId, count: number, overrides: Partial<GymDto> = {}): NewGym[] {
-  return Array.from({ length: count }, (_, i) =>
-    buildGym(runId, { ...overrides, name: `${overrides.name ?? 'Test Gym'} ${i + 1}` }),
-  );
-}
+export const buildGym = gymFactory.build;

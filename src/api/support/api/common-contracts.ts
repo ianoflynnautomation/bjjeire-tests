@@ -1,4 +1,4 @@
-export interface HateoasPagination {
+export type HateoasPagination = Readonly<{
   totalItems: number;
   currentPage: number;
   pageSize: number;
@@ -7,37 +7,37 @@ export interface HateoasPagination {
   hasPreviousPage: boolean;
   nextPageUrl?: string | null;
   previousPageUrl?: string | null;
-}
+}>;
 
-export interface PaginatedResponse<T> {
-  data: T[];
+export type PaginatedResponse<T> = Readonly<{
+  data: readonly T[];
   pagination: HateoasPagination;
-}
+}>;
 
-export interface BaseApiEntityModel {
+export type BaseApiEntityModel = Readonly<{
   id?: string;
   createdOnUtc?: string | null;
   updatedOnUtc?: string | null;
-}
+}>;
 
-export interface GeoCoordinatesDto {
+export type GeoCoordinatesDto = Readonly<{
   type: 'Point';
-  coordinates: [number, number];
+  coordinates: readonly [number, number];
   latitude: number;
   longitude: number;
   placeName?: string | null;
   placeId?: string | null;
-}
+}>;
 
-export interface SocialMediaDto {
+export type SocialMediaDto = Readonly<{
   instagram?: string;
   facebook?: string;
   x?: string;
   youTube?: string;
-}
+}>;
 
-export interface LocationDto {
+export type LocationDto = Readonly<{
   address: string;
   venue: string;
   coordinates: GeoCoordinatesDto;
-}
+}>;

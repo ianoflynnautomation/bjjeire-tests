@@ -1,9 +1,9 @@
-import { createEntityId } from '@api/support/factories';
+import { createEntityId, defineFactory } from '@api/support/factories';
 import type { RunId } from '@shared/types';
 import type { CompetitionDto } from './competitions.api';
 
-export function buildCompetition(runId: RunId, overrides: Partial<CompetitionDto> = {}): CompetitionDto {
-  return {
+const competitionFactory = defineFactory<RunId, CompetitionDto>({
+  defaults: runId => ({
     id: createEntityId(),
     slug: `test-competition-${runId}`,
     name: `Test Competition ${runId}`,
@@ -13,6 +13,7 @@ export function buildCompetition(runId: RunId, overrides: Partial<CompetitionDto
     websiteUrl: 'https://example.com/competitions/test',
     tags: ['test'],
     isActive: true,
-    ...overrides,
-  } satisfies CompetitionDto;
-}
+  }),
+});
+
+export const buildCompetition = competitionFactory.build;

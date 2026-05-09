@@ -1,5 +1,5 @@
 import { test, expect } from '@shared/fixtures';
-import { getTyped, type PaginatedResponse } from '@api/support/api';
+import { API_ROUTES, getTyped, type PaginatedResponse } from '@api/support/api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 type TemplateDto = Readonly<{
@@ -9,7 +9,7 @@ type TemplateDto = Readonly<{
 
 test.describe('Template API Acceptance', { tag: ['@template', '@api'] }, () => {
   test('GET /api/v1/template returns PaginatedResponse', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
-    const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, '/api/v1/template', {
+    const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, API_ROUTES.template, {
       params: { page: 1, pageSize: 25 },
     });
 

@@ -1,5 +1,5 @@
 import { GymStatus } from '@api/features/gyms/gyms.types';
-import type { GymCard } from '@ui/features/gyms/gym-card.screen';
+import type { GymCard } from '@ui/features/gyms/gym-card.page';
 
 export const SEEDED_GYM_BJJ_CORK: GymCard = {
   name: 'BJJ Cork',

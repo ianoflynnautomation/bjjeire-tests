@@ -1,14 +1,12 @@
-import type { BaseApiEntityModel } from '@api/support/api';
+import type { BaseApiEntityModel, PaginationQuery } from '@api/support/api';
 
-export interface StoreDto extends BaseApiEntityModel {
-  name: string;
-  description?: string;
-  websiteUrl: string;
-  logoUrl?: string;
-  isActive: boolean;
-}
+export type StoreDto = BaseApiEntityModel &
+  Readonly<{
+    name: string;
+    description?: string;
+    websiteUrl: string;
+    logoUrl?: string;
+    isActive: boolean;
+  }>;
 
-export interface GetStorePaginationQuery {
-  page?: number;
-  pageSize?: number;
-}
+export type GetStorePaginationQuery = PaginationQuery;

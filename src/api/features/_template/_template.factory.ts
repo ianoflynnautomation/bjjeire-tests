@@ -1,10 +1,14 @@
+import { defineFactory } from '@api/support/factories';
+
 export type TemplateEntity = Readonly<{
   name: string;
 }>;
 
-export function createTemplateEntity(overrides: Partial<TemplateEntity> = {}): TemplateEntity {
-  return {
+const templateEntityFactory = defineFactory<void, TemplateEntity>({
+  defaults: () => ({
     name: 'template-entity',
-    ...overrides,
-  };
-}
+  }),
+});
+
+export const createTemplateEntity = (overrides?: Partial<TemplateEntity>): TemplateEntity =>
+  templateEntityFactory.build(undefined, overrides);

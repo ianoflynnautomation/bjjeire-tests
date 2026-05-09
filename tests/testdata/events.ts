@@ -1,4 +1,4 @@
-import type { BjjEventCard } from '@ui/features/events/event-card.screen';
+import type { BjjEventCard } from '@ui/features/events/event-card.page';
 import { partialName } from './strings';
 
 export const SEEDED_EVENT_ADCC: BjjEventCard = {

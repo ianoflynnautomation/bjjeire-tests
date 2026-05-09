@@ -1,0 +1,15 @@
+- contentinfo:
+    - heading "Quick Links" [level=3]
+    - list:
+        - listitem:
+            - link "Gyms":
+                - /url: /gyms
+        - listitem:
+            - link "Competitions":
+                - /url: /competitions
+        - listitem:
+            - link "Stores":
+                - /url: /stores
+        - listitem:
+            - link "About":
+                - /url: /about

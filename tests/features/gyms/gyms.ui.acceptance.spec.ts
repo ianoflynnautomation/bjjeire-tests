@@ -1,36 +1,34 @@
-import { test } from '@ui/fixtures';
+import { test } from '@ui/features/gyms/gyms.fixture';
+import * as GymsPage from '@ui/features/gyms/gyms.page';
 import { SEEDED_GYM_BJJ_CORK, SEEDED_GYM_BJJ_CORK_PARTIAL } from '../../testdata/gyms';
+import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';
 
 test.describe('Gyms UI Acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
-  test.beforeEach(({ featureFlags }) => {
-    test.skip(!featureFlags.Gyms, "feature 'Gyms' disabled");
+  test('loads the gyms list', { tag: ['@smoke', '@acceptance', '@mobile'] }, async () => {
+    await GymsPage.navigate();
+    await GymsPage.verifyIsLoaded();
+    await GymsPage.expectHeaderVisible();
   });
 
-  test('loads the gyms list', { tag: ['@smoke', '@acceptance', '@mobile'] }, async ({ gymsScreen }) => {
-    await gymsScreen.navigate();
-    await gymsScreen.verifyIsLoaded();
-    await gymsScreen.expectHeaderVisible();
+  test('search with no match shows the empty state', { tag: '@acceptance' }, async () => {
+    await GymsPage.navigate();
+    await GymsPage.searchFor(NO_MATCH_SEARCH_TERM);
+    await GymsPage.expectNoResults();
+    await GymsPage.clearSearch();
+    await GymsPage.expectAtLeastOneResult();
   });
 
-  test('search with no match shows the empty state', { tag: '@acceptance' }, async ({ gymsScreen }) => {
-    await gymsScreen.navigate();
-    await gymsScreen.searchFor('zzz-no-match-xyz');
-    await gymsScreen.expectNoResults();
-    await gymsScreen.clearSearch();
-    await gymsScreen.expectAtLeastOneResult();
+  test('search by gym name shows that gym only', { tag: '@acceptance' }, async () => {
+    await GymsPage.navigate();
+    await GymsPage.searchFor(SEEDED_GYM_BJJ_CORK.name);
+    await GymsPage.expectSearchValue(SEEDED_GYM_BJJ_CORK.name);
+    await GymsPage.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
   });
 
-  test('search by gym name shows that gym only', { tag: '@acceptance' }, async ({ gymsScreen }) => {
-    await gymsScreen.navigate();
-    await gymsScreen.searchFor(SEEDED_GYM_BJJ_CORK.name);
-    await gymsScreen.expectSearchValue(SEEDED_GYM_BJJ_CORK.name);
-    await gymsScreen.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
-  });
-
-  test('search by partial gym name shows that gym only', { tag: '@acceptance' }, async ({ gymsScreen }) => {
-    await gymsScreen.navigate();
-    await gymsScreen.searchFor(SEEDED_GYM_BJJ_CORK_PARTIAL);
-    await gymsScreen.expectSearchValue(SEEDED_GYM_BJJ_CORK_PARTIAL);
-    await gymsScreen.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
+  test('search by partial gym name shows that gym only', { tag: '@acceptance' }, async () => {
+    await GymsPage.navigate();
+    await GymsPage.searchFor(SEEDED_GYM_BJJ_CORK_PARTIAL);
+    await GymsPage.expectSearchValue(SEEDED_GYM_BJJ_CORK_PARTIAL);
+    await GymsPage.expectCardData(SEEDED_GYM_BJJ_CORK.name, SEEDED_GYM_BJJ_CORK);
   });
 });

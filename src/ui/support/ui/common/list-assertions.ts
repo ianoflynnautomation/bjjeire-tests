@@ -1,4 +1,5 @@
 import { expect, type Locator } from '@playwright/test';
+import type { TextMatcher } from './page-types';
 
 export async function expectListShell(header: Locator, headerTitle: Locator, searchContainer: Locator): Promise<void> {
   await expect(header).toBeVisible();
@@ -6,11 +7,11 @@ export async function expectListShell(header: Locator, headerTitle: Locator, sea
   await expect(searchContainer).toBeVisible();
 }
 
-export async function expectTitle(input: Locator, value: RegExp | string): Promise<void> {
-  await expect(input).toHaveValue(value);
+export async function expectTitle(title: Locator, value: TextMatcher): Promise<void> {
+  await expect(title).toHaveText(value);
 }
 
-export async function expectSearchValue(input: Locator, value: RegExp | string): Promise<void> {
+export async function expectSearchValue(input: Locator, value: TextMatcher): Promise<void> {
   await expect(input).toHaveValue(value);
 }
 

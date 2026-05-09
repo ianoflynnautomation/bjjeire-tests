@@ -1,14 +1,15 @@
-import { test } from '@ui/fixtures';
+import { test } from '@ui/features/about/about.fixture';
+import * as AboutPage from '@ui/features/about/about.page';
 
 test.describe('About UI Acceptance', { tag: ['@about', '@ui', '@desktop'] }, () => {
   test(
-    'loads successfully regardless of feature flags',
+    'loads successfully',
     {
       tag: ['@smoke', '@acceptance', '@mobile'],
     },
-    async ({ aboutScreen }) => {
-      await aboutScreen.navigate();
-      await aboutScreen.verifyIsLoaded();
+    async () => {
+      await AboutPage.navigate();
+      await AboutPage.verifyIsLoaded();
     },
   );
 });
