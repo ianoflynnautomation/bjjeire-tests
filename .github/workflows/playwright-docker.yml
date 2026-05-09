@@ -146,12 +146,19 @@ jobs:
           OVERRIDES: ${{ inputs.project_shard_overrides }}
           DEFAULT_SHARDS: ${{ inputs.shard_total }}
         run: |
+          set -euo pipefail
           # Expand projects × per-project shard counts into a flat matrix.
           # Each entry: { name, config, shard, shard_total }.
+          # Note: bash parses ${OVERRIDES:-{}} as ${OVERRIDES:-{} + "}", which appends
+          # a stray "}" when OVERRIDES is set. Assign to a temp var instead.
+          overrides_json="${OVERRIDES:-}"
+          if [ -z "$overrides_json" ]; then
+            overrides_json='{}'
+          fi
           matrix=$(jq -nc \
             --argjson projects "${PROJECTS}" \
-            --argjson overrides "${OVERRIDES:-{}}" \
-            --argjson defaultShards ${DEFAULT_SHARDS} '
+            --argjson overrides "${overrides_json}" \
+            --argjson defaultShards "${DEFAULT_SHARDS}" '
             $projects
             | map(. as $p
                 | (($overrides[$p]) // $defaultShards) as $total
@@ -165,7 +172,7 @@ jobs:
             | add
           ')
           echo "shard_matrix=${matrix}" >> "$GITHUB_OUTPUT"
-          echo "Planned $(echo "${matrix}" | jq 'length') shard jobs"
+          echo "::notice title=Plan matrix::Planned $(echo "${matrix}" | jq 'length') shard job(s)"
 
   build-image:
     name: Build test-runner image
