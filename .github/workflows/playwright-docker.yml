@@ -365,14 +365,18 @@ jobs:
       - name: Lint OpenAPI contract
         if: matrix.shard.name == 'api' && matrix.shard.shard == 1
         shell: bash
+        # The runner image's ENTRYPOINT is `npx playwright` so the default
+        # `docker run IMAGE <args>` path runs Playwright. To run a non-test
+        # npm script we have to override the entrypoint.
         run: |
           docker run --rm \
+            --entrypoint npm \
             --network host \
             --ipc host \
             -v "${{ github.workspace }}/tests-checkout/openapi-v1.json:/home/pwuser/app/openapi-v1.json:ro" \
             -e CI=true \
             "${RUNNER_IMAGE}" \
-            npm run lint:openapi
+            run lint:openapi
 
       - name: Verify external consumer Pact contracts
         if: inputs.verify_provider_pacts == true && matrix.shard.name == 'api' && matrix.shard.shard == 1
@@ -380,8 +384,10 @@ jobs:
         env:
           PACT_URLS: ${{ inputs.pact_urls }}
           PACT_BROKER_URL: ${{ inputs.pact_broker_url }}
+        # Same entrypoint-override rationale as the lint step above.
         run: |
           docker run --rm \
+            --entrypoint npm \
             --network host \
             --ipc host \
             -e CI=true \
@@ -394,7 +400,7 @@ jobs:
             -e GITHUB_SHA="${GITHUB_SHA}" \
             -e GITHUB_REF_NAME="${GITHUB_REF_NAME}" \
             "${RUNNER_IMAGE}" \
-            npm run test:pact:provider
+            run test:pact:provider
 
       - name: Prepare report dirs
         shell: bash
