@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import type { EntityId } from '@shared/types';
 
-export function createEntityId(): EntityId {
-  return new ObjectId().toHexString() as EntityId;
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+export function createEntityId<TId extends string = EntityId>(): TId {
+  return new ObjectId().toHexString() as TId;
 }

@@ -80,6 +80,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "allure-commandline": "^2.34.0",
     "allure-playwright": "^3.0.0",
+    "builder-pattern": "^2.2.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",

@@ -22,8 +22,8 @@ import {
   storeSchema,
   featureFlagMapSchema,
 } from '@api/support/api';
-import { buildGym } from '@api/features/gyms/gyms.factory';
-import { buildBjjEvent } from '@api/features/events/events.factory';
+import { buildGym } from '@api/features/gyms/gyms.builder';
+import { buildBjjEvent } from '@api/features/events/events.builder';
 import type { RunId } from '@shared/types';
 import { consumerReadEndpoints, consumerSchemaFields, consumerWriteEndpoints } from './support/consumer-contract-cases';
 

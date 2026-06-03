@@ -1,4 +1,5 @@
 import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support/api';
+import type { GymId } from '@shared/types';
 
 export const ClassCategory = {
   Uncategorized: 'Uncategorized',
@@ -44,7 +45,7 @@ export type AffiliationDto = Readonly<{
   website?: string;
 }>;
 
-export type GymDto = BaseApiEntityModel &
+export type GymDto = BaseApiEntityModel<GymId> &
   Readonly<{
     name: string;
     description?: string;

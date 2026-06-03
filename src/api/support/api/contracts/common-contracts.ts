@@ -14,8 +14,8 @@ export type PaginatedResponse<T> = Readonly<{
   pagination: HateoasPagination;
 }>;
 
-export type BaseApiEntityModel = Readonly<{
-  id?: string;
+export type BaseApiEntityModel<TId extends string = string> = Readonly<{
+  id?: TId;
   createdOnUtc?: string | null;
   updatedOnUtc?: string | null;
 }>;

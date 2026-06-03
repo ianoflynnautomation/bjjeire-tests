@@ -13,9 +13,9 @@ import {
   getPage,
   navigateToRoute,
   search as fillSearchInput,
-  snapshotRegion as selectSnapshotRegion,
   stabilizeForSnapshot,
   type ListPageRegion,
+  type ListPageRegions,
   type ScreenshotOptions,
   type TextMatcher,
 } from '@ui/support/ui';
@@ -58,11 +58,12 @@ const emptyStateMessage2 = () => getLocatorByTestId(TEST_IDS.emptyStateMessageLi
 const competitionCard = (name: string) => cardByName(getPage(), listItems(), TEST_IDS.cardName, name);
 
 function snapshotRegion(region: ListPageRegion): Locator {
-  return selectSnapshotRegion(region, {
+  const regions: ListPageRegions = {
     emptyState: emptyState(),
     header: header(),
     list: list(),
-  });
+  };
+  return regions[region];
 }
 
 export function firstCard(): Locator {

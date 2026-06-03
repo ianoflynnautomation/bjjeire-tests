@@ -1,6 +1,7 @@
 import type { BaseApiEntityModel, PaginationQuery } from '@api/support/api';
+import type { CompetitionId } from '@shared/types';
 
-export type CompetitionDto = BaseApiEntityModel &
+export type CompetitionDto = BaseApiEntityModel<CompetitionId> &
   Readonly<{
     slug: string;
     name: string;

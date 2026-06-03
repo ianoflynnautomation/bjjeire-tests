@@ -15,7 +15,3 @@ export type ScreenshotOptions = SnapshotMaskOption &
   }>;
 
 export type ListPageRegions = Readonly<Record<ListPageRegion, Locator>>;
-
-export function snapshotRegion(region: ListPageRegion, regions: ListPageRegions): Locator {
-  return regions[region];
-}

@@ -1,6 +1,7 @@
 import type { BaseApiEntityModel, PaginationQuery } from '@api/support/api';
+import type { StoreId } from '@shared/types';
 
-export type StoreDto = BaseApiEntityModel &
+export type StoreDto = BaseApiEntityModel<StoreId> &
   Readonly<{
     name: string;
     description?: string;

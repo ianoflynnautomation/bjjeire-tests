@@ -1,4 +1,5 @@
 import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support/api';
+import type { EventId } from '@shared/types';
 
 export const BjjEventType = {
   OpenMat: 0,
@@ -51,7 +52,7 @@ export type BjjEventScheduleDto = Readonly<{
   hours: readonly BjjEventHoursDto[];
 }>;
 
-export type BjjEventDto = BaseApiEntityModel &
+export type BjjEventDto = BaseApiEntityModel<EventId> &
   Readonly<{
     name: string;
     description?: string | null;
