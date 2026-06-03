@@ -1,4 +1,4 @@
-import { test } from '@ui/features/gyms/gyms.fixture';
+import { test } from '@ui/fixtures';
 import * as GymsPage from '@ui/features/gyms/gyms.page';
 import { SEEDED_GYM_BJJ_CORK, SEEDED_GYM_BJJ_CORK_PARTIAL } from '../../testdata/gyms';
 import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';

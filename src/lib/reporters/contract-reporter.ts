@@ -24,7 +24,7 @@ type ContractReport = {
 
 class ContractReporter implements Reporter {
   private startTime = Date.now();
-  private results: ContractTestResult[] = [];
+  private readonly results: ContractTestResult[] = [];
 
   onBegin(_config: FullConfig, _suite: Suite): void {
     this.startTime = Date.now();

@@ -1,7 +1,19 @@
 import { test, expect } from '@shared/fixtures';
-import { API_ROUTES, rawRequest, expectApi, paginationMetadataSchema, pagedResponseSchema } from '@api/support/api';
+import {
+  API_ROUTES,
+  rawRequest,
+  expectApiBody,
+  expectApiStatus,
+  jsonValueSchema,
+  paginationMetadataSchema,
+  pagedResponseSchema,
+} from '@api/support/api';
 import { z } from 'zod';
 import { consumerPagedEndpoints } from './support/consumer-contract-cases';
+
+const paginationEnvelopeSchema = z.object({
+  pagination: z.record(z.string(), jsonValueSchema),
+});
 
 test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@contract'] }, () => {
   for (const { path } of consumerPagedEndpoints) {
@@ -11,7 +23,8 @@ test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@
           params: { page: 1, pageSize: 1 },
         });
 
-        const body = await expectApi(response).status(200).body(pagedResponseSchema(z.unknown()));
+        expectApiStatus(response, 200);
+        const body = await expectApiBody(response, pagedResponseSchema(jsonValueSchema));
 
         expect(body.data.length).toBeLessThanOrEqual(1);
         expect(body.pagination.currentPage).toBe(1);
@@ -25,7 +38,8 @@ test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@
           params: { page: 999999, pageSize: 1 },
         });
 
-        const body = await expectApi(response).status(200).body(pagedResponseSchema(z.unknown()));
+        expectApiStatus(response, 200);
+        const body = await expectApiBody(response, pagedResponseSchema(jsonValueSchema));
 
         expect(body.data).toHaveLength(0);
         expect(body.pagination.hasNextPage).toBe(false);
@@ -35,7 +49,8 @@ test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@
         const firstPageResponse = await rawRequest(apiClient, 'GET', path, {
           params: { page: 1, pageSize: 1 },
         });
-        const firstPage = await expectApi(firstPageResponse).status(200).body(pagedResponseSchema(z.unknown()));
+        expectApiStatus(firstPageResponse, 200);
+        const firstPage = await expectApiBody(firstPageResponse, pagedResponseSchema(jsonValueSchema));
 
         // Only assert URL presence unconditionally when we know navigation exists
         expect(typeof firstPage.pagination.hasNextPage).toBe('boolean');
@@ -58,7 +73,7 @@ test.describe('BjjEire API consumer contract — pagination', { tag: ['@api', '@
       });
 
       expect(response.status()).toBe(200);
-      const body = (await response.json()) as { pagination: Record<string, unknown> };
+      const body = paginationEnvelopeSchema.parse(await response.json());
       paginationKeysSets.push(Object.keys(body.pagination).sort());
     }
 

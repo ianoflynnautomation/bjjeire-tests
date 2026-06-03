@@ -10,16 +10,15 @@ const TEST_FLAG_OVERRIDES = {
 
 const TEST_OVERRIDES_GLOBAL = '__BJJEIRE_TEST_FLAG_OVERRIDES__';
 
-// `void` is the canonical Playwright pattern for setup-only fixtures.
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-type UiFixtures = { _pageContext: void; _featureFlagOverrides: void };
+type SetupFixture = void;
+type UiFixtures = { _pageContext: SetupFixture; _featureFlagOverrides: SetupFixture };
 
 export const test = shared.extend<UiFixtures>({
   _featureFlagOverrides: [
     async ({ page }, use) => {
       await page.addInitScript(
         ({ key, value }) => {
-          (window as unknown as Record<string, unknown>)[key] = value;
+          Object.assign(window, { [key]: value });
         },
         { key: TEST_OVERRIDES_GLOBAL, value: TEST_FLAG_OVERRIDES },
       );

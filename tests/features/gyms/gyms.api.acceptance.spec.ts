@@ -1,6 +1,13 @@
 import { test, expect } from '@shared/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
-import { API_ROUTES, expectApi, problemDetailsSchema, rawRequest } from '@api/support/api';
+import {
+  API_ROUTES,
+  expectApiBody,
+  expectApiContentType,
+  expectApiStatus,
+  problemDetailsSchema,
+  rawRequest,
+} from '@api/support/api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 test.describe('Gyms API Acceptance', { tag: ['@gyms', '@api'] }, () => {
@@ -15,10 +22,12 @@ test.describe('Gyms API Acceptance', { tag: ['@gyms', '@api'] }, () => {
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const response = await rawRequest(apiClient, 'POST', API_ROUTES.gyms, { data: {} });
-      const problem = await expectApi(response).status(405).contentType('application/json').body(problemDetailsSchema);
+      expectApiStatus(response, 405);
+      expectApiContentType(response, 'application/json');
+      const problem = await expectApiBody(response, problemDetailsSchema);
       expect(problem.status).toBe(405);
       expect(problem.title).toBeTruthy();
-      expect(problem.type).toMatch(/rfc7231#section-6\.5\.5/);
+      expect(problem.type ?? '', 'ProblemDetails.type should be present').toMatch(/rfc7231#section-6\.5\.5/);
     },
   );
 });

@@ -1,4 +1,4 @@
-import { test } from '@ui/features/_template/_template.fixture';
+import { test } from '@ui/fixtures';
 import * as TemplatePage from '@ui/features/_template/_template.page';
 
 // For list-style features, prefer defineListAcceptance from tests/shared/list-acceptance

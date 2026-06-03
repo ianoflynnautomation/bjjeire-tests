@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import type { APIRequestContext, APIResponse } from '@playwright/test';
+import { readEnv } from '@shared/config';
 import { API_ROUTES } from './routes';
 
 export const JSON_CONTENT_TYPE = 'application/json';
@@ -53,9 +54,9 @@ export async function loadOpenApiContract(apiClient: APIRequestContext): Promise
 }
 
 async function readOpenApiContract(apiClient: APIRequestContext): Promise<OpenApiDocument> {
-  const artifactPath = process.env.OPENAPI_CONTRACT_PATH?.trim();
+  const artifactPath = readEnv('OPENAPI_CONTRACT_PATH');
   if (artifactPath && existsSync(artifactPath)) {
-    return JSON.parse(readFileSync(artifactPath, 'utf8')) as OpenApiDocument;
+    return parseOpenApiDocument(JSON.parse(readFileSync(artifactPath, 'utf8')), artifactPath);
   }
 
   const response = await apiClient.get(API_ROUTES.openApiV1, { failOnStatusCode: false });
@@ -66,7 +67,7 @@ async function readOpenApiContract(apiClient: APIRequestContext): Promise<OpenAp
     );
   }
 
-  return (await response.json()) as OpenApiDocument;
+  return parseOpenApiDocument(await response.json(), API_ROUTES.openApiV1);
 }
 
 export function expectOpenApiPath(document: OpenApiDocument, method: string, path: string): void {
@@ -132,53 +133,54 @@ export async function expectResponseMatchesOpenApi(
     );
   }
 
-  const body = (await response.json()) as JsonValue;
+  const body = parseJsonValue(await response.json(), `${method.toUpperCase()} ${path} response body`);
   assertJsonMatchesSchema(body, schema, document, '$');
   return body;
 }
 
-export function assertJsonMatchesSchema(
+/**
+ * Returns true if `resolved` was a polymorphic composition (nullable/oneOf/
+ * anyOf/allOf) and the value has been fully asserted against it. Returning
+ * true tells the caller to skip the type-class dispatch below.
+ */
+function assertPolymorphicSchema(
   value: JsonValue,
-  schema: OpenApiSchema,
+  resolved: OpenApiSchema,
+  document: OpenApiDocument,
+  path: string,
+): boolean {
+  if (resolved.nullable && value === null) return true;
+  if (resolved.oneOf?.some(candidate => matchesSchema(value, candidate, document))) return true;
+  if (resolved.anyOf?.some(candidate => matchesSchema(value, candidate, document))) return true;
+  if (!resolved.allOf) return false;
+  for (const candidate of resolved.allOf) {
+    assertJsonMatchesSchema(value, candidate, document, path);
+  }
+  return true;
+}
+
+/**
+ * Dispatches a non-polymorphic schema to the matching type-class assertion.
+ * Pre-condition: caller has already handled nullable/oneOf/anyOf/allOf.
+ *
+ * Complexity is high (one branch per JSON-schema type-class) but each branch
+ * is a single assertion call — cognitively flat. Splitting into a strategy
+ * map would over-engineer for the savings.
+ */
+function assertScalarOrCollectionSchema(
+  value: JsonValue,
+  resolved: OpenApiSchema,
   document: OpenApiDocument,
   path: string,
 ): void {
-  const resolved = resolveSchema(schema, document);
-
-  if (resolved.nullable && value === null) {
-    return;
-  }
-
-  if (resolved.oneOf?.some(candidate => matchesSchema(value, candidate, document))) {
-    return;
-  }
-
-  if (resolved.anyOf?.some(candidate => matchesSchema(value, candidate, document))) {
-    return;
-  }
-
-  if (resolved.allOf) {
-    for (const candidate of resolved.allOf) {
-      assertJsonMatchesSchema(value, candidate, document, path);
-    }
-    return;
-  }
-
   const type = resolved.type ?? (resolved.properties ? 'object' : undefined);
   switch (type) {
     case 'object':
       assertObjectMatchesSchema(value, resolved, document, path);
       return;
-    case 'array': {
-      if (!Array.isArray(value)) throw new Error(`${path} should be an array.`);
-      const itemsSchema = resolved.items;
-      if (itemsSchema) {
-        value.forEach((item, index) => {
-          assertJsonMatchesSchema(item, itemsSchema, document, `${path}[${index}]`);
-        });
-      }
+    case 'array':
+      assertArrayMatchesSchema(value, resolved, document, path);
       return;
-    }
     case 'string':
       if (typeof value !== 'string') throw new Error(`${path} should be a string.`);
       assertEnumValue(value, resolved, path);
@@ -196,6 +198,35 @@ export function assertJsonMatchesSchema(
     case undefined:
       return;
   }
+}
+
+function assertArrayMatchesSchema(
+  value: JsonValue,
+  schema: OpenApiSchema,
+  document: OpenApiDocument,
+  path: string,
+): void {
+  if (!Array.isArray(value)) throw new Error(`${path} should be an array.`);
+  const itemsSchema = schema.items;
+  if (!itemsSchema) return;
+  value.forEach((item, index) => {
+    assertJsonMatchesSchema(item, itemsSchema, document, `${path}[${index}]`);
+  });
+}
+
+export function assertJsonMatchesSchema(
+  value: JsonValue,
+  schema: OpenApiSchema,
+  document: OpenApiDocument,
+  path: string,
+): void {
+  const resolved = resolveSchema(schema, document);
+  if (assertPolymorphicSchema(value, resolved, document, path)) return;
+  assertScalarOrCollectionSchema(value, resolved, document, path);
+}
+
+export function toJsonValue(value: unknown, source = 'value'): JsonValue {
+  return parseJsonValue(value, source);
 }
 
 function assertObjectMatchesSchema(
@@ -273,5 +304,34 @@ function assertEnumValue(value: JsonValue, schema: OpenApiSchema, path: string):
 }
 
 function isJsonObject(value: JsonValue): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseOpenApiDocument(value: unknown, source: string): OpenApiDocument {
+  if (!isJsonObjectLike(value) || typeof value['openapi'] !== 'string' || !isJsonObjectLike(value['paths'])) {
+    throw new Error(`OpenAPI contract from ${source} is not a valid document.`);
+  }
+
+  return value as OpenApiDocument;
+}
+
+function parseJsonValue(value: unknown, source: string): JsonValue {
+  if (!isJsonValue(value)) {
+    throw new Error(`${source} is not JSON-serializable.`);
+  }
+
+  return value;
+}
+
+function isJsonValue(value: unknown): value is JsonValue {
+  if (value === null) return true;
+  const valueType = typeof value;
+  if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') return true;
+  if (Array.isArray(value)) return value.every(isJsonValue);
+  if (!isJsonObjectLike(value)) return false;
+  return Object.values(value).every(isJsonValue);
+}
+
+function isJsonObjectLike(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

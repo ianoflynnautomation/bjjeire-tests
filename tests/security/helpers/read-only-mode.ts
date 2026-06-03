@@ -22,7 +22,7 @@ export async function expectReadOnlyResponse(response: APIResponse): Promise<voi
   expect(response.status()).toBe(405);
   expect(response.headers()['content-type'] ?? '').toMatch(PROBLEM_CONTENT_TYPE);
 
-  const allowHeader = (response.headers().allow ?? '').toUpperCase();
+  const allowHeader = (response.headers()['allow'] ?? '').toUpperCase();
   for (const method of REQUIRED_ALLOW_METHODS) {
     expect(allowHeader, `Allow header missing ${method}`).toContain(method);
   }

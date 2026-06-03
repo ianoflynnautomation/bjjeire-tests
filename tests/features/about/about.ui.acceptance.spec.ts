@@ -1,4 +1,4 @@
-import { test } from '@ui/features/about/about.fixture';
+import { test } from '@ui/fixtures';
 import * as AboutPage from '@ui/features/about/about.page';
 
 test.describe('About UI Acceptance', { tag: ['@about', '@ui', '@desktop'] }, () => {

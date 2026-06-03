@@ -33,6 +33,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "useUnknownInCatchVariables": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["node_modules/@types"]

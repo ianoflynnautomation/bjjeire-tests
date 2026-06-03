@@ -1,4 +1,4 @@
-import { test } from '@ui/features/competitions/competitions.fixture';
+import { test } from '@ui/fixtures';
 import * as CompetitionsPage from '@ui/features/competitions/competitions.page';
 import { SEEDED_COMPETITION_ADCC, SEEDED_COMPETITION_ADCC_PARTIAL } from '../../testdata/competitions';
 import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';

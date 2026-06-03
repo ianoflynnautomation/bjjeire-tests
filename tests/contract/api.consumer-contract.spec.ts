@@ -4,15 +4,17 @@ import {
   expectOpenApiPath,
   expectResponseMatchesOpenApi,
   loadOpenApiContract,
-} from '@api/support/api/openapi-contract';
+  toJsonValue,
+} from '@api/support/api/contracts/openapi-contract';
 import {
   expectOpenApiRequestSchemaRef,
   expectRequestBodyMatchesOpenApi,
-} from '@api/support/api/openapi-request-validator';
+} from '@api/support/api/contracts/openapi-request-validator';
 import {
   rawRequest,
   API_ROUTES,
-  expectApi,
+  expectApiBody,
+  expectApiStatus,
   pagedResponseSchema,
   gymSchema,
   bjjEventSchema,
@@ -23,7 +25,6 @@ import {
 import { buildGym } from '@api/features/gyms/gyms.factory';
 import { buildBjjEvent } from '@api/features/events/events.factory';
 import type { RunId } from '@shared/types';
-import type { JsonValue } from '@api/support/api/openapi-contract';
 import { consumerReadEndpoints, consumerSchemaFields, consumerWriteEndpoints } from './support/consumer-contract-cases';
 
 test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, () => {
@@ -122,7 +123,12 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
     test('POST /api/v1/gym factory body matches the published provider request schema', async ({ apiClient }) => {
       const contract = await loadOpenApiContract(apiClient);
       const gym = buildGym(runId);
-      expectRequestBodyMatchesOpenApi(contract, 'POST', API_ROUTES.gyms, { data: gym } as unknown as JsonValue);
+      expectRequestBodyMatchesOpenApi(
+        contract,
+        'POST',
+        API_ROUTES.gyms,
+        toJsonValue({ data: gym }, 'gym request body'),
+      );
     });
 
     test(
@@ -131,9 +137,12 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
       async ({ apiClient }) => {
         const contract = await loadOpenApiContract(apiClient);
         const event = buildBjjEvent(runId);
-        expectRequestBodyMatchesOpenApi(contract, 'POST', API_ROUTES.bjjEvents, {
-          data: event,
-        } as unknown as JsonValue);
+        expectRequestBodyMatchesOpenApi(
+          contract,
+          'POST',
+          API_ROUTES.bjjEvents,
+          toJsonValue({ data: event }, 'BJJ event request body'),
+        );
       },
     );
 
@@ -153,7 +162,8 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
   test.describe('Zod schema runtime validation', () => {
     test('GET /api/v1/gym response parses through consumer Zod schema', { tag: ['@gyms'] }, async ({ apiClient }) => {
       const response = await rawRequest(apiClient, 'GET', API_ROUTES.gyms, { params: { page: 1, pageSize: 5 } });
-      await expectApi(response).status(200).body(pagedResponseSchema(gymSchema));
+      expectApiStatus(response, 200);
+      await expectApiBody(response, pagedResponseSchema(gymSchema));
     });
 
     test(
@@ -161,7 +171,8 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
       { tag: ['@bjj-events'] },
       async ({ apiClient }) => {
         const response = await rawRequest(apiClient, 'GET', API_ROUTES.bjjEvents, { params: { page: 1, pageSize: 5 } });
-        await expectApi(response).status(200).body(pagedResponseSchema(bjjEventSchema));
+        expectApiStatus(response, 200);
+        await expectApiBody(response, pagedResponseSchema(bjjEventSchema));
       },
     );
 
@@ -172,7 +183,8 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
         const response = await rawRequest(apiClient, 'GET', API_ROUTES.competitions, {
           params: { page: 1, pageSize: 5 },
         });
-        await expectApi(response).status(200).body(pagedResponseSchema(competitionSchema));
+        expectApiStatus(response, 200);
+        await expectApiBody(response, pagedResponseSchema(competitionSchema));
       },
     );
 
@@ -181,7 +193,8 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
       { tag: ['@stores'] },
       async ({ apiClient }) => {
         const response = await rawRequest(apiClient, 'GET', API_ROUTES.stores, { params: { page: 1, pageSize: 5 } });
-        await expectApi(response).status(200).body(pagedResponseSchema(storeSchema));
+        expectApiStatus(response, 200);
+        await expectApiBody(response, pagedResponseSchema(storeSchema));
       },
     );
 
@@ -190,7 +203,8 @@ test.describe('BjjEire API consumer contract', { tag: ['@api', '@contract'] }, (
       { tag: ['@feature-flags'] },
       async ({ apiClient }) => {
         const response = await rawRequest(apiClient, 'GET', API_ROUTES.featureFlags);
-        await expectApi(response).status(200).body(featureFlagMapSchema);
+        expectApiStatus(response, 200);
+        await expectApiBody(response, featureFlagMapSchema);
       },
     );
   });

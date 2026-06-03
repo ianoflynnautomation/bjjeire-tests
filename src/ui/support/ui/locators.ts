@@ -35,8 +35,9 @@ export function getLocatorByPlaceholder(text: string | RegExp, options?: GetByPl
   return getPage().getByPlaceholder(text, options);
 }
 
-export async function getAllLocators(input: string | Locator, options?: LocatorOptions): Promise<Locator[]> {
-  return typeof input === 'string' ? await getPage().locator(input, options).all() : await input.all();
+export function getAllLocators(input: string | Locator, options?: LocatorOptions): Promise<Locator[]> {
+  // Direct promise return — no await needed since callers do the awaiting.
+  return typeof input === 'string' ? getPage().locator(input, options).all() : input.all();
 }
 
 export function getFrameLocator(frameInput: string | FrameLocator): FrameLocator {

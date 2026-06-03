@@ -20,6 +20,8 @@
     "test:local": "APP_ENV=local playwright test -c playwright.ui.config.ts",
     "test:docker": "APP_ENV=docker playwright test -c playwright.ui.config.ts",
     "test:testcontainers": "APP_ENV=testcontainers playwright test -c playwright.ui.config.ts",
+    "test:dev": "APP_ENV=dev playwright test -c playwright.ui.config.ts",
+    "test:dev:api": "APP_ENV=dev playwright test -c playwright.api.config.ts",
     "test:staging": "APP_ENV=staging playwright test -c playwright.ui.config.ts",
     "test:smoke": "playwright test -c playwright.ui.config.ts -g @smoke",
     "test:smoke:api": "playwright test -c playwright.api.config.ts tests/smoke -g @smoke",
@@ -62,6 +64,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/identity": "^4.13.1",
     "@azure/msal-node": "^5.1.3",
     "@testcontainers/mongodb": "^11.14.0",
     "mongodb": "^7.1.1",

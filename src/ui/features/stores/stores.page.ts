@@ -13,6 +13,7 @@ import {
   getPage,
   navigateToRoute,
   search as fillSearchInput,
+  snapshotRegion as selectSnapshotRegion,
   stabilizeForSnapshot,
   type ListPageRegion,
   type ScreenshotOptions,
@@ -45,13 +46,11 @@ const emptyState = () => getLocatorByTestId(TEST_IDS.emptyState);
 const storeCard = (name: string) => cardByName(getPage(), listItems(), TEST_IDS.cardName, name);
 
 function snapshotRegion(region: ListPageRegion): Locator {
-  const regions: Record<ListPageRegion, Locator> = {
+  return selectSnapshotRegion(region, {
     emptyState: emptyState(),
     header: header(),
     list: list(),
-  };
-
-  return regions[region];
+  });
 }
 
 export function firstCard(): Locator {

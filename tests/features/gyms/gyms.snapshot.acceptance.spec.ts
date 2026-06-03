@@ -1,4 +1,4 @@
-import { test } from '@ui/features/gyms/gyms.fixture';
+import { test } from '@ui/fixtures';
 import * as GymsPage from '@ui/features/gyms/gyms.page';
 
 test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@desktop'] }, () => {

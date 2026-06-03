@@ -3,7 +3,7 @@ import type { GymCard } from '@ui/features/gyms/gym-card.page';
 
 export const SEEDED_GYM_BJJ_CORK: GymCard = {
   name: 'BJJ Cork',
-  status: GymStatus.Active.toUpperCase(),
+  status: GymStatus.Active,
   county: 'Cork County',
   classes: ['BJJ Gi (All Levels)', 'BJJ No-Gi (All Levels)'],
 };

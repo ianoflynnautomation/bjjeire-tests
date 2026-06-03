@@ -1,7 +1,6 @@
 import { test as base, expect, type APIRequestContext } from '@playwright/test';
 import { createRequestContext } from '@api/support/api';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type SharedFixtures = {};
 
 export type SharedWorkerFixtures = {

@@ -1,6 +1,6 @@
 import { test, expect } from '@shared/fixtures';
-import { loadOpenApiContract } from '@api/support/api/openapi-contract';
-import type { OpenApiDocument } from '@api/support/api/openapi-contract';
+import { loadOpenApiContract } from '@api/support/api/contracts/openapi-contract';
+import type { OpenApiDocument } from '@api/support/api/contracts/openapi-contract';
 
 test.describe('BjjEire API OpenAPI spec quality', { tag: ['@api', '@contract'] }, () => {
   test('OpenAPI document is version 3.0+', async ({ apiClient }) => {
@@ -35,12 +35,10 @@ test.describe('BjjEire API OpenAPI spec quality', { tag: ['@api', '@contract'] }
 
         for (const [status, response] of Object.entries(op.responses)) {
           const schemaRef = response.content?.['application/json']?.schema?.$ref;
-          if (schemaRef) {
-            const refName = schemaRef.replace('#/components/schemas/', '');
-            if (!contract.components?.schemas?.[refName]) {
-              broken.push(`${method.toUpperCase()} ${path} ${status} -> ${schemaRef}`);
-            }
-          }
+          if (!schemaRef) continue;
+          const refName = schemaRef.replace('#/components/schemas/', '');
+          if (contract.components?.schemas?.[refName]) continue;
+          broken.push(`${method.toUpperCase()} ${path} ${status} -> ${schemaRef}`);
         }
       }
     }
@@ -71,8 +69,8 @@ test.describe('BjjEire API OpenAPI spec quality', { tag: ['@api', '@contract'] }
 
     for (const name of pagedSchemas) {
       const schema = contract.components?.schemas?.[name];
-      expect(schema?.properties?.data, `${name} should have 'data' property`).toBeDefined();
-      expect(schema?.properties?.pagination, `${name} should have 'pagination' property`).toBeDefined();
+      expect(schema?.properties?.['data'], `${name} should have 'data' property`).toBeDefined();
+      expect(schema?.properties?.['pagination'], `${name} should have 'pagination' property`).toBeDefined();
     }
   });
 });

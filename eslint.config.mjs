@@ -53,6 +53,7 @@ export default [
       'prettier/prettier': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'error',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
@@ -65,8 +66,59 @@ export default [
         'error',
         { allowNumber: true, allowBoolean: true, allowRegExp: true },
       ],
-
+      '@typescript-eslint/dot-notation': ['error', { allowIndexSignaturePropertyAccess: true }],
+      '@typescript-eslint/prefer-readonly': 'error',
+      '@typescript-eslint/prefer-as-const': 'error',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'default',
+          format: ['camelCase'],
+          leadingUnderscore: 'allowDouble',
+          trailingUnderscore: 'allow',
+        },
+        {
+          selector: 'variable',
+          modifiers: ['const'],
+          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+          leadingUnderscore: 'allowDouble',
+        },
+        { selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
+        {
+          selector: 'typeProperty',
+          format: ['camelCase'],
+          leadingUnderscore: 'allowSingleOrDouble',
+        },
+        { selector: 'typeLike', format: ['PascalCase'] },
+        { selector: 'typeParameter', format: ['PascalCase'] },
+        { selector: 'objectLiteralProperty', format: null },
+        { selector: 'import', format: ['camelCase', 'PascalCase'] },
+      ],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true, IIFEs: true }],
+      'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
+      'max-params': ['error', 4],
+      'max-depth': ['error', 4],
+      'max-nested-callbacks': ['error', 3],
+      complexity: ['error', 15],
+      'no-magic-numbers': [
+        'error',
+        {
+          ignore: [
+            -1, 0, 1, 2, 100, 200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 405, 409, 410, 422, 429, 500, 502, 503,
+            504, 1000,
+          ],
+          ignoreArrayIndexes: true,
+          ignoreDefaultValues: true,
+          ignoreClassFieldInitialValues: true,
+          enforceConst: true,
+          detectObjects: false,
+        },
+      ],
       'no-console': 'warn',
+      'import/no-duplicates': 'error',
+      'no-return-await': 'error',
       eqeqeq: ['error', 'always'],
       'import/no-cycle': 'error',
     },
@@ -92,14 +144,38 @@ export default [
         { assertFunctionNames: ['expect'], assertFunctionPatterns: ['^expect', 'verify'] },
       ],
       'no-console': 'off',
+      'max-nested-callbacks': ['error', 5],
+      'max-lines-per-function': ['error', { max: 200, skipBlankLines: true, skipComments: true, IIFEs: true }],
+      complexity: ['error', 15],
     },
   },
 
   {
-    // Allow console in reporter and lifecycle hooks
-    files: ['src/lib/reporters/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
+    files: ['src/lib/reporters/**/*.ts', 'src/api/support/auth/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
     rules: {
       'no-console': 'off',
+    },
+  },
+
+  {
+    files: ['src/shared/config/timeouts.ts', '**/constants.ts'],
+    rules: {
+      'no-magic-numbers': 'off',
+    },
+  },
+
+  {
+    files: ['src/**/fixtures/**/*.ts', 'src/**/fixtures/*.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-invalid-void-type': 'off',
+    },
+  },
+
+  {
+    files: ['tests/**/*.ts', '**/*.spec.ts'],
+    rules: {
+      'max-depth': ['error', 5],
     },
   },
 

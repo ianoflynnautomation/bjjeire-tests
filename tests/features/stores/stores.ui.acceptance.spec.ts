@@ -1,4 +1,4 @@
-import { test } from '@ui/features/stores/stores.fixture';
+import { test } from '@ui/fixtures';
 import * as StoresPage from '@ui/features/stores/stores.page';
 import { SEEDED_STORE_BJJ_CORK, SEEDED_STORE_BJJ_CORK_PARTIAL } from '../../testdata/stores';
 import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';

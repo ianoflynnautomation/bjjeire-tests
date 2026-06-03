@@ -1,6 +1,6 @@
 import { test, expect } from '@shared/fixtures';
-import { loadOpenApiContract } from '@api/support/api/openapi-contract';
-import type { OpenApiSchema } from '@api/support/api/openapi-contract';
+import { loadOpenApiContract } from '@api/support/api/contracts/openapi-contract';
+import type { OpenApiSchema } from '@api/support/api/contracts/openapi-contract';
 import { consumerSchemaFields } from './support/consumer-contract-cases';
 
 test.describe('BjjEire API consumer contract — edge cases', { tag: ['@api', '@contract'] }, () => {

@@ -1,10 +1,11 @@
-import { createEntityId, defineFactory } from '@api/support/factories';
+import { createEntityId } from '@api/support/factories';
 import type { RunId } from '@shared/types';
+import { DUBLIN_CITY_CENTRE, DUBLIN_CITY_CENTRE_GEOJSON } from '@shared/testdata/geography';
 import { BjjEventType, EventStatus, PricingType } from './events.api';
 import type { BjjEventDto } from './events.api';
 
-const bjjEventFactory = defineFactory<RunId, BjjEventDto>({
-  defaults: runId => ({
+export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}): BjjEventDto {
+  return {
     id: createEntityId(),
     name: `Test Event ${runId}`,
     description: 'Event created by test factory',
@@ -21,9 +22,9 @@ const bjjEventFactory = defineFactory<RunId, BjjEventDto>({
       venue: 'The Arena',
       coordinates: {
         type: 'Point',
-        coordinates: [-6.2395, 53.3418],
-        latitude: 53.3418,
-        longitude: -6.2395,
+        coordinates: [...DUBLIN_CITY_CENTRE_GEOJSON],
+        latitude: DUBLIN_CITY_CENTRE.latitude,
+        longitude: DUBLIN_CITY_CENTRE.longitude,
       },
     },
     schedule: { hours: [] },
@@ -34,7 +35,6 @@ const bjjEventFactory = defineFactory<RunId, BjjEventDto>({
     },
     eventUrl: 'https://example.com/events/test-event',
     imageUrl: 'https://example.com/images/test-event.jpg',
-  }),
-});
-
-export const buildBjjEvent = bjjEventFactory.build;
+    ...overrides,
+  };
+}

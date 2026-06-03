@@ -1,4 +1,4 @@
-import { test } from '@ui/features/events/events.fixture';
+import { test } from '@ui/fixtures';
 import * as EventsPage from '@ui/features/events/events.page';
 import { SEEDED_EVENT_ADCC, SEEDED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
 import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';

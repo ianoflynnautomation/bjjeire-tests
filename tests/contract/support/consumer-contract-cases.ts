@@ -1,4 +1,4 @@
-import type { OpenApiFieldExpectation } from '@api/support/api/openapi-contract';
+import type { OpenApiFieldExpectation } from '@api/support/api/contracts/openapi-contract';
 import { API_ROUTES } from '@api/support/api';
 import contractCases from './contract-cases.json';
 

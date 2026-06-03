@@ -1,5 +1,12 @@
 import { test } from '@shared/fixtures';
-import { API_ROUTES, expectApi, featureFlagMapSchema, rawRequest } from '@api/support/api';
+import {
+  API_ROUTES,
+  expectApiBody,
+  expectApiContentType,
+  expectApiStatus,
+  featureFlagMapSchema,
+  rawRequest,
+} from '@api/support/api';
 
 test.describe('Feature flags API Acceptance', { tag: ['@feature-flags', '@smoke', '@api'] }, () => {
   test(
@@ -7,7 +14,9 @@ test.describe('Feature flags API Acceptance', { tag: ['@feature-flags', '@smoke'
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await rawRequest(apiClient, 'GET', API_ROUTES.featureFlagsPascal);
-      await expectApi(response).status(200).contentType('application/json').body(featureFlagMapSchema);
+      expectApiStatus(response, 200);
+      expectApiContentType(response, 'application/json');
+      await expectApiBody(response, featureFlagMapSchema);
     },
   );
 });

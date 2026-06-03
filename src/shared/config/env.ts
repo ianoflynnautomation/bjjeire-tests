@@ -1,8 +1,9 @@
+import { MissingProfileUrlError } from './config-errors';
+import { isRemoteProfile, PROFILE_DEFAULTS } from './profile-defaults';
 import { loadEnvForProfile, resolveProfile, type Profile } from './profile';
+import { readEnv, readEnvFlag, readRequiredEnv } from './process-env';
 
 loadEnvForProfile();
-
-const REMOTE_PROFILES: readonly Profile[] = ['staging', 'production'];
 
 const DEFAULT_AZURE_AUTHORITY_PREFIX = 'https://login.microsoftonline.com';
 
@@ -14,55 +15,62 @@ export type AzureConfig = Readonly<{
   authority: string;
 }>;
 
-type ProfileDefaults = Readonly<{
+export type ApiAuthBasics = Readonly<{
+  tenantId: string;
+  apiScope: string;
+  authority: string;
+}>;
+
+export type ExecutionContext = 'arc-runner' | 'ci-hosted' | 'testcontainers' | 'local';
+
+export type RuntimeContext = Readonly<{
+  executionContext: ExecutionContext;
+  isCI: boolean;
+  isGithubActions: boolean;
+  isInCluster: boolean;
+  hasWorkloadIdentity: boolean;
+  isTestcontainers: boolean;
+  isLocal: boolean;
+}>;
+
+type OptionalAzureEnv = Readonly<{
+  tenantId: string | undefined;
+  clientId: string | undefined;
+  clientSecret: string | undefined;
+  apiScope: string | undefined;
+  authority: string | undefined;
+}>;
+
+type OptionalCredentials = Readonly<{
+  clientId: string | undefined;
+  clientSecret: string | undefined;
+}>;
+
+type OptionalUserCredentials = Readonly<{
+  username: string | undefined;
+  password: string | undefined;
+}>;
+
+export type Env = Readonly<{
+  profile: Profile;
   baseUrl: string;
   apiUrl: string;
   mongoUrl: string;
+  mongoDb: string;
+  isCI: boolean;
+  acceptInvalidCerts: boolean;
+  context: RuntimeContext;
+  azure: OptionalAzureEnv;
+  cfAccess: OptionalCredentials;
+  uiTestUser: OptionalUserCredentials;
 }>;
-
-const PROFILE_DEFAULTS: Record<Profile, ProfileDefaults> = {
-  local: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: 'mongodb://localhost:27017',
-  },
-  docker: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5003',
-    mongoUrl: 'mongodb://localhost:27017',
-  },
-  testcontainers: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: '',
-  },
-  staging: { baseUrl: '', apiUrl: '', mongoUrl: '' },
-  production: { baseUrl: '', apiUrl: '', mongoUrl: '' },
-};
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith('/') ? value.slice(0, -1) : value;
 }
 
 function pick(name: string, fallback: string): string {
-  const raw = process.env[name]?.trim();
-  return raw && raw.length > 0 ? raw : fallback;
-}
-
-function readRequired(name: string): string {
-  const raw = process.env[name]?.trim();
-  if (!raw) throw new Error(`Required env var ${name} is not set`);
-  return raw;
-}
-
-function readFlag(name: string, fallback: boolean): boolean {
-  const raw = process.env[name]?.trim().toLowerCase();
-  if (!raw) return fallback;
-  return raw === 'true' || raw === '1' || raw === 'yes';
-}
-
-function isRemoteProfile(profile: Profile): boolean {
-  return REMOTE_PROFILES.includes(profile);
+  return readEnv(name) ?? fallback;
 }
 
 const PROFILE: Profile = resolveProfile();
@@ -72,36 +80,111 @@ const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
 const apiUrl = stripTrailingSlash(pick('API_URL', defaults.apiUrl));
 
 if (isRemoteProfile(PROFILE)) {
-  if (!baseUrl) throw new Error(`BASE_URL is required for profile '${PROFILE}'`);
-  if (!apiUrl) throw new Error(`API_URL is required for profile '${PROFILE}'`);
+  if (!baseUrl) throw new MissingProfileUrlError(PROFILE, 'BASE_URL');
+  if (!apiUrl) throw new MissingProfileUrlError(PROFILE, 'API_URL');
 }
 
-export const env = Object.freeze({
+// =====================================================================
+// Execution-context detection
+// =====================================================================
+// Used by tests to make environment-aware decisions like
+// `test.skip(env.context.isLocal, 'requires CI environment')`, and by
+// `entra-token.ts` to pick the right auth strategy. All signals are derived
+// from environment variables that the runtime sets for us — no heuristics.
+
+const isCI = readEnv('CI') !== undefined;
+const isGithubActions = readEnv('GITHUB_ACTIONS') !== undefined;
+// AZURE_FEDERATED_TOKEN_FILE is injected by the Azure Workload Identity
+// webhook into pods that have the right label/annotation. Its presence is
+// the canonical signal that we're running with a workload identity.
+const hasWorkloadIdentity = readEnv('AZURE_FEDERATED_TOKEN_FILE') !== undefined;
+// KUBERNETES_SERVICE_HOST is set inside every pod regardless of WI config.
+const isInCluster = hasWorkloadIdentity || readEnv('KUBERNETES_SERVICE_HOST') !== undefined;
+const isTestcontainers = PROFILE === 'testcontainers';
+const isLocal = !isCI && !isInCluster;
+
+const executionContext: ExecutionContext = hasWorkloadIdentity
+  ? 'arc-runner'
+  : isCI
+    ? 'ci-hosted'
+    : isTestcontainers
+      ? 'testcontainers'
+      : 'local';
+
+// =====================================================================
+// Optional-field convention
+// =====================================================================
+// Every secret/credential block uses `string | undefined` rather than `string`
+// with `''` sentinels. With `exactOptionalPropertyTypes` on, this lets callers
+// pattern-match cleanly: `if (env.cfAccess.clientId) { ... }`. The `requireX`
+// helpers below throw when the field is absent and the caller can't proceed.
+
+const runtimeContext: RuntimeContext = Object.freeze({
+  executionContext,
+  isCI,
+  isGithubActions,
+  isInCluster,
+  hasWorkloadIdentity,
+  isTestcontainers,
+  isLocal,
+});
+
+export const env: Env = Object.freeze({
   profile: PROFILE,
   baseUrl,
   apiUrl,
   mongoUrl: pick('MONGO_URL', defaults.mongoUrl),
   mongoDb: pick('MONGO_DB', 'bjjeire'),
-  isCI: !!process.env.CI,
-  acceptInvalidCerts: readFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
+  isCI,
+  acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
+  context: runtimeContext,
+  // In CI on ARC runner pods AZURE_TESTS_CLIENT_ID/_SECRET are typically
+  // UNSET; the workload identity webhook injects AZURE_CLIENT_ID +
+  // AZURE_FEDERATED_TOKEN_FILE and DefaultAzureCredential reads those.
+  // The client secret is the local-dev fallback.
   azure: Object.freeze({
-    tenantId: process.env.AZURE_TENANT_ID?.trim() ?? '',
-    clientId: process.env.AZURE_CLIENT_ID?.trim() ?? '',
-    clientSecret: process.env.AZURE_CLIENT_SECRET?.trim() ?? '',
-    apiScope: process.env.AZURE_API_SCOPE?.trim() ?? '',
-    authority: process.env.AZURE_AUTHORITY?.trim() ?? '',
+    tenantId: readEnv('AZURE_TENANT_ID'),
+    clientId: readEnv('AZURE_TESTS_CLIENT_ID'),
+    clientSecret: readEnv('AZURE_TESTS_CLIENT_SECRET'),
+    apiScope: readEnv('AZURE_API_SCOPE'),
+    authority: readEnv('AZURE_AUTHORITY'),
+  }),
+  cfAccess: Object.freeze({
+    clientId: readEnv('CF_ACCESS_CLIENT_ID'),
+    clientSecret: readEnv('CF_ACCESS_CLIENT_SECRET'),
+  }),
+  uiTestUser: Object.freeze({
+    username: readEnv('PW_TEST_USER'),
+    password: readEnv('PW_TEST_PASSWORD'),
   }),
 });
 
-export type Env = typeof env;
-
+/**
+ * Full client-credentials config. Only required when the credential chain
+ * (WIF, az CLI, managed identity) isn't available — i.e. local dev without
+ * `az login`. ARC runner pods normally don't have these set.
+ */
 export function requireAzureConfig(): AzureConfig {
-  const tenantId = readRequired('AZURE_TENANT_ID');
+  const tenantId = readRequiredEnv('AZURE_TENANT_ID');
   return {
     tenantId,
-    clientId: readRequired('AZURE_CLIENT_ID'),
-    clientSecret: readRequired('AZURE_CLIENT_SECRET'),
-    apiScope: readRequired('AZURE_API_SCOPE'),
-    authority: env.azure.authority || `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
+    clientId: readRequiredEnv('AZURE_TESTS_CLIENT_ID'),
+    clientSecret: readRequiredEnv('AZURE_TESTS_CLIENT_SECRET'),
+    apiScope: readRequiredEnv('AZURE_API_SCOPE'),
+    authority: env.azure.authority ?? `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
+  };
+}
+
+/**
+ * Minimal config required for ANY auth strategy. The credential chain only
+ * needs the tenant + scope; the client_secret path additionally needs the
+ * full {@link requireAzureConfig}.
+ */
+export function requireApiAuthBasics(): ApiAuthBasics {
+  const tenantId = readRequiredEnv('AZURE_TENANT_ID');
+  return {
+    tenantId,
+    apiScope: readRequiredEnv('AZURE_API_SCOPE'),
+    authority: env.azure.authority ?? `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
   };
 }

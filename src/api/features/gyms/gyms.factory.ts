@@ -1,10 +1,11 @@
-import { createEntityId, defineFactory } from '@api/support/factories';
+import { createEntityId } from '@api/support/factories';
 import type { RunId } from '@shared/types';
+import { DUBLIN_CITY_CENTRE, DUBLIN_CITY_CENTRE_GEOJSON } from '@shared/testdata/geography';
 import { GymStatus } from './gyms.api';
 import type { GymDto } from './gyms.api';
 
-const gymFactory = defineFactory<RunId, GymDto>({
-  defaults: runId => ({
+export function buildGym(runId: RunId, overrides: Partial<GymDto> = {}): GymDto {
+  return {
     id: createEntityId(),
     name: `Test Gym ${runId}`,
     status: GymStatus.Active,
@@ -15,14 +16,13 @@ const gymFactory = defineFactory<RunId, GymDto>({
       venue: 'The Arena',
       coordinates: {
         type: 'Point',
-        coordinates: [-6.2395, 53.3418],
-        latitude: 53.3418,
-        longitude: -6.2395,
+        coordinates: [...DUBLIN_CITY_CENTRE_GEOJSON],
+        latitude: DUBLIN_CITY_CENTRE.latitude,
+        longitude: DUBLIN_CITY_CENTRE.longitude,
       },
     },
     trialOffer: { isAvailable: false },
     offeredClasses: [],
-  }),
-});
-
-export const buildGym = gymFactory.build;
+    ...overrides,
+  };
+}
