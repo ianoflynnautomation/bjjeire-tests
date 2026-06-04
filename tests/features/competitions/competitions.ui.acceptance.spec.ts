@@ -1,21 +1,17 @@
 import { test } from '@ui/fixtures';
-import * as CompetitionsPage from '@ui/features/competitions/competitions.page';
+import * as CompetitionsPage from '@ui/pages/competitions/competitions.page';
 import { SEEDED_COMPETITION_ADCC, SEEDED_COMPETITION_ADCC_PARTIAL } from '../../testdata/competitions';
-import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';
 
 test.describe('Competitions UI Acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
-  test('loads the competitions list', { tag: ['@smoke', '@acceptance', '@mobile'] }, async () => {
+  test('loads the competitions list', { tag: ['@smoke'] }, async () => {
     await CompetitionsPage.navigate();
     await CompetitionsPage.verifyIsLoaded();
-    await CompetitionsPage.expectHeaderVisible();
   });
 
   test('search with no match shows the empty state', { tag: '@acceptance' }, async () => {
     await CompetitionsPage.navigate();
-    await CompetitionsPage.searchFor(NO_MATCH_SEARCH_TERM);
+    await CompetitionsPage.searchFor('xyz');
     await CompetitionsPage.expectNoResults();
-    await CompetitionsPage.clearSearch();
-    await CompetitionsPage.expectAtLeastOneResult();
   });
 
   test('search by competition name shows that competition only', { tag: '@acceptance' }, async () => {

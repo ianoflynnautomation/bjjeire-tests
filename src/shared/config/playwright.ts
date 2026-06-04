@@ -7,8 +7,6 @@ const IS_CI = env.isCI;
 
 export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
 
-// Match setup files precisely so the UI setup project doesn't pick up the
-// API setup file and vice-versa.
 const UI_SETUP_TEST_MATCH = /.*\/auth\.setup\.ts$/;
 const API_SETUP_TEST_MATCH = /.*\/auth\.api\.setup\.ts$/;
 
@@ -20,10 +18,6 @@ const WIDE_VIEWPORT = { width: 1728, height: 1117 };
 
 const UI_TEST_MATCH = /.*\.ui\.acceptance\.spec\.ts$/;
 
-// Cloudflare Access service-token headers, sent on every request so the edge
-// admits Playwright traffic before the in-cluster bearer token is enforced.
-// Returns an empty record when the service token isn't configured (local /
-// docker profiles where no CF Access sits in front of the origin).
 function cloudflareAccessExtraHeaders(): Record<string, string> {
   const { clientId, clientSecret } = env.cfAccess;
   if (!clientId || !clientSecret) return {};

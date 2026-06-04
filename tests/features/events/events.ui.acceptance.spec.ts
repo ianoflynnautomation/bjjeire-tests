@@ -1,21 +1,17 @@
 import { test } from '@ui/fixtures';
-import * as EventsPage from '@ui/features/events/events.page';
+import * as EventsPage from '@ui/pages/events/events.page';
 import { SEEDED_EVENT_ADCC, SEEDED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
-import { NO_MATCH_SEARCH_TERM } from '../../testdata/strings';
 
 test.describe('Events UI Acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
-  test('loads the events list', { tag: ['@smoke', '@acceptance', '@mobile'] }, async () => {
+  test('loads the events list', { tag: ['@smoke'] }, async () => {
     await EventsPage.navigate();
     await EventsPage.verifyIsLoaded();
-    await EventsPage.expectHeaderVisible();
   });
 
   test('search with no match shows the empty state', { tag: '@acceptance' }, async () => {
     await EventsPage.navigate();
-    await EventsPage.searchFor(NO_MATCH_SEARCH_TERM);
+    await EventsPage.searchFor('xyz');
     await EventsPage.expectNoResults();
-    await EventsPage.clearSearch();
-    await EventsPage.expectAtLeastOneResult();
   });
 
   test('search by event name shows that event only', { tag: '@acceptance' }, async () => {

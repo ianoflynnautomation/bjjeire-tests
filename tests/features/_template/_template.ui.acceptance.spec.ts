@@ -1,5 +1,5 @@
 import { test } from '@ui/fixtures';
-import * as TemplatePage from '@ui/features/_template/_template.page';
+import * as TemplatePage from '@ui/pages/_template/_template.page';
 
 // For list-style features, prefer defineListAcceptance from tests/shared/list-acceptance
 // and put expected card data under tests/testdata/<feature>.ts.

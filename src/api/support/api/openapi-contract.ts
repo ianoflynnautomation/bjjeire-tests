@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 import { readEnv } from '@shared/config';
-import { API_ROUTES } from './routes';
+import { API_ROUTES } from './routing/routes';
 
 export const JSON_CONTENT_TYPE = 'application/json';
 const SCHEMA_REF_PREFIX = '#/components/schemas/';

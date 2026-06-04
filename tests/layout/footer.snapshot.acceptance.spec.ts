@@ -1,20 +1,18 @@
 import { expect } from '@playwright/test';
 import { test } from '@ui/fixtures';
-import * as Footer from '@ui/components/footer.component';
-import { getPage, gotoURL } from '@ui/support/ui';
 
 test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snapshot', '@desktop'] }, () => {
-  test('quick links ARIA snapshot', { tag: ['@snapshot', '@smoke'] }, async () => {
-    await gotoURL(getPage(), '/about');
+  test('quick links ARIA snapshot', { tag: ['@snapshot', '@smoke'] }, async ({ page }) => {
+    await page.goto('/about');
 
-    await Footer.expectVisible();
-    await expect(Footer.root()).toMatchAriaSnapshot({ name: 'quick-links.aria.yml' });
+    await expect(page.getByRole('contentinfo')).toBeVisible();
+    await expect(page.getByRole('contentinfo')).toMatchAriaSnapshot({ name: 'quick-links.aria.yml' });
   });
 
-  test('copyright ARIA snapshot', { tag: '@snapshot' }, async () => {
-    await gotoURL(getPage(), '/about');
+  test('copyright ARIA snapshot', { tag: '@snapshot' }, async ({ page }) => {
+    await page.goto('/about');
 
-    await Footer.expectVisible();
-    await expect(Footer.copyright()).toMatchAriaSnapshot({ name: 'copyright.aria.yml' });
+    await expect(page.getByTestId('footer-copyright')).toBeVisible();
+    await expect(page.getByTestId('footer-copyright')).toMatchAriaSnapshot({ name: 'copyright.aria.yml' });
   });
 });

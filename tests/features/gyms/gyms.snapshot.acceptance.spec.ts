@@ -1,18 +1,18 @@
+import { expect } from '@playwright/test';
 import { test } from '@ui/fixtures';
-import * as GymsPage from '@ui/features/gyms/gyms.page';
+import * as GymsPage from '@ui/pages/gyms/gyms.page';
 
 test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@desktop'] }, () => {
-  test('header image snapshot', { tag: '@snapshot' }, async () => {
+  test('header image snapshot', { tag: '@snapshot' }, async ({ page }) => {
     await GymsPage.navigate();
     await GymsPage.verifyIsLoaded();
-    await GymsPage.expectScreenshot('gyms-header.png', { region: 'header' });
+    await expect(page.getByTestId('gyms-page-header')).toHaveScreenshot('gyms-header.png');
   });
 
-  test('empty-state ARIA snapshot', { tag: '@snapshot' }, async () => {
+  test('empty-state ARIA snapshot', { tag: '@snapshot' }, async ({ page }) => {
     await GymsPage.navigate();
     await GymsPage.searchFor('zzz-no-match-xyz');
     await GymsPage.expectNoResults();
-    await GymsPage.stabilize();
-    await GymsPage.expectAriaTree('emptyState', 'gyms-empty-state.aria.yml');
+    await expect(page.getByTestId('no-data-state')).toMatchAriaSnapshot({ name: 'gyms-empty-state.aria.yml' });
   });
 });

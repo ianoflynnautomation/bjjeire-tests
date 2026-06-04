@@ -1,5 +1,4 @@
-import type { BjjEventCard } from '@ui/features/events/event-card.page';
-import { partialName } from './strings';
+import type { BjjEventCard } from '@ui/pages/events/events.card.page';
 
 export const SEEDED_EVENT_ADCC: BjjEventCard = {
   name: 'ADCC Irish Cup Championship 2026',
@@ -7,6 +6,6 @@ export const SEEDED_EVENT_ADCC: BjjEventCard = {
   county: '',
   pricing: '',
   schedule: '',
-};
+} as const;
 
-export const SEEDED_EVENT_ADCC_PARTIAL = partialName(SEEDED_EVENT_ADCC.name);
+export const SEEDED_EVENT_ADCC_PARTIAL = 'ADCC Irish Cup Championship';

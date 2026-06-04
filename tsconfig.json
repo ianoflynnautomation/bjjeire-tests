@@ -16,10 +16,18 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["src/shared/*"],
-      "@api/*": ["src/api/*"],
-      "@ui/*": ["src/ui/*"],
-      "@fixtures/*": ["src/fixtures/*"]
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@api/*": [
+        "src/api/*"
+      ],
+      "@ui/*": [
+        "src/ui/*"
+      ],
+      "@fixtures/*": [
+        "src/fixtures/*"
+      ]
     },
     "strict": true,
     "strictNullChecks": true,
@@ -39,7 +47,9 @@
     "useUnknownInCatchVariables": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": [
+      "node_modules/@types"
+    ]
   },
   "include": [
     "src/**/*.ts",
@@ -52,5 +62,8 @@
     "global-setup.ts",
     "global-teardown.ts"
   ],
-  "exclude": ["node_modules", "dist"]
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
