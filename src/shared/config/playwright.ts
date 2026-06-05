@@ -37,13 +37,10 @@ const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
 
 const IGNORED_TAGS_GREP = readEnv('RUN_SLOW') === '1' ? /@bjj-events/ : /@bjj-events|@slow/;
 
-const CUSTOM_LOGGER = './src/lib/reporters/custom-logger.ts';
-
 const CI_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['blob'],
   ['github'],
   ['junit', { outputFile: 'test-results/junit.xml' }],
-  [CUSTOM_LOGGER],
 ];
 
 const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
@@ -52,7 +49,6 @@ const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['json', { outputFile: 'test-results/results.json' }],
   ['junit', { outputFile: 'test-results/junit.xml' }],
   ['allure-playwright', { resultsDir: 'allure-results' }],
-  [CUSTOM_LOGGER],
 ];
 
 export function createBaseConfig(overrides: PlaywrightTestConfig = {}): PlaywrightTestConfig {
@@ -114,11 +110,6 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
 }
 
 export function createUiProjects(): Project[] {
-  // Authenticated UI projects depend on the 'setup' project, which signs the
-  // dev test user in via Entra and writes STORAGE_STATE_PATH. The setup project
-  // is skipped at runtime when PW_TEST_USER / PW_TEST_PASSWORD are unset (local
-  // profile against unauthenticated stack), so unauthenticated UI runs still
-  // work without changes here.
   const authConfigured = !!env.uiTestUser.username && !!env.uiTestUser.password;
   const authDependencies = authConfigured ? ['setup'] : [];
   const uiUse = authConfigured ? ({ storageState: STORAGE_STATE_PATH } as const) : {};
@@ -167,11 +158,6 @@ export function createUiProjects(): Project[] {
 }
 
 export function createApiProjects(): Project[] {
-  // The api-setup project pre-warms the cross-worker token cache so api
-  // workers read from disk instead of each hitting Entra independently.
-  // Skipped on local profiles where AZURE_TESTS_CLIENT_SECRET is unset; in
-  // that mode the request-context module also short-circuits the bearer
-  // (auth: 'auto' falls through to no Authorization header).
   const apiAuthConfigured = !!env.azure.clientSecret;
   const apiSetupDeps = apiAuthConfigured ? ['api-setup'] : [];
 

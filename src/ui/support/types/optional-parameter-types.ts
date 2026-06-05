@@ -35,3 +35,4 @@ export type GetByRoleOptions = Parameters<Locator['getByRole']>[1];
 export type GetByLabelOptions = Parameters<Locator['getByLabel']>[1];
 export type GetByPlaceholderOptions = Parameters<Locator['getByPlaceholder']>[1];
 export type GetByRoleType = Parameters<Page['getByRole']>[0];
+export type WaitForLoadState = Parameters<Page['waitForLoadState']>[0];

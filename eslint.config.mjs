@@ -151,7 +151,7 @@ export default [
   },
 
   {
-    files: ['src/lib/reporters/**/*.ts', 'src/api/support/auth/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
+    files: ['src/api/support/auth/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
     rules: {
       'no-console': 'off',
     },
