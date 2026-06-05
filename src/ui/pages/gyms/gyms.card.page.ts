@@ -9,13 +9,13 @@ async function readDomTextIfVisible(locator: Locator): Promise<string | null> {
   return (await locator.textContent())?.trim() ?? null;
 }
 
-export async function getGymCardData(root: Locator): Promise<GymCard> {
-  const classesContainer = root.getByTestId(GYM_CARD_TEST_IDS.classes);
+export async function getGymCardData(locator: Locator): Promise<GymCard> {
+  const classesContainer = locator.getByTestId(GYM_CARD_TEST_IDS.classes);
 
   const [name, status, county, classes] = await Promise.all([
-    getText(root.getByTestId(GYM_CARD_TEST_IDS.name)),
-    readDomTextIfVisible(root.getByTestId(GYM_CARD_TEST_IDS.status)),
-    getText(root.getByTestId(GYM_CARD_TEST_IDS.county)),
+    getText(locator.getByTestId(GYM_CARD_TEST_IDS.name)),
+    readDomTextIfVisible(locator.getByTestId(GYM_CARD_TEST_IDS.status)),
+    getText(locator.getByTestId(GYM_CARD_TEST_IDS.county)),
     readTaggedItemsIfVisible(classesContainer, classesContainer.getByTestId(GYM_CLASS_ITEM_TEST_ID)),
   ]);
 

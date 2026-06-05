@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { loadOpenApiContract } from '@api/support/api/contracts/openapi-contract';
 import type { OpenApiSchema } from '@api/support/api/contracts/openapi-contract';
 import { consumerSchemaFields } from './support/consumer-contract-cases';

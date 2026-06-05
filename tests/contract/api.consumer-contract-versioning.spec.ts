@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { loadOpenApiContract } from '@api/support/api/contracts/openapi-contract';
 import { API_ROUTES, rawRequest } from '@api/support/api';
 import { consumerReadEndpoints } from './support/consumer-contract-cases';

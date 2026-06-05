@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { API_ROUTES } from '@api/support/api';
 import { expectRateLimitResponse, probeUntilRateLimited } from './helpers/rate-limit';
 import { expectNoSensitiveLeakage } from './helpers/leakage';

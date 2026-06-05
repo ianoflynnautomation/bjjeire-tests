@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
 import {
   API_ROUTES,

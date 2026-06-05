@@ -22,9 +22,6 @@
       ],
       "@ui/*": [
         "src/ui/*"
-      ],
-      "@fixtures/*": [
-        "src/fixtures/*"
       ]
     },
     "strict": true,

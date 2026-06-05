@@ -1,10 +1,10 @@
-import { test as shared, expect } from '@shared/fixtures';
-import { clearPage, setPage } from '@ui/support/page-context';
+import { test as base, expect } from '@playwright/test';
+import { clearPage, setPage } from '@ui/contexts/page-context';
 
 type SetupFixture = void;
-type UiFixtures = { _pageContext: SetupFixture; _featureFlagOverrides: SetupFixture };
+type UiFixtures = { _pageContext: SetupFixture };
 
-export const test = shared.extend<UiFixtures>({
+export const test = base.extend<UiFixtures>({
   _pageContext: [
     async ({ page }, use) => {
       setPage(page);

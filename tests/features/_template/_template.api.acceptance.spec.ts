@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { API_ROUTES, getTyped, type PaginatedResponse } from '@api/support/api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { getCompetitions } from '@api/features/competitions/competitions.api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 

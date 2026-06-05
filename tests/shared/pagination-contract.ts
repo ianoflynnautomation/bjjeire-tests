@@ -1,4 +1,4 @@
-import { expect } from '@shared/fixtures';
+import { expect } from '@api/fixtures';
 import type { PaginatedResponse } from '@api/support/api';
 
 export function expectPaginatedResponse<T>(

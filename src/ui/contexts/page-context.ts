@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { UiPageContextError } from './errors/errors';
+import { UiPageContextError } from '../support/errors/errors';
 
 let currentPage: Page | undefined;
 
@@ -13,9 +13,7 @@ export function clearPage(): void {
 
 export function getPage(): Page {
   if (!currentPage) {
-    throw new UiPageContextError(
-      'Playwright page context is not set. Import test from @shared/fixtures or @ui/fixtures.',
-    );
+    throw new UiPageContextError('Playwright page context is not set. Import test from @ui/fixtures.');
   }
 
   return currentPage;

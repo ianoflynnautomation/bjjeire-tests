@@ -1,5 +1,5 @@
 import { selectors, type FrameLocator, type Locator } from '@playwright/test';
-import { getPage } from './page-context';
+import { getPage } from '../contexts/page-context';
 import {
   type GetByLabelOptions,
   type GetByPlaceholderOptions,

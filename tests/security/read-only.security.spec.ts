@@ -1,4 +1,4 @@
-import { test } from '@shared/fixtures';
+import { test } from '@api/fixtures';
 import { rawRequest } from '@api/support/api';
 import { WRITE_ENDPOINTS } from './helpers/routes';
 import { expectNoSensitiveLeakage } from './helpers/leakage';

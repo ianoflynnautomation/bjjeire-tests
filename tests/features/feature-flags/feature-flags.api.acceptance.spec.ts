@@ -1,4 +1,4 @@
-import { test } from '@shared/fixtures';
+import { test } from '@api/fixtures';
 import {
   API_ROUTES,
   expectApiBody,

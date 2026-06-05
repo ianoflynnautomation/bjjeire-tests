@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '@shared/fixtures';
+import { test } from '@api/fixtures';
 import { API_ROUTES, rawRequest } from '@api/support/api';
 import { COLLECTION_ROUTES, PUBLIC_ROUTES } from './helpers/routes';
 import { expectNoSensitiveLeakage } from './helpers/leakage';

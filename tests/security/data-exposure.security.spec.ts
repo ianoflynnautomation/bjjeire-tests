@@ -1,4 +1,4 @@
-import { test } from '@shared/fixtures';
+import { test } from '@api/fixtures';
 import { API_ROUTES, rawRequest, withRouteId } from '@api/support/api';
 import { expectNoServerError } from './helpers/expectations';
 import { expectNoSensitiveLeakage } from './helpers/leakage';

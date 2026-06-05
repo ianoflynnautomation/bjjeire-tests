@@ -1,4 +1,4 @@
-import { test, expect } from '@shared/fixtures';
+import { test, expect } from '@api/fixtures';
 import { getStores } from '@api/features/stores/stores.api';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
