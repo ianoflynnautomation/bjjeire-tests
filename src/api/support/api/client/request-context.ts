@@ -1,6 +1,6 @@
 import { request, type APIRequestContext } from '@playwright/test';
 import { env } from '@shared/config';
-import { acquireApiAccessToken, cfAccessHeaders } from '@api/support/auth';
+import { acquireApiAccessToken, cfAccessHeaders, shouldUseApiAuthorization } from '@api/support/auth';
 
 export type RequestContextOptions = {
   readonly baseURL?: string;
@@ -16,7 +16,7 @@ export type RequestContextOptions = {
 async function resolveBearerToken(options: RequestContextOptions): Promise<string | undefined> {
   if (options.auth === 'none') return undefined;
   if (options.token) return options.token;
-  if (!env.azure.clientSecret) return undefined;
+  if (!shouldUseApiAuthorization()) return undefined;
   return acquireApiAccessToken();
 }
 

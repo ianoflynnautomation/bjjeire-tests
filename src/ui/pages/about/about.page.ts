@@ -19,7 +19,7 @@ export async function navigate(): Promise<void> {
 }
 
 export async function verifyIsLoaded(): Promise<void> {
-  await expectPageToHaveURL(getPage(), /\/about$/);
+  await expectPageToHaveURL(/\/about$/);
   await expectVisible(main());
   await expectVisible(headerTitle());
   await expectVisible(missionSection());

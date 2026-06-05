@@ -44,6 +44,17 @@ export function getFrameLocator(frameInput: string | FrameLocator): FrameLocator
   return typeof frameInput === 'string' ? getPage().frameLocator(frameInput) : frameInput;
 }
 
+export function getLocatorByName(name: string | RegExp, options?: LocatorOptions): Locator {
+  return getPage().locator(`[name=${typeof name === 'string' ? `"${name}"` : ''}]`, options);
+}
+
+export function getLocatorById(id: string | RegExp, options?: LocatorOptions): Locator {
+  if (typeof id === 'string') {
+    return getPage().locator(`#${CSS.escape(id)}`, options);
+  }
+  return getPage().locator(`[id]`, options).filter({ hasText: id });
+}
+
 export function getLocatorInFrame(frameInput: string | FrameLocator, input: string | Locator): Locator {
   return getFrameLocator(frameInput).locator(input);
 }

@@ -1,4 +1,5 @@
-import { createBaseConfig, createUiProjects } from './src/shared/config/playwright';
+import { createUiProjects } from './src/ui/config/playwright';
+import { createBaseConfig } from './src/shared/config/playwright';
 
 export default createBaseConfig({
   projects: createUiProjects(),

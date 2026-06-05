@@ -44,6 +44,7 @@ type OptionalAzureEnv = Readonly<{
 type OptionalCredentials = Readonly<{
   clientId: string | undefined;
   clientSecret: string | undefined;
+  required: boolean;
 }>;
 
 type OptionalUserCredentials = Readonly<{
@@ -60,6 +61,9 @@ export type Env = Readonly<{
   isCI: boolean;
   acceptInvalidCerts: boolean;
   context: RuntimeContext;
+  apiAuth: Readonly<{
+    required: boolean;
+  }>;
   azure: OptionalAzureEnv;
   cfAccess: OptionalCredentials;
   uiTestUser: OptionalUserCredentials;
@@ -129,6 +133,8 @@ const runtimeContext: RuntimeContext = Object.freeze({
   isLocal,
 });
 
+const requireProtectedPipelineCredentials = isCI || isInCluster;
+
 export const env: Env = Object.freeze({
   profile: PROFILE,
   baseUrl,
@@ -138,6 +144,9 @@ export const env: Env = Object.freeze({
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
   context: runtimeContext,
+  apiAuth: Object.freeze({
+    required: readEnvFlag('API_AUTH_REQUIRED', requireProtectedPipelineCredentials),
+  }),
   // In CI on ARC runner pods AZURE_TESTS_CLIENT_ID/_SECRET are typically
   // UNSET; the workload identity webhook injects AZURE_CLIENT_ID +
   // AZURE_FEDERATED_TOKEN_FILE and DefaultAzureCredential reads those.
@@ -152,6 +161,7 @@ export const env: Env = Object.freeze({
   cfAccess: Object.freeze({
     clientId: readEnv('CF_ACCESS_CLIENT_ID'),
     clientSecret: readEnv('CF_ACCESS_CLIENT_SECRET'),
+    required: readEnvFlag('CF_ACCESS_REQUIRED', requireProtectedPipelineCredentials),
   }),
   uiTestUser: Object.freeze({
     username: readEnv('PW_TEST_USER'),

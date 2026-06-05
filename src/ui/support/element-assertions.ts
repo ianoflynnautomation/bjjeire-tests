@@ -66,10 +66,6 @@ export async function expectToHaveClass(
   await expect(locator).toHaveClass(className, options);
 }
 
-export async function expectPageToHaveURL(page: Page, url: string | RegExp, options?: ExpectOptions): Promise<void> {
-  await expect(page).toHaveURL(url, options);
-}
-
 export async function expectPageToHaveTitle(
   page: Page,
   title: string | RegExp,
