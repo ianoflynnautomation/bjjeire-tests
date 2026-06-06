@@ -1,12 +1,10 @@
 import type { Page } from '@playwright/test';
 
-type BoundFn<T> = T extends (page: Page, ...args: infer A) => infer R ? (...args: A) => R : T;
-
 export type BoundPageObject<T> = {
-  [K in keyof T]: BoundFn<T[K]>;
+  [K in keyof T]: T[K] extends (page: Page, ...args: infer A) => infer R ? (...args: A) => R : T[K];
 };
 
-export function bindPage<T extends Record<string, unknown>>(mod: T, page: Page): BoundPageObject<T> {
+export function bindPage<T extends object>(mod: T, page: Page): BoundPageObject<T> {
   const bound: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(mod)) {
     bound[key] =

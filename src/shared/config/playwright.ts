@@ -1,4 +1,5 @@
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
+import { cfAccessHeaders } from './cf-access';
 import { env } from './env';
 import { readEnv } from './process-env';
 import { TIMEOUTS } from './timeouts';
@@ -12,15 +13,6 @@ const WORKERS = { local: '50%', ci: '100%' } as const;
 const MAX_FAILURES = IS_CI ? 0 : 1;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
-
-function cloudflareAccessExtraHeaders(): Record<string, string> {
-  const { clientId, clientSecret } = env.cfAccess;
-  if (!clientId || !clientSecret) return {};
-  return {
-    'CF-Access-Client-Id': clientId,
-    'CF-Access-Client-Secret': clientSecret,
-  };
-}
 
 const IGNORED_TAGS_GREP = readEnv('RUN_SLOW') === '1' ? /@bjj-events/ : /@bjj-events|@slow/;
 
@@ -84,7 +76,7 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
       serviceWorkers: 'block',
       colorScheme: 'dark',
       offline: false,
-      extraHTTPHeaders: cloudflareAccessExtraHeaders(),
+      extraHTTPHeaders: cfAccessHeaders(),
       contextOptions: {
         reducedMotion: 'reduce',
       },

@@ -1,4 +1,4 @@
-import { env } from '@shared/config';
+import { env } from './env';
 
 export function cfAccessHeaders(): Record<string, string> {
   const { clientId, clientSecret } = env.cfAccess;

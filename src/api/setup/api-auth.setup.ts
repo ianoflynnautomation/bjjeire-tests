@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
-import { acquireApiAccessToken, cfAccessHeaders } from '@api/support/api';
+import { acquireApiAccessToken } from '@api/support/api';
 import { assertApiAuthEnvironment, shouldUseApiAuthorization } from '@api/support/auth';
-import { env } from '@shared/config';
+import { cfAccessHeaders, env } from '@shared/config';
 
 const JWT_SHAPE_PATTERN = /^[\w-]+\.[\w-]+\.[\w-]+$/;
 

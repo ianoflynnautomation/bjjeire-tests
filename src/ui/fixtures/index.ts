@@ -1,10 +1,27 @@
-import { expect, mergeTests } from '@playwright/test';
-import { test as aboutTest } from '@ui/features/about/about.fixture';
-import { test as competitionsTest } from '@ui/features/competitions/competitions.fixture';
-import { test as eventsTest } from '@ui/features/events/events.fixture';
-import { test as gymsTest } from '@ui/features/gyms/gyms.fixture';
-import { test as storesTest } from '@ui/features/stores/stores.fixture';
-import { test as templateTest } from '@ui/features/_template/_template.fixture';
+import { test as base, expect } from '@playwright/test';
+import { aboutPageFixture, type AboutPage } from './about.fixture';
+import { competitionsPageFixture, type CompetitionsPage } from './competitions.fixture';
+import { eventsPageFixture, type EventsPage } from './events.fixture';
+import { gymsPageFixture, type GymsPage } from './gyms.fixture';
+import { storesPageFixture, type StoresPage } from './stores.fixture';
+import { templatePageFixture, type TemplatePage } from './_template.fixture';
 
-export const test = mergeTests(aboutTest, competitionsTest, eventsTest, gymsTest, storesTest, templateTest);
+export type UiFixtures = {
+  aboutPage: AboutPage;
+  competitionsPage: CompetitionsPage;
+  eventsPage: EventsPage;
+  gymsPage: GymsPage;
+  storesPage: StoresPage;
+  templatePage: TemplatePage;
+};
+
+export const test = base.extend<UiFixtures>({
+  aboutPage: aboutPageFixture,
+  competitionsPage: competitionsPageFixture,
+  eventsPage: eventsPageFixture,
+  gymsPage: gymsPageFixture,
+  storesPage: storesPageFixture,
+  templatePage: templatePageFixture,
+});
+
 export { expect };

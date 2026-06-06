@@ -1,6 +1,6 @@
 import { request, type APIRequestContext } from '@playwright/test';
-import { env } from '@shared/config';
-import { acquireApiAccessToken, cfAccessHeaders, shouldUseApiAuthorization } from '@api/support/auth';
+import { cfAccessHeaders, env } from '@shared/config';
+import { acquireApiAccessToken, shouldUseApiAuthorization } from '@api/support/auth';
 
 export type RequestContextOptions = {
   readonly baseURL?: string;

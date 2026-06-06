@@ -7,6 +7,6 @@ setup.describe('API auth setup', () => {
   setup('warm Entra token cache + verify CF Access headers', async () => {
     setup.setTimeout(SETUP_TIMEOUT_MS);
     await warmApiAuthSetup();
-    expect(true, 'API auth setup completed').toBe(true);
+    expect.soft(true, 'API auth setup completed').toBe(true);
   });
 });
