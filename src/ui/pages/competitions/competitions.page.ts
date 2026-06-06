@@ -1,10 +1,9 @@
-import { expect } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import {
   expectToHaveCount,
   expectToHaveText,
   expectVisible,
   getLocatorByTestId,
-  getPage,
   goToPage,
   type TextMatcher,
 } from '@ui/support';
@@ -19,60 +18,60 @@ import { getCompetitionCardData } from './competitions.card.page';
 import { EMPTY_STATE, TEST_IDS } from './competitions.constants';
 import { type CompetitionCard } from './competitions.types';
 
-const header = () => getLocatorByTestId(TEST_IDS.header);
-const headerTitle = () => getLocatorByTestId(TEST_IDS.headerTitle);
-const searchContainer = () => getLocatorByTestId(TEST_IDS.search);
-const searchInput = () => searchContainer().getByTestId(TEST_IDS.searchInput);
-const listItems = () => getLocatorByTestId(TEST_IDS.listItem);
-const emptyState = () => getLocatorByTestId(TEST_IDS.emptyState);
-const emptyStateTitle = () => getLocatorByTestId(TEST_IDS.emptyStateTitle);
-const emptyStateMessage1 = () => getLocatorByTestId(TEST_IDS.emptyStateMessageLine1);
-const emptyStateMessage2 = () => getLocatorByTestId(TEST_IDS.emptyStateMessageLine2);
-const competitionCard = (name: string) => cardByName(getPage(), listItems(), TEST_IDS.cardName, name);
+const header = (page: Page) => getLocatorByTestId(page, TEST_IDS.header);
+const headerTitle = (page: Page) => getLocatorByTestId(page, TEST_IDS.headerTitle);
+const searchContainer = (page: Page) => getLocatorByTestId(page, TEST_IDS.search);
+const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.searchInput);
+const listItems = (page: Page) => getLocatorByTestId(page, TEST_IDS.listItem);
+const emptyState = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyState);
+const emptyStateTitle = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyStateTitle);
+const emptyStateMessage1 = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyStateMessageLine1);
+const emptyStateMessage2 = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyStateMessageLine2);
+const competitionCard = (page: Page, name: string) => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
-export async function navigate(): Promise<void> {
-  await goToPage(getPage(), '/competitions');
-  await getTitle();
+export async function navigate(page: Page): Promise<void> {
+  await goToPage(page, '/competitions');
+  await getTitle(page);
 }
 
-export async function getTitle(): Promise<void> {
-  await expectToHaveText(headerTitle(), 'BJJ Competition Organisations');
+export async function getTitle(page: Page): Promise<void> {
+  await expectToHaveText(headerTitle(page), 'BJJ Competition Organisations');
 }
 
-export async function verifyIsLoaded(): Promise<void> {
-  await expectList(header(), headerTitle(), searchContainer());
+export async function verifyIsLoaded(page: Page): Promise<void> {
+  await expectList(header(page), headerTitle(page), searchContainer(page));
 }
 
-export async function searchFor(term: string): Promise<void> {
-  await searchForInput(searchInput(), term);
+export async function searchFor(page: Page, term: string): Promise<void> {
+  await searchForInput(searchInput(page), term);
 }
 
-export async function clearSearch(): Promise<void> {
-  await clearSearchInput(searchInput());
+export async function clearSearch(page: Page): Promise<void> {
+  await clearSearchInput(searchInput(page));
 }
 
-export async function expectSearchValue(term: TextMatcher): Promise<void> {
-  await expectSearchInputValue(searchInput(), term);
+export async function expectSearchValue(page: Page, term: TextMatcher): Promise<void> {
+  await expectSearchInputValue(searchInput(page), term);
 }
 
-export async function expectNoResults(): Promise<void> {
-  await expectEmptyList(emptyState(), listItems());
-  await expectToHaveText(emptyStateTitle(), EMPTY_STATE.title);
-  await expectToHaveText(emptyStateMessage1(), EMPTY_STATE.messageLine1);
-  await expectToHaveText(emptyStateMessage2(), EMPTY_STATE.messageLine2);
+export async function expectNoResults(page: Page): Promise<void> {
+  await expectEmptyList(emptyState(page), listItems(page));
+  await expectToHaveText(emptyStateTitle(page), EMPTY_STATE.title);
+  await expectToHaveText(emptyStateMessage1(page), EMPTY_STATE.messageLine1);
+  await expectToHaveText(emptyStateMessage2(page), EMPTY_STATE.messageLine2);
 }
 
-export async function expectResultCount(count: number): Promise<void> {
-  await expectToHaveCount(listItems(), count);
+export async function expectResultCount(page: Page, count: number): Promise<void> {
+  await expectToHaveCount(listItems(page), count);
 }
 
-export async function getCardData(name: string): Promise<CompetitionCard> {
-  const card = competitionCard(name);
+export async function getCardData(page: Page, name: string): Promise<CompetitionCard> {
+  const card = competitionCard(page, name);
   await expectVisible(card);
   return getCompetitionCardData(card);
 }
 
-export async function expectCardData(name: string, expected: Partial<CompetitionCard>): Promise<void> {
-  const actual = await getCardData(name);
+export async function expectCardData(page: Page, name: string, expected: Partial<CompetitionCard>): Promise<void> {
+  const actual = await getCardData(page, name);
   expect(actual).toMatchObject(expected);
 }

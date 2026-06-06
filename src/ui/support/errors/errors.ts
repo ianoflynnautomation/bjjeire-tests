@@ -4,5 +4,3 @@ export class UiSupportError extends Error {
     this.name = new.target.name;
   }
 }
-
-export class UiPageContextError extends UiSupportError {}

@@ -1,12 +1,13 @@
-import { expectPageToHaveURL, expectVisible, getLocatorByRole, getPage, goToPage } from '@ui/support';
+import type { Page } from '@playwright/test';
+import { expectPageToHaveURL, expectVisible, getLocatorByRole, goToPage } from '@ui/support';
 
-const main = () => getLocatorByRole('main');
+const main = (page: Page) => getLocatorByRole(page, 'main');
 
-export async function navigate(): Promise<void> {
-  await goToPage(getPage(), '/template');
+export async function navigate(page: Page): Promise<void> {
+  await goToPage(page, '/template');
 }
 
-export async function verifyIsLoaded(): Promise<void> {
-  await expectPageToHaveURL(/\/template$/);
-  await expectVisible(main());
+export async function verifyIsLoaded(page: Page): Promise<void> {
+  await expectPageToHaveURL(page, /\/template$/);
+  await expectVisible(main(page));
 }

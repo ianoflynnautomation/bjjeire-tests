@@ -6,7 +6,10 @@ import { TIMEOUTS } from './timeouts';
 const IS_CI = env.isCI;
 
 const WORKERS = { local: '50%', ci: '100%' } as const;
-const MAX_FAILURES = 1;
+// Locally we abort on first failure for tight feedback. CI runs the whole suite
+// so every regression shows up in one report — fail-fast there hides 99% of the
+// signal.
+const MAX_FAILURES = IS_CI ? 0 : 1;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
@@ -79,7 +82,8 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
       navigationTimeout: TIMEOUTS.navigation,
       bypassCSP: true,
       serviceWorkers: 'block',
-      colorScheme: 'light',
+      colorScheme: 'dark',
+      offline: false,
       extraHTTPHeaders: cloudflareAccessExtraHeaders(),
       contextOptions: {
         reducedMotion: 'reduce',

@@ -1,28 +1,22 @@
-import {
-  expectPageToHaveURL,
-  expectVisible,
-  getLocatorByRole,
-  getLocatorByTestId,
-  getPage,
-  goToPage,
-} from '@ui/support';
+import type { Page } from '@playwright/test';
+import { expectPageToHaveURL, expectVisible, getLocatorByRole, getLocatorByTestId, goToPage } from '@ui/support';
 import { TEST_IDS } from './about.constants';
 
-const main = () => getLocatorByRole(TEST_IDS.main);
-const headerTitle = () => getLocatorByTestId(TEST_IDS.headerTitle);
-const missionSection = () => getLocatorByTestId(TEST_IDS.missionSection);
-const valuesSection = () => getLocatorByTestId(TEST_IDS.valuesSection);
-const contactSection = () => getLocatorByTestId(TEST_IDS.contactSection);
+const main = (page: Page) => getLocatorByRole(page, TEST_IDS.main);
+const headerTitle = (page: Page) => getLocatorByTestId(page, TEST_IDS.headerTitle);
+const missionSection = (page: Page) => getLocatorByTestId(page, TEST_IDS.missionSection);
+const valuesSection = (page: Page) => getLocatorByTestId(page, TEST_IDS.valuesSection);
+const contactSection = (page: Page) => getLocatorByTestId(page, TEST_IDS.contactSection);
 
-export async function navigate(): Promise<void> {
-  await goToPage(getPage(), '/about');
+export async function navigate(page: Page): Promise<void> {
+  await goToPage(page, '/about');
 }
 
-export async function verifyIsLoaded(): Promise<void> {
-  await expectPageToHaveURL(/\/about$/);
-  await expectVisible(main());
-  await expectVisible(headerTitle());
-  await expectVisible(missionSection());
-  await expectVisible(valuesSection());
-  await expectVisible(contactSection());
+export async function verifyIsLoaded(page: Page): Promise<void> {
+  await expectPageToHaveURL(page, /\/about$/);
+  await expectVisible(main(page));
+  await expectVisible(headerTitle(page));
+  await expectVisible(missionSection(page));
+  await expectVisible(valuesSection(page));
+  await expectVisible(contactSection(page));
 }

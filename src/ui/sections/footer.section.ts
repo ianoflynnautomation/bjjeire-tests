@@ -1,26 +1,23 @@
+import { expect, type Locator, type Page } from '@playwright/test';
 import { getLocatorByRole, getLocatorByTestId } from '@ui/support';
-import type { FooterQuickLinkName } from './footer.types';
-import { expect, type Locator } from 'playwright/test';
 import { click } from '@ui/support/element-actions';
+import type { FooterQuickLinkName } from './footer.types';
 export { type FooterQuickLink, type FooterQuickLinkName } from './footer.types';
 
-const footerSection = () => getLocatorByRole('contentinfo');
-const copyright = () => getLocatorByTestId('footer-copyright');
-const quickLinksHeading = () => getLocatorByRole('heading', { name: 'Quick Links' });
+const footerSection = (page: Page) => getLocatorByRole(page, 'contentinfo');
+const copyright = (page: Page) => getLocatorByTestId(page, 'footer-copyright');
+const quickLinksHeading = (page: Page) => getLocatorByRole(page, 'heading', { name: 'Quick Links' });
 
-export function quickLink(name: FooterQuickLinkName): Locator {
-  return footerSection().getByRole('link', { name, exact: true });
+export function quickLink(page: Page, name: FooterQuickLinkName): Locator {
+  return footerSection(page).getByRole('link', { name, exact: true });
 }
 
-export async function clickFooterQuickLink(name: FooterQuickLinkName): Promise<void> {
-  await click(quickLink(name));
+export async function clickFooterQuickLink(page: Page, name: FooterQuickLinkName): Promise<void> {
+  await click(quickLink(page, name));
 }
 
-export async function expectFooterVisible(): Promise<void> {
-  await expect(footerSection()).toBeVisible();
-  await expect(copyright()).toBeVisible();
-  await expect(quickLinksHeading()).toBeVisible();
-}
-export function expectVisible() {
-  throw new Error('Function not implemented.');
+export async function expectFooterVisible(page: Page): Promise<void> {
+  await expect(footerSection(page)).toBeVisible();
+  await expect(copyright(page)).toBeVisible();
+  await expect(quickLinksHeading(page)).toBeVisible();
 }

@@ -1,21 +1,10 @@
-import { test as base, expect } from '@playwright/test';
-import { clearPage, setPage } from '@ui/contexts/page-context';
+import { expect, mergeTests } from '@playwright/test';
+import { test as aboutTest } from '@ui/features/about/about.fixture';
+import { test as competitionsTest } from '@ui/features/competitions/competitions.fixture';
+import { test as eventsTest } from '@ui/features/events/events.fixture';
+import { test as gymsTest } from '@ui/features/gyms/gyms.fixture';
+import { test as storesTest } from '@ui/features/stores/stores.fixture';
+import { test as templateTest } from '@ui/features/_template/_template.fixture';
 
-type SetupFixture = void;
-type UiFixtures = { _pageContext: SetupFixture };
-
-export const test = base.extend<UiFixtures>({
-  _pageContext: [
-    async ({ page }, use) => {
-      setPage(page);
-      try {
-        await use();
-      } finally {
-        clearPage();
-      }
-    },
-    { auto: true },
-  ],
-});
-
+export const test = mergeTests(aboutTest, competitionsTest, eventsTest, gymsTest, storesTest, templateTest);
 export { expect };
