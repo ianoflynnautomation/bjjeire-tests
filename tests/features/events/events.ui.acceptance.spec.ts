@@ -1,29 +1,51 @@
 import { test } from '@ui/fixtures';
-import { SEEDED_EVENT_ADCC, SEEDED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
+import { EXPECTED_EVENT_ADCC_CARD, EXPECTED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
+import { faker } from '@faker-js/faker';
+import eventsFixture from '../../testdata/mocks/events.page-1.json';
 
-test.describe('Events UI Acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
-  test('loads the events list', { tag: ['@smoke'] }, async ({ eventsPage }) => {
-    await eventsPage.navigate();
-    await eventsPage.verifyIsLoaded();
+test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
+  test.beforeEach(async ({ mockBjjEvents }) => {
+    await mockBjjEvents(eventsFixture);
   });
 
-  test('search with no match shows the empty state', { tag: '@acceptance' }, async ({ eventsPage }) => {
-    await eventsPage.navigate();
-    await eventsPage.searchFor('xyz');
-    await eventsPage.expectNoResults();
-  });
+  test(
+    'Given available events, when a visitor opens Events, then the event list is displayed',
+    { tag: ['@smoke'] },
+    async ({ eventsPage }) => {
+      await eventsPage.navigate();
+      await eventsPage.verifyIsLoaded();
+    },
+  );
 
-  test('search by event name shows that event only', { tag: '@acceptance' }, async ({ eventsPage }) => {
-    await eventsPage.navigate();
-    await eventsPage.searchFor(SEEDED_EVENT_ADCC.name);
-    await eventsPage.expectSearchValue(SEEDED_EVENT_ADCC.name);
-    await eventsPage.expectCardData(SEEDED_EVENT_ADCC.name, SEEDED_EVENT_ADCC);
-  });
+  test(
+    'Given no matching event, when a visitor searches, then an empty state is displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.navigate();
+      await eventsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      await eventsPage.expectNoResults();
+    },
+  );
 
-  test('search by partial event name shows that event only', { tag: '@acceptance' }, async ({ eventsPage }) => {
-    await eventsPage.navigate();
-    await eventsPage.searchFor(SEEDED_EVENT_ADCC_PARTIAL);
-    await eventsPage.expectSearchValue(SEEDED_EVENT_ADCC_PARTIAL);
-    await eventsPage.expectCardData(SEEDED_EVENT_ADCC.name, SEEDED_EVENT_ADCC);
-  });
+  test(
+    'Given an event name, when a visitor searches, then only that event is displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.navigate();
+      await eventsPage.searchFor(EXPECTED_EVENT_ADCC_CARD.name);
+      await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_CARD.name);
+      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD.name, EXPECTED_EVENT_ADCC_CARD);
+    },
+  );
+
+  test(
+    'Given part of an event name, when a visitor searches, then the matching event is displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.navigate();
+      await eventsPage.searchFor(EXPECTED_EVENT_ADCC_PARTIAL);
+      await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_PARTIAL);
+      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD.name, EXPECTED_EVENT_ADCC_CARD);
+    },
+  );
 });

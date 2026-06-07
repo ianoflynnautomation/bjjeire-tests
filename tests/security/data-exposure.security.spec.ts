@@ -1,5 +1,5 @@
 import { test } from '@api/fixtures';
-import { API_ROUTES, rawRequest, withRouteId } from '@api/support/api';
+import { API_ROUTES, apiRequest, withRouteId } from '@api/support';
 import { expectNoServerError } from './helpers/expectations';
 import { expectNoSensitiveLeakage } from './helpers/leakage';
 import { expectSafeErrorContentType } from './helpers/content-type';
@@ -8,7 +8,7 @@ import { COLLECTION_ROUTES } from './helpers/routes';
 test.describe('Data exposure', { tag: ['@security', '@regression', '@data-exposure'] }, () => {
   for (const path of COLLECTION_ROUTES) {
     test(`GET ${path} response body is free of sensitive leakage`, async ({ apiClient }) => {
-      const response = await rawRequest(apiClient, 'GET', path);
+      const response = await apiRequest(apiClient, 'GET', path);
       const body = await response.text();
       expectNoSensitiveLeakage(body, `GET ${path}`);
     });
@@ -16,7 +16,7 @@ test.describe('Data exposure', { tag: ['@security', '@regression', '@data-exposu
 
   test('malformed query parameters do not leak internals', async ({ apiClient }) => {
     const context = 'GET /api/v1/gym with malformed params';
-    const response = await rawRequest(apiClient, 'GET', API_ROUTES.gyms, {
+    const response = await apiRequest(apiClient, 'GET', API_ROUTES.gyms, {
       params: { page: -1, pageSize: 99999 },
     });
 
@@ -29,7 +29,7 @@ test.describe('Data exposure', { tag: ['@security', '@regression', '@data-exposu
 
   test('unknown id returns a clean error without leakage', async ({ apiClient }) => {
     const context = 'GET /api/v1/gym/{invalid}';
-    const response = await rawRequest(apiClient, 'GET', withRouteId(API_ROUTES.gyms, 'not-a-real-id'));
+    const response = await apiRequest(apiClient, 'GET', withRouteId(API_ROUTES.gyms, 'not-a-real-id'));
     expectNoServerError(response, context);
     expectSafeErrorContentType(response);
 

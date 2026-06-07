@@ -28,7 +28,7 @@ npm run test:snapshots          # run snapshot project; fails on diff
 npm run snapshots:update        # regenerate snapshots locally
 ```
 
-The `snapshots` project in [`src/shared/config/playwright.ts`](../src/shared/config/playwright.ts) runs **`chromium-desktop`** at **1440×900** only. We deliberately don't run image snapshots across firefox/webkit/wide — pixel-identical rendering is impossible across engines and the maintenance cost dwarfs the regression-detection value.
+The `snapshots` project in [`src/ui/config/playwright.ts`](../src/ui/config/playwright.ts) runs **`chromium-desktop`** at **1440×900** only. We deliberately don't run image snapshots across firefox/webkit/wide — pixel-identical rendering is impossible across engines and the maintenance cost dwarfs the regression-detection value.
 
 ARIA snapshots are also limited to the `snapshots` project. The DOM is identical across engines, so multi-engine ARIA snapshots add zero coverage.
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@api/fixtures';
-import { API_ROUTES, rawRequest } from '@api/support/api';
+import { API_ROUTES, apiRequest } from '@api/support';
 import { env } from '@shared/config';
 import { expectCredentialsDisallowed, expectMethodNotAllowed, expectOriginRejected, preflight } from './helpers/cors';
 
@@ -22,13 +22,13 @@ test.describe('CORS', { tag: ['@security', '@regression', '@cors'] }, () => {
 
   test('no endpoint exposes Access-Control-Allow-Credentials: true', async ({ apiClient }) => {
     for (const path of [API_ROUTES.gyms, API_ROUTES.featureFlags]) {
-      const response = await rawRequest(apiClient, 'GET', path, { headers: { Origin: TRUSTED_ORIGIN } });
+      const response = await apiRequest(apiClient, 'GET', path, { headers: { Origin: TRUSTED_ORIGIN } });
       expectCredentialsDisallowed(response);
     }
   });
 
   test('wildcard Access-Control-Allow-Origin is never used', async ({ apiClient }) => {
-    const response = await rawRequest(apiClient, 'GET', API_ROUTES.gyms, { headers: { Origin: TRUSTED_ORIGIN } });
+    const response = await apiRequest(apiClient, 'GET', API_ROUTES.gyms, { headers: { Origin: TRUSTED_ORIGIN } });
     expect(response.headers()['access-control-allow-origin']).not.toBe('*');
   });
 

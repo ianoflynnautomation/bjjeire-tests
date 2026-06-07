@@ -1,0 +1,619 @@
+{
+  "data": [
+    {
+      "name": "011 Grappling",
+      "description": "011 Grappling (011GRPL) is a specialist grappling and BJJ studio based in Clontarf, Dublin.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Basement, Castleview, 25 Clontarf East, Dublin, D05 X9F8, Ireland",
+        "venue": "011 Grappling",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.2081893, 53.3810878],
+          "latitude": 53.3810878,
+          "longitude": -6.2081893,
+          "placeName": "Castleview, Clontarf East, Dublin",
+          "placeId": "ChIJE7tjs1kPZ0gR5KP8gscg0R4"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "Wrestling"],
+      "website": "http://www.011grpl.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd358e9a6b69c88fae3/69c7dcd358e9a6b69c88fae3-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd358e9a6b69c88fae3/69c7dcd358e9a6b69c88fae3-thumb.webp",
+      "id": "69c7dcd358e9a6b69c88fae3",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Alexandre Fitness Jiu Jitsu Academy",
+      "description": "Alexandre Fitness Jiu Jitsu Academy in Kylemore, Dublin 10, combining Brazilian Jiu-Jitsu instruction with fitness training.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Kylemore Park S, Kylemore, Dublin 10, D10 NW01, Ireland",
+        "venue": "Alexandre Fitness Jiu Jitsu Academy",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.3480532, 53.3337722],
+          "latitude": 53.3337722,
+          "longitude": -6.3480532,
+          "placeName": "Kylemore Park S, Kylemore, Dublin 10",
+          "placeId": "ChIJMbhC7_UMZ0gRHVT1ngbmGSI"
+        }
+      },
+      "socialMedia": {
+        "instagram": "https://www.instagram.com/alexandrefitness/?hl=en",
+        "facebook": null,
+        "x": null,
+        "youTube": "https://www.youtube.com/watch?v=ohQzM5-vtVI"
+      },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "StrengthTraining"],
+      "website": "http://www.alexandrefitness.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd3700148ae57af5d93/69c7dcd3700148ae57af5d93-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd3700148ae57af5d93/69c7dcd3700148ae57af5d93-thumb.webp",
+      "id": "69c7dcd3700148ae57af5d93",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Anam MMA",
+      "description": "Anam MMA in Nenagh, Co. Tipperary, offering BJJ and mixed martial arts training for all levels.",
+      "status": "Active",
+      "county": "Tipperary",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 2 Church View, Summerhill, Nenagh, Co. Tipperary, E45 FY64, Ireland",
+        "venue": "Anam MMA",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.1971579, 52.8649704],
+          "latitude": 52.8649704,
+          "longitude": -8.1971579,
+          "placeName": "Church View, Summerhill, Nenagh, Co. Tipperary",
+          "placeId": "ChIJEctEg2CRXEgRdbeArW94Aok"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "Wrestling", "MuayThai"],
+      "website": "http://www.anammma.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c81c03b3a39ea6fd4f645e/69c81c03b3a39ea6fd4f645e-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c81c03b3a39ea6fd4f645e/69c81c03b3a39ea6fd4f645e-thumb.webp",
+      "id": "69c81c03b3a39ea6fd4f645e",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Aontach Jiu-Jitsu",
+      "description": "Aontach Jiu-Jitsu at Ballyvolane Commercial Park in north Cork city, offering BJJ for all levels.",
+      "status": "Active",
+      "county": "Cork",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 24, Ballyvolane Commercial Park, Ballyvolane, Cork, T23 E685, Ireland",
+        "venue": "Aontach Jiu-Jitsu",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.4596709, 51.9155909],
+          "latitude": 51.9155909,
+          "longitude": -8.4596709,
+          "placeName": "Ballyvolane Commercial Park, Cork",
+          "placeId": "ChIJQZL1U1ubREgRZGTW0qAD4yw"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "https://aontach.ie/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c801b9a1d93047d8049ca9/69c801b9a1d93047d8049ca9-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c801b9a1d93047d8049ca9/69c801b9a1d93047d8049ca9-thumb.webp",
+      "id": "69c801b9a1d93047d8049ca9",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Athlete A Brazilian Jiu Jitsu",
+      "description": "Athlete A BJJ is based in North Strand, Dublin, offering Brazilian Jiu-Jitsu training for all levels.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "45b Strandville Ave, N Strand Rd, North Wall, Dublin, D03 N8H0, Ireland",
+        "venue": "Athlete A Brazilian Jiu Jitsu",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.2408259, 53.3571316],
+          "latitude": 53.3571316,
+          "longitude": -6.2408259,
+          "placeName": "45b Strandville Ave, N Strand Rd, North Wall, Dublin",
+          "placeId": "ChIJe6sLjVUPZ0gRuR47ne56gZY"
+        }
+      },
+      "socialMedia": {
+        "instagram": "https://www.instagram.com/athlete_a_bjj/",
+        "facebook": "https://www.facebook.com/people/Athlete-A-Brazilian-Jiu-Jitsu/100088359901936/?ref=NONE_xav_ig_profile_page_web",
+        "x": null,
+        "youTube": null
+      },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "https://www.athleteabjj.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd3ee74536fd9bf80d9/69c7dcd3ee74536fd9bf80d9-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd3ee74536fd9bf80d9/69c7dcd3ee74536fd9bf80d9-thumb.webp",
+      "id": "69c7dcd3ee74536fd9bf80d9",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Aurum BJJ Dublin",
+      "description": "Aurum BJJ Dublin is located in Santry, north Dublin, offering Brazilian Jiu-Jitsu training for all levels.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Lilmar House, Santry, Dublin, D09 AP95, Ireland",
+        "venue": "Aurum BJJ Dublin",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.2392931, 53.3992003],
+          "latitude": 53.3992003,
+          "longitude": -6.2392931,
+          "placeName": "Lilmar House, Santry, Dublin",
+          "placeId": "ChIJcyMqmk8PZ0gRGjL8TPbM9n4"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "http://www.aurumbjjdublin.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd3430ed47b8c5693e0/69c7dcd3430ed47b8c5693e0-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd3430ed47b8c5693e0/69c7dcd3430ed47b8c5693e0-thumb.webp",
+      "id": "69c7dcd3430ed47b8c5693e0",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "BJJ Carrigaline",
+      "description": "BJJ Carrigaline at Innovation Business Park offers Brazilian Jiu-Jitsu for all levels in south Cork.",
+      "status": "Active",
+      "county": "Cork",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 6, Innovation Business Park, Kilnagleary, Carrigaline, Co. Cork, Ireland",
+        "venue": "BJJ Carrigaline",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.3689233, 51.8092434],
+          "latitude": 51.8092434,
+          "longitude": -8.3689233,
+          "placeName": "Innovation Business Park, Carrigaline, Co. Cork",
+          "placeId": "ChIJhcVhBcyFREgRHUYwZG5JxTY"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "http://www.bjjcarrigaline.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c801b9eb21daf8bdb3fd80/69c801b9eb21daf8bdb3fd80-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c801b9eb21daf8bdb3fd80/69c801b9eb21daf8bdb3fd80-thumb.webp",
+      "id": "69c801b9eb21daf8bdb3fd80",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "BJJ Cork",
+      "description": "BJJ Cork Brazilian Jiu-Jitsu Academy on Sarsfield Road, offering gi and no-gi classes for all levels.",
+      "status": "Active",
+      "county": "Cork",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Sarsfield Rd, Garranedarragh, Cork, Ireland",
+        "venue": "BJJ Cork",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.509854, 51.8729896],
+          "latitude": 51.8729896,
+          "longitude": -8.509854,
+          "placeName": "Sarsfield Rd, Garranedarragh, Cork",
+          "placeId": "ChIJr-kQjA6QREgR4AikMRswZng"
+        }
+      },
+      "socialMedia": {
+        "instagram": "https://www.instagram.com/bjjcork/",
+        "facebook": null,
+        "x": null,
+        "youTube": "https://www.youtube.com/user/beechy"
+      },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "http://www.bjjcork.com/",
+      "timetableUrl": "https://www.bjjcork.com/services/",
+      "imageUrl": "/images/gyms/69c801b92286948d312fff32/69c801b92286948d312fff32-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c801b92286948d312fff32/69c801b92286948d312fff32-thumb.webp",
+      "id": "69c801b92286948d312fff32",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "BJJ Gort",
+      "description": "BJJ Gort on Ennis Road in Gort, south Galway, offering Brazilian Jiu-Jitsu classes for all levels.",
+      "status": "Active",
+      "county": "Galway",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Ennis Rd, Lavally, Gort, Co. Galway, H91 K7YA, Ireland",
+        "venue": "BJJ Gort",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.8128073, 53.0621541],
+          "latitude": 53.0621541,
+          "longitude": -8.8128073,
+          "placeName": "Ennis Rd, Gort, Co. Galway",
+          "placeId": "ChIJlUiFWgB5W0gRfh-nUGvWdlA"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "http://www.bjjgort.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c80ce34981d6984af25153/69c80ce34981d6984af25153-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c80ce34981d6984af25153/69c80ce34981d6984af25153-thumb.webp",
+      "id": "69c80ce34981d6984af25153",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Barão Jiu Jitsu Cork",
+      "description": "Barão Jiu Jitsu Cork is located in the city centre on French Church Street, offering Brazilian Jiu-Jitsu for all levels.",
+      "status": "Active",
+      "county": "Cork",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "3rd Floor, Blue Nile, 14 French Church St, Cork, T12 XE76, Ireland",
+        "venue": "Barão Jiu Jitsu Cork",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.4736281, 51.8988706],
+          "latitude": 51.8988706,
+          "longitude": -8.4736281,
+          "placeName": "14 French Church St, Cork City Centre",
+          "placeId": "ChIJOemtshKQREgRM04nY7SjHgU"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "https://teamfmcork.net/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c801b9440304b759971922/69c801b9440304b759971922-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c801b9440304b759971922/69c801b9440304b759971922-thumb.webp",
+      "id": "69c801b9440304b759971922",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Black Eagle Dojo",
+      "description": "Black Eagle Dojo at Waterford Business Park on Cork Road, offering martial arts and BJJ training.",
+      "status": "Active",
+      "county": "Waterford",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 41, Waterford Business Park, Cork Rd, Waterford, Ireland",
+        "venue": "Black Eagle Dojo",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-7.1575866, 52.2460003],
+          "latitude": 52.2460003,
+          "longitude": -7.1575866,
+          "placeName": "Waterford Business Park, Cork Rd, Waterford",
+          "placeId": "ChIJO8h4MmTEQkgR9iGAYAdjtUE"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": null,
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c81b7dae4b6147bc0ae3fb/69c81b7dae4b6147bc0ae3fb-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c81b7dae4b6147bc0ae3fb/69c81b7dae4b6147bc0ae3fb-thumb.webp",
+      "id": "69c81b7dae4b6147bc0ae3fb",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Brazier Jiu Jitsu Academy",
+      "description": "Brazier Jiu Jitsu Academy on Kylemore Road, Dublin 12, offering Brazilian Jiu-Jitsu classes for all ages and skill levels.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "First Floor North, Motorcity, Kylemore Rd, Inchicore, Dublin 12, D12 TRF7, Ireland",
+        "venue": "Brazier Jiu Jitsu Academy",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.3459895, 53.3305424],
+          "latitude": 53.3305424,
+          "longitude": -6.3459895,
+          "placeName": "Motorcity, Kylemore Rd, Dublin 12",
+          "placeId": "ChIJqUTWroAOZ0gRlebx8pKk5ag"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "https://www.brazierjiujitsu.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd3cd0aeb3836a6f718/69c7dcd3cd0aeb3836a6f718-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd3cd0aeb3836a6f718/69c7dcd3cd0aeb3836a6f718-thumb.webp",
+      "id": "69c7dcd3cd0aeb3836a6f718",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Brú Grappling Studio",
+      "description": "Brú Grappling Studio in Churchtown, Dublin 14, is a specialist grappling gym offering BJJ and wrestling for all levels.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "1 Victoria Terrace, Churchtown Lower, Dublin 14, D14 FA33, Ireland",
+        "venue": "Brú Grappling Studio",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.2453393, 53.2938248],
+          "latitude": 53.2938248,
+          "longitude": -6.2453393,
+          "placeName": "1 Victoria Terrace, Churchtown Lower, Dublin 14",
+          "placeId": "ChIJJeA6UvcJZ0gRja9z8mxd1TA"
+        }
+      },
+      "socialMedia": {
+        "instagram": "https://www.instagram.com/explore/locations/104492899175755/bru-grappling-studio/",
+        "facebook": null,
+        "x": null,
+        "youTube": "https://www.youtube.com/@Bru_grappling"
+      },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "Wrestling"],
+      "website": "https://www.brugrappling.ie/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd3aeb006e3b0daa13a/69c7dcd3aeb006e3b0daa13a-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd3aeb006e3b0daa13a/69c7dcd3aeb006e3b0daa13a-thumb.webp",
+      "id": "69c7dcd3aeb006e3b0daa13a",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Checkmat Jiu Jitsu Waterford",
+      "description": "Checkmat Jiu Jitsu Waterford at Johnstown Business Park, part of the global Checkmat BJJ team.",
+      "status": "Active",
+      "county": "Waterford",
+      "affiliation": { "name": "Checkmat", "website": "https://checkmatjiujitsu.com" },
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 2, Johnstown Business Park, Newtown, Waterford, X91 P38P, Ireland",
+        "venue": "Checkmat Jiu Jitsu Waterford",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-7.1096293, 52.2559134],
+          "latitude": 52.2559134,
+          "longitude": -7.1096293,
+          "placeName": "Johnstown Business Park, Waterford",
+          "placeId": "ChIJ4TwLLp_GQkgRMBswlIhjHAE"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "BJJGiFundamentals", "CompetitionTraining"],
+      "website": "http://checkmatwaterford.ie/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c81b7dc73e2ac948f6a4ec/69c81b7dc73e2ac948f6a4ec-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c81b7dc73e2ac948f6a4ec/69c81b7dc73e2ac948f6a4ec-thumb.webp",
+      "id": "69c81b7dc73e2ac948f6a4ec",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Clare BJJ Academy",
+      "description": "Clare Jiu Jitsu Academy in Ennis, Co. Clare, offering Brazilian Jiu-Jitsu and martial arts training for all levels.",
+      "status": "Active",
+      "county": "Clare",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Block C, Unit 13, Quin Rd Business Park, Ennis, Co. Clare, V95 H2DP, Ireland",
+        "venue": "Clare BJJ Academy",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.972535, 52.8353318],
+          "latitude": 52.8353318,
+          "longitude": -8.972535,
+          "placeName": "Quin Rd Business Park, Ennis, Co. Clare",
+          "placeId": "ChIJm0m8S74SW0gRtx23fjh6rdU"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "BJJGiFundamentals", "KidsBJJ"],
+      "website": "http://clarebjj.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c80ce399a4b40021286b2a/69c80ce399a4b40021286b2a-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c80ce399a4b40021286b2a/69c80ce399a4b40021286b2a-thumb.webp",
+      "id": "69c80ce399a4b40021286b2a",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Conriocht MMA",
+      "description": "Conriocht MMA at Athenry Shopping Centre, Co. Galway, offering BJJ and mixed martial arts.",
+      "status": "Active",
+      "county": "Galway",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 10, Athenry Shopping Centre, Prospect, Athenry, Co. Galway, H65 RV04, Ireland",
+        "venue": "Conriocht MMA",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.7497235, 53.2932406],
+          "latitude": 53.2932406,
+          "longitude": -8.7497235,
+          "placeName": "Athenry Shopping Centre, Athenry, Co. Galway",
+          "placeId": "ChIJ44cd7OyJW0gR1FgIvdOsBD4"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels", "Wrestling", "MuayThai"],
+      "website": "http://www.conriochtmma.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c80ce356d656bdfce32ac0/69c80ce356d656bdfce32ac0-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c80ce356d656bdfce32ac0/69c80ce356d656bdfce32ac0-thumb.webp",
+      "id": "69c80ce356d656bdfce32ac0",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Dragon BJJ Academy",
+      "description": "Dragon BJJ Academy in Ballincollig, Cork, offering Brazilian Jiu-Jitsu classes for all levels.",
+      "status": "Active",
+      "county": "Cork",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Unit 8b, Inishmore Industrial Estate, Ballincollig, Cork, Ireland",
+        "venue": "Dragon BJJ Academy",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-8.6108703, 51.8892825],
+          "latitude": 51.8892825,
+          "longitude": -8.6108703,
+          "placeName": "Inishmore Industrial Estate, Ballincollig, Cork",
+          "placeId": "ChIJ53o_AWWSREgRsbzBhGXp8C4"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": null,
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c801b923abdd6967e17877/69c801b923abdd6967e17877-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c801b923abdd6967e17877/69c801b923abdd6967e17877-thumb.webp",
+      "id": "69c801b923abdd6967e17877",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "Durinho BJJ",
+      "description": "Durinho BJJ on Munster Avenue in Galway city, offering Brazilian Jiu-Jitsu classes for all levels.",
+      "status": "Active",
+      "county": "Galway",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "6 Munster Ave, Galway, H91 FT0C, Ireland",
+        "venue": "Durinho BJJ",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-9.0594704, 53.268991],
+          "latitude": 53.268991,
+          "longitude": -9.0594704,
+          "placeName": "6 Munster Ave, Galway",
+          "placeId": "ChIJYf0T0diXW0gRJQKZCtSl46k"
+        }
+      },
+      "socialMedia": {
+        "instagram": "https://www.instagram.com/shaolinmmagalway/",
+        "facebook": null,
+        "x": null,
+        "youTube": null
+      },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "https://durinhobjj.team/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c80ce393f12d1e2aa82b78/69c80ce393f12d1e2aa82b78-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c80ce393f12d1e2aa82b78/69c80ce393f12d1e2aa82b78-thumb.webp",
+      "id": "69c80ce393f12d1e2aa82b78",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "East Coast Jiu Jitsu Academy",
+      "description": "East Coast Jiu Jitsu Academy in Dún Laoghaire, offering Brazilian Jiu-Jitsu classes for all levels on the south Dublin coast.",
+      "status": "Active",
+      "county": "Dublin",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "3 Marine Walk, Marine Rd, Dún Laoghaire, Co. Dublin, A96 CYV6, Ireland",
+        "venue": "East Coast Jiu Jitsu Academy",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-6.1340873, 53.2929593],
+          "latitude": 53.2929593,
+          "longitude": -6.1340873,
+          "placeName": "Marine Rd, Dún Laoghaire, Co. Dublin",
+          "placeId": "ChIJqbrv05wIZ0gRe9oUg8OxS74"
+        }
+      },
+      "socialMedia": { "instagram": "https://www.instagram.com/ecjja/", "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": "http://ecjja.com/",
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c7dcd34ff411a23776b110/69c7dcd34ff411a23776b110-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c7dcd34ff411a23776b110/69c7dcd34ff411a23776b110-thumb.webp",
+      "id": "69c7dcd34ff411a23776b110",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "name": "GFS Team Lótus BJJ",
+      "description": "GFS Team Lótus Club Brazilian Jiu Jitsu on Clybaun Road, Galway, offering BJJ training for all levels.",
+      "status": "Active",
+      "county": "Galway",
+      "affiliation": null,
+      "trialOffer": { "isAvailable": false, "freeClasses": null, "freeDays": null, "notes": null },
+      "location": {
+        "address": "Clybaun Rd, Galway, H91 FV5W, Ireland",
+        "venue": "GFS Team Lótus BJJ",
+        "coordinates": {
+          "type": "Point",
+          "coordinates": [-9.1084882, 53.2808553],
+          "latitude": 53.2808553,
+          "longitude": -9.1084882,
+          "placeName": "Clybaun Rd, Galway",
+          "placeId": "ChIJIY2TxqyXW0gRS4klWSKPbgI"
+        }
+      },
+      "socialMedia": { "instagram": null, "facebook": null, "x": null, "youTube": null },
+      "offeredClasses": ["BJJGiAllLevels", "BJJNoGiAllLevels"],
+      "website": null,
+      "timetableUrl": null,
+      "imageUrl": "/images/gyms/69c80ce3430921e7aca6187d/69c80ce3430921e7aca6187d-lg.webp",
+      "thumbnailUrl": "/images/gyms/69c80ce3430921e7aca6187d/69c80ce3430921e7aca6187d-thumb.webp",
+      "id": "69c80ce3430921e7aca6187d",
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    }
+  ],
+  "pagination": {
+    "totalItems": 57,
+    "currentPage": 1,
+    "pageSize": 20,
+    "totalPages": 3,
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "nextPageUrl": null,
+    "previousPageUrl": null
+  }
+}

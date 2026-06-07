@@ -2,29 +2,41 @@ import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
 import {
   API_ROUTES,
-  expectApiBody,
-  expectApiContentType,
-  expectApiStatus,
+  expectResponseBody,
+  expectContentType,
+  expectStatusCode,
   problemDetailsSchema,
-  rawRequest,
-} from '@api/support/api';
-import { expectPaginatedResponse } from '../../shared/pagination-contract';
+  apiRequest,
+} from '@api/support';
+import expectedGymsPage1 from '../../testdata/mocks/gyms.page-1.json';
 
-test.describe('Gyms API Acceptance', { tag: ['@gyms', '@api'] }, () => {
-  test('GET /api/v1/Gym returns PagedResponse<GymDto>', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
-    const response = await getGyms(apiClient, { page: 1, pageSize: 25 });
-    expectPaginatedResponse(response, { page: 1, pageSize: 25 });
-    expect(response.data[0]?.name).toBeTruthy();
-  });
+test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
+  test(
+    'Given available gyms, when a client requests the first page, then the expected gyms and pagination are returned',
+    { tag: ['@smoke', '@acceptance'] },
+    async ({ apiClient }) => {
+      const response = await getGyms(apiClient, { page: 1, pageSize: 20 });
+
+      expect(response.data).toEqual(expectedGymsPage1.data);
+      expect(response.pagination).toMatchObject({
+        totalItems: expectedGymsPage1.pagination.totalItems,
+        currentPage: expectedGymsPage1.pagination.currentPage,
+        pageSize: expectedGymsPage1.pagination.pageSize,
+        totalPages: expectedGymsPage1.pagination.totalPages,
+        hasNextPage: expectedGymsPage1.pagination.hasNextPage,
+        hasPreviousPage: expectedGymsPage1.pagination.hasPreviousPage,
+      });
+    },
+  );
 
   test(
-    'write operation in read-only mode returns RFC 7807 ProblemDetails',
+    'Given read-only mode, when a client attempts to create a gym, then the request is rejected',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
-      const response = await rawRequest(apiClient, 'POST', API_ROUTES.gyms, { data: {} });
-      expectApiStatus(response, 405);
-      expectApiContentType(response, 'application/json');
-      const problem = await expectApiBody(response, problemDetailsSchema);
+      const response = await apiRequest(apiClient, 'POST', API_ROUTES.gyms, { data: {} });
+      expectStatusCode(response, 405);
+      expectContentType(response, 'application/json');
+      const problem = await expectResponseBody(response, problemDetailsSchema);
       expect(problem.status).toBe(405);
       expect(problem.title).toBeTruthy();
       expect(problem.type ?? '', 'ProblemDetails.type should be present').toMatch(/rfc7231#section-6\.5\.5/);

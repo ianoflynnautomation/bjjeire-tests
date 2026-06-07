@@ -1,11 +1,20 @@
 import { expect } from '@api/fixtures';
-import type { PaginatedResponse } from '@api/support/api';
+import type { PaginatedResponse } from '@api/support';
 
 export function expectPaginatedResponse<T>(
   response: PaginatedResponse<T>,
-  { page, pageSize }: { page: number; pageSize: number },
+  options: { pageSize: number; validateItem?: (item: T) => void },
 ): void {
-  expect(response.pagination.currentPage).toBe(page);
-  expect(response.pagination.pageSize).toBe(pageSize);
-  expect(response.data.length).toBeLessThanOrEqual(pageSize);
+  const { pagination, data } = response;
+
+  expect(Array.isArray(data)).toBe(true);
+  expect(data.length).toBeLessThanOrEqual(options.pageSize);
+
+  expect(pagination.totalPages).toBe(Math.ceil(pagination.totalItems / pagination.pageSize));
+  expect(pagination.hasNextPage).toBe(pagination.currentPage < pagination.totalPages);
+  expect(pagination.hasPreviousPage).toBe(pagination.currentPage > 1);
+
+  if (options.validateItem) {
+    data.forEach(options.validateItem);
+  }
 }

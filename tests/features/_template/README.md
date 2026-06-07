@@ -13,3 +13,11 @@ For this template specifically:
 - keep `_template.ui.acceptance.spec.ts` and `_template.api.acceptance.spec.ts` in `tests/features/_template`
 - keep `_template.page.ts` in `src/ui/features/_template`
 - keep `_template.builder.ts` in `src/api/v1/features/_template`
+
+Acceptance test naming:
+
+- name suites `<Feature> <UI|API|snapshot> acceptance`
+- name scenarios `Given <context>, when <action>, then <business outcome>`
+- use domain vocabulary and user roles such as `visitor` or `client`
+- describe observable outcomes, not selectors, helpers, DTO types, or status codes
+- keep endpoint paths only when they distinguish otherwise similar API scenarios

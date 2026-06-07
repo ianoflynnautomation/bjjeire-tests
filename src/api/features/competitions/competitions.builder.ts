@@ -1,5 +1,5 @@
 import { Builder, type IBuilder } from 'builder-pattern';
-import { createEntityId } from '@api/support/factories';
+import { createEntityId } from '@api/support';
 import type { CompetitionId, RunId } from '@shared/types';
 import type { CompetitionDto } from './competitions.api';
 

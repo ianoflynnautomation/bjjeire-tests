@@ -151,7 +151,7 @@ export default [
   },
 
   {
-    files: ['src/api/support/auth/**/*.ts', 'global-setup.ts', 'global-teardown.ts'],
+    files: ['src/api/support/auth.ts', 'global-setup.ts', 'global-teardown.ts'],
     rules: {
       'no-console': 'off',
     },
@@ -169,6 +169,7 @@ export default [
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-invalid-void-type': 'off',
+      'no-console': 'off',
     },
   },
 

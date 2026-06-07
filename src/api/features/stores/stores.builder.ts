@@ -1,5 +1,5 @@
 import { Builder, type IBuilder } from 'builder-pattern';
-import { createEntityId } from '@api/support/factories';
+import { createEntityId } from '@api/support';
 import type { RunId, StoreId } from '@shared/types';
 import type { StoreDto } from './stores.api';
 

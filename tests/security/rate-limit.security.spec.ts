@@ -1,5 +1,5 @@
 import { test, expect } from '@api/fixtures';
-import { API_ROUTES } from '@api/support/api';
+import { API_ROUTES } from '@api/support';
 import { expectRateLimitResponse, probeUntilRateLimited } from './helpers/rate-limit';
 import { expectNoSensitiveLeakage } from './helpers/leakage';
 import { expectRateLimitProblemDetails } from './helpers/rate-limit-body';

@@ -1,4 +1,9 @@
-export type HateoasPagination = Readonly<{
+export type PaginationQuery = Readonly<{
+  page?: number;
+  pageSize?: number;
+}>;
+
+export type Pagination = Readonly<{
   totalItems: number;
   currentPage: number;
   pageSize: number;
@@ -11,7 +16,7 @@ export type HateoasPagination = Readonly<{
 
 export type PaginatedResponse<T> = Readonly<{
   data: readonly T[];
-  pagination: HateoasPagination;
+  pagination: Pagination;
 }>;
 
 export type BaseApiEntityModel<TId extends string = string> = Readonly<{

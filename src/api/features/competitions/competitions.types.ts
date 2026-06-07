@@ -1,4 +1,4 @@
-import type { BaseApiEntityModel, PaginationQuery } from '@api/support/api';
+import type { BaseApiEntityModel, PaginationQuery } from '@api/support';
 import type { CompetitionId } from '@shared/types';
 
 export type CompetitionDto = BaseApiEntityModel<CompetitionId> &

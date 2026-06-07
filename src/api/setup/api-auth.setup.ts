@@ -1,6 +1,5 @@
 import { expect } from '@playwright/test';
-import { acquireApiAccessToken } from '@api/support/api';
-import { assertApiAuthEnvironment, shouldUseApiAuthorization } from '@api/support/auth';
+import { acquireEntraAccessToken, assertApiAuthEnvironment, shouldUseEntraAuthorization } from '@api/support';
 import { cfAccessHeaders, env } from '@shared/config';
 
 const JWT_SHAPE_PATTERN = /^[\w-]+\.[\w-]+\.[\w-]+$/;
@@ -8,8 +7,8 @@ const JWT_SHAPE_PATTERN = /^[\w-]+\.[\w-]+\.[\w-]+$/;
 export async function warmApiAuthSetup(): Promise<void> {
   assertApiAuthEnvironment();
 
-  if (shouldUseApiAuthorization()) {
-    const token = await acquireApiAccessToken();
+  if (shouldUseEntraAuthorization()) {
+    const token = await acquireEntraAccessToken();
     expect(token, 'Entra returned an empty access token').toMatch(JWT_SHAPE_PATTERN);
   }
 

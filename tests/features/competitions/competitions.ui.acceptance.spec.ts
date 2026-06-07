@@ -1,37 +1,51 @@
 import { test } from '@ui/fixtures';
-import { SEEDED_COMPETITION_ADCC, SEEDED_COMPETITION_ADCC_PARTIAL } from '../../testdata/competitions';
+import { EXPECTED_COMPETITION_ADCC_CARD, EXPECTED_COMPETITION_ADCC_PARTIAL } from '../../testdata/competitions';
+import { faker } from '@faker-js/faker';
+import competitionsFixture from '../../testdata/mocks/competitions.page-1.json';
 
-test.describe('Competitions UI Acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
-  test('loads the competitions list', { tag: ['@smoke'] }, async ({ competitionsPage }) => {
-    await competitionsPage.navigate();
-    await competitionsPage.verifyIsLoaded();
-  });
-
-  test('search with no match shows the empty state', { tag: '@acceptance' }, async ({ competitionsPage }) => {
-    await competitionsPage.navigate();
-    await competitionsPage.searchFor('xyz');
-    await competitionsPage.expectNoResults();
+test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
+  test.beforeEach(async ({ mockCompetitions }) => {
+    await mockCompetitions(competitionsFixture);
   });
 
   test(
-    'search by competition name shows that competition only',
-    { tag: '@acceptance' },
+    'Given available competitions, when a visitor opens Competitions, then the competition list is displayed',
+    { tag: ['@smoke'] },
     async ({ competitionsPage }) => {
       await competitionsPage.navigate();
-      await competitionsPage.searchFor(SEEDED_COMPETITION_ADCC.name);
-      await competitionsPage.expectSearchValue(SEEDED_COMPETITION_ADCC.name);
-      await competitionsPage.expectCardData(SEEDED_COMPETITION_ADCC.name, SEEDED_COMPETITION_ADCC);
+      await competitionsPage.verifyIsLoaded();
     },
   );
 
   test(
-    'search by partial competition name shows that competition only',
+    'Given no matching competition, when a visitor searches, then an empty state is displayed',
     { tag: '@acceptance' },
     async ({ competitionsPage }) => {
       await competitionsPage.navigate();
-      await competitionsPage.searchFor(SEEDED_COMPETITION_ADCC_PARTIAL);
-      await competitionsPage.expectSearchValue(SEEDED_COMPETITION_ADCC_PARTIAL);
-      await competitionsPage.expectCardData(SEEDED_COMPETITION_ADCC.name, SEEDED_COMPETITION_ADCC);
+      await competitionsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      await competitionsPage.expectNoResults();
+    },
+  );
+
+  test(
+    'Given a competition name, when a visitor searches, then only that competition is displayed',
+    { tag: '@acceptance' },
+    async ({ competitionsPage }) => {
+      await competitionsPage.navigate();
+      await competitionsPage.searchFor(EXPECTED_COMPETITION_ADCC_CARD.name);
+      await competitionsPage.expectSearchValue(EXPECTED_COMPETITION_ADCC_CARD.name);
+      await competitionsPage.expectCardData(EXPECTED_COMPETITION_ADCC_CARD.name, EXPECTED_COMPETITION_ADCC_CARD);
+    },
+  );
+
+  test(
+    'Given part of a competition name, when a visitor searches, then the matching competition is displayed',
+    { tag: '@acceptance' },
+    async ({ competitionsPage }) => {
+      await competitionsPage.navigate();
+      await competitionsPage.searchFor(EXPECTED_COMPETITION_ADCC_PARTIAL);
+      await competitionsPage.expectSearchValue(EXPECTED_COMPETITION_ADCC_PARTIAL);
+      await competitionsPage.expectCardData(EXPECTED_COMPETITION_ADCC_CARD.name, EXPECTED_COMPETITION_ADCC_CARD);
     },
   );
 });

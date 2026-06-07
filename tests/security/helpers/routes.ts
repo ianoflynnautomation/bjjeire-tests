@@ -1,5 +1,5 @@
-import type { HttpMethod } from '@api/support/api';
-import { API_ROUTES, withRouteId } from '@api/support/api';
+import type { HttpMethod } from '@api/support';
+import { API_ROUTES, withRouteId } from '@api/support';
 
 const knownId = '507f1f77bcf86cd799439011';
 

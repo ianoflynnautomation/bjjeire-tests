@@ -8,7 +8,7 @@ const API_TEST_MATCH = [
   /.*consumer-contract.*\.spec\.ts$/,
 ];
 
-function hasApiAuthBasics(): boolean {
+function hasEntraAuthBasics(): boolean {
   return !!env.azure.tenantId && !!env.azure.apiScope;
 }
 
@@ -17,7 +17,7 @@ function hasCloudflareAccessCredentials(): boolean {
 }
 
 function shouldRunApiSetupProject(): boolean {
-  return env.apiAuth.required || hasApiAuthBasics() || env.cfAccess.required || hasCloudflareAccessCredentials();
+  return env.apiAuth.required || hasEntraAuthBasics() || env.cfAccess.required || hasCloudflareAccessCredentials();
 }
 
 export function createApiProjects(): Project[] {

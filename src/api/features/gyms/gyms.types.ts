@@ -1,4 +1,4 @@
-import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support/api';
+import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
 import type { GymId } from '@shared/types';
 
 export const ClassCategory = {

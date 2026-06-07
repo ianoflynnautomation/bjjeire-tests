@@ -1,5 +1,5 @@
 import { test, expect } from '@api/fixtures';
-import { API_ROUTES, getTyped, type PaginatedResponse } from '@api/support/api';
+import { API_ROUTES, get, type PaginatedResponse } from '@api/support';
 import { expectPaginatedResponse } from '../../shared/pagination-contract';
 
 type TemplateDto = Readonly<{
@@ -7,13 +7,17 @@ type TemplateDto = Readonly<{
   name: string;
 }>;
 
-test.describe('Template API Acceptance', { tag: ['@template', '@api'] }, () => {
-  test('GET /api/v1/template returns PaginatedResponse', { tag: ['@smoke', '@acceptance'] }, async ({ apiClient }) => {
-    const response = await getTyped<PaginatedResponse<TemplateDto>>(apiClient, API_ROUTES.template, {
-      params: { page: 1, pageSize: 25 },
-    });
+test.describe('Template API acceptance', { tag: ['@template', '@api'] }, () => {
+  test(
+    'Given available feature data, when a client requests the first page, then the data and pagination are returned',
+    { tag: ['@smoke', '@acceptance'] },
+    async ({ apiClient }) => {
+      const response = await get<PaginatedResponse<TemplateDto>>(apiClient, API_ROUTES.template, {
+        params: { page: 1, pageSize: 25 },
+      });
 
-    expectPaginatedResponse(response, { page: 1, pageSize: 25 });
-    expect(response.data[0]?.name).toBeTruthy();
-  });
+      expectPaginatedResponse(response, { pageSize: 25 });
+      expect(response.data[0]?.name).toBeTruthy();
+    },
+  );
 });

@@ -1,10 +1,10 @@
 import { Builder, type IBuilder } from 'builder-pattern';
-import { createEntityId } from '@api/support/factories';
+import { createEntityId } from '@api/support';
 import type { EventId, RunId } from '@shared/types';
 import { DUBLIN_CITY_CENTRE, DUBLIN_CITY_CENTRE_GEOJSON } from '@shared/testdata/geography';
 import { BjjEventType, EventStatus, PricingType } from './events.api';
 import type { BjjEventDto, BjjEventPricingModelDto, BjjEventScheduleDto, OrganizerDto } from './events.types';
-import type { LocationDto, SocialMediaDto } from '@api/support/api';
+import type { LocationDto, SocialMediaDto } from '@api/support';
 
 const DEFAULT_ORGANISER: OrganizerDto = {
   name: 'BJJ Eire',
