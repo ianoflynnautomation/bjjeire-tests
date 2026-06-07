@@ -29,7 +29,7 @@ const emptyStateMessage1 = (page: Page) => getLocatorByTestId(page, TEST_IDS.emp
 const emptyStateMessage2 = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyStateMessageLine2);
 const competitionCard = (page: Page, name: string) => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
-export async function navigate(page: Page): Promise<void> {
+export async function goTo(page: Page): Promise<void> {
   await goToPage(page, '/competitions');
   await getTitle(page);
 }
@@ -71,7 +71,7 @@ export async function getCardData(page: Page, name: string): Promise<Competition
   return getCompetitionCardData(card);
 }
 
-export async function expectCardData(page: Page, name: string, expected: Partial<CompetitionCard>): Promise<void> {
-  const actual = await getCardData(page, name);
+export async function expectCardData(page: Page, expected: CompetitionCard): Promise<void> {
+  const actual = await getCardData(page, expected.name);
   expect(actual).toMatchObject(expected);
 }

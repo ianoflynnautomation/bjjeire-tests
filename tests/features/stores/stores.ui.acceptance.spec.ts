@@ -12,7 +12,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given available stores, when a visitor opens Stores, then the store list is displayed',
     { tag: ['@smoke'] },
     async ({ storesPage }) => {
-      await storesPage.navigate();
+      await storesPage.goTo();
       await storesPage.verifyIsLoaded();
     },
   );
@@ -21,7 +21,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given no matching store, when a visitor searches, then an empty state is displayed',
     { tag: '@acceptance' },
     async ({ storesPage }) => {
-      await storesPage.navigate();
+      await storesPage.goTo();
       await storesPage.searchFor(faker.string.alphanumeric({ length: 12 }));
       await storesPage.expectNoResults();
     },
@@ -31,10 +31,10 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given a store name, when a visitor searches, then only that store is displayed',
     { tag: '@acceptance' },
     async ({ storesPage }) => {
-      await storesPage.navigate();
+      await storesPage.goTo();
       await storesPage.searchFor(EXPECTED_STORE_WOLFHOUND_CARD.name);
       await storesPage.expectSearchValue(EXPECTED_STORE_WOLFHOUND_CARD.name);
-      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD.name, EXPECTED_STORE_WOLFHOUND_CARD);
+      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD);
     },
   );
 
@@ -42,10 +42,10 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given part of a store name, when a visitor searches, then the matching store is displayed',
     { tag: '@acceptance' },
     async ({ storesPage }) => {
-      await storesPage.navigate();
+      await storesPage.goTo();
       await storesPage.searchFor(EXPECTED_STORE_WOLFHOUND_PARTIAL);
       await storesPage.expectSearchValue(EXPECTED_STORE_WOLFHOUND_PARTIAL);
-      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD.name, EXPECTED_STORE_WOLFHOUND_CARD);
+      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD);
     },
   );
 });

@@ -18,7 +18,7 @@ const listItems = (page: Page) => getLocatorByTestId(page, TEST_IDS.listItem);
 const emptyState = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyState);
 const storeCard = (page: Page, name: string) => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
-export async function navigate(page: Page): Promise<void> {
+export async function goTo(page: Page): Promise<void> {
   await goToPage(page, '/stores');
 }
 
@@ -48,7 +48,7 @@ export async function readCard(page: Page, name: string): Promise<StoreCard> {
   return getStoreCardData(card);
 }
 
-export async function expectCardData(page: Page, name: string, expected: Partial<StoreCard>): Promise<void> {
-  const actual = await readCard(page, name);
+export async function expectCardData(page: Page, expected: StoreCard): Promise<void> {
+  const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
 }

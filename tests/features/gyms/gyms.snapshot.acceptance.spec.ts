@@ -10,7 +10,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
     'Given the Gyms page, when the header is displayed, then it matches the approved image',
     { tag: '@snapshot' },
     async ({ page, gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
       await expect(page.getByTestId('gyms-page-header')).toHaveScreenshot('gyms-header.png');
     },
@@ -20,7 +20,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
     'Given no matching gym, when the empty state is displayed, then its accessible structure is preserved',
     { tag: '@snapshot' },
     async ({ page, gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.searchFor('zzz-no-match-xyz');
       await gymsPage.expectNoResults();
       await expect(page.getByTestId('no-data-state')).toMatchAriaSnapshot({ name: 'gyms-empty-state.aria.yml' });

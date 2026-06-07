@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "id": "template-1",
+      "name": "Example Template Item"
+    }
+  ],
+  "pagination": {
+    "totalItems": 1,
+    "currentPage": 1,
+    "pageSize": 20,
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPreviousPage": false,
+    "nextPageUrl": null,
+    "previousPageUrl": null
+  }
+}

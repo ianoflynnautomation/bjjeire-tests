@@ -12,7 +12,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given available gyms, when a visitor opens Gyms, then the gym list is displayed',
     { tag: ['@smoke'] },
     async ({ gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
     },
   );
@@ -21,7 +21,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given no matching gym, when a visitor searches, then an empty state is displayed',
     { tag: '@acceptance' },
     async ({ gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
       await gymsPage.expectNoResults();
     },
@@ -31,10 +31,10 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given a gym name, when a visitor searches, then only that gym is displayed',
     { tag: '@acceptance' },
     async ({ gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.searchFor(EXPECTED_GYM_BJJ_CORK_CARD.name);
       await gymsPage.expectSearchValue(EXPECTED_GYM_BJJ_CORK_CARD.name);
-      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD.name, EXPECTED_GYM_BJJ_CORK_CARD);
+      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD);
     },
   );
 
@@ -42,10 +42,10 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given part of a gym name, when a visitor searches, then the matching gym is displayed',
     { tag: '@acceptance' },
     async ({ gymsPage }) => {
-      await gymsPage.navigate();
+      await gymsPage.goTo();
       await gymsPage.searchFor(EXPECTED_GYM_BJJ_CORK_PARTIAL);
       await gymsPage.expectSearchValue(EXPECTED_GYM_BJJ_CORK_PARTIAL);
-      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD.name, EXPECTED_GYM_BJJ_CORK_CARD);
+      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD);
     },
   );
 });

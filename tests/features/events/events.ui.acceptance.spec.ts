@@ -12,7 +12,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given available events, when a visitor opens Events, then the event list is displayed',
     { tag: ['@smoke'] },
     async ({ eventsPage }) => {
-      await eventsPage.navigate();
+      await eventsPage.goTo();
       await eventsPage.verifyIsLoaded();
     },
   );
@@ -21,7 +21,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given no matching event, when a visitor searches, then an empty state is displayed',
     { tag: '@acceptance' },
     async ({ eventsPage }) => {
-      await eventsPage.navigate();
+      await eventsPage.goTo();
       await eventsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
       await eventsPage.expectNoResults();
     },
@@ -31,10 +31,10 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given an event name, when a visitor searches, then only that event is displayed',
     { tag: '@acceptance' },
     async ({ eventsPage }) => {
-      await eventsPage.navigate();
+      await eventsPage.goTo();
       await eventsPage.searchFor(EXPECTED_EVENT_ADCC_CARD.name);
       await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_CARD.name);
-      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD.name, EXPECTED_EVENT_ADCC_CARD);
+      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD);
     },
   );
 
@@ -42,10 +42,10 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given part of an event name, when a visitor searches, then the matching event is displayed',
     { tag: '@acceptance' },
     async ({ eventsPage }) => {
-      await eventsPage.navigate();
+      await eventsPage.goTo();
       await eventsPage.searchFor(EXPECTED_EVENT_ADCC_PARTIAL);
       await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_PARTIAL);
-      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD.name, EXPECTED_EVENT_ADCC_CARD);
+      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD);
     },
   );
 });

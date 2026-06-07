@@ -7,7 +7,7 @@ import expectedReadOnlyProblemDetails from '../../testdata/expected/read-only.pr
 
 test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] }, () => {
   test(
-    'Given available competitions, when a client requests the first page, then the expected competitions and pagination are returned',
+    'Given competitions are published, when a client opens the competitions listing, then they see the published competitions',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await getCompetitions(apiClient, {
@@ -28,7 +28,7 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
   );
 
   test(
-    'Given multiple competition pages, when a client requests page two, then a distinct next page is returned',
+    'Given the competitions listing spans more than one page, when a client moves to the next page, then they see a fresh set of competitions with no repeats',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const response = await getCompetitions(apiClient, {
@@ -38,8 +38,12 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
 
       expect(response.data).toEqual(expectedCompetitionsPage2.data);
       expect(response.pagination).toMatchObject({
-        currentPage: 2,
-        hasPreviousPage: true,
+        totalItems: expectedCompetitionsPage2.pagination.totalItems,
+        currentPage: expectedCompetitionsPage2.pagination.currentPage,
+        pageSize: expectedCompetitionsPage2.pagination.pageSize,
+        totalPages: expectedCompetitionsPage2.pagination.totalPages,
+        hasNextPage: expectedCompetitionsPage2.pagination.hasNextPage,
+        hasPreviousPage: expectedCompetitionsPage2.pagination.hasPreviousPage,
       });
 
       const page1Response = await getCompetitions(apiClient, {
@@ -53,7 +57,7 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
   );
 
   test(
-    'Given read-only mode, when a client attempts to create a competition, then the request is rejected',
+    'Given the competitions catalogue is read-only, when a client attempts to publish a new competition, then their request is refused',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const response = await apiRequest(apiClient, 'POST', API_ROUTES.competitions, { data: {} });

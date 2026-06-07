@@ -1,6 +1,6 @@
 import { test, expect } from '@api/fixtures';
 import { API_ROUTES, get, type PaginatedResponse } from '@api/support';
-import { expectPaginatedResponse } from '../../shared/pagination-contract';
+import expectedTemplatePage1 from '../../testdata/expected/_template.page-1.json';
 
 type TemplateDto = Readonly<{
   id: string;
@@ -9,15 +9,25 @@ type TemplateDto = Readonly<{
 
 test.describe('Template API acceptance', { tag: ['@template', '@api'] }, () => {
   test(
-    'Given available feature data, when a client requests the first page, then the data and pagination are returned',
+    'Given the feature catalogue is published, when a client opens the listing, then they see the published items',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await get<PaginatedResponse<TemplateDto>>(apiClient, API_ROUTES.template, {
-        params: { page: 1, pageSize: 25 },
+        params: {
+          page: expectedTemplatePage1.pagination.currentPage,
+          pageSize: expectedTemplatePage1.pagination.pageSize,
+        },
       });
 
-      expectPaginatedResponse(response, { pageSize: 25 });
-      expect(response.data[0]?.name).toBeTruthy();
+      expect(response.data).toEqual(expectedTemplatePage1.data);
+      expect(response.pagination).toMatchObject({
+        totalItems: expectedTemplatePage1.pagination.totalItems,
+        currentPage: expectedTemplatePage1.pagination.currentPage,
+        pageSize: expectedTemplatePage1.pagination.pageSize,
+        totalPages: expectedTemplatePage1.pagination.totalPages,
+        hasNextPage: expectedTemplatePage1.pagination.hasNextPage,
+        hasPreviousPage: expectedTemplatePage1.pagination.hasPreviousPage,
+      });
     },
   );
 });

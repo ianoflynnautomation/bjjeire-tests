@@ -6,7 +6,7 @@ import expectedReadOnlyProblemDetails from '../../testdata/expected/read-only.pr
 
 test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
   test(
-    'Given available stores, when a client requests the first page, then the expected stores and pagination are returned',
+    'Given stores are published, when a client opens the store directory, then they see the published stores',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
       const response = await getStores(apiClient, {
@@ -27,13 +27,34 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
   );
 
   test(
-    'Given read-only mode, when a client attempts to create a store, then the request is rejected',
+    'Given the store directory is read-only, when a client attempts to add a new store, then their request is refused',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const response = await apiRequest(apiClient, 'POST', API_ROUTES.stores, { data: {} });
       expectStatusCode(response, 405);
       expectContentType(response, 'application/json');
       expect(await response.json()).toEqual(expectedReadOnlyProblemDetails);
+    },
+  );
+
+  test(
+    'Given the store directory fits on a single page, when a client navigates past the last page, then they see no stores',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const response = await getStores(apiClient, {
+        page: 2,
+        pageSize: expectedStoresPage1.pagination.pageSize,
+      });
+
+      expect(response.data).toEqual([]);
+      expect(response.pagination).toMatchObject({
+        totalItems: expectedStoresPage1.pagination.totalItems,
+        currentPage: 2,
+        pageSize: expectedStoresPage1.pagination.pageSize,
+        totalPages: expectedStoresPage1.pagination.totalPages,
+        hasNextPage: false,
+        hasPreviousPage: true,
+      });
     },
   );
 });
