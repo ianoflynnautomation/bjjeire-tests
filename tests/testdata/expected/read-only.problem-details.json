@@ -1,0 +1,6 @@
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.5",
+  "title": "Method Not Allowed",
+  "status": 405,
+  "detail": "The API is currently in read-only mode. Write operations are disabled."
+}

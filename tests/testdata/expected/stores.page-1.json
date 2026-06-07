@@ -1,0 +1,74 @@
+{
+  "data": [
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c906",
+      "name": "FightStore Dublin",
+      "description": "",
+      "websiteUrl": "https://www.fightstoredublin.ie/",
+      "logoUrl": "/images/stores/6659a1b2c3d4e5f6a7b8c906/6659a1b2c3d4e5f6a7b8c906-lg.webp",
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c904",
+      "name": "Ground Game",
+      "description": "",
+      "websiteUrl": "https://groundgame.ie/",
+      "logoUrl": "/images/stores/6659a1b2c3d4e5f6a7b8c904/6659a1b2c3d4e5f6a7b8c904-lg.webp",
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c902",
+      "name": "Jusports",
+      "description": "",
+      "websiteUrl": "https://jusports.ie/",
+      "logoUrl": "/images/stores/6659a1b2c3d4e5f6a7b8c902/6659a1b2c3d4e5f6a7b8c902-lg.webp",
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c905",
+      "name": "MMA Style",
+      "description": "",
+      "websiteUrl": "https://www.mmastyle.irish/bjj/",
+      "logoUrl": null,
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c903",
+      "name": "Scramble",
+      "description": "Grappling and BJJ apparel brand known for quality gis and nogi gear.",
+      "websiteUrl": "https://www.scrambleireland.com/",
+      "logoUrl": null,
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    },
+    {
+      "id": "6659a1b2c3d4e5f6a7b8c901",
+      "name": "Wolfhound Fightwear",
+      "description": "Wolfhound Fightwear is an Irish brand with the aim of providing high quality BJJ and MMA apparel to martial arts practitioners at affordable prices with a unique theme that takes inspiration from Celtic mythology and the legendary fighting Irish spirit.",
+      "websiteUrl": "https://www.wolfhoundfightwear.com/",
+      "logoUrl": "/images/stores/6659a1b2c3d4e5f6a7b8c901/6659a1b2c3d4e5f6a7b8c901-lg.webp",
+      "isActive": true,
+      "createdOnUtc": "0001-01-01T00:00:00",
+      "updatedOnUtc": null
+    }
+  ],
+  "pagination": {
+    "totalItems": 6,
+    "currentPage": 1,
+    "pageSize": 25,
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPreviousPage": false,
+    "nextPageUrl": null,
+    "previousPageUrl": null
+  }
+}

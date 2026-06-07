@@ -1,15 +1,9 @@
 import { test, expect } from '@api/fixtures';
 import { getCompetitions } from '@api/features/competitions/competitions.api';
-import {
-  API_ROUTES,
-  apiRequest,
-  expectContentType,
-  expectResponseBody,
-  expectStatusCode,
-  problemDetailsSchema,
-} from '@api/support';
-import expectedCompetitionsPage1 from '../../testdata/mocks/competitions.page-1.json';
-import expectedCompetitionsPage2 from '../../testdata/mocks/competitions.page-2.json';
+import { API_ROUTES, apiRequest, expectContentType, expectStatusCode } from '@api/support';
+import expectedCompetitionsPage1 from '../../testdata/expected/competitions.page-1.json';
+import expectedCompetitionsPage2 from '../../testdata/expected/competitions.page-2.json';
+import expectedReadOnlyProblemDetails from '../../testdata/expected/read-only.problem-details.json';
 
 test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] }, () => {
   test(
@@ -65,10 +59,7 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
       const response = await apiRequest(apiClient, 'POST', API_ROUTES.competitions, { data: {} });
       expectStatusCode(response, 405);
       expectContentType(response, 'application/json');
-      const problem = await expectResponseBody(response, problemDetailsSchema);
-      expect(problem.status).toBe(405);
-      expect(problem.title).toBeTruthy();
-      expect(problem.type ?? '', 'ProblemDetails.type should be present').toMatch(/rfc7231#section-6\.5\.5/);
+      expect(await response.json()).toEqual(expectedReadOnlyProblemDetails);
     },
   );
 });

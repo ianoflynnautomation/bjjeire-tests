@@ -1,14 +1,8 @@
 import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
-import {
-  API_ROUTES,
-  expectResponseBody,
-  expectContentType,
-  expectStatusCode,
-  problemDetailsSchema,
-  apiRequest,
-} from '@api/support';
-import expectedGymsPage1 from '../../testdata/mocks/gyms.page-1.json';
+import { API_ROUTES, apiRequest, expectContentType, expectStatusCode } from '@api/support';
+import expectedGymsPage1 from '../../testdata/expected/gyms.page-1.json';
+import expectedReadOnlyProblemDetails from '../../testdata/expected/read-only.problem-details.json';
 
 test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   test(
@@ -36,10 +30,7 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
       const response = await apiRequest(apiClient, 'POST', API_ROUTES.gyms, { data: {} });
       expectStatusCode(response, 405);
       expectContentType(response, 'application/json');
-      const problem = await expectResponseBody(response, problemDetailsSchema);
-      expect(problem.status).toBe(405);
-      expect(problem.title).toBeTruthy();
-      expect(problem.type ?? '', 'ProblemDetails.type should be present').toMatch(/rfc7231#section-6\.5\.5/);
+      expect(await response.json()).toEqual(expectedReadOnlyProblemDetails);
     },
   );
 });
