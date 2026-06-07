@@ -7,6 +7,8 @@ Layout:
 - use `@ui/fixtures` directly unless the feature needs additional local fixture composition
 - `src/api/features/<feature>/*.builder.ts` for feature test data builders
 - `src/api/features/<feature>/*.api.ts` and `src/api/features/<feature>/*.types.ts` for typed API clients and contracts
+- `tests/testdata/mocks/*.json` for UI route interception only
+- `tests/testdata/expected/*.json` for API expected responses only
 
 For this template specifically:
 

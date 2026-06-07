@@ -1,60 +1,59 @@
-import { expect, type Page } from '@playwright/test';
-import { expectToHaveText, expectVisible, getLocatorByTestId, goToPage, type TextMatcher } from '@ui/support';
+import { expect, type Locator, type Page } from '@playwright/test';
+import type { TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
-import { expectEmptyList, expectList } from '../common/list.page';
-import {
-  clearSearch as clearSearchInput,
-  expectSearchValue as expectSearchInputValue,
-  searchFor as searchForInput,
-} from '../common/search.page';
 import { getGymCardData, type GymCard } from './gyms.card.page';
 import { TEST_IDS } from './gyms.constants';
 
-const header = (page: Page) => getLocatorByTestId(page, TEST_IDS.header);
-const headerTitle = (page: Page) => getLocatorByTestId(page, TEST_IDS.headerTitle);
-const searchContainer = (page: Page) => getLocatorByTestId(page, TEST_IDS.search);
+const header = (page: Page) => page.getByTestId(TEST_IDS.header);
+const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
+const searchContainer = (page: Page) => page.getByTestId(TEST_IDS.search);
 const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.searchInput);
-const listItems = (page: Page) => getLocatorByTestId(page, TEST_IDS.listItem);
-const emptyState = (page: Page) => getLocatorByTestId(page, TEST_IDS.emptyState);
-const gymCard = (page: Page, name: string) => cardByName(page, listItems(page), TEST_IDS.cardName, name);
+const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
+const emptyState = (page: Page) => page.getByTestId(TEST_IDS.emptyState);
+const gymCard = (page: Page, name: string): Locator => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
 export async function goTo(page: Page): Promise<void> {
-  await goToPage(page, '/gyms');
+  await page.goto('/gyms');
 }
 
 export async function verifyIsLoaded(page: Page): Promise<void> {
-  await expectList(header(page), headerTitle(page), searchContainer(page));
+  await expect(header(page)).toBeVisible();
+  await expect(headerTitle(page)).toBeVisible();
+  await expect(searchContainer(page)).toBeVisible();
 }
 
 export async function searchFor(page: Page, term: string): Promise<void> {
-  await searchForInput(searchInput(page), term);
+  const input = searchInput(page);
+  await input.clear();
+  await input.fill(term);
 }
 
 export async function clearSearch(page: Page): Promise<void> {
-  await clearSearchInput(searchInput(page));
+  await searchInput(page).clear();
 }
 
 export async function expectSearchValue(page: Page, term: TextMatcher): Promise<void> {
-  await expectSearchInputValue(searchInput(page), term);
+  await expect(searchInput(page)).toHaveValue(term);
 }
 
 export async function expectTitle(page: Page, title: string): Promise<void> {
-  await expectToHaveText(headerTitle(page), title);
+  await expect(headerTitle(page)).toHaveText(title);
 }
 
 export async function expectNoResults(page: Page): Promise<void> {
-  await expectEmptyList(emptyState(page), listItems(page));
+  await expect(emptyState(page)).toBeVisible();
+  await expect(listItems(page)).toHaveCount(0);
 }
 
 export async function readCard(page: Page, name: string): Promise<GymCard> {
   const card = gymCard(page, name);
-  await expectVisible(card);
+  await expect(card).toBeVisible();
   return getGymCardData(card);
 }
 
 export async function expectCardData(page: Page, expected: GymCard): Promise<void> {
   const card = gymCard(page, expected.name);
-  await expectVisible(card);
+  await expect(card).toBeVisible();
   const actual = await getGymCardData(card);
   expect(actual).toMatchObject(expected);
 }

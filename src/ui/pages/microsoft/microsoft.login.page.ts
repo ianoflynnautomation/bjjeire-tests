@@ -2,16 +2,14 @@ import { expect, type Page } from '@playwright/test';
 import { env } from '@shared/config';
 import { type Credentials } from './microsoft.login.types';
 import { ENTRA_LOGIN_HOST, UI_AUTH_TIMEOUTS } from './microsoft.login.constants';
-import { getLocatorById, getLocatorByName, getLocatorByRole, getLocatorByTestId } from '@ui/support';
-import { expectPageToContainURL, expectPageToHaveURL, expectPageToNotContainURL } from '@ui/support/navigation';
 
-const emailInput = (page: Page) => getLocatorByName(page, 'loginfmt');
-const signInNextButton = (page: Page) => getLocatorById(page, 'idSIButton9');
-const otherWaysToSignInLabel = (page: Page) => getLocatorByRole(page, 'button', { name: 'Other ways to sign in' });
-const userPasswordButton = (page: Page) => getLocatorByRole(page, 'button', { name: 'Use your password' });
-const passwordInput = (page: Page) => getLocatorByName(page, 'passwd');
-const nextButton = (page: Page) => getLocatorByTestId(page, 'primaryButton');
-const staySignedInNoButton = (page: Page) => getLocatorByTestId(page, 'secondaryButton');
+const emailInput = (page: Page) => page.locator('[name="loginfmt"]');
+const signInNextButton = (page: Page) => page.locator('#idSIButton9');
+const otherWaysToSignInLabel = (page: Page) => page.getByRole('button', { name: 'Other ways to sign in' });
+const userPasswordButton = (page: Page) => page.getByRole('button', { name: 'Use your password' });
+const passwordInput = (page: Page) => page.locator('[name="passwd"]');
+const nextButton = (page: Page) => page.getByTestId('primaryButton');
+const staySignedInNoButton = (page: Page) => page.getByTestId('secondaryButton');
 
 export async function authenticateUiTestUser(page: Page, storageStatePath: string): Promise<void> {
   const credentials = requireUiCredentials();
@@ -43,12 +41,10 @@ function requireUiCredentials(): Credentials {
 }
 
 async function waitForEntraLogin(page: Page): Promise<void> {
-  await expectPageToContainURL(page, ENTRA_LOGIN_HOST, {
-    timeout: UI_AUTH_TIMEOUTS.flow,
-  });
+  await expect(page).toHaveURL(new RegExp(ENTRA_LOGIN_HOST), { timeout: UI_AUTH_TIMEOUTS.flow });
 }
 
 async function waitForReturnToOrigin(page: Page): Promise<void> {
-  await expectPageToNotContainURL(page, ENTRA_LOGIN_HOST);
-  await expectPageToHaveURL(page, env.baseUrl);
+  await expect(page).not.toHaveURL(new RegExp(ENTRA_LOGIN_HOST));
+  await expect(page).toHaveURL(env.baseUrl);
 }
