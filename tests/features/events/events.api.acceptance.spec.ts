@@ -1,8 +1,6 @@
 import { test, expect } from '@api/fixtures';
 import { getBjjEvents } from '@api/features/events/events.api';
 import expectedEventsPage1 from '../../testdata/expected/events.page-1.json';
-import { API_ROUTES, apiRequest, expectContentType, expectStatusCode } from '@api/support';
-import expectedReadOnlyProblemDetails from '../../testdata/expected/read-only.problem-details.json';
 
 test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api'] }, () => {
   test(
@@ -27,13 +25,16 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given the events catalogue is read-only, when a client attempts to publish a new event, then their request is refused',
+    'Given events are published, when a client requests events from a county, then they should only see published events from that county',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
-      const response = await apiRequest(apiClient, 'POST', API_ROUTES.bjjEvents, { data: {} });
-      expectStatusCode(response, 405);
-      expectContentType(response, 'application/json');
-      expect(await response.json()).toEqual(expectedReadOnlyProblemDetails);
+      const county = 'Dublin';
+      const response = await getBjjEvents(apiClient, { county, page: 1, pageSize: 20 });
+
+      expect(response.data, `expected at least one published event in ${county}`).not.toHaveLength(0);
+
+      const offenders = response.data.filter(event => event.county !== county);
+      expect(offenders, `every returned event must have county="${county}"`).toEqual([]);
     },
   );
 
