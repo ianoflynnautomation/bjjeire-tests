@@ -1,23 +1,6 @@
 {
   "data": [
     {
-      "slug": "kilkenny-juniors-grappling-league-viii-2026",
-      "name": "Kilkenny Juniors Grappling League VIII",
-      "description": "Juniors grappling league event held in Kilkenny.",
-      "organisation": "Kilkenny Grappling League",
-      "country": "Ireland",
-      "websiteUrl": "https://smoothcomp.com/en/event/28540",
-      "registrationUrl": "https://smoothcomp.com/en/event/28540",
-      "logoUrl": null,
-      "tags": ["grappling-league", "juniors", "kids"],
-      "startDate": "2026-10-10T00:00:00Z",
-      "endDate": "2026-10-10T00:00:00Z",
-      "isActive": true,
-      "id": "507f1f77bcf86cd799439125",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
-    },
-    {
       "slug": "national-mma-league-30-2026",
       "name": "National MMA League 30",
       "description": "National MMA League event (submission / MMA rules).",
@@ -26,7 +9,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/28808",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/28808",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439119/507f1f77bcf86cd799439119-lg.webp",
-      "tags": ["sub-only", "mma", "national-league"],
+      "tags": [
+        "sub-only",
+        "mma",
+        "national-league"
+      ],
       "startDate": "2026-10-24T00:00:00Z",
       "endDate": "2026-10-25T00:00:00Z",
       "isActive": true,
@@ -43,7 +30,12 @@
       "websiteUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
       "registrationUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
       "logoUrl": null,
-      "tags": ["grappling-industries", "gi", "no-gi", "round-robin"],
+      "tags": [
+        "grappling-industries",
+        "gi",
+        "no-gi",
+        "round-robin"
+      ],
       "startDate": "2026-11-15T00:00:00Z",
       "endDate": "2026-11-15T00:00:00Z",
       "isActive": true,
@@ -60,7 +52,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/28809",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/28809",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439120/507f1f77bcf86cd799439120-lg.webp",
-      "tags": ["sub-only", "mma", "national-league"],
+      "tags": [
+        "sub-only",
+        "mma",
+        "national-league"
+      ],
       "startDate": "2026-11-28T00:00:00Z",
       "endDate": "2026-11-29T00:00:00Z",
       "isActive": true,
@@ -77,7 +73,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/25752",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/25752",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439133/507f1f77bcf86cd799439133-lg.webp",
-      "tags": ["sub-only", "dublin-international-open", "grappling"],
+      "tags": [
+        "sub-only",
+        "dublin-international-open",
+        "grappling"
+      ],
       "startDate": "2026-12-06T00:00:00Z",
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
@@ -94,7 +94,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/28935",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/28935",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439130/507f1f77bcf86cd799439130-lg.webp",
-      "tags": ["grapplecity", "munster-open", "winter"],
+      "tags": [
+        "grapplecity",
+        "munster-open",
+        "winter"
+      ],
       "startDate": "2026-12-06T00:00:00Z",
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
@@ -111,7 +115,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/30246",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/30246",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439131/507f1f77bcf86cd799439131-lg.webp",
-      "tags": ["grapplecity", "connaught-open", "winter"],
+      "tags": [
+        "grapplecity",
+        "connaught-open",
+        "winter"
+      ],
       "startDate": "2026-12-13T00:00:00Z",
       "endDate": "2026-12-13T00:00:00Z",
       "isActive": true,
@@ -121,13 +129,13 @@
     }
   ],
   "pagination": {
-    "totalItems": 17,
+    "totalItems": 16,
     "currentPage": 2,
     "pageSize": 10,
     "totalPages": 2,
     "hasNextPage": false,
     "hasPreviousPage": true,
     "nextPageUrl": null,
-    "previousPageUrl": "http://localhost:3000/api/v1/competition?page=1&pagesize=10"
+    "previousPageUrl": "http://localhost:5003/api/v1/competition?page=1&pagesize=10"
   }
 }

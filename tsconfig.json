@@ -12,16 +12,15 @@
     "ignoreDeprecations": "5.0",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
       "@shared/*": [
-        "src/shared/*"
+        "./src/shared/*"
       ],
       "@api/*": [
-        "src/api/*"
+        "./src/api/*"
       ],
       "@ui/*": [
-        "src/ui/*"
+        "./src/ui/*"
       ]
     },
     "strict": true,

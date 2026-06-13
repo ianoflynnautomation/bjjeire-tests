@@ -1,23 +1,6 @@
 {
   "data": [
     {
-      "slug": "kilkenny-juniors-grappling-league-vii-2026",
-      "name": "Kilkenny Juniors Grappling League VII",
-      "description": "Juniors grappling league event held in Kilkenny.",
-      "organisation": "Kilkenny Grappling League",
-      "country": "Ireland",
-      "websiteUrl": "https://smoothcomp.com/en/event/28532",
-      "registrationUrl": "https://smoothcomp.com/en/event/28532",
-      "logoUrl": null,
-      "tags": ["grappling-league", "juniors", "kids"],
-      "startDate": "2026-06-13T00:00:00Z",
-      "endDate": "2026-06-13T00:00:00Z",
-      "isActive": true,
-      "id": "507f1f77bcf86cd799439124",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
-    },
-    {
       "slug": "grappling-series-cork-open-summer-2026",
       "name": "Grappling Series Cork Open Summer 2026",
       "description": "Cork Open Summer grappling event as part of the Grappling Series.",
@@ -26,7 +9,11 @@
       "websiteUrl": "https://smoothcomp.com/en/event/30026",
       "registrationUrl": "https://smoothcomp.com/en/event/30026",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439128/507f1f77bcf86cd799439128-lg.webp",
-      "tags": ["grappling-series", "cork-open", "summer"],
+      "tags": [
+        "grappling-series",
+        "cork-open",
+        "summer"
+      ],
       "startDate": "2026-06-14T00:00:00Z",
       "endDate": "2026-06-14T00:00:00Z",
       "isActive": true,
@@ -43,7 +30,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/26849",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/26849",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439132/507f1f77bcf86cd799439132-lg.webp",
-      "tags": ["grapplecity", "connaught-open", "summer"],
+      "tags": [
+        "grapplecity",
+        "connaught-open",
+        "summer"
+      ],
       "startDate": "2026-06-21T00:00:00Z",
       "endDate": "2026-06-21T00:00:00Z",
       "isActive": true,
@@ -60,7 +51,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/25758",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/25758",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439126/507f1f77bcf86cd799439126-lg.webp",
-      "tags": ["grapplecity", "ulster-open", "grappling"],
+      "tags": [
+        "grapplecity",
+        "ulster-open",
+        "grappling"
+      ],
       "startDate": "2026-06-28T00:00:00Z",
       "endDate": "2026-06-28T00:00:00Z",
       "isActive": true,
@@ -77,7 +72,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/24917",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/24917",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439129/507f1f77bcf86cd799439129-lg.webp",
-      "tags": ["grapplecity", "munster-open", "summer"],
+      "tags": [
+        "grapplecity",
+        "munster-open",
+        "summer"
+      ],
       "startDate": "2026-07-05T00:00:00Z",
       "endDate": "2026-07-05T00:00:00Z",
       "isActive": true,
@@ -94,7 +93,11 @@
       "websiteUrl": "https://naga.smoothcomp.com/en/event/30548",
       "registrationUrl": "https://naga.smoothcomp.com/en/event/30548",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439107/507f1f77bcf86cd799439107-lg.webp",
-      "tags": ["naga", "no-gi", "submission-grappling"],
+      "tags": [
+        "naga",
+        "no-gi",
+        "submission-grappling"
+      ],
       "startDate": "2026-07-25T00:00:00Z",
       "endDate": "2026-07-25T00:00:00Z",
       "isActive": true,
@@ -111,7 +114,11 @@
       "websiteUrl": "https://smoothcomp.com/en/event/31278",
       "registrationUrl": "https://smoothcomp.com/en/event/31278",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439121/507f1f77bcf86cd799439121-lg.webp",
-      "tags": ["elite-grappling", "no-gi", "summer-open"],
+      "tags": [
+        "elite-grappling",
+        "no-gi",
+        "summer-open"
+      ],
       "startDate": "2026-08-01T00:00:00Z",
       "endDate": "2026-08-01T00:00:00Z",
       "isActive": true,
@@ -128,7 +135,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/28807",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/28807",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439118/507f1f77bcf86cd799439118-lg.webp",
-      "tags": ["sub-only", "mma", "national-league"],
+      "tags": [
+        "sub-only",
+        "mma",
+        "national-league"
+      ],
       "startDate": "2026-08-29T00:00:00Z",
       "endDate": "2026-08-30T00:00:00Z",
       "isActive": true,
@@ -145,7 +156,12 @@
       "websiteUrl": "https://smoothcomp.com/en/event/26794",
       "registrationUrl": "https://smoothcomp.com/en/event/26794",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439110/507f1f77bcf86cd799439110-lg.webp",
-      "tags": ["adcc", "no-gi", "submission-grappling", "open"],
+      "tags": [
+        "adcc",
+        "no-gi",
+        "submission-grappling",
+        "open"
+      ],
       "startDate": "2026-09-05T00:00:00Z",
       "endDate": "2026-09-05T00:00:00Z",
       "isActive": true,
@@ -162,7 +178,12 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/25751",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/25751",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439115/507f1f77bcf86cd799439115-lg.webp",
-      "tags": ["sub-only", "bjj", "nationals", "gi"],
+      "tags": [
+        "sub-only",
+        "bjj",
+        "nationals",
+        "gi"
+      ],
       "startDate": "2026-09-27T00:00:00Z",
       "endDate": "2026-09-27T00:00:00Z",
       "isActive": true,
@@ -179,7 +200,11 @@
       "websiteUrl": "https://smoothcomp.com/en/event/28540",
       "registrationUrl": "https://smoothcomp.com/en/event/28540",
       "logoUrl": null,
-      "tags": ["grappling-league", "juniors", "kids"],
+      "tags": [
+        "grappling-league",
+        "juniors",
+        "kids"
+      ],
       "startDate": "2026-10-10T00:00:00Z",
       "endDate": "2026-10-10T00:00:00Z",
       "isActive": true,
@@ -196,7 +221,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/28808",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/28808",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439119/507f1f77bcf86cd799439119-lg.webp",
-      "tags": ["sub-only", "mma", "national-league"],
+      "tags": [
+        "sub-only",
+        "mma",
+        "national-league"
+      ],
       "startDate": "2026-10-24T00:00:00Z",
       "endDate": "2026-10-25T00:00:00Z",
       "isActive": true,
@@ -213,7 +242,12 @@
       "websiteUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
       "registrationUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
       "logoUrl": null,
-      "tags": ["grappling-industries", "gi", "no-gi", "round-robin"],
+      "tags": [
+        "grappling-industries",
+        "gi",
+        "no-gi",
+        "round-robin"
+      ],
       "startDate": "2026-11-15T00:00:00Z",
       "endDate": "2026-11-15T00:00:00Z",
       "isActive": true,
@@ -230,7 +264,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/28809",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/28809",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439120/507f1f77bcf86cd799439120-lg.webp",
-      "tags": ["sub-only", "mma", "national-league"],
+      "tags": [
+        "sub-only",
+        "mma",
+        "national-league"
+      ],
       "startDate": "2026-11-28T00:00:00Z",
       "endDate": "2026-11-29T00:00:00Z",
       "isActive": true,
@@ -247,7 +285,11 @@
       "websiteUrl": "https://subonly.smoothcomp.com/en/event/25752",
       "registrationUrl": "https://subonly.smoothcomp.com/en/event/25752",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439133/507f1f77bcf86cd799439133-lg.webp",
-      "tags": ["sub-only", "dublin-international-open", "grappling"],
+      "tags": [
+        "sub-only",
+        "dublin-international-open",
+        "grappling"
+      ],
       "startDate": "2026-12-06T00:00:00Z",
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
@@ -264,7 +306,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/28935",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/28935",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439130/507f1f77bcf86cd799439130-lg.webp",
-      "tags": ["grapplecity", "munster-open", "winter"],
+      "tags": [
+        "grapplecity",
+        "munster-open",
+        "winter"
+      ],
       "startDate": "2026-12-06T00:00:00Z",
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
@@ -281,7 +327,11 @@
       "websiteUrl": "https://grapplecity.smoothcomp.com/en/event/30246",
       "registrationUrl": "https://grapplecity.smoothcomp.com/en/event/30246",
       "logoUrl": "/images/competitions/507f1f77bcf86cd799439131/507f1f77bcf86cd799439131-lg.webp",
-      "tags": ["grapplecity", "connaught-open", "winter"],
+      "tags": [
+        "grapplecity",
+        "connaught-open",
+        "winter"
+      ],
       "startDate": "2026-12-13T00:00:00Z",
       "endDate": "2026-12-13T00:00:00Z",
       "isActive": true,
@@ -291,7 +341,7 @@
     }
   ],
   "pagination": {
-    "totalItems": 17,
+    "totalItems": 16,
     "currentPage": 1,
     "pageSize": 25,
     "totalPages": 1,

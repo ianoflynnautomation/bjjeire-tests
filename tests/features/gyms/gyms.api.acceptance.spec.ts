@@ -1,5 +1,6 @@
 import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
+import { expectedPaginationFor, expectNoOverlapBetweenPages } from '@api/support';
 import expectedGymsPage1 from '../../testdata/expected/gyms.page-1.json';
 
 test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
@@ -69,18 +70,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
       ]);
 
       expect(page2.data).toEqual(expectedGymsPage1.data.slice(pageSize, pageSize * 2));
-      expect(page2.pagination).toMatchObject({
-        totalItems: expectedGymsPage1.pagination.totalItems,
-        currentPage: 2,
-        pageSize,
-        totalPages: Math.ceil(expectedGymsPage1.pagination.totalItems / pageSize),
-        hasNextPage: true,
-        hasPreviousPage: true,
-      });
+      expect(page2.pagination).toMatchObject(
+        expectedPaginationFor(expectedGymsPage1.pagination.totalItems, pageSize, 2),
+      );
 
-      const page1Ids = new Set(page1.data.map(gym => gym.id));
-      const repeats = page2.data.filter(gym => page1Ids.has(gym.id));
-      expect(repeats, 'page 2 must not repeat any page-1 gyms').toEqual([]);
+      expectNoOverlapBetweenPages(page1.data, page2.data, 'gyms');
     },
   );
 
@@ -98,12 +92,7 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
 
       const expectedLastPageSize = totalItems - (lastPage - 1) * pageSize;
       expect(response.data).toHaveLength(expectedLastPageSize);
-      expect(response.pagination).toMatchObject({
-        currentPage: lastPage,
-        totalPages: lastPage,
-        hasNextPage: false,
-        hasPreviousPage: true,
-      });
+      expect(response.pagination).toMatchObject(expectedPaginationFor(totalItems, pageSize, lastPage));
     },
   );
 });

@@ -1,5 +1,6 @@
 import { test, expect } from '@api/fixtures';
 import { getCompetitions } from '@api/features/competitions/competitions.api';
+import { expectedPaginationFor, expectNoOverlapBetweenPages } from '@api/support';
 import expectedCompetitionsPage1 from '../../testdata/expected/competitions.page-1.json';
 import expectedCompetitionsPage2 from '../../testdata/expected/competitions.page-2.json';
 
@@ -30,25 +31,19 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const pageSize = expectedCompetitionsPage2.pagination.pageSize;
+      const targetPage = expectedCompetitionsPage2.pagination.currentPage;
 
       const [page1, page2] = await Promise.all([
         getCompetitions(apiClient, { page: 1, pageSize }),
-        getCompetitions(apiClient, { page: expectedCompetitionsPage2.pagination.currentPage, pageSize }),
+        getCompetitions(apiClient, { page: targetPage, pageSize }),
       ]);
 
       expect(page2.data).toEqual(expectedCompetitionsPage2.data);
-      expect(page2.pagination).toMatchObject({
-        totalItems: expectedCompetitionsPage2.pagination.totalItems,
-        currentPage: expectedCompetitionsPage2.pagination.currentPage,
-        pageSize: expectedCompetitionsPage2.pagination.pageSize,
-        totalPages: expectedCompetitionsPage2.pagination.totalPages,
-        hasNextPage: expectedCompetitionsPage2.pagination.hasNextPage,
-        hasPreviousPage: expectedCompetitionsPage2.pagination.hasPreviousPage,
-      });
+      expect(page2.pagination).toMatchObject(
+        expectedPaginationFor(expectedCompetitionsPage2.pagination.totalItems, pageSize, targetPage),
+      );
 
-      const page1Ids = new Set(page1.data.map(c => c.id));
-      const repeats = page2.data.filter(c => page1Ids.has(c.id));
-      expect(repeats, 'page 2 must not repeat any page-1 competitions').toEqual([]);
+      expectNoOverlapBetweenPages(page1.data, page2.data, 'competitions');
     },
   );
 });
