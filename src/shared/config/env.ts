@@ -50,6 +50,7 @@ type OptionalCredentials = Readonly<{
 type OptionalUserCredentials = Readonly<{
   username: string | undefined;
   password: string | undefined;
+  entraEnabled: boolean;
 }>;
 
 export type Env = Readonly<{
@@ -60,6 +61,7 @@ export type Env = Readonly<{
   mongoDb: string;
   isCI: boolean;
   acceptInvalidCerts: boolean;
+  useMocks: boolean;
   context: RuntimeContext;
   apiAuth: Readonly<{
     required: boolean;
@@ -133,7 +135,12 @@ const runtimeContext: RuntimeContext = Object.freeze({
   isLocal,
 });
 
-const requireProtectedPipelineCredentials = isCI || isInCluster;
+// Only default to "credentials required" when targeting a remote/protected
+// environment. CI runs against the local Docker Compose stack (APP_ENV=docker)
+// don't have Entra/CF Access in front of them, so the api-setup probe would
+// otherwise demand AZURE_API_SCOPE etc. for no reason. Callers can still
+// override explicitly via API_AUTH_REQUIRED / CF_ACCESS_REQUIRED.
+const requireProtectedPipelineCredentials = (isCI || isInCluster) && isRemoteProfile(PROFILE);
 
 export const env: Env = Object.freeze({
   profile: PROFILE,
@@ -143,6 +150,7 @@ export const env: Env = Object.freeze({
   mongoDb: pick('MONGO_DB', 'bjjeire'),
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
+  useMocks: readEnvFlag('USE_API_MOCKS', !isRemoteProfile(PROFILE)),
   context: runtimeContext,
   apiAuth: Object.freeze({
     required: readEnvFlag('API_AUTH_REQUIRED', requireProtectedPipelineCredentials),
@@ -166,6 +174,7 @@ export const env: Env = Object.freeze({
   uiTestUser: Object.freeze({
     username: readEnv('PW_TEST_USER'),
     password: readEnv('PW_TEST_PASSWORD'),
+    entraEnabled: readEnvFlag('PW_UI_ENTRA_AUTH', false),
   }),
 });
 

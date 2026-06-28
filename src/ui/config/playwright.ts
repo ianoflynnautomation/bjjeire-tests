@@ -12,7 +12,7 @@ const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const WIDE_VIEWPORT = { width: 1728, height: 1117 };
 
 export function createUiProjects(): Project[] {
-  const authConfigured = !!env.uiTestUser.username && !!env.uiTestUser.password;
+  const authConfigured = env.uiTestUser.entraEnabled && !!env.uiTestUser.username && !!env.uiTestUser.password;
   const authDependencies = authConfigured ? ['setup'] : [];
   const uiUse = authConfigured ? ({ storageState: STORAGE_STATE_PATH } as const) : {};
 

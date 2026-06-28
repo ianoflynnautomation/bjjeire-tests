@@ -1,8 +1,11 @@
+import { join } from 'path';
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
 import { cfAccessHeaders } from './cf-access';
 import { env } from './env';
 import { readEnv } from './process-env';
 import { TIMEOUTS } from './timeouts';
+
+const REPO_ROOT = join(__dirname, '..', '..', '..');
 
 const IS_CI = env.isCI;
 
@@ -32,6 +35,8 @@ const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
 
 export function createBaseConfig(overrides: PlaywrightTestConfig = {}): PlaywrightTestConfig {
   return defineConfig({
+    globalSetup: join(REPO_ROOT, 'global-setup.ts'),
+    globalTeardown: join(REPO_ROOT, 'global-teardown.ts'),
     testDir: './tests',
     testIgnore: /.*\/_template\/.*/,
     grepInvert: IGNORED_TAGS_GREP,

@@ -9,6 +9,12 @@ import {
 import { eventsPageFixture, mockBjjEventsFixture, type EventsPage, type MockBjjEvents } from './events.fixture';
 import { gymsPageFixture, mockGymsFixture, type GymsPage, type MockGyms } from './gyms.fixture';
 import { storesPageFixture, mockStoresFixture, type StoresPage, type MockStores } from './stores.fixture';
+import {
+  mockNetworkErrorFixture,
+  mockServerErrorFixture,
+  type MockNetworkError,
+  type MockServerError,
+} from './failure.fixture';
 import { templatePageFixture, type TemplatePage } from './_template.fixture';
 
 export type UiFixtures = {
@@ -19,6 +25,8 @@ export type UiFixtures = {
   mockBjjEvents: MockBjjEvents;
   mockCompetitions: MockCompetitions;
   mockGyms: MockGyms;
+  mockNetworkError: MockNetworkError;
+  mockServerError: MockServerError;
   mockStores: MockStores;
   storesPage: StoresPage;
   templatePage: TemplatePage;
@@ -32,6 +40,8 @@ export const test = base.extend<UiFixtures>({
   mockBjjEvents: mockBjjEventsFixture,
   mockCompetitions: mockCompetitionsFixture,
   mockGyms: mockGymsFixture,
+  mockNetworkError: mockNetworkErrorFixture,
+  mockServerError: mockServerErrorFixture,
   mockStores: mockStoresFixture,
   storesPage: storesPageFixture,
   templatePage: templatePageFixture,

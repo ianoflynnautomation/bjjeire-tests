@@ -14,6 +14,7 @@ const staySignedInNoButton = (page: Page) => page.getByTestId('secondaryButton')
 export async function authenticateUiTestUser(page: Page, storageStatePath: string): Promise<void> {
   const credentials = requireUiCredentials();
 
+  await page.goto(env.baseUrl);
   await waitForEntraLogin(page);
   await signIn(page, credentials);
   await waitForReturnToOrigin(page);

@@ -1,5 +1,5 @@
 import { test as base, expect, type APIRequestContext } from '@playwright/test';
-import { createRequestContext } from '@api/support';
+import { buildTraceHeaders, createRequestContext, generateTraceContext } from '@api/support';
 
 export type ApiFixtures = {
   apiClient: APIRequestContext;
@@ -12,9 +12,12 @@ export type ApiWorkerFixtures = {
 export const test = base.extend<ApiFixtures, ApiWorkerFixtures>({
   // Worker-scoped read-only client. Use in tests that don't need a fresh
   // context, custom headers, or a different token — minted once per worker.
+  // All requests on this client share one trace_id (worker-wide); switch to
+  // apiClient when per-test trace correlation matters.
   sharedApiClient: [
     async ({}, use) => {
-      const context = await createRequestContext();
+      const trace = generateTraceContext();
+      const context = await createRequestContext({ extraHeaders: buildTraceHeaders(trace) });
       try {
         await use(context);
       } finally {
@@ -24,10 +27,10 @@ export const test = base.extend<ApiFixtures, ApiWorkerFixtures>({
     { scope: 'worker' },
   ],
 
-  // Test-scoped client. Use when a test needs isolation or to mutate headers/
-  // tokens via createRequestContext directly.
-  apiClient: async ({}, use) => {
-    const context = await createRequestContext();
+  apiClient: async ({}, use, testInfo) => {
+    const trace = generateTraceContext();
+    testInfo.annotations.push({ type: 'trace-id', description: trace.traceId });
+    const context = await createRequestContext({ extraHeaders: buildTraceHeaders(trace) });
     try {
       await use(context);
     } finally {
