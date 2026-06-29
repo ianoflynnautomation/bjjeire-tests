@@ -21,7 +21,7 @@ export type ApiAuthBasics = Readonly<{
   authority: string;
 }>;
 
-export type ExecutionContext = 'arc-runner' | 'ci-hosted' | 'testcontainers' | 'local';
+export type ExecutionContext = 'arc-runner' | 'ci-hosted' | 'local';
 
 export type RuntimeContext = Readonly<{
   executionContext: ExecutionContext;
@@ -29,7 +29,6 @@ export type RuntimeContext = Readonly<{
   isGithubActions: boolean;
   isInCluster: boolean;
   hasWorkloadIdentity: boolean;
-  isTestcontainers: boolean;
   isLocal: boolean;
 }>;
 
@@ -106,16 +105,9 @@ const isGithubActions = readEnv('GITHUB_ACTIONS') !== undefined;
 const hasWorkloadIdentity = readEnv('AZURE_FEDERATED_TOKEN_FILE') !== undefined;
 // KUBERNETES_SERVICE_HOST is set inside every pod regardless of WI config.
 const isInCluster = hasWorkloadIdentity || readEnv('KUBERNETES_SERVICE_HOST') !== undefined;
-const isTestcontainers = PROFILE === 'testcontainers';
 const isLocal = !isCI && !isInCluster;
 
-const executionContext: ExecutionContext = hasWorkloadIdentity
-  ? 'arc-runner'
-  : isCI
-    ? 'ci-hosted'
-    : isTestcontainers
-      ? 'testcontainers'
-      : 'local';
+const executionContext: ExecutionContext = hasWorkloadIdentity ? 'arc-runner' : isCI ? 'ci-hosted' : 'local';
 
 // =====================================================================
 // Optional-field convention
@@ -131,7 +123,6 @@ const runtimeContext: RuntimeContext = Object.freeze({
   isGithubActions,
   isInCluster,
   hasWorkloadIdentity,
-  isTestcontainers,
   isLocal,
 });
 

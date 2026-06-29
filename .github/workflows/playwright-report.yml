@@ -1,0 +1,188 @@
+# Reusable workflow: merge Playwright blob reports + gate the result.
+#
+# Extracted from playwright-tests.yml and playwright-docker.yml, which both
+# repeated the same "download blob-report-* -> merge -> summary -> gate"
+# sequence. Called as a job: it downloads the blob reports produced by the
+# upstream matrix job (nested reusable workflows share the run's artifacts),
+# merges them into the requested reporters, and fails the gate if the upstream
+# test job didn't pass.
+#
+# Not meant for external consumption — it's the shared tail of the test
+# runners. Callers pass the matrix job's result via `test_result`.
+
+name: Playwright Report + Gate
+
+on:
+  workflow_call:
+    inputs:
+      test_repo:
+        description: 'Owner/repo holding the test code (needed for `npx playwright`). Empty = caller repo.'
+        type: string
+        required: false
+        default: ''
+      test_repo_ref:
+        description: 'Git ref of the test repo to check out.'
+        type: string
+        required: false
+        default: 'main'
+      node_version:
+        description: 'Node.js version for the merge job.'
+        type: string
+        required: false
+        default: '22'
+      reporters:
+        description: 'Reporters passed to `playwright merge-reports --reporter`.'
+        type: string
+        required: false
+        default: 'html,json'
+      upload_junit:
+        description: 'Upload test-results/junit.xml as an artifact (requires junit in reporters).'
+        type: boolean
+        required: false
+        default: false
+      test_result:
+        description: 'Result of the upstream matrix test job (needs.<job>.result). Drives the gate.'
+        type: string
+        required: true
+
+    outputs:
+      failed_count:
+        description: 'Number of failed tests across all shards (0 on green).'
+        value: ${{ jobs.merge-reports.outputs.failed_count }}
+      flaky_count:
+        description: 'Number of flaky tests (passed only after retry).'
+        value: ${{ jobs.merge-reports.outputs.flaky_count }}
+      report_artifact_name:
+        description: 'Name of the merged HTML report artifact.'
+        value: ${{ jobs.merge-reports.outputs.report_artifact_name }}
+      status:
+        description: 'success | failure — gated result of the upstream test job.'
+        value: ${{ jobs.gate.outputs.status }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  merge-reports:
+    name: Merge reports
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      failed_count: ${{ steps.summary.outputs.failed_count }}
+      flaky_count: ${{ steps.summary.outputs.flaky_count }}
+      report_artifact_name: playwright-html-report
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.test_repo }}
+          ref: ${{ inputs.test_repo_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci --ignore-scripts
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          merge-multiple: true
+          path: all-blob-reports
+        continue-on-error: true
+
+      - name: Merge reports
+        id: merge
+        shell: bash
+        env:
+          REPORTERS: ${{ inputs.reporters }}
+        run: |
+          set -eo pipefail
+          if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
+            echo "::warning title=Merge skipped::No blob reports found; nothing to merge"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "::group::playwright merge-reports"
+          npx playwright merge-reports --reporter "${REPORTERS}" ./all-blob-reports
+          echo "::endgroup::"
+          echo "skipped=false" >> "$GITHUB_OUTPUT"
+
+      - name: Compute summary
+        id: summary
+        if: steps.merge.outputs.skipped == 'false'
+        shell: bash
+        run: |
+          set -eo pipefail
+          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
+          flaky=$(jq '.stats.flaky // 0' test-results/results.json 2>/dev/null || echo 0)
+          echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
+          echo "flaky_count=${flaky:-0}" >> "$GITHUB_OUTPUT"
+          if [ "${failed:-0}" -gt 0 ]; then
+            echo "::error title=Tests failed::${failed} failed, ${flaky} flaky"
+          elif [ "${flaky:-0}" -gt 0 ]; then
+            echo "::warning title=Flaky tests::${flaky} test(s) passed only after retry"
+          else
+            echo "::notice title=All tests passed::0 failed, 0 flaky"
+          fi
+
+      - name: Upload HTML report
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: playwright-report/
+          retention-days: 30
+          compression-level: 9
+
+      - name: Upload JSON results
+        if: steps.merge.outputs.skipped == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-json-results
+          path: test-results/results.json
+          retention-days: 30
+          compression-level: 9
+
+      - name: Upload JUnit report
+        if: steps.merge.outputs.skipped == 'false' && inputs.upload_junit
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-junit
+          path: test-results/junit.xml
+          retention-days: 90
+          compression-level: 9
+          if-no-files-found: ignore
+
+  gate:
+    name: Result gate
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      contents: read
+    outputs:
+      status: ${{ steps.eval.outputs.status }}
+    steps:
+      - id: eval
+        shell: bash
+        env:
+          TEST_RESULT: ${{ inputs.test_result }}
+        run: |
+          set -euo pipefail
+          if [ "$TEST_RESULT" = "failure" ] || [ "$TEST_RESULT" = "cancelled" ]; then
+            echo "::error title=Gate failed::test job result was '${TEST_RESULT}'"
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "::notice title=Gate passed::test job result was '${TEST_RESULT}'"
+          echo "status=success" >> "$GITHUB_OUTPUT"

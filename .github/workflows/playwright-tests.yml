@@ -16,12 +16,17 @@ on:
         required: false
         default: 'local'
       base_url:
-        description: 'BASE_URL for tests.'
+        description: 'BASE_URL for tests (public hostname). UI shards always use this — browsers need a public origin for the MSAL OAuth redirect flow.'
         type: string
         required: false
         default: ''
       api_base_url:
-        description: 'API_URL for tests.'
+        description: 'Public API_URL. Used by UI shards and as a fallback for the API shard when internal_api_url is empty.'
+        type: string
+        required: false
+        default: ''
+      internal_api_url:
+        description: "In-cluster Service DNS URL for the API (e.g. http://bjj-api.pr-N.svc.cluster.local). When non-empty, the api shard uses this and skips the Cloudflare service-token headers (the edge isn't in the path). Istio still enforces the Entra JWT at the workload sidecar."
         type: string
         required: false
         default: ''
@@ -48,10 +53,10 @@ on:
         required: false
         default: '22'
       playwright_image:
-        description: 'Container image used for the test job. Pin to your @playwright/test version.'
+        description: 'Container image used for the test job. Defaults to our own GHCR runner (published by docker-publish.yml); pin the tag to your @playwright/test version. Pull auth uses GHCR_TOKEN || github.token, so the package must be readable by the run.'
         type: string
         required: false
-        default: 'mcr.microsoft.com/playwright:v1.59.1-noble'
+        default: 'ghcr.io/ianoflynnautomation/playwright:v1.61.0-noble'
 
       test_repo:
         description: 'Owner/repo holding the test code. Empty = caller repo (self-call from this repo).'
@@ -63,33 +68,50 @@ on:
         type: string
         required: false
         default: 'main'
+      runner_label:
+        description: 'GitHub Actions runner label. Defaults to the in-cluster ARC scale set so test execution lands on the AKS spot fleet rather than GH-hosted runners.'
+        type: string
+        required: false
+        default: 'gha-runner-scale-set'
 
     secrets:
+      # Optional PAT for pulling the runner image from GHCR. Falls back to
+      # github.token (needs packages:read) when unset.
+      GHCR_TOKEN:
+        required: false
       EPHEMERAL_MONGO_URL:
         required: false
       EPHEMERAL_MONGO_DB:
         required: false
       AZURE_TENANT_ID:
         required: false
-      AZURE_CLIENT_ID:
+      AZURE_TESTS_CLIENT_ID:
         required: false
-      AZURE_CLIENT_SECRET:
+      AZURE_TESTS_CLIENT_SECRET:
         required: false
       AZURE_API_SCOPE:
         required: false
       AZURE_AUTHORITY:
         required: false
+      CF_ACCESS_CLIENT_ID:
+        required: false
+      CF_ACCESS_CLIENT_SECRET:
+        required: false
+      PW_TEST_USER:
+        required: false
+      PW_TEST_PASSWORD:
+        required: false
 
     outputs:
       test_status:
         description: 'success | failure — aggregated result of the matrix test job.'
-        value: ${{ jobs.gate.outputs.status }}
+        value: ${{ jobs.report.outputs.status }}
       failed_count:
         description: 'Number of failed tests across all shards (0 on green).'
-        value: ${{ jobs.merge-reports.outputs.failed_count }}
+        value: ${{ jobs.report.outputs.failed_count }}
       report_artifact_name:
         description: 'Name of the merged HTML report artifact.'
-        value: ${{ jobs.merge-reports.outputs.report_artifact_name }}
+        value: ${{ jobs.report.outputs.report_artifact_name }}
 
 permissions:
   contents: read
@@ -124,14 +146,18 @@ jobs:
 
   test:
     name: Test ${{ matrix.project.name }} ${{ matrix.shard }}/${{ inputs.shard_total }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner_label }}
     needs: [setup]
     permissions:
       contents: read
       checks: write
+      packages: read
 
     container:
       image: ${{ inputs.playwright_image }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN || github.token }}
       options: --ipc=host
 
     strategy:
@@ -144,14 +170,18 @@ jobs:
       CI: 'true'
       APP_ENV: ${{ inputs.app_env }}
       BASE_URL: ${{ inputs.base_url }}
-      API_URL: ${{ inputs.api_base_url }}
+      API_URL: ${{ matrix.project.name == 'api' && inputs.internal_api_url != '' && inputs.internal_api_url || inputs.api_base_url }}
       MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
       MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TESTS_CLIENT_ID: ${{ secrets.AZURE_TESTS_CLIENT_ID }}
+      AZURE_TESTS_CLIENT_SECRET: ${{ secrets.AZURE_TESTS_CLIENT_SECRET }}
       AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
       AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+      CF_ACCESS_CLIENT_ID: ${{ matrix.project.name == 'api' && inputs.internal_api_url != '' && '' || secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ matrix.project.name == 'api' && inputs.internal_api_url != '' && '' || secrets.CF_ACCESS_CLIENT_SECRET }}
+      PW_TEST_USER: ${{ secrets.PW_TEST_USER }}
+      PW_TEST_PASSWORD: ${{ secrets.PW_TEST_PASSWORD }}
 
     steps:
       - name: Checkout test repo
@@ -186,7 +216,11 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          echo "::notice title=Shard::${{ matrix.project.name }} ${{ matrix.shard }}/${{ inputs.shard_total }} (${{ matrix.project.config }})"
+          path_kind="public"
+          if [[ "${API_URL}" == http://*.svc.cluster.local* ]]; then
+            path_kind="cluster-local (CF edge bypassed)"
+          fi
+          echo "::notice title=Shard::${{ matrix.project.name }} ${{ matrix.shard }}/${{ inputs.shard_total }} (${{ matrix.project.config }}) — API_URL ${path_kind}"
           args=(
             -c "${{ matrix.project.config }}"
             --project="${{ matrix.project.name }}"
@@ -217,107 +251,14 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-  merge-reports:
-    name: Merge reports
-    runs-on: ubuntu-latest
+  report:
+    name: Report + gate
     needs: [test]
     if: always()
-    permissions:
-      contents: read
-      checks: write
-    outputs:
-      failed_count: ${{ steps.summary.outputs.failed_count }}
-      report_artifact_name: playwright-html-report
-    steps:
-      - name: Checkout test repo
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ inputs.test_repo }}
-          ref: ${{ inputs.test_repo_ref }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node_version }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: npm ci --ignore-scripts
-
-      - name: Download blob reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: blob-report-*
-          merge-multiple: true
-          path: all-blob-reports
-        continue-on-error: true
-
-      - name: Merge into HTML + JSON
-        id: merge
-        shell: bash
-        run: |
-          set -eo pipefail
-          if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
-            echo "::warning title=Merge skipped::No blob reports found; nothing to merge"
-            echo "skipped=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "::group::playwright merge-reports"
-          npx playwright merge-reports --reporter html,json ./all-blob-reports
-          echo "::endgroup::"
-          echo "skipped=false" >> "$GITHUB_OUTPUT"
-
-      - name: Compute summary
-        id: summary
-        if: steps.merge.outputs.skipped == 'false'
-        shell: bash
-        run: |
-          set -eo pipefail
-          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
-          echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
-          if [ "${failed:-0}" -gt 0 ]; then
-            echo "::error title=Tests failed::${failed} test(s) failed"
-          else
-            echo "::notice title=All tests passed::0 failed"
-          fi
-
-      - name: Upload HTML report
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-html-report
-          path: playwright-report/
-          retention-days: 30
-
-      - name: Upload JSON results
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-json-results
-          path: test-results/results.json
-          retention-days: 30
-
-  gate:
-    name: Result gate
-    runs-on: ubuntu-latest
-    needs: [test]
-    if: always()
-    permissions:
-      contents: read
-    outputs:
-      status: ${{ steps.eval.outputs.status }}
-    steps:
-      - id: eval
-        shell: bash
-        run: |
-          set -euo pipefail
-          test_result="${{ needs.test.result }}"
-          if [ "$test_result" = "failure" ] || [ "$test_result" = "cancelled" ]; then
-            echo "::error title=Gate failed::test job result was '${test_result}'"
-            echo "status=failure" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
-          echo "::notice title=Gate passed::test job result was '${test_result}'"
-          echo "status=success" >> "$GITHUB_OUTPUT"
+    uses: ./.github/workflows/playwright-report.yml
+    with:
+      test_repo: ${{ inputs.test_repo }}
+      test_repo_ref: ${{ inputs.test_repo_ref }}
+      node_version: ${{ inputs.node_version }}
+      reporters: 'html,json'
+      test_result: ${{ needs.test.result }}

@@ -6,7 +6,10 @@ on:
       - '.github/workflows/playwright-tests.yml'
       - '.github/workflows/playwright-docker.yml'
       - '.github/workflows/playwright-terraform.yml'
-      - '.github/workflows/playwright-security.yml'
+      - '.github/workflows/playwright-report.yml'
+      - '.github/workflows/acceptance.yml'
+      - '.github/workflows/env-deploy.yml'
+      - '.github/workflows/pr-env.yml'
       - '.github/workflows/lint-reusable.yml'
       - 'examples/**'
   workflow_dispatch:
@@ -24,7 +27,7 @@ jobs:
       - name: Run actionlint
         uses: raven-actions/actionlint@v2
         with:
-          files: .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-security.yml examples/*.yml
+          files: .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-report.yml .github/workflows/acceptance.yml .github/workflows/env-deploy.yml .github/workflows/pr-env.yml examples/*.yml
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -35,4 +38,4 @@ jobs:
         run: pip install --quiet yamllint==1.35.1
 
       - name: Run yamllint
-        run: yamllint -c .yamllint.yml .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-security.yml examples/
+        run: yamllint -c .yamllint.yml .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-report.yml .github/workflows/acceptance.yml .github/workflows/env-deploy.yml .github/workflows/pr-env.yml examples/

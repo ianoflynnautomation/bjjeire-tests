@@ -17,11 +17,6 @@ export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
     apiUrl: 'http://localhost:5003',
     mongoUrl: 'mongodb://localhost:27017',
   },
-  testcontainers: {
-    baseUrl: 'http://localhost:3000',
-    apiUrl: 'http://localhost:5000',
-    mongoUrl: '',
-  },
   dev: { baseUrl: '', apiUrl: '', mongoUrl: '' },
   staging: { baseUrl: '', apiUrl: '', mongoUrl: '' },
   production: { baseUrl: '', apiUrl: '', mongoUrl: '' },

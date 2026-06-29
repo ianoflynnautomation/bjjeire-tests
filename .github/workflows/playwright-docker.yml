@@ -70,7 +70,7 @@ on:
         description: 'Container image used for the test runner.'
         type: string
         required: false
-        default: 'mcr.microsoft.com/playwright:v1.59.1-noble'
+        default: 'mcr.microsoft.com/playwright:v1.61.0-noble'
       test_repo:
         description: 'Owner/repo holding the test code.'
         type: string
@@ -106,13 +106,21 @@ on:
         required: false
       AZURE_TENANT_ID:
         required: false
-      AZURE_CLIENT_ID:
+      AZURE_TESTS_CLIENT_ID:
         required: false
-      AZURE_CLIENT_SECRET:
+      AZURE_TESTS_CLIENT_SECRET:
         required: false
       AZURE_API_SCOPE:
         required: false
       AZURE_AUTHORITY:
+        required: false
+      CF_ACCESS_CLIENT_ID:
+        required: false
+      CF_ACCESS_CLIENT_SECRET:
+        required: false
+      PW_TEST_USER:
+        required: false
+      PW_TEST_PASSWORD:
         required: false
       PACT_BROKER_TOKEN:
         required: false
@@ -120,13 +128,13 @@ on:
     outputs:
       test_status:
         description: 'success | failure — aggregated result of the matrix test job.'
-        value: ${{ jobs.gate.outputs.status }}
+        value: ${{ jobs.report.outputs.status }}
       failed_count:
         description: 'Number of failed tests across all shards (0 on green).'
-        value: ${{ jobs.merge-reports.outputs.failed_count }}
+        value: ${{ jobs.report.outputs.failed_count }}
       report_artifact_name:
         description: 'Name of the merged HTML report artifact.'
-        value: ${{ jobs.merge-reports.outputs.report_artifact_name }}
+        value: ${{ jobs.report.outputs.report_artifact_name }}
 
 permissions:
   contents: read
@@ -260,12 +268,17 @@ jobs:
       MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
       MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_TESTS_CLIENT_ID: ${{ secrets.AZURE_TESTS_CLIENT_ID }}
+      AZURE_TESTS_CLIENT_SECRET: ${{ secrets.AZURE_TESTS_CLIENT_SECRET }}
       AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
       AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+      PW_TEST_USER: ${{ secrets.PW_TEST_USER }}
+      PW_TEST_PASSWORD: ${{ secrets.PW_TEST_PASSWORD }}
       PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       RUNNER_IMAGE: ${{ needs.build-image.outputs.image_ref }}
+      COMPOSE_PROJECT_NAME: bjj-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard.name }}-${{ matrix.shard.shard }}
     steps:
       - name: Checkout caller repo (compose sources)
         uses: actions/checkout@v6
@@ -281,7 +294,7 @@ jobs:
         id: compose_args
         shell: bash
         run: |
-          set -eo pipefail
+          set -euo pipefail
           args=""
           files_input='${{ inputs.compose_files }}'
           if [ -n "${files_input}" ]; then
@@ -296,6 +309,7 @@ jobs:
           args="$(echo "$args" | sed 's/^ *//')"
           echo "COMPOSE_ARGS=${args}" >> "$GITHUB_ENV"
           echo "::notice title=Compose args::${args}"
+          echo "::notice title=Compose project::${COMPOSE_PROJECT_NAME}"
 
       - name: Run pre-up script
         if: inputs.compose_pre_up_script != ''
@@ -308,12 +322,12 @@ jobs:
       - name: Docker compose up (build + wait for healthy)
         shell: bash
         run: |
-          set -eo pipefail
+          set -euo pipefail
           echo "::group::docker compose up"
           docker compose $COMPOSE_ARGS up -d --build --wait --wait-timeout 300
           echo "::endgroup::"
           echo "::group::docker compose ps"
-          docker compose $COMPOSE_ARGS ps
+          docker compose $COMPOSE_ARGS ps --all
           echo "::endgroup::"
 
       - name: Run Seed Data
@@ -326,7 +340,7 @@ jobs:
         if: inputs.compose_health_url != ''
         shell: bash
         run: |
-          set -eo pipefail
+          set -euo pipefail
           url="${{ inputs.compose_health_url }}"
           for i in $(seq 1 60); do
             if curl -fsS --max-time 3 "$url" >/dev/null 2>&1; then
@@ -336,8 +350,11 @@ jobs:
             sleep 2
           done
           echo "::error title=Health check failed::No 200 from $url within 120s"
+          echo "::group::docker compose ps"
+          docker compose $COMPOSE_ARGS ps --all || true
+          echo "::endgroup::"
           echo "::group::compose logs (tail 500)"
-          docker compose $COMPOSE_ARGS logs --tail=500 || true
+          docker compose $COMPOSE_ARGS logs --no-color --tail=500 || true
           echo "::endgroup::"
           exit 1
 
@@ -413,7 +430,7 @@ jobs:
       - name: Run Playwright tests (in container)
         shell: bash
         run: |
-          set -eo pipefail
+          set -euo pipefail
           name='${{ matrix.shard.name }}'
           config='${{ matrix.shard.config }}'
           shard='${{ matrix.shard.shard }}'
@@ -456,10 +473,14 @@ jobs:
             -e MONGO_URL="${MONGO_URL}" \
             -e MONGO_DB="${MONGO_DB}" \
             -e AZURE_TENANT_ID="${AZURE_TENANT_ID}" \
-            -e AZURE_CLIENT_ID="${AZURE_CLIENT_ID}" \
-            -e AZURE_CLIENT_SECRET="${AZURE_CLIENT_SECRET}" \
+            -e AZURE_TESTS_CLIENT_ID="${AZURE_TESTS_CLIENT_ID}" \
+            -e AZURE_TESTS_CLIENT_SECRET="${AZURE_TESTS_CLIENT_SECRET}" \
             -e AZURE_API_SCOPE="${AZURE_API_SCOPE}" \
             -e AZURE_AUTHORITY="${AZURE_AUTHORITY}" \
+            -e CF_ACCESS_CLIENT_ID="${CF_ACCESS_CLIENT_ID}" \
+            -e CF_ACCESS_CLIENT_SECRET="${CF_ACCESS_CLIENT_SECRET}" \
+            -e PW_TEST_USER="${PW_TEST_USER}" \
+            -e PW_TEST_PASSWORD="${PW_TEST_PASSWORD}" \
             "${RUNNER_IMAGE}" \
             "${args[@]}"
           echo "::endgroup::"
@@ -489,7 +510,7 @@ jobs:
         shell: bash
         run: |
           echo "::group::docker compose ps"
-          docker compose $COMPOSE_ARGS ps || true
+          docker compose $COMPOSE_ARGS ps --all || true
           echo "::endgroup::"
           echo "::group::docker compose logs (tail 500)"
           docker compose $COMPOSE_ARGS logs --no-color --tail=500 || true
@@ -498,122 +519,25 @@ jobs:
       - name: Docker compose down
         if: always()
         shell: bash
-        run: docker compose $COMPOSE_ARGS down -v --remove-orphans || true
+        run: docker compose $COMPOSE_ARGS down -v --remove-orphans --rmi local || true
 
-  merge-reports:
-    name: Merge reports
-    runs-on: ubuntu-latest
+  report:
+    name: Report + gate
     needs: [docker-test]
     if: always()
-    permissions:
-      contents: read
-      checks: write
-    outputs:
-      failed_count: ${{ steps.summary.outputs.failed_count }}
-      flaky_count: ${{ steps.summary.outputs.flaky_count }}
-      report_artifact_name: playwright-html-report
-    steps:
-      - name: Checkout test repo
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ inputs.test_repo }}
-          ref: ${{ inputs.test_repo_ref }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node_version }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: npm ci --ignore-scripts
-
-      - name: Download blob reports
-        uses: actions/download-artifact@v4
-        with:
-          pattern: blob-report-*
-          merge-multiple: true
-          path: all-blob-reports
-        continue-on-error: true
-
-      - name: Merge reports (html + json + junit + github + custom summary + flakiness)
-        id: merge
-        shell: bash
-        run: |
-          set -eo pipefail
-          if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
-            echo "::warning title=Merge skipped::No blob reports found; nothing to merge"
-            echo "skipped=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "::group::playwright merge-reports"
-          npx playwright merge-reports \
-            --reporter "html,json,junit,github,./src/lib/reporters/github-summary-reporter.ts,./src/lib/reporters/flakiness-reporter.ts" \
-            ./all-blob-reports
-          echo "::endgroup::"
-          echo "skipped=false" >> "$GITHUB_OUTPUT"
-
-      - name: Compute summary
-        id: summary
-        if: steps.merge.outputs.skipped == 'false'
-        shell: bash
-        run: |
-          set -eo pipefail
-          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
-          flaky=$(jq '.totals.flaky // 0' test-results/flake-report.json 2>/dev/null || echo 0)
-          echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
-          echo "flaky_count=${flaky:-0}" >> "$GITHUB_OUTPUT"
-          if [ "${failed:-0}" -gt 0 ]; then
-            echo "::error title=Tests failed::${failed} failed, ${flaky} flaky"
-          elif [ "${flaky:-0}" -gt 0 ]; then
-            echo "::warning title=Flaky tests::${flaky} test(s) passed only after retry"
-          else
-            echo "::notice title=All tests passed::0 failed, 0 flaky"
-          fi
-
-      - name: Upload HTML report
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-html-report
-          path: playwright-report/
-          retention-days: 30
-          compression-level: 9
-
-      - name: Upload JSON results
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-json-results
-          path: test-results/results.json
-          retention-days: 30
-          compression-level: 9
-
-      - name: Upload JUnit report
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-junit
-          path: test-results/junit.xml
-          retention-days: 90
-          compression-level: 9
-          if-no-files-found: ignore
-
-      - name: Upload flake report
-        if: steps.merge.outputs.skipped == 'false'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-flake-report
-          path: test-results/flake-report.json
-          retention-days: 30
-          if-no-files-found: ignore
+    uses: ./.github/workflows/playwright-report.yml
+    with:
+      test_repo: ${{ inputs.test_repo }}
+      test_repo_ref: ${{ inputs.test_repo_ref }}
+      node_version: ${{ inputs.node_version }}
+      reporters: 'html,json,junit,github'
+      upload_junit: true
+      test_result: ${{ needs.docker-test.result }}
 
   pr-comment:
     name: PR comment
     runs-on: ubuntu-latest
-    needs: [merge-reports, gate]
+    needs: [report]
     if: always() && github.event_name == 'pull_request'
     permissions:
       contents: read
@@ -625,11 +549,11 @@ jobs:
       - name: Upsert PR comment
         uses: actions/github-script@v7
         env:
-          STATUS: ${{ needs.gate.outputs.status }}
-          FAILED: ${{ needs.merge-reports.outputs.failed_count }}
-          FLAKY: ${{ needs.merge-reports.outputs.flaky_count }}
+          STATUS: ${{ needs.report.outputs.status }}
+          FAILED: ${{ needs.report.outputs.failed_count }}
+          FLAKY: ${{ needs.report.outputs.flaky_count }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          REPORT_NAME: ${{ needs.merge-reports.outputs.report_artifact_name }}
+          REPORT_NAME: ${{ needs.report.outputs.report_artifact_name }}
         with:
           script: |
             const marker = '<!-- playwright-docker-report -->';
@@ -680,26 +604,3 @@ jobs:
               });
               core.notice(`Created PR comment ${created.id} on #${issue_number}`);
             }
-
-  gate:
-    name: Result gate
-    runs-on: ubuntu-latest
-    needs: [docker-test]
-    if: always()
-    permissions:
-      contents: read
-    outputs:
-      status: ${{ steps.eval.outputs.status }}
-    steps:
-      - id: eval
-        shell: bash
-        run: |
-          docker_result="${{ needs.docker-test.result }}"
-          echo "docker-test=${docker_result}"
-
-          if [ "$docker_result" = "failure" ] || [ "$docker_result" = "cancelled" ]; then
-            echo "status=failure" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
-
-          echo "status=success" >> "$GITHUB_OUTPUT"

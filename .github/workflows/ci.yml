@@ -73,32 +73,16 @@ jobs:
   #         BASE_URL: ${{ secrets.STAGING_BASE_URL }}
   #         API_URL: ${{ secrets.STAGING_API_URL }}
 
-  # security:
-  #   name: Security regression (staging)
-  #   needs: [lint]
-  #   # Gate with an environment for manual approval before hitting staging:
-  #   # environment: staging
-  #   uses: ./.github/workflows/playwright-security.yml
-  #   with:
-  #     api_base_url: ${{ secrets.STAGING_API_URL }}
-  #     base_url: ${{ secrets.STAGING_BASE_URL }}
-  #     # readonly_disabled: true   # only when staging variant has read-only mode OFF
-  #     test_repo_ref: ${{ github.sha }}
-
   # release-gate:
   #   name: Pre-release gate
   #   runs-on: ubuntu-latest
-  #   needs: [tests, security]
+  #   needs: [tests]
   #   if: always()
   #   steps:
   #     - name: Require all tests to pass
   #       run: |
   #         if [ "${{ needs.tests.outputs.test_status }}" != "success" ]; then
   #           echo "Tests did not all pass — release blocked."
-  #           exit 1
-  #         fi
-  #         if [ "${{ needs.security.outputs.test_status }}" != "success" ]; then
-  #           echo "Security regression failed — release blocked."
   #           exit 1
   #         fi
   #         echo "All tests green — release gate open."

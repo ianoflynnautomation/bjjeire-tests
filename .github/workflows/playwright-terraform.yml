@@ -18,13 +18,23 @@ on:
         type: string
         required: false
         default: ''
+      tf_repo:
+        description: 'Owner/repo holding the Terraform sources. Empty = caller repo. Mirrors test_repo for the test code.'
+        type: string
+        required: false
+        default: ''
+      tf_repo_ref:
+        description: 'Git ref of the Terraform repo to check out (tag, branch, or SHA).'
+        type: string
+        required: false
+        default: 'main'
       terraform_dir:
-        description: 'Path (relative to caller checkout) to Terraform root module.'
+        description: 'Path (relative to the tf_repo checkout) to the Terraform root module.'
         type: string
         required: false
         default: 'infra'
       terraform_workspace:
-        description: 'Terraform workspace to use.'
+        description: 'Terraform workspace to use. Caution: shared with whatever state backend the root module configures.'
         type: string
         required: false
         default: 'default'
@@ -54,10 +64,10 @@ on:
         required: false
         default: '22'
       playwright_image:
-        description: 'Container image used by the generic runner workflow.'
+        description: 'Container image used by the generic runner workflow. Defaults to our own GHCR runner published by docker-publish.yml.'
         type: string
         required: false
-        default: 'mcr.microsoft.com/playwright:v1.59.1-noble'
+        default: 'ghcr.io/ianoflynnautomation/playwright:v1.61.0-noble'
       test_repo:
         description: 'Owner/repo holding the test code.'
         type: string
@@ -68,11 +78,20 @@ on:
         type: string
         required: false
         default: 'main'
+      runner_label:
+        description: 'Runner label for provision/teardown jobs and the downstream test matrix. Defaults to the in-cluster ARC scale set.'
+        type: string
+        required: false
+        default: 'gha-runner-scale-set'
 
     secrets:
+      GHCR_TOKEN:
+        required: false
       EPHEMERAL_MONGO_URL:
         required: false
       EPHEMERAL_MONGO_DB:
+        required: false
+      TF_REPO_TOKEN:
         required: false
       AZURE_TENANT_ID:
         required: false
@@ -80,9 +99,21 @@ on:
         required: false
       AZURE_SUBSCRIPTION_ID:
         required: false
+      AZURE_TESTS_CLIENT_ID:
+        required: false
+      AZURE_TESTS_CLIENT_SECRET:
+        required: false
       AZURE_API_SCOPE:
         required: false
       AZURE_AUTHORITY:
+        required: false
+      CF_ACCESS_CLIENT_ID:
+        required: false
+      CF_ACCESS_CLIENT_SECRET:
+        required: false
+      PW_TEST_USER:
+        required: false
+      PW_TEST_PASSWORD:
         required: false
 
     outputs:
@@ -104,7 +135,7 @@ permissions:
 jobs:
   provision-env:
     name: Provision terraform env
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner_label }}
     permissions:
       contents: read
       id-token: write
@@ -112,8 +143,12 @@ jobs:
       base_url: ${{ steps.urls.outputs.base_url }}
       api_base_url: ${{ steps.urls.outputs.api_base_url }}
     steps:
-      - name: Checkout caller repo (terraform sources)
+      - name: Checkout Terraform sources
         uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.tf_repo }}
+          ref: ${{ inputs.tf_repo_ref }}
+          token: ${{ secrets.TF_REPO_TOKEN || github.token }}
 
       - name: Azure OIDC login
         uses: azure/login@v2
@@ -179,25 +214,36 @@ jobs:
       playwright_image: ${{ inputs.playwright_image }}
       test_repo: ${{ inputs.test_repo }}
       test_repo_ref: ${{ inputs.test_repo_ref }}
+      runner_label: ${{ inputs.runner_label }}
     secrets:
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
       EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
       EPHEMERAL_MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TESTS_CLIENT_ID: ${{ secrets.AZURE_TESTS_CLIENT_ID }}
+      AZURE_TESTS_CLIENT_SECRET: ${{ secrets.AZURE_TESTS_CLIENT_SECRET }}
       AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
       AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+      PW_TEST_USER: ${{ secrets.PW_TEST_USER }}
+      PW_TEST_PASSWORD: ${{ secrets.PW_TEST_PASSWORD }}
 
   teardown:
     name: Teardown terraform env
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner_label }}
     needs: [provision-env, e2e]
     if: always() && needs.provision-env.result == 'success'
     permissions:
       contents: read
       id-token: write
     steps:
-      - name: Checkout caller repo
+      - name: Checkout Terraform sources
         uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.tf_repo }}
+          ref: ${{ inputs.tf_repo_ref }}
+          token: ${{ secrets.TF_REPO_TOKEN || github.token }}
 
       - name: Azure OIDC login
         uses: azure/login@v2
