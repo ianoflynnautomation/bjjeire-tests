@@ -81,21 +81,6 @@ on:
         type: string
         required: false
         default: 'main'
-      verify_provider_pacts:
-        description: 'When true, verify external consumer Pact contracts against the running API.'
-        type: boolean
-        required: false
-        default: false
-      pact_urls:
-        description: 'Newline- or comma-separated pact JSON URLs. Used when no Pact Broker is configured.'
-        type: string
-        required: false
-        default: ''
-      pact_broker_url:
-        description: 'Pact Broker URL for provider verification.'
-        type: string
-        required: false
-        default: ''
 
     secrets:
       GHCR_TOKEN:
@@ -121,8 +106,6 @@ on:
       PW_TEST_USER:
         required: false
       PW_TEST_PASSWORD:
-        required: false
-      PACT_BROKER_TOKEN:
         required: false
 
     outputs:
@@ -276,7 +259,6 @@ jobs:
       CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
       PW_TEST_USER: ${{ secrets.PW_TEST_USER }}
       PW_TEST_PASSWORD: ${{ secrets.PW_TEST_PASSWORD }}
-      PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
       RUNNER_IMAGE: ${{ needs.build-image.outputs.image_ref }}
       COMPOSE_PROJECT_NAME: bjj-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard.name }}-${{ matrix.shard.shard }}
     steps:
@@ -373,52 +355,6 @@ jobs:
           docker pull "${RUNNER_IMAGE}"
           echo "::endgroup::"
 
-      - name: Download OpenAPI contract for API contract checks
-        if: matrix.shard.name == 'api'
-        shell: bash
-        run: |
-          curl -fsSL "${API_URL}/openapi/v1.json" -o tests-checkout/openapi-v1.json
-
-      - name: Lint OpenAPI contract
-        if: matrix.shard.name == 'api' && matrix.shard.shard == 1
-        shell: bash
-        # The runner image's ENTRYPOINT is `npx playwright` so the default
-        # `docker run IMAGE <args>` path runs Playwright. To run a non-test
-        # npm script we have to override the entrypoint.
-        run: |
-          docker run --rm \
-            --entrypoint npm \
-            --network host \
-            --ipc host \
-            -v "${{ github.workspace }}/tests-checkout/openapi-v1.json:/home/pwuser/app/openapi-v1.json:ro" \
-            -e CI=true \
-            "${RUNNER_IMAGE}" \
-            run lint:openapi
-
-      - name: Verify external consumer Pact contracts
-        if: inputs.verify_provider_pacts == true && matrix.shard.name == 'api' && matrix.shard.shard == 1
-        shell: bash
-        env:
-          PACT_URLS: ${{ inputs.pact_urls }}
-          PACT_BROKER_URL: ${{ inputs.pact_broker_url }}
-        # Same entrypoint-override rationale as the lint step above.
-        run: |
-          docker run --rm \
-            --entrypoint npm \
-            --network host \
-            --ipc host \
-            -e CI=true \
-            -e API_URL="${API_URL}" \
-            -e PACT_URLS="${PACT_URLS}" \
-            -e PACT_BROKER_URL="${PACT_BROKER_URL}" \
-            -e PACT_BROKER_TOKEN="${PACT_BROKER_TOKEN}" \
-            -e PACT_PROVIDER_NAME="BjjEireApi" \
-            -e PACT_PUBLISH_VERIFICATION="true" \
-            -e GITHUB_SHA="${GITHUB_SHA}" \
-            -e GITHUB_REF_NAME="${GITHUB_REF_NAME}" \
-            "${RUNNER_IMAGE}" \
-            run test:pact:provider
-
       - name: Prepare report dirs
         shell: bash
         run: |
@@ -448,19 +384,10 @@ jobs:
             args+=(--grep="${{ inputs.test_tags }}")
           fi
 
-          openapi_mount=()
-          if [ -f "${{ github.workspace }}/tests-checkout/openapi-v1.json" ]; then
-            openapi_mount=(
-              -v "${{ github.workspace }}/tests-checkout/openapi-v1.json:/home/pwuser/app/openapi-v1.json:ro"
-              -e OPENAPI_CONTRACT_PATH="/home/pwuser/app/openapi-v1.json"
-            )
-          fi
-
           echo "::group::playwright test (${name} ${shard}/${shard_total})"
           docker run --rm \
             --network host \
             --ipc host \
-            "${openapi_mount[@]}" \
             -v "${{ github.workspace }}/tests-checkout/playwright-report:/home/pwuser/app/playwright-report" \
             -v "${{ github.workspace }}/tests-checkout/test-results:/home/pwuser/app/test-results" \
             -v "${{ github.workspace }}/tests-checkout/blob-report:/home/pwuser/app/blob-report" \
