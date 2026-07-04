@@ -27,3 +27,9 @@ export const EMPTY_STATE = {
   messageLine1: 'No competitions matched your search. Try different keywords.',
   messageLine2: 'Try adjusting your filters or check back later.',
 } as const;
+
+export const NO_DATA_COPY = {
+  title: 'No Competitions Found',
+  line1: 'No competitions are available right now.',
+  line2: 'Check back later.',
+} as const;

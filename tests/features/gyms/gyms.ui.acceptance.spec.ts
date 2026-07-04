@@ -1,8 +1,7 @@
-import { expect, test } from '@ui/fixtures';
+import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { EXPECTED_GYM_BJJ_CORK_CARD, EXPECTED_GYM_BJJ_CORK_PARTIAL } from '../../testdata/gyms';
-import { emptyPage, NO_DATA } from '@ui/pages/common/empty.page';
-import { ERROR, ERROR_TITLE, NETWORK_ERROR_MESSAGE, SERVER_ERROR_MESSAGE } from '@ui/pages/common/error.page';
+import { emptyPage } from '@ui/pages/common/empty.page';
 
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
   test(
@@ -48,36 +47,32 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
 
   test(
     'Given the API returns no gyms, when a visitor opens Gyms, then the no-data message is shown',
-    { tag: ['@gyms', '@acceptance'] },
-    async ({ page, mockGyms, gymsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockGyms, gymsPage }) => {
       await mockGyms(emptyPage);
       await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
-      await expect(page.getByTestId(NO_DATA.title)).toHaveText('No Gyms Found');
-      await expect(page.getByTestId(NO_DATA.messageLine1)).toHaveText('No gyms match your current filters.');
-      await expect(page.getByTestId(NO_DATA.messageLine2)).toHaveText('Try a different county or check back later.');
+      await gymsPage.expectEmptyStateMessage();
     },
   );
 
   test(
     'Given the API request fails, when a visitor opens Gyms, then a network error message is shown',
-    { tag: ['@gyms', '@acceptance'] },
-    async ({ page, mockNetworkError, gymsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockNetworkError, gymsPage }) => {
       await mockNetworkError('gyms');
       await gymsPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(NETWORK_ERROR_MESSAGE);
+      await gymsPage.expectNetworkErrorMessage();
     },
   );
 
   test(
     'Given the API returns a server error, when a visitor opens Gyms, then a server error message is shown',
-    { tag: ['@gyms', '@acceptance'] },
-    async ({ page, mockServerError, gymsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockServerError, gymsPage }) => {
       await mockServerError('gyms');
       await gymsPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(SERVER_ERROR_MESSAGE);
+      await gymsPage.expectServerErrorMessage();
     },
   );
 });

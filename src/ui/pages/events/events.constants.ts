@@ -6,6 +6,12 @@ export const EVENT_CARD_TEST_IDS = {
   type: 'event-card-type',
 } as const;
 
+export const NO_DATA_COPY = {
+  title: 'No Events Found',
+  line1: 'No events match your current filters.',
+  line2: 'Try a different filter to find events.',
+} as const;
+
 export const TEST_IDS = {
   cardName: 'event-card-name',
   clearSearchButton: 'search-clear-button',

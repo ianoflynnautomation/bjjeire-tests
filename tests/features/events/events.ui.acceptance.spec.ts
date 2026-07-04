@@ -1,8 +1,7 @@
-import { expect, test } from '@ui/fixtures';
+import { test } from '@ui/fixtures';
 import { EXPECTED_EVENT_ADCC_CARD, EXPECTED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
 import { faker } from '@faker-js/faker';
-import { emptyPage, NO_DATA } from '@ui/pages/common/empty.page';
-import { ERROR, ERROR_TITLE, NETWORK_ERROR_MESSAGE, SERVER_ERROR_MESSAGE } from '@ui/pages/common/error.page';
+import { emptyPage } from '@ui/pages/common/empty.page';
 
 test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
   test(
@@ -48,36 +47,32 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
 
   test(
     'Given the API returns no events, when a visitor opens Events, then the no-data message is shown',
-    { tag: ['@events', '@acceptance'] },
-    async ({ page, mockBjjEvents, eventsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockBjjEvents, eventsPage }) => {
       await mockBjjEvents(emptyPage);
       await eventsPage.goTo();
       await eventsPage.verifyIsLoaded();
-      await expect(page.getByTestId(NO_DATA.title)).toHaveText('No Events Found');
-      await expect(page.getByTestId(NO_DATA.messageLine1)).toHaveText('No events match your current filters.');
-      await expect(page.getByTestId(NO_DATA.messageLine2)).toHaveText('Try a different filter to find events.');
+      await eventsPage.expectEmptyStateMessage();
     },
   );
 
   test(
     'Given the API request fails, when a visitor opens Events, then a network error message is shown',
-    { tag: ['@events', '@acceptance'] },
-    async ({ page, mockNetworkError, eventsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockNetworkError, eventsPage }) => {
       await mockNetworkError('events');
       await eventsPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(NETWORK_ERROR_MESSAGE);
+      await eventsPage.expectNetworkErrorMessage();
     },
   );
 
   test(
     'Given the API returns a server error, when a visitor opens Events, then a server error message is shown',
-    { tag: ['@events', '@acceptance'] },
-    async ({ page, mockServerError, eventsPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockServerError, eventsPage }) => {
       await mockServerError('events');
       await eventsPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(SERVER_ERROR_MESSAGE);
+      await eventsPage.expectServerErrorMessage();
     },
   );
 });

@@ -1,8 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import type { TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
+import { expectNoDataState } from '../common/empty.page';
+import {
+  expectNetworkError as expectNetworkErrorState,
+  expectServerError as expectServerErrorState,
+} from '../common/error.page';
 import { getStoreCardData, type StoreCard } from './stores.card.page';
-import { TEST_IDS } from './stores.constants';
+import { NO_DATA_COPY, TEST_IDS } from './stores.constants';
 
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
@@ -39,6 +44,18 @@ export async function expectSearchValue(page: Page, term: TextMatcher): Promise<
 export async function expectNoResults(page: Page): Promise<void> {
   await expect(emptyState(page)).toBeVisible();
   await expect(listItems(page)).toHaveCount(0);
+}
+
+export async function expectEmptyStateMessage(page: Page): Promise<void> {
+  await expectNoDataState(page, NO_DATA_COPY);
+}
+
+export async function expectNetworkErrorMessage(page: Page): Promise<void> {
+  await expectNetworkErrorState(page);
+}
+
+export async function expectServerErrorMessage(page: Page): Promise<void> {
+  await expectServerErrorState(page);
 }
 
 export async function readCard(page: Page, name: string): Promise<StoreCard> {

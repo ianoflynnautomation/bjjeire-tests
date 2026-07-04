@@ -44,6 +44,7 @@
     "playwright.base.config.ts",
     "playwright.ui.config.ts",
     "playwright.api.config.ts",
+    "playwright.acceptance.config.ts",
     "playwright.security.config.ts",
     "global-setup.ts",
     "global-teardown.ts"

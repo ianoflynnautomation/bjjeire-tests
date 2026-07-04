@@ -1,8 +1,7 @@
-import { expect, test } from '@ui/fixtures';
+import { test } from '@ui/fixtures';
 import { EXPECTED_STORE_WOLFHOUND_CARD, EXPECTED_STORE_WOLFHOUND_PARTIAL } from '../../testdata/stores';
 import { faker } from '@faker-js/faker';
-import { emptyPage, NO_DATA } from '@ui/pages/common/empty.page';
-import { ERROR, ERROR_TITLE, NETWORK_ERROR_MESSAGE, SERVER_ERROR_MESSAGE } from '@ui/pages/common/error.page';
+import { emptyPage } from '@ui/pages/common/empty.page';
 
 test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, () => {
   test(
@@ -48,36 +47,32 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
 
   test(
     'Given the API returns no stores, when a visitor opens Stores, then the no-data message is shown',
-    { tag: ['@stores', '@acceptance'] },
-    async ({ page, mockStores, storesPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockStores, storesPage }) => {
       await mockStores(emptyPage);
       await storesPage.goTo();
       await storesPage.verifyIsLoaded();
-      await expect(page.getByTestId(NO_DATA.title)).toHaveText('No Stores Found');
-      await expect(page.getByTestId(NO_DATA.messageLine1)).toHaveText('No stores are available right now.');
-      await expect(page.getByTestId(NO_DATA.messageLine2)).toHaveText('Check back later.');
+      await storesPage.expectEmptyStateMessage();
     },
   );
 
   test(
     'Given the API request fails, when a visitor opens Stores, then a network error message is shown',
-    { tag: ['@stores', '@acceptance'] },
-    async ({ page, mockNetworkError, storesPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockNetworkError, storesPage }) => {
       await mockNetworkError('stores');
       await storesPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(NETWORK_ERROR_MESSAGE);
+      await storesPage.expectNetworkErrorMessage();
     },
   );
 
   test(
     'Given the API returns a server error, when a visitor opens Stores, then a server error message is shown',
-    { tag: ['@stores', '@acceptance'] },
-    async ({ page, mockServerError, storesPage }) => {
+    { tag: '@acceptance' },
+    async ({ mockServerError, storesPage }) => {
       await mockServerError('stores');
       await storesPage.goTo();
-      await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
-      await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(SERVER_ERROR_MESSAGE);
+      await storesPage.expectServerErrorMessage();
     },
   );
 });

@@ -1,8 +1,13 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import type { TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
+import { expectNoDataState } from '../common/empty.page';
+import {
+  expectNetworkError as expectNetworkErrorState,
+  expectServerError as expectServerErrorState,
+} from '../common/error.page';
 import { getEventCardData } from './events.card.page';
-import { TEST_IDS } from './events.constants';
+import { NO_DATA_COPY, TEST_IDS } from './events.constants';
 import { type BjjEventCard } from './events.types';
 
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
@@ -48,6 +53,18 @@ export async function expectNoResults(page: Page): Promise<void> {
 
 export async function expectResultCount(page: Page, count: number): Promise<void> {
   await expect(listItems(page)).toHaveCount(count);
+}
+
+export async function expectEmptyStateMessage(page: Page): Promise<void> {
+  await expectNoDataState(page, NO_DATA_COPY);
+}
+
+export async function expectNetworkErrorMessage(page: Page): Promise<void> {
+  await expectNetworkErrorState(page);
+}
+
+export async function expectServerErrorMessage(page: Page): Promise<void> {
+  await expectServerErrorState(page);
 }
 
 export async function readCard(page: Page, name: string): Promise<BjjEventCard> {

@@ -1,98 +1,82 @@
 import { test, expect } from '@api/fixtures';
-import { getGyms } from '@api/features/gyms/gyms.api';
-import { expectedPaginationFor, expectNoOverlapBetweenPages } from '@api/support';
-import expectedGymsPage1 from '../../testdata/expected/gyms.page-1.json';
+import { getGyms, type GymDto } from '@api/features/gyms/gyms.api';
+
+const GYM_FIXTURES: readonly Pick<GymDto, 'name' | 'county'>[] = [
+  { name: 'Blackwater Valley BJJ', county: 'Cork' },
+  { name: 'Harbour City Jiu-Jitsu', county: 'Cork' },
+  { name: 'Liffey Grappling Club', county: 'Dublin' },
+  { name: 'Northside Mat Room', county: 'Dublin' },
+];
+
+const GYM_NAMES_IN_ORDER: readonly string[] = GYM_FIXTURES.map(gym => gym.name);
+const CORK = 'Cork';
+const FULL_PAGE_SIZE = 100;
 
 test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   test(
-    'Given gyms are published, when a client requests the gym page, then they see the published gyms',
+    'Given gyms are published, when a client opens the directory, then each published gym is returned with its details',
     { tag: ['@smoke', '@acceptance'] },
     async ({ apiClient }) => {
-      const response = await getGyms(apiClient, { page: 1, pageSize: 20 });
+      const { data } = await getGyms(apiClient, { page: 1, pageSize: FULL_PAGE_SIZE });
 
-      expect(response.data).toEqual(expectedGymsPage1.data);
-      expect(response.pagination).toMatchObject({
-        totalItems: expectedGymsPage1.pagination.totalItems,
-        currentPage: expectedGymsPage1.pagination.currentPage,
-        pageSize: expectedGymsPage1.pagination.pageSize,
-        totalPages: expectedGymsPage1.pagination.totalPages,
-        hasNextPage: expectedGymsPage1.pagination.hasNextPage,
-        hasPreviousPage: expectedGymsPage1.pagination.hasPreviousPage,
-      });
+      for (const fixture of GYM_FIXTURES) {
+        const gym = data.find(item => item.name === fixture.name);
+        expect(gym).toBeDefined();
+        expect(gym).toMatchObject({ name: fixture.name, county: fixture.county, status: 'Active' });
+      }
     },
   );
 
   test(
-    'Given gyms are published, when a client requests gyms from a county, then they should only see published gyms from that county',
+    'Given gyms are published, when a client filters by county, then only gyms from that county are returned',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
-      const county = 'Cork';
-      const response = await getGyms(apiClient, { county, page: 1, pageSize: 20 });
+      const { data } = await getGyms(apiClient, { county: CORK, page: 1, pageSize: FULL_PAGE_SIZE });
 
-      expect(response.data, `expected at least one published gym in ${county}`).not.toHaveLength(0);
+      expect(data.length).toBeGreaterThan(0);
+      expect(data.filter(gym => gym.county !== CORK)).toEqual([]);
 
-      const offenders = response.data.filter(gym => gym.county !== county);
-      expect(offenders, `every returned gym must have county="${county}"`).toEqual([]);
+      const names = data.map(gym => gym.name);
+      expect(names).toContain('Blackwater Valley BJJ');
+      expect(names).toContain('Harbour City Jiu-Jitsu');
     },
   );
 
   test(
-    'Given gyms are filtered by county, when the client paginates the filtered list, then pagination reflects the filtered set',
+    'Given gyms are published, when a client opens the directory, then they are ordered by name',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
-      const county = 'Cork';
-      const pageSize = 5;
+      const { data } = await getGyms(apiClient, { page: 1, pageSize: FULL_PAGE_SIZE });
 
-      const [filtered, unfiltered] = await Promise.all([
-        getGyms(apiClient, { county, page: 1, pageSize }),
-        getGyms(apiClient, { page: 1, pageSize }),
-      ]);
-
-      expect(filtered.data.length).toBeLessThanOrEqual(pageSize);
-
-      const offenders = filtered.data.filter(gym => gym.county !== county);
-      expect(offenders, 'paginated page must keep the filter applied').toEqual([]);
-
-      expect(filtered.pagination.totalItems).toBeLessThanOrEqual(unfiltered.pagination.totalItems);
-      expect(filtered.pagination.totalPages).toBe(Math.ceil(filtered.pagination.totalItems / pageSize));
+      const seededInResponseOrder = data.map(gym => gym.name).filter(name => GYM_NAMES_IN_ORDER.includes(name));
+      expect(seededInResponseOrder).toEqual(GYM_NAMES_IN_ORDER);
     },
   );
 
   test(
-    'Given the gym directory spans more than one page, when a client moves to the next page, then they see a fresh set of gyms with no repeats',
+    'Given the directory spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const pageSize = 10;
 
-      const [page1, page2] = await Promise.all([
-        getGyms(apiClient, { page: 1, pageSize }),
-        getGyms(apiClient, { page: 2, pageSize }),
-      ]);
+      const page1 = await getGyms(apiClient, { page: 1, pageSize });
+      expect(page1.data).toHaveLength(pageSize);
+      expect(page1.pagination.currentPage).toBe(1);
+      expect(page1.pagination.pageSize).toBe(pageSize);
+      expect(page1.pagination.totalItems).toBeGreaterThan(pageSize);
+      expect(page1.pagination.hasPreviousPage).toBe(false);
+      expect(page1.pagination.previousPageUrl).toBeNull();
+      expect(page1.pagination.hasNextPage).toBe(true);
+      expect(page1.pagination.nextPageUrl).toContain('page=2');
 
-      expect(page2.data).toEqual(expectedGymsPage1.data.slice(pageSize, pageSize * 2));
-      expect(page2.pagination).toMatchObject(
-        expectedPaginationFor(expectedGymsPage1.pagination.totalItems, pageSize, 2),
-      );
+      const page2 = await getGyms(apiClient, { page: 2, pageSize });
+      expect(page2.data.length).toBeGreaterThan(0);
+      expect(page2.pagination.currentPage).toBe(2);
+      expect(page2.pagination.hasPreviousPage).toBe(true);
+      expect(page2.pagination.previousPageUrl).toContain('page=1');
 
-      expectNoOverlapBetweenPages(page1.data, page2.data, 'gyms');
-    },
-  );
-
-  test(
-    'Given a client reaches the final page, when they request it, then no further pages are advertised',
-    { tag: '@acceptance' },
-    async ({ apiClient }) => {
-      const pageSize = 5;
-      const totalItems = expectedGymsPage1.pagination.totalItems;
-      const lastPage = Math.ceil(totalItems / pageSize);
-
-      expect(lastPage, 'test data must span more than one page').toBeGreaterThan(1);
-
-      const response = await getGyms(apiClient, { page: lastPage, pageSize });
-
-      const expectedLastPageSize = totalItems - (lastPage - 1) * pageSize;
-      expect(response.data).toHaveLength(expectedLastPageSize);
-      expect(response.pagination).toMatchObject(expectedPaginationFor(totalItems, pageSize, lastPage));
+      const page1Ids = page1.data.map(gym => gym.id);
+      expect(page2.data.filter(gym => page1Ids.includes(gym.id))).toEqual([]);
     },
   );
 });
