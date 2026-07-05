@@ -6,7 +6,6 @@ export type ExpectedEventCard = Pick<BjjEventCard, 'name' | 'type' | 'county' | 
 export function eventCardFromDto(event: BjjEventDto): ExpectedEventCard {
   return {
     name: event.name,
-    // The card renders a generic uppercased "EVENT" chip regardless of event type.
     type: 'EVENT',
     county: event.county,
     pricing: `${event.pricing.currency} ${event.pricing.amount.toFixed(2)}`,

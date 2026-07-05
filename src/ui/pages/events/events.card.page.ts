@@ -11,7 +11,7 @@ export async function getEventCardData(locator: Locator): Promise<BjjEventCard> 
     getText(locator.getByTestId(EVENT_CARD_TEST_IDS.type)),
     getText(locator.getByTestId(EVENT_CARD_TEST_IDS.county)),
     getTextIfVisible(locator.getByTestId(EVENT_CARD_TEST_IDS.pricing)),
-    // A card renders one schedule node per date (start and end) under the same test id.
+
     getTextIfVisible(locator.getByTestId(EVENT_CARD_TEST_IDS.schedule).first()),
   ]);
 

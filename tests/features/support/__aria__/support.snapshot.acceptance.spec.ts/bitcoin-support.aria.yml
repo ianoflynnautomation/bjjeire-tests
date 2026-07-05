@@ -1,0 +1,7 @@
+- dialog "Support BJJ Eire":
+  - banner:
+    - heading "Support BJJ Eire" [level=2]
+    - button "Close support modal"
+  - paragraph: Support the BJJ Eire project by donating Bitcoin. Your contribution helps us maintain and improve the platform.
+  - img "Bitcoin donation QR code"
+  - paragraph: Donations are voluntary and non-refundable. No goods, services, or promises are provided in exchange. By sending Bitcoin, you acknowledge that transactions are irreversible and you send funds entirely at your own risk.

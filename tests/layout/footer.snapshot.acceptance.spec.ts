@@ -4,7 +4,7 @@ import { test } from '@ui/fixtures';
 test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snapshot', '@desktop'] }, () => {
   test(
     'Given the site footer, when quick links are displayed, then their accessible structure is preserved',
-    { tag: ['@snapshot', '@smoke'] },
+    { tag: ['@snapshot', '@smoke', '@acceptance'] },
     async ({ page }) => {
       await page.goto('/about');
 
@@ -15,7 +15,7 @@ test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snap
 
   test(
     'Given the site footer, when copyright is displayed, then its accessible structure is preserved',
-    { tag: '@snapshot' },
+    { tag: ['@snapshot', '@acceptance'] },
     async ({ page }) => {
       await page.goto('/about');
 

@@ -8,7 +8,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
 
   test(
     'Given the Gyms page, when the header is displayed, then it matches the approved image',
-    { tag: '@snapshot' },
+    { tag: ['@snapshot', '@acceptance'] },
     async ({ page, gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
@@ -18,7 +18,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
 
   test(
     'Given no matching gym, when the empty state is displayed, then its accessible structure is preserved',
-    { tag: '@snapshot' },
+    { tag: ['@snapshot', '@acceptance'] },
     async ({ page, gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor('zzz-no-match-xyz');

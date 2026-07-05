@@ -4,7 +4,7 @@ import { test } from '@ui/fixtures';
 test.describe('Header snapshot acceptance', { tag: ['@layout', '@header', '@snapshot', '@desktop'] }, () => {
   test(
     'Given the site header, when the logo link is displayed, then its accessible structure is preserved',
-    { tag: ['@snapshot', '@smoke'] },
+    { tag: ['@snapshot', '@smoke', '@acceptance'] },
     async ({ page }) => {
       await page.goto('/about');
 
