@@ -13,7 +13,7 @@ test.describe('About snapshot acceptance', { tag: ['@about', '@snapshot', '@desk
 
   test(
     'Given the About page, when its sections are displayed, then their accessible structure is preserved',
-    { tag: ['@snapshot', '@smoke', '@acceptance'] },
+    { tag: ['@smoke', '@acceptance'] },
     async ({ page, aboutPage }) => {
       await aboutPage.navigate();
       await aboutPage.verifyIsLoaded();

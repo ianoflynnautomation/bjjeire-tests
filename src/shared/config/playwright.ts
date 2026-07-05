@@ -56,8 +56,12 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
         pathTemplate: '{testDir}/{testFileDir}/__aria__/{testFileName}/{arg}{ext}',
       },
     },
-    snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}{ext}',
-    updateSnapshots: 'missing',
+    // {platform} keeps per-OS screenshot baselines apart — a macOS-rendered PNG
+    // never diffs cleanly against a Linux CI render.
+    snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}-{platform}{ext}',
+    // 'missing' on CI would silently write and pass a brand-new baseline;
+    // CI must only compare against committed ones.
+    updateSnapshots: IS_CI ? 'none' : 'missing',
     reportSlowTests: { max: 10, threshold: 30_000 },
     use: {
       baseURL: env.baseUrl,
