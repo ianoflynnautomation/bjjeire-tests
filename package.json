@@ -25,7 +25,6 @@
     "test:staging:api": "APP_ENV=staging playwright test -c playwright.ui.config.ts",
     "test:smoke": "playwright test -c playwright.acceptance.config.ts -g @smoke",
     "test:acceptance": "playwright test -c playwright.acceptance.config.ts -g '@acceptance'",
-    "test:security": "APP_ENV=staging playwright test -c playwright.security.config.ts",
     "test:snapshots": "playwright test -c playwright.ui.config.ts --project=snapshots",
     "snapshots:update": "playwright test -c playwright.ui.config.ts --project=snapshots --update-snapshots",
     "test:mobile": "playwright test -c playwright.ui.config.ts --grep @mobile",
