@@ -15,7 +15,9 @@ export const NO_DATA_COPY = {
 } as const;
 
 export const TEST_IDS = {
+  cardAddressLink: 'gym-card-address-link',
   cardName: 'gym-card-name',
+  cardWebsiteLink: 'gym-card-website-link',
   clearSearchButton: 'search-clear-button',
   countySelect: 'select-filter-select',
   emptyState: 'no-data-state',

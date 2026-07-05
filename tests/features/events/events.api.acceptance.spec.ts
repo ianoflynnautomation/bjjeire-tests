@@ -5,6 +5,7 @@ import {
   expectConsecutivePagePagination,
   expectListingToInclude,
   expectPagesAreDistinct,
+  expectRelativeOrder,
 } from '@api/support';
 import { SEEDED_EVENT_FINISHED_WINTER_SOLSTICE, SEEDED_UPCOMING_EVENTS } from '../../testdata/seeded/events';
 
@@ -44,6 +45,20 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
       expectAllFromCounty(data, county);
       expectListingToInclude(data, 'name', dublinEvents);
       expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+    },
+  );
+
+  test(
+    'Given several events are published, when a client opens the listing, then they are ordered by creation date',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const { data } = await getBjjEvents(apiClient, { page: 1, pageSize: FULL_PAGE_SIZE });
+
+      expectRelativeOrder(
+        data,
+        event => event.name,
+        SEEDED_UPCOMING_EVENTS.map(event => event.name),
+      );
     },
   );
 

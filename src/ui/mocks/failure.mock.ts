@@ -26,3 +26,16 @@ export async function mockServerError(page: Page, resource: ApiResource, status 
     }),
   );
 }
+
+export async function mockServerErrorOnce(page: Page, resource: ApiResource, status = 500): Promise<void> {
+  await page.route(
+    ROUTES[resource],
+    route =>
+      route.fulfill({
+        status,
+        contentType: 'application/json',
+        body: JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status }),
+      }),
+    { times: 1 },
+  );
+}

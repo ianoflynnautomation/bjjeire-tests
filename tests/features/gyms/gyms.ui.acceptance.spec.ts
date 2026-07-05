@@ -10,6 +10,12 @@ const seededGymPartialName = seededGym.name.slice(0, 'Blackwater'.length);
 const otherCountyGym = SEEDED_GYM_LIFFEY_GRAPPLING;
 const otherCountyGymCard = gymCardFromDto(otherCountyGym);
 
+const { coordinates } = seededGym.location;
+const seededGymLinks = {
+  website: seededGym.website ?? '',
+  googleMaps: `https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`,
+};
+
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
   test(
     'Given available gyms, when a visitor opens Gyms, then the gym list is displayed',
@@ -49,6 +55,16 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
       await gymsPage.searchFor(seededGymPartialName);
       await gymsPage.expectSearchValue(seededGymPartialName);
       await gymsPage.expectCardData(seededGymCard);
+    },
+  );
+
+  test(
+    'Given a gym card, when a visitor views it, then its website and map links point to the right destinations',
+    { tag: '@acceptance' },
+    async ({ gymsPage }) => {
+      await gymsPage.goTo();
+      await gymsPage.searchFor(seededGym.name);
+      await gymsPage.expectCardLinks(seededGym.name, seededGymLinks);
     },
   );
 
@@ -104,6 +120,18 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
       await mockServerError('gyms');
       await gymsPage.goTo();
       await gymsPage.expectServerErrorMessage();
+    },
+  );
+
+  test(
+    'Given the API failed once, when the visitor retries, then the gym list is displayed',
+    { tag: '@acceptance' },
+    async ({ mockServerErrorOnce, gymsPage }) => {
+      await mockServerErrorOnce('gyms');
+      await gymsPage.goTo();
+      await gymsPage.expectServerErrorMessage();
+      await gymsPage.retryAfterError();
+      await gymsPage.expectListNotEmpty();
     },
   );
 });

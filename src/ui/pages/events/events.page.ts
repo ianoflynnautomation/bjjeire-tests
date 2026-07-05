@@ -14,6 +14,7 @@ const ALL_COUNTIES_OPTION = 'all';
 
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
+const headerTotal = (page: Page) => page.getByTestId(TEST_IDS.headerTotal);
 const searchContainer = (page: Page) => page.getByTestId(TEST_IDS.search);
 const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.searchInput);
 const filters = (page: Page) => page.getByTestId(TEST_IDS.filters);
@@ -61,6 +62,10 @@ export async function filterByType(page: Page, typeLabel: string): Promise<void>
 
 export async function expectTitle(page: Page, title: string): Promise<void> {
   await expect(headerTitle(page)).toHaveText(title);
+}
+
+export async function expectHeaderTotal(page: Page, total: TextMatcher): Promise<void> {
+  await expect(headerTotal(page)).toHaveText(total);
 }
 
 export async function expectNoResults(page: Page): Promise<void> {

@@ -54,6 +54,33 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
+    'Given an active search, when the visitor clears it, then events from the full listing are displayed again',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.goTo();
+      await eventsPage.searchFor(seededEvent.name);
+      await eventsPage.expectCardData(seededEventCard);
+      await eventsPage.expectCardAbsent(seededSeminar.name);
+      await eventsPage.clearSearch();
+      await eventsPage.expectSearchValue('');
+      await eventsPage.expectCardData(seededSeminarCard);
+      await eventsPage.expectCardData(seededEventCard);
+    },
+  );
+
+  test(
+    'Given a visitor searches, when results narrow, then the header count reflects the matching events',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.goTo();
+      await eventsPage.searchFor(seededEvent.name);
+      await eventsPage.expectHeaderTotal('Found 1 event.');
+      await eventsPage.clearSearch();
+      await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+    },
+  );
+
+  test(
     'Given events in several counties, when a visitor filters by county, then only events from that county are displayed',
     { tag: '@acceptance' },
     async ({ eventsPage }) => {

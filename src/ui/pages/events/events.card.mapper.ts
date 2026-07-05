@@ -3,8 +3,6 @@ import type { BjjEventCard } from './events.types';
 
 export type ExpectedEventCard = Pick<BjjEventCard, 'name' | 'type' | 'county' | 'pricing'>;
 
-// Mirrors the app's badge rendering: wire values are matched against display labels,
-// so 'OpenMat' never matches 'Open Mat' and falls back to the generic 'Event' badge.
 const EVENT_TYPE_BADGES: Record<BjjEventType, string> = {
   [BjjEventType.OpenMat]: 'EVENT',
   [BjjEventType.Seminar]: 'SEMINAR',

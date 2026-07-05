@@ -1,4 +1,4 @@
-import { test } from '@api/fixtures';
+import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
 import {
   expectAllFromCounty,
@@ -60,6 +60,35 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
 
       expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
       expectPagesAreDistinct(firstPage, secondPage, gym => gym.id);
+    },
+  );
+
+  test(
+    'Given a page beyond the last, when a client requests it, then an empty page with valid pagination is returned',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const beyondLastPage = 999;
+
+      const { data, pagination } = await getGyms(apiClient, { page: beyondLastPage, pageSize: SMALL_PAGE_SIZE });
+
+      expect(data).toEqual([]);
+      expect(pagination).toMatchObject({
+        currentPage: beyondLastPage,
+        pageSize: SMALL_PAGE_SIZE,
+        hasNextPage: false,
+        hasPreviousPage: true,
+      });
+      expect(pagination.nextPageUrl).toBeNull();
+    },
+  );
+
+  test(
+    'Given an unknown county, when a client filters by it, then the filter is ignored and the full listing is returned',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const { data } = await getGyms(apiClient, { county: 'Atlantis', page: 1, pageSize: FULL_PAGE_SIZE });
+
+      expectListingToInclude(data, 'name', SEEDED_GYMS_BY_NAME);
     },
   );
 });

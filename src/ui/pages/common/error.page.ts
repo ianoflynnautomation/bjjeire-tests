@@ -22,3 +22,11 @@ export async function expectServerError(page: Page): Promise<void> {
   await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);
   await expect(page.getByTestId(ERROR.messageLine1)).toHaveText(SERVER_ERROR_MESSAGE);
 }
+
+export async function retryAfterError(page: Page): Promise<void> {
+  await page.getByTestId(ERROR.button).click();
+}
+
+export async function expectNoError(page: Page): Promise<void> {
+  await expect(page.getByTestId(ERROR.title)).toBeHidden();
+}

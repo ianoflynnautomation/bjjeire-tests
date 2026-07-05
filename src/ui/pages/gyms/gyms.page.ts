@@ -4,7 +4,9 @@ import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
   expectNetworkError as expectNetworkErrorState,
+  expectNoError as expectNoErrorState,
   expectServerError as expectServerErrorState,
+  retryAfterError as retryAfterErrorState,
 } from '../common/error.page';
 import { getGymCardData } from './gyms.card.page';
 import { NO_DATA_COPY, TEST_IDS } from './gyms.constants';
@@ -74,6 +76,15 @@ export async function expectServerErrorMessage(page: Page): Promise<void> {
   await expectServerErrorState(page);
 }
 
+export async function retryAfterError(page: Page): Promise<void> {
+  await retryAfterErrorState(page);
+}
+
+export async function expectListNotEmpty(page: Page): Promise<void> {
+  await expectNoErrorState(page);
+  await expect(listItems(page)).not.toHaveCount(0);
+}
+
 export async function readCard(page: Page, name: string): Promise<GymCard> {
   const card = gymCard(page, name);
   await expect(card).toBeVisible();
@@ -87,4 +98,14 @@ export async function expectCardData(page: Page, expected: Pick<GymCard, 'name'>
 
 export async function expectCardAbsent(page: Page, name: string): Promise<void> {
   await expect(gymCard(page, name)).toHaveCount(0);
+}
+
+export async function expectCardLinks(
+  page: Page,
+  name: string,
+  links: { website: string; googleMaps: string },
+): Promise<void> {
+  const card = gymCard(page, name);
+  await expect(card.getByTestId(TEST_IDS.cardWebsiteLink)).toHaveAttribute('href', links.website);
+  await expect(card.getByTestId(TEST_IDS.cardAddressLink)).toHaveAttribute('href', links.googleMaps);
 }

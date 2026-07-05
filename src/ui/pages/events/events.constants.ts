@@ -20,6 +20,7 @@ export const TEST_IDS = {
   filters: 'events-page-filters',
   header: 'events-page-header',
   headerTitle: 'events-page-header-title',
+  headerTotal: 'events-page-header-total',
   list: 'events-list',
   listItem: 'events-list-item',
   search: 'events-page-search',

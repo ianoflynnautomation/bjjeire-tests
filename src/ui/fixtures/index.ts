@@ -14,8 +14,10 @@ import { storesPageFixture, mockStoresFixture, type StoresPage, type MockStores 
 import {
   mockNetworkErrorFixture,
   mockServerErrorFixture,
+  mockServerErrorOnceFixture,
   type MockNetworkError,
   type MockServerError,
+  type MockServerErrorOnce,
 } from './failure.fixture';
 import { templatePageFixture, type TemplatePage } from './_template.fixture';
 
@@ -30,6 +32,7 @@ export type UiFixtures = {
   mockGyms: MockGyms;
   mockNetworkError: MockNetworkError;
   mockServerError: MockServerError;
+  mockServerErrorOnce: MockServerErrorOnce;
   mockStores: MockStores;
   storesPage: StoresPage;
   templatePage: TemplatePage;
@@ -46,6 +49,7 @@ export const test = base.extend<UiFixtures>({
   mockGyms: mockGymsFixture,
   mockNetworkError: mockNetworkErrorFixture,
   mockServerError: mockServerErrorFixture,
+  mockServerErrorOnce: mockServerErrorOnceFixture,
   mockStores: mockStoresFixture,
   storesPage: storesPageFixture,
   templatePage: templatePageFixture,
