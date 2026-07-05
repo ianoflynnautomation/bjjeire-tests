@@ -11,3 +11,8 @@ build/**/*
 *.env
 *.sh
 *.png
+# Generated Playwright aria snapshots
+**/__aria__/
+
+# Helm templates (Go templating is not valid YAML)
+.github/k8s/

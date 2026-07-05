@@ -8,7 +8,7 @@ test.describe('Footer UI acceptance', { tag: ['@layout', '@footer', '@ui', '@des
       `Given the footer, when a visitor selects "${name}", then ${path} is opened`,
       { tag: '@acceptance' },
       async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/about');
 
         const footer = page.getByRole('contentinfo');
         const quickLink = footer.getByRole('link', { name, exact: true });

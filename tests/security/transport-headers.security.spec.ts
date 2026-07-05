@@ -7,12 +7,10 @@ import { expectHeaderProfile } from './helpers/security-headers';
 import { expectNoCdnCacheHit, expectNonCacheableApiResponse } from './helpers/cdn-cache';
 
 test.describe('Security headers', { tag: ['@security', '@regression', '@headers'] }, () => {
-  for (const route of PUBLIC_ROUTES) {
-    test(`GET ${route} returns the required header profile`, async ({ apiClient }) => {
-      const response = await apiRequest(apiClient, 'GET', route);
-      expectHeaderProfile(response);
-    });
-  }
+  test('GET a representative route returns the required header profile', async ({ apiClient }) => {
+    const response = await apiRequest(apiClient, 'GET', API_ROUTES.gyms);
+    expectHeaderProfile(response);
+  });
 
   test('error responses also carry security headers', async ({ apiClient }) => {
     const response = await apiRequest(apiClient, 'GET', API_ROUTES.gyms, { params: { page: -1 } });

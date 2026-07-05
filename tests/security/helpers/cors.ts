@@ -27,17 +27,3 @@ export function expectOriginRejected(response: APIResponse, origin: string): voi
   expect(allowOrigin, `CORS echoed disallowed origin '${origin}'`).not.toBe(origin);
   expect(allowOrigin, 'CORS returned wildcard allow-origin').not.toBe('*');
 }
-
-export function expectCredentialsDisallowed(response: APIResponse): void {
-  const headers = response.headers();
-  expect(headers['access-control-allow-credentials']).not.toBe('true');
-}
-
-export function expectMethodNotAllowed(response: APIResponse, method: string): void {
-  const headers = response.headers();
-  const allowed = headers['access-control-allow-methods'] ?? '';
-  expect(
-    allowed.toUpperCase().includes(method.toUpperCase()),
-    `CORS allow-methods '${allowed}' should not include '${method}'`,
-  ).toBe(false);
-}
