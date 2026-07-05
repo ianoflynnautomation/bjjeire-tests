@@ -1,5 +1,6 @@
 import type { StoreDto } from '@api/features/stores/stores.types';
 import type { StoreId } from '@shared/types';
+import { partialNameOf } from './partial-name';
 
 const storeId = (id: string): StoreId => id as StoreId;
 
@@ -10,6 +11,8 @@ export const SEEDED_STORE_ARAN_FIGHT_GEAR: StoreDto = {
   websiteUrl: 'https://aran-fight-gear.example.ie/',
   isActive: true,
 };
+
+export const SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME = partialNameOf(SEEDED_STORE_ARAN_FIGHT_GEAR, 'Aran Fight');
 
 export const SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY: StoreDto = {
   id: storeId('acce77500000000000000002'),

@@ -2,11 +2,15 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
-import { SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_REBEL_COUNTY_SEMINAR } from '../../testdata/seeded/events';
+import {
+  SEEDED_EVENT_LEINSTER_OPEN_MAT,
+  SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
+  SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
+} from '../../testdata/seeded/events';
 
 const seededEvent = SEEDED_EVENT_LEINSTER_OPEN_MAT;
 const seededEventCard = eventCardFromDto(seededEvent);
-const seededEventPartialName = seededEvent.name.slice(0, 'Leinster Community'.length);
+const seededEventPartialName = SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME;
 const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const seededSeminarCard = eventCardFromDto(seededSeminar);
 const SEMINAR_TYPE_LABEL = 'Seminar';
@@ -14,7 +18,7 @@ const SEMINAR_TYPE_LABEL = 'Seminar';
 test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
   test(
     'Given available events, when a visitor opens Events, then the event list is displayed',
-    { tag: ['@smoke'] },
+    { tag: ['@smoke', '@acceptance'] },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.verifyIsLoaded();

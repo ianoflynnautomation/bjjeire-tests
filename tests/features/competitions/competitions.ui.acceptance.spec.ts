@@ -3,12 +3,15 @@ import { faker } from '@faker-js/faker';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
-import { SEEDED_COMPETITION_DONEGAL_GI_CLASSIC } from '../../testdata/seeded/competitions';
+import {
+  SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
+  SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME,
+} from '../../testdata/seeded/competitions';
 import competitionsFixture from '../../testdata/mocks/competitions.page-1.json';
 
 const seededCompetition = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC;
 const seededCompetitionCard = competitionCardFromDto(seededCompetition);
-const seededCompetitionPartialName = seededCompetition.name.slice(0, 'Donegal Winter'.length);
+const seededCompetitionPartialName = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME;
 
 const PAGINATION_PAGE_SIZE = 10;
 const pagedCompetitions = paginatePages(competitionsFixture.data, PAGINATION_PAGE_SIZE, '/api/v1/competition');
@@ -25,7 +28,7 @@ if (!firstPageCompetition || !secondPageCompetition) {
 test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
   test(
     'Given available competitions, when a visitor opens Competitions, then the competition list is displayed',
-    { tag: ['@smoke'] },
+    { tag: ['@smoke', '@acceptance'] },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.verifyIsLoaded();

@@ -2,11 +2,15 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
-import { SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING } from '../../testdata/seeded/gyms';
+import {
+  SEEDED_GYM_BLACKWATER_VALLEY,
+  SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME,
+  SEEDED_GYM_LIFFEY_GRAPPLING,
+} from '../../testdata/seeded/gyms';
 
 const seededGym = SEEDED_GYM_BLACKWATER_VALLEY;
 const seededGymCard = gymCardFromDto(seededGym);
-const seededGymPartialName = seededGym.name.slice(0, 'Blackwater'.length);
+const seededGymPartialName = SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME;
 const otherCountyGym = SEEDED_GYM_LIFFEY_GRAPPLING;
 const otherCountyGymCard = gymCardFromDto(otherCountyGym);
 
@@ -19,7 +23,7 @@ const seededGymLinks = {
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
   test(
     'Given available gyms, when a visitor opens Gyms, then the gym list is displayed',
-    { tag: ['@smoke'] },
+    { tag: ['@smoke', '@acceptance'] },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();

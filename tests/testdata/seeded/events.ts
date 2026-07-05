@@ -1,6 +1,7 @@
 import { BjjEventType, EventStatus, PricingType, type BjjEventDto } from '@api/features/events/events.types';
 import type { EventId } from '@shared/types';
 import { seededCoordinates } from './geo';
+import { partialNameOf } from './partial-name';
 
 const eventId = (id: string): EventId => id as EventId;
 
@@ -23,6 +24,11 @@ export const SEEDED_EVENT_LEINSTER_OPEN_MAT: BjjEventDto = {
   eventUrl: 'https://leinster-grappling.example.ie/open-mat',
   imageUrl: '/images/events/acce77e00000000000000001/lg.webp',
 };
+
+export const SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME = partialNameOf(
+  SEEDED_EVENT_LEINSTER_OPEN_MAT,
+  'Leinster Community',
+);
 
 export const SEEDED_EVENT_REBEL_COUNTY_SEMINAR: BjjEventDto = {
   id: eventId('acce77e00000000000000002'),

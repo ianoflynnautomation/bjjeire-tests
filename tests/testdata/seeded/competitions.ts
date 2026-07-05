@@ -1,5 +1,6 @@
 import type { CompetitionDto } from '@api/features/competitions/competitions.types';
 import type { CompetitionId } from '@shared/types';
+import { partialNameOf } from './partial-name';
 
 const competitionId = (id: string): CompetitionId => id as CompetitionId;
 
@@ -54,6 +55,11 @@ export const SEEDED_COMPETITION_DONEGAL_GI_CLASSIC: CompetitionDto = {
   tags: ['gi', 'winter'],
   isActive: true,
 };
+
+export const SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME = partialNameOf(
+  SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
+  'Donegal Winter',
+);
 
 export const SEEDED_COMPETITION_FINISHED_KERRY_COAST: CompetitionDto = {
   id: competitionId('acce77000000000000000005'),

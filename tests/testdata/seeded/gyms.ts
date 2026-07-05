@@ -1,6 +1,7 @@
 import { ClassCategory, GymStatus, type GymDto } from '@api/features/gyms/gyms.types';
 import type { GymId } from '@shared/types';
 import { seededCoordinates } from './geo';
+import { partialNameOf } from './partial-name';
 
 const gymId = (id: string): GymId => id as GymId;
 
@@ -20,6 +21,8 @@ export const SEEDED_GYM_BLACKWATER_VALLEY: GymDto = {
   offeredClasses: [ClassCategory.BJJGiAllLevels, ClassCategory.BJJNoGiAllLevels],
   website: 'https://blackwater-valley-bjj.example.ie/',
 };
+
+export const SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME = partialNameOf(SEEDED_GYM_BLACKWATER_VALLEY, 'Blackwater');
 
 export const SEEDED_GYM_HARBOUR_CITY: GymDto = {
   id: gymId('acce77900000000000000002'),

@@ -2,16 +2,16 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
-import { SEEDED_STORE_ARAN_FIGHT_GEAR } from '../../testdata/seeded/stores';
+import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from '../../testdata/seeded/stores';
 
 const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;
 const seededStoreCard = storeCardFromDto(seededStore);
-const seededStorePartialName = seededStore.name.slice(0, 'Aran Fight'.length);
+const seededStorePartialName = SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME;
 
 test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, () => {
   test(
     'Given available stores, when a visitor opens Stores, then the store list is displayed',
-    { tag: ['@smoke'] },
+    { tag: ['@smoke', '@acceptance'] },
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.verifyIsLoaded();
