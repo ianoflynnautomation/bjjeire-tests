@@ -4,7 +4,7 @@ import type { BjjEventCard } from './events.types';
 export type ExpectedEventCard = Pick<BjjEventCard, 'name' | 'type' | 'county' | 'pricing'>;
 
 const EVENT_TYPE_BADGES: Record<BjjEventType, string> = {
-  [BjjEventType.OpenMat]: 'EVENT',
+  [BjjEventType.OpenMat]: 'OPEN MAT',
   [BjjEventType.Seminar]: 'SEMINAR',
   [BjjEventType.Camp]: 'CAMP',
   [BjjEventType.Other]: 'OTHER',

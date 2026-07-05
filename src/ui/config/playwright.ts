@@ -6,7 +6,10 @@ export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
 const UI_SETUP_TEST_MATCH = /.*\/auth\.setup\.ts$/;
 const UI_TEST_MATCH = /.*\.ui\.acceptance\.spec\.ts$/;
 const SNAPSHOT_TEST_MATCH = /.*\.snapshot\.acceptance\.spec\.ts$/;
+const A11Y_TEST_MATCH = /.*\.a11y\.acceptance\.spec\.ts$/;
 const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
+const MOBILE_TAGS_GREP = /@smoke|@mobile/;
+const MOBILE_TAG = /@mobile/;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const WIDE_VIEWPORT = { width: 1728, height: 1117 };
@@ -28,6 +31,7 @@ export function createUiProjects(): Project[] {
     {
       name: 'chromium-desktop',
       testMatch: UI_TEST_MATCH,
+      grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
       use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
@@ -38,14 +42,22 @@ export function createUiProjects(): Project[] {
       use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
+      name: 'a11y',
+      testMatch: A11Y_TEST_MATCH,
+      dependencies: authDependencies,
+      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+    },
+    {
       name: 'firefox-desktop',
       testMatch: UI_TEST_MATCH,
+      grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
       use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
       name: 'webkit-desktop',
       testMatch: UI_TEST_MATCH,
+      grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
       use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
@@ -53,8 +65,23 @@ export function createUiProjects(): Project[] {
       name: 'chromium-wide',
       testMatch: UI_TEST_MATCH,
       grep: WIDE_TAGS_GREP,
+      grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
       use: { ...devices['Desktop Chrome'], viewport: WIDE_VIEWPORT, ...uiUse },
+    },
+    {
+      name: 'mobile-iphone',
+      testMatch: UI_TEST_MATCH,
+      grep: MOBILE_TAGS_GREP,
+      dependencies: authDependencies,
+      use: { ...devices['iPhone 16'], ...uiUse },
+    },
+    {
+      name: 'mobile-galaxy',
+      testMatch: UI_TEST_MATCH,
+      grep: MOBILE_TAGS_GREP,
+      dependencies: authDependencies,
+      use: { ...devices['Galaxy S24'], ...uiUse },
     },
   ];
 }
