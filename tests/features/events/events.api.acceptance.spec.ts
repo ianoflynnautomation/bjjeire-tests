@@ -1,5 +1,5 @@
 import { test, expect } from '@api/fixtures';
-import { getBjjEvents } from '@api/features/events/events.api';
+import { BjjEventType, getBjjEvents } from '@api/features/events/events.api';
 import {
   expectAllFromCounty,
   expectConsecutivePagePagination,
@@ -44,6 +44,20 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
       expectAllFromCounty(data, county);
       expectListingToInclude(data, 'name', dublinEvents);
       expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+    },
+  );
+
+  test(
+    'Given events are published, when a client filters by type, then only upcoming events of that type are returned',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const type = BjjEventType.Seminar;
+      const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.type === type);
+
+      const { data } = await getBjjEvents(apiClient, { type, page: 1, pageSize: FULL_PAGE_SIZE });
+
+      expect(data.filter(event => event.type !== type)).toEqual([]);
+      expectListingToInclude(data, 'name', seminarEvents);
     },
   );
 

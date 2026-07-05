@@ -1,8 +1,15 @@
 import type { Page } from '@playwright/test';
-import { mockJsonResponse } from './json-response.mock';
+import { mockJsonResponse, mockPagedJsonResponse } from './json-response.mock';
 
 export const COMPETITIONS_ROUTE = /\/api\/v[12]\/competition(?:\?|$)/i;
 
 export async function mockCompetitions(page: Page, body: unknown): Promise<void> {
   await mockJsonResponse(page, COMPETITIONS_ROUTE, body);
+}
+
+export async function mockCompetitionsPages(
+  page: Page,
+  bodiesByPage: Readonly<Record<number, unknown>>,
+): Promise<void> {
+  await mockPagedJsonResponse(page, COMPETITIONS_ROUTE, bodiesByPage);
 }

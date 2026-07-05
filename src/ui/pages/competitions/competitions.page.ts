@@ -6,6 +6,7 @@ import {
   expectNetworkError as expectNetworkErrorState,
   expectServerError as expectServerErrorState,
 } from '../common/error.page';
+import { expectPageIndicator, goToNextListPage, goToPreviousListPage } from '../common/pagination.page';
 import { getCompetitionCardData } from './competitions.card.page';
 import { EMPTY_STATE, NO_DATA_COPY, TEST_IDS } from './competitions.constants';
 import { type CompetitionCard } from './competitions.types';
@@ -86,4 +87,20 @@ export async function expectCardData(
 ): Promise<void> {
   const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
+}
+
+export async function expectCardAbsent(page: Page, name: string): Promise<void> {
+  await expect(competitionCard(page, name)).toHaveCount(0);
+}
+
+export async function goToNextPage(page: Page): Promise<void> {
+  await goToNextListPage(page);
+}
+
+export async function goToPreviousPage(page: Page): Promise<void> {
+  await goToPreviousListPage(page);
+}
+
+export async function expectPagination(page: Page, currentPage: number, totalPages: number): Promise<void> {
+  await expectPageIndicator(page, currentPage, totalPages);
 }

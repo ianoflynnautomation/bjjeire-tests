@@ -2,11 +2,13 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
-import { SEEDED_GYM_BLACKWATER_VALLEY } from '../../testdata/seeded/gyms';
+import { SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING } from '../../testdata/seeded/gyms';
 
 const seededGym = SEEDED_GYM_BLACKWATER_VALLEY;
 const seededGymCard = gymCardFromDto(seededGym);
 const seededGymPartialName = seededGym.name.slice(0, 'Blackwater'.length);
+const otherCountyGym = SEEDED_GYM_LIFFEY_GRAPPLING;
+const otherCountyGymCard = gymCardFromDto(otherCountyGym);
 
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
   test(
@@ -47,6 +49,30 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
       await gymsPage.searchFor(seededGymPartialName);
       await gymsPage.expectSearchValue(seededGymPartialName);
       await gymsPage.expectCardData(seededGymCard);
+    },
+  );
+
+  test(
+    'Given gyms in several counties, when a visitor filters by county, then only gyms from that county are displayed',
+    { tag: '@acceptance' },
+    async ({ gymsPage }) => {
+      await gymsPage.goTo();
+      await gymsPage.filterByCounty(seededGym.county);
+      await gymsPage.expectCardAbsent(otherCountyGym.name);
+      await gymsPage.expectCardData(seededGymCard);
+    },
+  );
+
+  test(
+    'Given a county filter is applied, when the visitor resets it to all counties, then gyms from other counties can be found again',
+    { tag: '@acceptance' },
+    async ({ gymsPage }) => {
+      await gymsPage.goTo();
+      await gymsPage.filterByCounty(seededGym.county);
+      await gymsPage.searchFor(otherCountyGym.name);
+      await gymsPage.expectNoResults();
+      await gymsPage.resetCountyFilter();
+      await gymsPage.expectCardData(otherCountyGymCard);
     },
   );
 

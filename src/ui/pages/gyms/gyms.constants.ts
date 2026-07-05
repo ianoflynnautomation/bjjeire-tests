@@ -17,6 +17,7 @@ export const NO_DATA_COPY = {
 export const TEST_IDS = {
   cardName: 'gym-card-name',
   clearSearchButton: 'search-clear-button',
+  countySelect: 'select-filter-select',
   emptyState: 'no-data-state',
   header: 'gyms-page-header',
   headerTitle: 'gyms-page-header-title',

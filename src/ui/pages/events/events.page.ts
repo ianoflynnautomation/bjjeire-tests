@@ -10,10 +10,15 @@ import { getEventCardData } from './events.card.page';
 import { NO_DATA_COPY, TEST_IDS } from './events.constants';
 import { type BjjEventCard } from './events.types';
 
+const ALL_COUNTIES_OPTION = 'all';
+
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
 const searchContainer = (page: Page) => page.getByTestId(TEST_IDS.search);
 const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.searchInput);
+const filters = (page: Page) => page.getByTestId(TEST_IDS.filters);
+const countySelect = (page: Page) => filters(page).getByTestId(TEST_IDS.countySelect);
+const typeFilterButton = (page: Page, label: string) => filters(page).getByRole('button', { name: label, exact: true });
 const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
 const emptyState = (page: Page) => page.getByTestId(TEST_IDS.emptyState);
 const eventCard = (page: Page, name: string): Locator => cardByName(page, listItems(page), TEST_IDS.cardName, name);
@@ -40,6 +45,18 @@ export async function clearSearch(page: Page): Promise<void> {
 
 export async function expectSearchValue(page: Page, term: TextMatcher): Promise<void> {
   await expect(searchInput(page)).toHaveValue(term);
+}
+
+export async function filterByCounty(page: Page, county: string): Promise<void> {
+  await countySelect(page).selectOption(county);
+}
+
+export async function resetCountyFilter(page: Page): Promise<void> {
+  await countySelect(page).selectOption(ALL_COUNTIES_OPTION);
+}
+
+export async function filterByType(page: Page, typeLabel: string): Promise<void> {
+  await typeFilterButton(page, typeLabel).click();
 }
 
 export async function expectTitle(page: Page, title: string): Promise<void> {
@@ -79,4 +96,8 @@ export async function expectCardData(
 ): Promise<void> {
   const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
+}
+
+export async function expectCardAbsent(page: Page, name: string): Promise<void> {
+  await expect(eventCard(page, name)).toHaveCount(0);
 }

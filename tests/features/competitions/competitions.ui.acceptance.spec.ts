@@ -2,11 +2,25 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
+import { paginatePages } from '@ui/mocks/paginate.mock';
 import { SEEDED_COMPETITION_DONEGAL_GI_CLASSIC } from '../../testdata/seeded/competitions';
+import competitionsFixture from '../../testdata/mocks/competitions.page-1.json';
 
 const seededCompetition = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC;
 const seededCompetitionCard = competitionCardFromDto(seededCompetition);
 const seededCompetitionPartialName = seededCompetition.name.slice(0, 'Donegal Winter'.length);
+
+const PAGINATION_PAGE_SIZE = 10;
+const pagedCompetitions = paginatePages(competitionsFixture.data, PAGINATION_PAGE_SIZE, '/api/v1/competition');
+const firstPageCompetition = competitionsFixture.data
+  .slice(0, PAGINATION_PAGE_SIZE)
+  .find(competition => competition.name === 'Grappling Series Cork Open Summer 2026');
+const secondPageCompetition = competitionsFixture.data
+  .slice(PAGINATION_PAGE_SIZE)
+  .find(competition => competition.name === 'Grappling Industries Dublin');
+if (!firstPageCompetition || !secondPageCompetition) {
+  throw new Error('competitions.page-1.json no longer contains the expected page-1 and page-2 competitions');
+}
 
 test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
   test(
@@ -47,6 +61,26 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       await competitionsPage.searchFor(seededCompetitionPartialName);
       await competitionsPage.expectSearchValue(seededCompetitionPartialName);
       await competitionsPage.expectCardData(seededCompetitionCard);
+    },
+  );
+
+  test(
+    'Given the listing spans more than one page, when a visitor moves between pages, then each page shows its own competitions',
+    { tag: '@acceptance' },
+    async ({ mockCompetitionsPages, competitionsPage }) => {
+      await mockCompetitionsPages(pagedCompetitions);
+      await competitionsPage.goTo();
+      await competitionsPage.expectCardData({ name: firstPageCompetition.name });
+      await competitionsPage.expectPagination(1, 2);
+
+      await competitionsPage.goToNextPage();
+      await competitionsPage.expectCardData({ name: secondPageCompetition.name });
+      await competitionsPage.expectCardAbsent(firstPageCompetition.name);
+      await competitionsPage.expectPagination(2, 2);
+
+      await competitionsPage.goToPreviousPage();
+      await competitionsPage.expectCardData({ name: firstPageCompetition.name });
+      await competitionsPage.expectPagination(1, 2);
     },
   );
 

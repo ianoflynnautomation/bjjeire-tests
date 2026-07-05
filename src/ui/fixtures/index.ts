@@ -3,8 +3,10 @@ import { aboutPageFixture, type AboutPage } from './about.fixture';
 import {
   competitionsPageFixture,
   mockCompetitionsFixture,
+  mockCompetitionsPagesFixture,
   type CompetitionsPage,
   type MockCompetitions,
+  type MockCompetitionsPages,
 } from './competitions.fixture';
 import { eventsPageFixture, mockBjjEventsFixture, type EventsPage, type MockBjjEvents } from './events.fixture';
 import { gymsPageFixture, mockGymsFixture, type GymsPage, type MockGyms } from './gyms.fixture';
@@ -24,6 +26,7 @@ export type UiFixtures = {
   gymsPage: GymsPage;
   mockBjjEvents: MockBjjEvents;
   mockCompetitions: MockCompetitions;
+  mockCompetitionsPages: MockCompetitionsPages;
   mockGyms: MockGyms;
   mockNetworkError: MockNetworkError;
   mockServerError: MockServerError;
@@ -39,6 +42,7 @@ export const test = base.extend<UiFixtures>({
   gymsPage: gymsPageFixture,
   mockBjjEvents: mockBjjEventsFixture,
   mockCompetitions: mockCompetitionsFixture,
+  mockCompetitionsPages: mockCompetitionsPagesFixture,
   mockGyms: mockGymsFixture,
   mockNetworkError: mockNetworkErrorFixture,
   mockServerError: mockServerErrorFixture,

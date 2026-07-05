@@ -2,11 +2,14 @@ import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
-import { SEEDED_EVENT_LEINSTER_OPEN_MAT } from '../../testdata/seeded/events';
+import { SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_REBEL_COUNTY_SEMINAR } from '../../testdata/seeded/events';
 
 const seededEvent = SEEDED_EVENT_LEINSTER_OPEN_MAT;
 const seededEventCard = eventCardFromDto(seededEvent);
 const seededEventPartialName = seededEvent.name.slice(0, 'Leinster Community'.length);
+const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
+const seededSeminarCard = eventCardFromDto(seededSeminar);
+const SEMINAR_TYPE_LABEL = 'Seminar';
 
 test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
   test(
@@ -47,6 +50,41 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       await eventsPage.searchFor(seededEventPartialName);
       await eventsPage.expectSearchValue(seededEventPartialName);
       await eventsPage.expectCardData(seededEventCard);
+    },
+  );
+
+  test(
+    'Given events in several counties, when a visitor filters by county, then only events from that county are displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.goTo();
+      await eventsPage.filterByCounty(seededSeminar.county);
+      await eventsPage.expectCardAbsent(seededEvent.name);
+      await eventsPage.expectCardData(seededSeminarCard);
+    },
+  );
+
+  test(
+    'Given a county filter is applied, when the visitor resets it to all counties, then events from every county are displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.goTo();
+      await eventsPage.filterByCounty(seededSeminar.county);
+      await eventsPage.expectCardAbsent(seededEvent.name);
+      await eventsPage.resetCountyFilter();
+      await eventsPage.expectCardData(seededEventCard);
+      await eventsPage.expectCardData(seededSeminarCard);
+    },
+  );
+
+  test(
+    'Given events of several types, when a visitor filters by type, then only events of that type are displayed',
+    { tag: '@acceptance' },
+    async ({ eventsPage }) => {
+      await eventsPage.goTo();
+      await eventsPage.filterByType(SEMINAR_TYPE_LABEL);
+      await eventsPage.expectCardAbsent(seededEvent.name);
+      await eventsPage.expectCardData(seededSeminarCard);
     },
   );
 

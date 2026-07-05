@@ -15,7 +15,9 @@ export const NO_DATA_COPY = {
 export const TEST_IDS = {
   cardName: 'event-card-name',
   clearSearchButton: 'search-clear-button',
+  countySelect: 'select-filter-select',
   emptyState: 'no-data-state',
+  filters: 'events-page-filters',
   header: 'events-page-header',
   headerTitle: 'events-page-header-title',
   list: 'events-list',
