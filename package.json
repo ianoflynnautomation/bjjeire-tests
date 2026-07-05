@@ -26,6 +26,7 @@
     "test:smoke": "playwright test -c playwright.acceptance.config.ts -g @smoke",
     "test:acceptance": "playwright test -c playwright.acceptance.config.ts -g '@acceptance'",
     "test:snapshots": "playwright test -c playwright.ui.config.ts --project=snapshots",
+    "test:a11y": "playwright test -c playwright.ui.config.ts --project=a11y",
     "snapshots:update": "playwright test -c playwright.ui.config.ts --project=snapshots --update-snapshots",
     "test:mobile": "playwright test -c playwright.ui.config.ts --grep @mobile",
     "test:desktop": "playwright test -c playwright.ui.config.ts --grep @desktop",
@@ -60,6 +61,7 @@
     "zod-validation-error": "^5.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@faker-js/faker": "^10.4.0",
     "@pact-foundation/pact": "^16.3.1",
     "@playwright/test": "1.61.0",
