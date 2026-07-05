@@ -1,7 +1,12 @@
 import { test } from '@ui/fixtures';
-import { EXPECTED_EVENT_ADCC_CARD, EXPECTED_EVENT_ADCC_PARTIAL } from '../../testdata/events';
 import { faker } from '@faker-js/faker';
+import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
+import { SEEDED_EVENT_LEINSTER_OPEN_MAT } from '../../testdata/seeded/events';
+
+const seededEvent = SEEDED_EVENT_LEINSTER_OPEN_MAT;
+const seededEventCard = eventCardFromDto(seededEvent);
+const seededEventPartialName = seededEvent.name.slice(0, 'Leinster Community'.length);
 
 test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
   test(
@@ -28,9 +33,9 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     { tag: '@acceptance' },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
-      await eventsPage.searchFor(EXPECTED_EVENT_ADCC_CARD.name);
-      await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_CARD.name);
-      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD);
+      await eventsPage.searchFor(seededEvent.name);
+      await eventsPage.expectSearchValue(seededEvent.name);
+      await eventsPage.expectCardData(seededEventCard);
     },
   );
 
@@ -39,9 +44,9 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     { tag: '@acceptance' },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
-      await eventsPage.searchFor(EXPECTED_EVENT_ADCC_PARTIAL);
-      await eventsPage.expectSearchValue(EXPECTED_EVENT_ADCC_PARTIAL);
-      await eventsPage.expectCardData(EXPECTED_EVENT_ADCC_CARD);
+      await eventsPage.searchFor(seededEventPartialName);
+      await eventsPage.expectSearchValue(seededEventPartialName);
+      await eventsPage.expectCardData(seededEventCard);
     },
   );
 

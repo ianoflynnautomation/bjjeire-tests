@@ -1,7 +1,12 @@
 import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
-import { EXPECTED_GYM_BJJ_CORK_CARD, EXPECTED_GYM_BJJ_CORK_PARTIAL } from '../../testdata/gyms';
+import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
+import { SEEDED_GYM_BLACKWATER_VALLEY } from '../../testdata/seeded/gyms';
+
+const seededGym = SEEDED_GYM_BLACKWATER_VALLEY;
+const seededGymCard = gymCardFromDto(seededGym);
+const seededGymPartialName = seededGym.name.slice(0, 'Blackwater'.length);
 
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
   test(
@@ -28,9 +33,9 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     { tag: '@acceptance' },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
-      await gymsPage.searchFor(EXPECTED_GYM_BJJ_CORK_CARD.name);
-      await gymsPage.expectSearchValue(EXPECTED_GYM_BJJ_CORK_CARD.name);
-      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD);
+      await gymsPage.searchFor(seededGym.name);
+      await gymsPage.expectSearchValue(seededGym.name);
+      await gymsPage.expectCardData(seededGymCard);
     },
   );
 
@@ -39,9 +44,9 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     { tag: '@acceptance' },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
-      await gymsPage.searchFor(EXPECTED_GYM_BJJ_CORK_PARTIAL);
-      await gymsPage.expectSearchValue(EXPECTED_GYM_BJJ_CORK_PARTIAL);
-      await gymsPage.expectCardData(EXPECTED_GYM_BJJ_CORK_CARD);
+      await gymsPage.searchFor(seededGymPartialName);
+      await gymsPage.expectSearchValue(seededGymPartialName);
+      await gymsPage.expectCardData(seededGymCard);
     },
   );
 

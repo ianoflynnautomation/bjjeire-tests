@@ -1,7 +1,12 @@
 import { test } from '@ui/fixtures';
-import { EXPECTED_STORE_WOLFHOUND_CARD, EXPECTED_STORE_WOLFHOUND_PARTIAL } from '../../testdata/stores';
 import { faker } from '@faker-js/faker';
+import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
+import { SEEDED_STORE_ARAN_FIGHT_GEAR } from '../../testdata/seeded/stores';
+
+const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;
+const seededStoreCard = storeCardFromDto(seededStore);
+const seededStorePartialName = seededStore.name.slice(0, 'Aran Fight'.length);
 
 test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, () => {
   test(
@@ -28,9 +33,9 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     { tag: '@acceptance' },
     async ({ storesPage }) => {
       await storesPage.goTo();
-      await storesPage.searchFor(EXPECTED_STORE_WOLFHOUND_CARD.name);
-      await storesPage.expectSearchValue(EXPECTED_STORE_WOLFHOUND_CARD.name);
-      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD);
+      await storesPage.searchFor(seededStore.name);
+      await storesPage.expectSearchValue(seededStore.name);
+      await storesPage.expectCardData(seededStoreCard);
     },
   );
 
@@ -39,9 +44,9 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     { tag: '@acceptance' },
     async ({ storesPage }) => {
       await storesPage.goTo();
-      await storesPage.searchFor(EXPECTED_STORE_WOLFHOUND_PARTIAL);
-      await storesPage.expectSearchValue(EXPECTED_STORE_WOLFHOUND_PARTIAL);
-      await storesPage.expectCardData(EXPECTED_STORE_WOLFHOUND_CARD);
+      await storesPage.searchFor(seededStorePartialName);
+      await storesPage.expectSearchValue(seededStorePartialName);
+      await storesPage.expectCardData(seededStoreCard);
     },
   );
 

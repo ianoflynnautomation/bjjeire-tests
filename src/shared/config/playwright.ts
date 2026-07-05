@@ -2,7 +2,6 @@ import { join } from 'path';
 import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
 import { cfAccessHeaders } from './cf-access';
 import { env } from './env';
-import { readEnv } from './process-env';
 import { TIMEOUTS } from './timeouts';
 
 const REPO_ROOT = join(__dirname, '..', '..', '..');
@@ -16,8 +15,6 @@ const WORKERS = { local: '50%', ci: '100%' } as const;
 const MAX_FAILURES = IS_CI ? 0 : 1;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
-
-const IGNORED_TAGS_GREP = readEnv('RUN_SLOW') === '1' ? /@bjj-events/ : /@bjj-events|@slow/;
 
 const CI_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['blob'],
@@ -39,7 +36,6 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     globalTeardown: join(REPO_ROOT, 'global-teardown.ts'),
     testDir: './tests',
     testIgnore: /.*\/_template\/.*/,
-    grepInvert: IGNORED_TAGS_GREP,
     fullyParallel: true,
     forbidOnly: IS_CI,
     retries: IS_CI ? 1 : 0,

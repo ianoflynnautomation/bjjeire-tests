@@ -32,9 +32,9 @@ export const FREE_PRICING: BjjEventPricingModelDto = {
 
 const DEFAULT_SOCIAL_MEDIA: SocialMediaDto = {};
 
-export function defaultEventPayload(runId: RunId): BjjEventDto {
+export function defaultBjjEventPayload(runId: RunId): BjjEventDto {
   return {
-    id: createEntityId<EventId>(),
+    id: createEntityId() as EventId,
     name: `Test Event ${runId}`,
     description: 'Event created by test factory',
     type: BjjEventType.OpenMat,
@@ -50,10 +50,10 @@ export function defaultEventPayload(runId: RunId): BjjEventDto {
   };
 }
 
-export function anEvent(runId: RunId): IBuilder<BjjEventDto> {
-  return Builder<BjjEventDto>(defaultEventPayload(runId));
+export function aBjjEvent(runId: RunId): IBuilder<BjjEventDto> {
+  return Builder<BjjEventDto>(defaultBjjEventPayload(runId));
 }
 
 export function buildBjjEvent(runId: RunId, overrides: Partial<BjjEventDto> = {}): BjjEventDto {
-  return Builder<BjjEventDto>(defaultEventPayload(runId), overrides).build();
+  return Builder<BjjEventDto>(defaultBjjEventPayload(runId), overrides).build();
 }

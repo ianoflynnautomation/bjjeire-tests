@@ -2,29 +2,29 @@ import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto }
 import type { EventId } from '@shared/types';
 
 export const BjjEventType = {
-  OpenMat: 0,
-  Seminar: 1,
-  Camp: 3,
-  Other: 4,
+  OpenMat: 'OpenMat',
+  Seminar: 'Seminar',
+  Camp: 'Camp',
+  Other: 'Other',
 } as const;
 export type BjjEventType = (typeof BjjEventType)[keyof typeof BjjEventType];
 
 export const PricingType = {
-  Free: 0,
-  FlatRate: 1,
-  PerSession: 2,
-  PerDay: 3,
+  Free: 'Free',
+  FlatRate: 'FlatRate',
+  PerSession: 'PerSession',
+  PerDay: 'PerDay',
 } as const;
 export type PricingType = (typeof PricingType)[keyof typeof PricingType];
 
 export const EventStatus = {
-  Upcoming: 1,
-  RegistrationOpen: 2,
-  RegistrationClosed: 3,
-  Ongoing: 4,
-  Completed: 5,
-  Canceled: 6,
-  Postponed: 7,
+  Upcoming: 'Upcoming',
+  RegistrationOpen: 'RegistrationOpen',
+  RegistrationClosed: 'RegistrationClosed',
+  Ongoing: 'Ongoing',
+  Completed: 'Completed',
+  Canceled: 'Canceled',
+  Postponed: 'Postponed',
 } as const;
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
 

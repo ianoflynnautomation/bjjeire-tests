@@ -11,4 +11,3 @@ export async function getStoreCardData(root: Locator): Promise<StoreCard> {
 
   return { name, description };
 }
-export { StoreCard };

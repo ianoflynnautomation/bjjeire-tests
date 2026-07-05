@@ -1,7 +1,12 @@
 import { test } from '@ui/fixtures';
-import { EXPECTED_COMPETITION_ADCC_CARD, EXPECTED_COMPETITION_ADCC_PARTIAL } from '../../testdata/competitions';
 import { faker } from '@faker-js/faker';
+import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
 import { emptyPage } from '@ui/pages/common/empty.page';
+import { SEEDED_COMPETITION_DONEGAL_GI_CLASSIC } from '../../testdata/seeded/competitions';
+
+const seededCompetition = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC;
+const seededCompetitionCard = competitionCardFromDto(seededCompetition);
+const seededCompetitionPartialName = seededCompetition.name.slice(0, 'Donegal Winter'.length);
 
 test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
   test(
@@ -28,9 +33,9 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     { tag: '@acceptance' },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
-      await competitionsPage.searchFor(EXPECTED_COMPETITION_ADCC_CARD.name);
-      await competitionsPage.expectSearchValue(EXPECTED_COMPETITION_ADCC_CARD.name);
-      await competitionsPage.expectCardData(EXPECTED_COMPETITION_ADCC_CARD);
+      await competitionsPage.searchFor(seededCompetition.name);
+      await competitionsPage.expectSearchValue(seededCompetition.name);
+      await competitionsPage.expectCardData(seededCompetitionCard);
     },
   );
 
@@ -39,9 +44,9 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     { tag: '@acceptance' },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
-      await competitionsPage.searchFor(EXPECTED_COMPETITION_ADCC_PARTIAL);
-      await competitionsPage.expectSearchValue(EXPECTED_COMPETITION_ADCC_PARTIAL);
-      await competitionsPage.expectCardData(EXPECTED_COMPETITION_ADCC_CARD);
+      await competitionsPage.searchFor(seededCompetitionPartialName);
+      await competitionsPage.expectSearchValue(seededCompetitionPartialName);
+      await competitionsPage.expectCardData(seededCompetitionCard);
     },
   );
 

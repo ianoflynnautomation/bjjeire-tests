@@ -1,11 +1,15 @@
 import { expect, type APIResponse } from '@playwright/test';
 import type { ZodType } from 'zod';
+import { fromError } from 'zod-validation-error';
 
 const CONTENT_TYPE_HEADER = 'content-type';
-const BODY_PREVIEW_LIMIT = 2_000;
+
+export function statusMismatchMessage(expected: number, received: number): string {
+  return `expected status ${expected}, received ${received}`;
+}
 
 export function expectStatusCode(response: APIResponse, expected: number): void {
-  expect(response.status(), `Expected API status ${expected}, received ${response.status()}`).toBe(expected);
+  expect(response.status(), `API  ${statusMismatchMessage(expected, response.status())}`).toBe(expected);
 }
 
 export function expectContentType(response: APIResponse, matcher: string | RegExp): void {
@@ -19,22 +23,13 @@ export function expectContentType(response: APIResponse, matcher: string | RegEx
   }
 }
 
-export async function expectResponseBody<T>(response: APIResponse, schema: ZodType<T>): Promise<T> {
-  const json = await readJson(response);
-  const parsed = schema.safeParse(json);
+export function parseWithSchema<T>(schema: ZodType<T>, data: unknown, subject: string): T {
+  const parsed = schema.safeParse(data);
   if (parsed.success) return parsed.data;
-  const issues = parsed.error.issues
-    .map(issue => `  - ${issue.path.join('.') || '(root)'}: ${issue.message}`)
-    .join('\n');
-  throw new Error(`Response body failed schema validation:\n${issues}`);
+  throw new Error(`${subject} failed schema validation: ${fromError(parsed.error).message}`);
 }
 
-async function readJson(response: APIResponse): Promise<unknown> {
-  try {
-    return await response.json();
-  } catch (error: unknown) {
-    const body = await response.text().catch(() => '<unavailable>');
-    const preview = body.length > BODY_PREVIEW_LIMIT ? `${body.slice(0, BODY_PREVIEW_LIMIT)}...<truncated>` : body;
-    throw new Error(`Response body is not valid JSON. Body: ${preview}`, { cause: error });
-  }
+export async function expectResponseBody<T>(response: APIResponse, schema: ZodType<T>): Promise<T> {
+  const json: unknown = await response.json();
+  return parseWithSchema(schema, json, 'Response body');
 }

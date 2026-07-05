@@ -35,10 +35,10 @@ export type GeoCoordinatesDto = Readonly<{
 }>;
 
 export type SocialMediaDto = Readonly<{
-  instagram?: string;
-  facebook?: string;
-  x?: string;
-  youTube?: string;
+  instagram?: string | null;
+  facebook?: string | null;
+  x?: string | null;
+  youTube?: string | null;
 }>;
 
 export type LocationDto = Readonly<{

@@ -5,7 +5,7 @@ import type { StoreDto } from './stores.api';
 
 export function defaultStorePayload(runId: RunId): StoreDto {
   return {
-    id: createEntityId<StoreId>(),
+    id: createEntityId() as StoreId,
     name: `Test Store ${runId}`,
     websiteUrl: 'https://example.com/stores/test-store',
     isActive: true,

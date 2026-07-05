@@ -4,8 +4,6 @@ import { readTaggedItemsIfVisible } from '../common/card.page';
 import { COMPETITION_CARD_TEST_IDS } from './competitions.constants';
 import { type CompetitionCard } from './competitions.types';
 
-export type { CompetitionCard } from './competitions.types';
-
 export async function getCompetitionCardData(locator: Locator): Promise<CompetitionCard> {
   const tagsContainer = locator.getByTestId(COMPETITION_CARD_TEST_IDS.tags);
 

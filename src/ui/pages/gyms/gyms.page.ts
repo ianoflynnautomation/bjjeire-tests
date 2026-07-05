@@ -6,8 +6,9 @@ import {
   expectNetworkError as expectNetworkErrorState,
   expectServerError as expectServerErrorState,
 } from '../common/error.page';
-import { getGymCardData, type GymCard } from './gyms.card.page';
+import { getGymCardData } from './gyms.card.page';
 import { NO_DATA_COPY, TEST_IDS } from './gyms.constants';
+import type { GymCard } from './gyms.types';
 
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
@@ -68,9 +69,7 @@ export async function readCard(page: Page, name: string): Promise<GymCard> {
   return getGymCardData(card);
 }
 
-export async function expectCardData(page: Page, expected: GymCard): Promise<void> {
-  const card = gymCard(page, expected.name);
-  await expect(card).toBeVisible();
-  const actual = await getGymCardData(card);
+export async function expectCardData(page: Page, expected: Pick<GymCard, 'name'> & Partial<GymCard>): Promise<void> {
+  const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
 }

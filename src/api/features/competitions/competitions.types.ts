@@ -5,15 +5,15 @@ export type CompetitionDto = BaseApiEntityModel<CompetitionId> &
   Readonly<{
     slug: string;
     name: string;
-    description?: string;
+    description?: string | null;
     organisation: string;
     country: string;
     websiteUrl: string;
-    registrationUrl?: string;
-    logoUrl?: string;
+    registrationUrl?: string | null;
+    logoUrl?: string | null;
     tags: readonly string[];
-    startDate?: string;
-    endDate?: string;
+    startDate?: string | null;
+    endDate?: string | null;
     isActive: boolean;
   }>;
 

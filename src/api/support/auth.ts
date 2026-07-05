@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import { DefaultAzureCredential, type TokenCredential } from '@azure/identity';
 import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
 import { z } from 'zod';
+import { fromError } from 'zod-validation-error';
 import { env, requireApiAuthBasics, requireAzureConfig } from '@shared/config';
 
 // ─── Config ─────────────────────────────────────────────────────────────────
@@ -75,14 +76,14 @@ function hasCfCreds(): boolean {
 // Disk writes use atomic tmp+rename. Multi-worker races against the disk file
 // are benign — worst case one extra token mint, never corruption.
 
-type CachedToken = Readonly<{ token: string; expiresAtMs: number }>;
-
 const CachedTokenSchema = z
   .object({
     token: z.string().min(1),
     expiresAtMs: z.number().int().positive(),
   })
   .readonly();
+
+type CachedToken = z.infer<typeof CachedTokenSchema>;
 
 const TokenCacheFileSchema = z.record(z.string().min(1), CachedTokenSchema);
 
@@ -112,7 +113,7 @@ function readDiskCache(): Record<string, CachedToken> {
   const result = TokenCacheFileSchema.safeParse(json);
   if (result.success) return result.data;
 
-  console.warn(`[entra-token] discarding malformed cache at ${CACHE_FILE}: ${result.error.message}`);
+  console.warn(`[entra-token] discarding malformed cache at ${CACHE_FILE}: ${fromError(result.error).message}`);
   return {};
 }
 
@@ -125,8 +126,6 @@ function persistToken(scopeKey: string, entry: CachedToken): CachedToken {
   renameSync(tmpPath, CACHE_FILE);
   return entry;
 }
-
-// ─── Strategy selection + minting ───────────────────────────────────────────
 
 type AuthStrategy = 'chain' | 'client-credentials';
 

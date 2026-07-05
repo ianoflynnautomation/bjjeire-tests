@@ -4,9 +4,9 @@ import type { StoreId } from '@shared/types';
 export type StoreDto = BaseApiEntityModel<StoreId> &
   Readonly<{
     name: string;
-    description?: string;
+    description?: string | null;
     websiteUrl: string;
-    logoUrl?: string;
+    logoUrl?: string | null;
     isActive: boolean;
   }>;
 

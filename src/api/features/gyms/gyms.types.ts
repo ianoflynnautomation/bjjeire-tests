@@ -35,31 +35,31 @@ export type GymStatus = (typeof GymStatus)[keyof typeof GymStatus];
 
 export type TrialOfferDto = Readonly<{
   isAvailable: boolean;
-  freeClasses?: number;
-  freeDays?: number;
-  notes?: string;
+  freeClasses?: number | null;
+  freeDays?: number | null;
+  notes?: string | null;
 }>;
 
 export type AffiliationDto = Readonly<{
   name: string;
-  website?: string;
+  website?: string | null;
 }>;
 
 export type GymDto = BaseApiEntityModel<GymId> &
   Readonly<{
     name: string;
-    description?: string;
+    description?: string | null;
     status: GymStatus;
     county: string;
-    affiliation?: AffiliationDto;
+    affiliation?: AffiliationDto | null;
     trialOffer: TrialOfferDto;
     location: LocationDto;
     socialMedia: SocialMediaDto;
     offeredClasses: readonly ClassCategory[];
-    website?: string;
-    timetableUrl?: string;
-    imageUrl?: string;
-    thumbnailUrl?: string;
+    website?: string | null;
+    timetableUrl?: string | null;
+    imageUrl?: string | null;
+    thumbnailUrl?: string | null;
   }>;
 
 export type GetGymsByCountyPaginationQuery = PaginationQuery &

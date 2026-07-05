@@ -6,8 +6,9 @@ import {
   expectNetworkError as expectNetworkErrorState,
   expectServerError as expectServerErrorState,
 } from '../common/error.page';
-import { getStoreCardData, type StoreCard } from './stores.card.page';
+import { getStoreCardData } from './stores.card.page';
 import { NO_DATA_COPY, TEST_IDS } from './stores.constants';
+import type { StoreCard } from './stores.types';
 
 const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);

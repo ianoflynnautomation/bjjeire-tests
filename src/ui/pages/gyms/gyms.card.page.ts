@@ -21,4 +21,3 @@ export async function getGymCardData(locator: Locator): Promise<GymCard> {
 
   return { name, status, county, classes };
 }
-export { GymCard };

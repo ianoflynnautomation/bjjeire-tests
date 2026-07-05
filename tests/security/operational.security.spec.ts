@@ -3,9 +3,13 @@ import { API_ROUTES, apiRequest } from '@api/support';
 import { expectNoSensitiveLeakage } from './helpers/leakage';
 import { expectNoHealthCheckLeakage } from './helpers/health-check';
 
+const HEALTH_ROUTE = '/health';
+const METRICS_ROUTE = '/metrics';
+const SCALAR_ROUTE = '/scalar/v1';
+
 test.describe('Operational endpoints', { tag: ['@security', '@regression', '@data-exposure'] }, () => {
   test('/health is reachable and does not leak sensitive detail', async ({ apiClient }) => {
-    const response = await apiRequest(apiClient, 'GET', API_ROUTES.health);
+    const response = await apiRequest(apiClient, 'GET', HEALTH_ROUTE);
     expect([200, 503]).toContain(response.status());
 
     const body = await response.text();
@@ -14,13 +18,13 @@ test.describe('Operational endpoints', { tag: ['@security', '@regression', '@dat
   });
 
   test('/health response does not expose internal service topology', async ({ apiClient }) => {
-    const response = await apiRequest(apiClient, 'GET', API_ROUTES.health);
+    const response = await apiRequest(apiClient, 'GET', HEALTH_ROUTE);
     const body = await response.text();
     expectNoHealthCheckLeakage(body);
   });
 
   test('/metrics is not publicly exposed', async ({ apiClient }) => {
-    const response = await apiRequest(apiClient, 'GET', API_ROUTES.metrics);
+    const response = await apiRequest(apiClient, 'GET', METRICS_ROUTE);
     expect(
       [401, 403, 404].includes(response.status()),
       `Prometheus /metrics responded ${response.status()} unauthenticated — this leaks operational data. ` +
@@ -38,7 +42,7 @@ test.describe('Operational endpoints', { tag: ['@security', '@regression', '@dat
   });
 
   test('Scalar API reference UI is not exposed in staging', async ({ apiClient }) => {
-    const response = await apiRequest(apiClient, 'GET', API_ROUTES.scalarV1);
+    const response = await apiRequest(apiClient, 'GET', SCALAR_ROUTE);
     expect(
       [401, 403, 404].includes(response.status()),
       `Scalar API UI exposed in staging (status ${response.status()}) — should only be available in Development/Docker.`,

@@ -73,7 +73,10 @@ export async function readCard(page: Page, name: string): Promise<BjjEventCard> 
   return getEventCardData(card);
 }
 
-export async function expectCardData(page: Page, expected: BjjEventCard): Promise<void> {
+export async function expectCardData(
+  page: Page,
+  expected: Pick<BjjEventCard, 'name'> & Partial<BjjEventCard>,
+): Promise<void> {
   const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
 }

@@ -1,5 +1,7 @@
 import { request, type APIRequestContext, type APIResponse } from '@playwright/test';
+import type { ZodType } from 'zod';
 import { cfAccessHeaders, env } from '@shared/config';
+import { parseWithSchema, statusMismatchMessage } from './assertions';
 import { acquireEntraAccessToken, shouldUseEntraAuthorization } from './auth';
 
 export type AuthOption =
@@ -61,13 +63,12 @@ type RequestOptions = Readonly<{
   timeout?: number;
 }>;
 
-type TypedRequestOptions = RequestOptions &
+type TypedRequestOptions<T> = RequestOptions &
   Readonly<{
-    expectedStatus?: number;
+    schema?: ZodType<T>;
   }>;
 
-const DEFAULT_OK_STATUS = 200;
-const BODY_PREVIEW_LIMIT = 2_000;
+const OK_STATUS = 200;
 
 function buildQueryParams(params?: QueryParams): Record<string, string | number | boolean> | undefined {
   if (!params) return undefined;
@@ -78,13 +79,13 @@ function buildQueryParams(params?: QueryParams): Record<string, string | number 
 }
 
 export async function apiRequest(
-  request: APIRequestContext,
+  context: APIRequestContext,
   method: HttpMethod,
   path: string,
   options: RequestOptions = {},
 ): Promise<APIResponse> {
   const params = buildQueryParams(options.params);
-  return request.fetch(path, {
+  return context.fetch(path, {
     method,
     failOnStatusCode: false,
     ...(params ? { params } : {}),
@@ -94,22 +95,17 @@ export async function apiRequest(
   });
 }
 
-export async function get<T>(request: APIRequestContext, path: string, options: TypedRequestOptions = {}): Promise<T> {
-  const response = await apiRequest(request, 'GET', path, options);
-  const expectedStatus = options.expectedStatus ?? DEFAULT_OK_STATUS;
-  if (response.status() !== expectedStatus) {
+export async function get<T>(
+  context: APIRequestContext,
+  path: string,
+  options: TypedRequestOptions<T> = {},
+): Promise<T> {
+  const response = await apiRequest(context, 'GET', path, options);
+  if (response.status() !== OK_STATUS) {
     throw new Error(
-      `GET ${path} failed: expected status ${expectedStatus}, received ${response.status()}. Body: ${await readBodyPreview(response)}`,
+      `GET ${path} failed: ${statusMismatchMessage(OK_STATUS, response.status())}. Body: ${await response.text()}`,
     );
   }
-  try {
-    return (await response.json()) as T;
-  } catch (error: unknown) {
-    throw new Error(`GET ${path} returned invalid JSON. Body: ${await readBodyPreview(response)}`, { cause: error });
-  }
-}
-
-async function readBodyPreview(response: APIResponse): Promise<string> {
-  const body = await response.text().catch(() => '<unavailable>');
-  return body.length > BODY_PREVIEW_LIMIT ? `${body.slice(0, BODY_PREVIEW_LIMIT)}...<truncated>` : body;
+  const json: unknown = await response.json();
+  return options.schema ? parseWithSchema(options.schema, json, `GET ${path}`) : (json as T);
 }

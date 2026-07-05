@@ -23,7 +23,7 @@ const DEFAULT_OFFERED_CLASSES: readonly ClassCategory[] = [];
 
 export function defaultGymPayload(runId: RunId): GymDto {
   return {
-    id: createEntityId<GymId>(),
+    id: createEntityId() as GymId,
     name: `Test Gym ${runId}`,
     status: GymStatus.Active,
     county: 'Dublin',

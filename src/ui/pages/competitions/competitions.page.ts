@@ -24,11 +24,10 @@ const competitionCard = (page: Page, name: string): Locator =>
 
 export async function goTo(page: Page): Promise<void> {
   await page.goto('/competitions');
-  await getTitle(page);
 }
 
-export async function getTitle(page: Page): Promise<void> {
-  await expect(headerTitle(page)).toHaveText('BJJ Competition Organisations');
+export async function expectTitle(page: Page, title: string): Promise<void> {
+  await expect(headerTitle(page)).toHaveText(title);
 }
 
 export async function verifyIsLoaded(page: Page): Promise<void> {
@@ -75,13 +74,16 @@ export async function expectServerErrorMessage(page: Page): Promise<void> {
   await expectServerErrorState(page);
 }
 
-export async function getCardData(page: Page, name: string): Promise<CompetitionCard> {
+export async function readCard(page: Page, name: string): Promise<CompetitionCard> {
   const card = competitionCard(page, name);
   await expect(card).toBeVisible();
   return getCompetitionCardData(card);
 }
 
-export async function expectCardData(page: Page, expected: CompetitionCard): Promise<void> {
-  const actual = await getCardData(page, expected.name);
+export async function expectCardData(
+  page: Page,
+  expected: Pick<CompetitionCard, 'name'> & Partial<CompetitionCard>,
+): Promise<void> {
+  const actual = await readCard(page, expected.name);
   expect(actual).toMatchObject(expected);
 }

@@ -7,7 +7,7 @@ const DEFAULT_TAGS: readonly string[] = ['test'];
 
 export function defaultCompetitionPayload(runId: RunId): CompetitionDto {
   return {
-    id: createEntityId<CompetitionId>(),
+    id: createEntityId() as CompetitionId,
     slug: `test-competition-${runId}`,
     name: `Test Competition ${runId}`,
     description: 'Competition created by test factory',
