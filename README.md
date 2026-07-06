@@ -1,191 +1,121 @@
 # bjjeire-tests
 
-End-to-end web test automation framework using [Playwright](https://playwright.dev/) and TypeScript. Includes page-object utilities, soft assertions, an API helper, Allure + HTML reporting, Docker support, and a reusable GitHub Actions workflow for cross-repo CI.
+[![CI](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml)
+![Playwright](https://img.shields.io/badge/Playwright-1.61-2EAD33?logo=playwright&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
+![Node](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white)
 
-## Setup
+Acceptance test suite for **[BjjEire](https://github.com/ianoflynnautomation/BjjEire)** — a
+read-only directory of BJJ gyms, events, competitions, and stores across Ireland.
 
-```bash
-npm install
-cp .env.example .env  # add BASE_URL and any test credentials
+Playwright + TypeScript, covering **API**, **UI** (Chromium / Firefox / WebKit), **visual +
+aria snapshots**, **accessibility** (axe, WCAG 2.1 AA), and **mobile** (iPhone 16, Galaxy
+S24) — against real seeded data in local, Docker, and staging environments.
+
+## Quick start
+
+**Prerequisites:** Node 22, npm, and a running BjjEire instance (local
+[minikube](https://github.com/ianoflynnautomation/bjjeire-deploy), Docker Compose, or a
+remote environment URL).
+
+```sh
+npm ci
+npx playwright install          # browsers (skip if using the Docker image)
+cp .env.local.example .env      # then point BASE_URL / API_URL at your app
+npm run test:smoke              # first green run 🎉
 ```
 
-## Running Tests
+Key `.env` variables:
 
-```bash
-npm test                       # all tests, headless
-npm run test:chromium          # Chromium only
-npm run test:chromium-headed   # headed, single worker (debugging)
-npm run test:smoke             # @smoke tagged tests
-npm run test:reg               # @reg tagged tests
-npm run ui                     # Playwright UI mode
+| Variable               | Purpose                                   | Example                 |
+| ---------------------- | ----------------------------------------- | ----------------------- |
+| `APP_ENV`              | Profile: `local` \| `docker` \| `staging` | `local`                 |
+| `BASE_URL`             | App under test                            | `http://127.0.0.1:8080` |
+| `API_URL`              | API under test                            | `http://127.0.0.1:8080` |
+| `ACCEPT_INVALID_CERTS` | Allow self-signed certs                   | `true`                  |
+
+There is one `.env.<profile>.example` per environment. Local runs stop on the first
+failure by design; CI runs the whole suite.
+
+## Running tests
+
+| Command                              | What it runs                                  |
+| ------------------------------------ | --------------------------------------------- |
+| `npm run test:smoke`                 | Critical subset (`@smoke`)                    |
+| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)       |
+| `npm run test:snapshots`             | Visual + aria snapshots                       |
+| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route             |
+| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)       |
+| `npm run test:docker`                | Full suite against the Docker Compose profile |
+| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`            |
+
+Handy filters (any Playwright flag works):
+
+```sh
+npx playwright test tests/features/gyms/                    # one feature
+npx playwright test --grep "@gyms" -c playwright.ui.config.ts
+npx playwright test --project=chromium-desktop --headed     # watch it run
+npx playwright test --ui                                    # Playwright UI mode
 ```
 
-## Reporting
+## Reports & debugging
 
-```bash
-npm run play-report   # open Playwright HTML report
-npm run open-report   # generate + open Allure report
-npm run trace         # inspect a trace file
+```sh
+npm run play-report    # open the Playwright HTML report
+npm run open-report    # generate + open the Allure report
+npm run trace          # inspect a trace file (traces upload on CI failure)
 ```
 
-## Docker
+Updating screenshot baselines? They are **per-platform** (`-darwin` locally, `-linux`
+in CI) — regenerate both; see `.claude/commands/update-snapshots.md` for the procedure.
 
-```bash
-docker compose build                                                          # build image
-docker compose run --rm playwright                                            # run all tests
-docker compose run --rm playwright npx playwright test -g @smoke             # smoke only
-docker compose run --rm playwright npx playwright test --project=chromium    # Chromium only
-```
+## CI
 
-Reports are written to `./playwright-report`, `./test-results`, and `./allure-results` on the host.
+- **This repo** ([`ci.yml`](.github/workflows/ci.yml)): lint + typecheck on every push/PR.
+- **The app repo** calls the reusable
+  [`playwright-docker.yml`](.github/workflows/playwright-docker.yml) on every push to
+  main: it boots the Docker Compose stack, seeds data, and runs the full `@acceptance`
+  suite as a sharded matrix across all projects (API, three desktop browsers, wide,
+  snapshots, a11y, both mobile devices). Results land as a merged HTML report artifact
+  and a PR comment.
+- Callers pin the workflow by commit SHA; test code is always checked out from `main`.
 
-## CI — Reusable Playwright Workflows
-
-This repo ships reusable GitHub Actions workflows that other repos (app, infra, acceptance) can call to run the Playwright suite against local, Docker, Terraform, or other external environments.
-
-- [`.github/workflows/playwright-tests.yml`](.github/workflows/playwright-tests.yml) for already-available environments such as local or external URLs
-- [`.github/workflows/playwright-docker.yml`](.github/workflows/playwright-docker.yml) for Docker Compose-provisioned environments
-- [`.github/workflows/playwright-terraform.yml`](.github/workflows/playwright-terraform.yml) for Terraform-provisioned ephemeral environments
-
-### Workflow responsibilities
-
-1. `playwright-tests.yml`
-   Runs the generic Playwright matrix against caller-supplied URLs, merges reports, and exposes workflow outputs.
-   Use this for `local` or `external` environments where the system-under-test already exists.
-2. `playwright-docker.yml`
-   Brings up Docker Compose in the caller repo, waits for health, runs Playwright, merges reports, and tears the stack down.
-3. `playwright-terraform.yml`
-   Applies Terraform in the caller repo, resolves URL outputs, runs Playwright through the generic runner, and always destroys afterward.
-
-### Generic runner inputs (`playwright-tests.yml`)
-
-| Input                 | Default                                                                                                 | Notes                                              |
-| --------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `app_env`             | `local`                                                                                                 | `local` \| `staging` \| `docker`                   |
-| `base_url`            | `''`                                                                                                    | Target app URL for already-available environments. |
-| `api_base_url`        | `''`                                                                                                    | Target API URL for already-available environments. |
-| `test_tags`           | `'@smoke\|@acceptance'`                                                                                 | Playwright `--grep`, e.g. `@smoke\|@acceptance`.   |
-| `shard_total`         | `6`                                                                                                     | Parallel shards per project.                       |
-| `playwright_projects` | `'["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'` | JSON array of project names.                       |
-| `node_version`        | `22`                                                                                                    |                                                    |
-| `playwright_image`    | `mcr.microsoft.com/playwright:v1.61.0-noble`                                                            | Pin to your `@playwright/test` version.            |
-| `test_repo`           | `''`                                                                                                    | Owner/repo of tests; empty = caller.               |
-| `test_repo_ref`       | `main`                                                                                                  | Tag, branch, or SHA.                               |
-
-### Secrets (runner)
-
-`EPHEMERAL_MONGO_URL`, `EPHEMERAL_MONGO_DB`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_API_SCOPE`, `AZURE_AUTHORITY`.
-
-Additional workflow-specific secrets:
-
-- `playwright-docker.yml`: `GHCR_TOKEN` when private images must be pulled from GHCR
-- `playwright-terraform.yml`: `AZURE_SUBSCRIPTION_ID` for Azure OIDC login
-
-Pass via `secrets: inherit` or an explicit map — see examples below.
-
-### Outputs
-
-| Output                 | Description                                   |
-| ---------------------- | --------------------------------------------- |
-| `test_status`          | `success` \| `failure` (aggregate of matrix). |
-| `failed_count`         | Number of failed specs across all shards.     |
-| `report_artifact_name` | Name of the merged HTML report artifact.      |
-
-## Consuming from another repo
-
-### Docker-provisioned env
-
-See [`examples/consumer-docker.yml`](examples/consumer-docker.yml):
+Minimal consumer example ([more in `examples/`](examples/)):
 
 ```yaml
 jobs:
-  e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-docker.yml@v1
+  acceptance:
+    uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-docker.yml@<sha>
     with:
       compose_file: docker-compose.yml
-      compose_health_url: http://localhost:5003/healthz
+      compose_health_url: http://localhost:5003/health
       base_url: http://localhost:3000
       api_base_url: http://localhost:5003
-      test_tags: '@smoke|@acceptance'
-      shard_total: 4
-      playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
-      test_repo: bjjeire/bjjeire-tests
-      test_repo_ref: v1
-    secrets:
-      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      test_repo: ianoflynnautomation/bjjeire-tests
+      test_tags: '@acceptance'
 ```
 
-### Terraform-provisioned ephemeral env (Azure OIDC)
+All inputs, secrets, and outputs are documented inline in the workflow files.
+`playwright-terraform.yml` covers Terraform-provisioned ephemeral environments.
 
-See [`examples/consumer-terraform.yml`](examples/consumer-terraform.yml):
+## Project structure
 
-```yaml
-jobs:
-  e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-terraform.yml@v1
-    with:
-      terraform_dir: infra
-      terraform_workspace: ${{ github.head_ref || github.ref_name }}
-      terraform_var_file: pr.tfvars
-      test_tags: '@smoke|@acceptance'
-      playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+```
+tests/features/<feature>/            Spec files (Given/when/then titles)
+tests/testdata/seeded/               DTO-typed seeded fixtures
+src/ui/pages/<feature>/              Page objects (pure functions)
+src/ui/fixtures/                     Playwright fixtures (composed in index.ts)
+src/api/features/<feature>/          Typed API clients + Zod schemas + builders
+.github/workflows/                   Internal CI + reusable workflows
 ```
 
-The terraform root module must expose `base_url` and `api_base_url` as outputs.
+Conventions, tag taxonomy, and data policy live in [`CLAUDE.md`](CLAUDE.md); the
+coverage roadmap lives in [`TODO.md`](TODO.md).
 
-### Local profile against caller-supplied URLs
+## Contributing
 
-See [`examples/consumer-local.yml`](examples/consumer-local.yml):
+- Start new features from the template: `tests/features/_template/README.md`.
+- Every test carries `@acceptance`; add `@smoke` only for the critical happy path.
+- `npm run lint` and `npm run typecheck` must pass — the pre-commit hook enforces it.
 
-```yaml
-jobs:
-  e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-tests.yml@v1
-    with:
-      app_env: local
-      base_url: http://localhost:3000
-      api_base_url: http://localhost:5000
-      test_tags: '@smoke|@acceptance'
-      playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
-    secrets:
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-      AZURE_API_SCOPE: ${{ secrets.AZURE_API_SCOPE }}
-      AZURE_AUTHORITY: ${{ secrets.AZURE_AUTHORITY }}
-```
-
-### External env (already provisioned)
-
-```yaml
-jobs:
-  e2e:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-tests.yml@v1
-    with:
-      app_env: staging
-      base_url: ${{ secrets.EPHEMERAL_BASE_URL }}
-      api_base_url: ${{ secrets.EPHEMERAL_API_URL }}
-      test_tags: '@smoke|@acceptance'
-      playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
-    secrets:
-      EPHEMERAL_MONGO_URL: ${{ secrets.EPHEMERAL_MONGO_URL }}
-      EPHEMERAL_MONGO_DB: ${{ secrets.EPHEMERAL_MONGO_DB }}
-```
-
-## Versioning
-
-- Production callers: pin to a commit SHA (`@a1b2c3d`).
-- Dev / acceptance callers: pin to a floating major (`@v1`).
-- Tag releases `v1`, `v1.2`, `v1.2.3` on each change to the reusable workflow; move the `v1` tag to the latest matching release.
-
-## Cross-repo access
-
-GitHub blocks reusable-workflow calls from other repos by default. Allow them at **Org → Settings → Actions → General → Access** (or per-repo settings). For environment-gated approvals, apply the GitHub Environment to the caller job _inside_ the reusable workflow — not on the `uses:` job itself (GitHub rejects that combination).
-
-## Internal CI
-
-This repo's own pipeline ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs lint + typecheck + prettier on every push/PR. The reusable workflow is lint-checked by [`.github/workflows/lint-reusable.yml`](.github/workflows/lint-reusable.yml) using `actionlint` + `yamllint` (config in [`.yamllint.yml`](.yamllint.yml)).
+Maintained by [@ianoflynnautomation](https://github.com/ianoflynnautomation).

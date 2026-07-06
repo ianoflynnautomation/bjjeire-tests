@@ -1,11 +1,21 @@
-Run tests matching a specific tag and report results.
+---
+description: Run tests matching a specific tag and report results.
+argument-hint: <tag>
+---
 
-Usage: /test-tag <tag> (e.g., @smoke, @acceptance, @security, @mcp)
+Run all tests matching the tag `$ARGUMENTS`.
+
+Valid tags: `@smoke` (critical subset), `@acceptance` (full suite), `@snapshot`,
+`@a11y`, `@mobile`, `@desktop`, or any feature tag (`@gyms`, `@events`, …).
 
 Steps:
 
-1. Determine the correct config file based on the tag:
-   - `@security` -> `playwright.security.config.ts` with `APP_ENV=local`
-   - All others -> `playwright.ui.config.ts` with `APP_ENV=local`
-2. Run `APP_ENV=local npx playwright test -c <config> --grep "$ARGUMENTS"`
-3. Report: total passed, total failed, and first error for each failure
+1. Run `APP_ENV=local npx playwright test -c playwright.ui.config.ts --grep "$ARGUMENTS"`.
+   - For `@acceptance` or feature tags with API specs, also run with
+     `-c playwright.api.config.ts`.
+   - `@mobile` tests only execute on the `mobile-iphone`/`mobile-galaxy` projects;
+     `@snapshot` and `@a11y` run on their dedicated projects — no extra flags needed.
+2. Report: total passed, total failed, and the first error for each failure.
+
+If zero tests match, list the tags actually present in the suite instead of reporting
+success.
