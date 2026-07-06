@@ -42,10 +42,10 @@ on:
         type: string
         required: true
       test_tags:
-        description: 'Playwright grep filter, e.g. "@smoke|@regression".'
+        description: 'Playwright grep filter, e.g. "@smoke" or "@acceptance" (full suite).'
         type: string
         required: false
-        default: '@smoke|@regression'
+        default: '@acceptance'
       shard_total:
         description: 'Default number of parallel shards per project (overridable via project_shard_overrides).'
         type: number
@@ -55,12 +55,12 @@ on:
         description: 'JSON object mapping project name to shard count. Projects not listed use shard_total. Example: {"api":3,"webkit-desktop":2}.'
         type: string
         required: false
-        default: '{"api":3,"firefox-desktop":4,"webkit-desktop":3,"chromium-wide":3}'
+        default: '{"api":3,"firefox-desktop":4,"webkit-desktop":3,"chromium-wide":3,"snapshots":1,"a11y":1,"mobile-iphone":1,"mobile-galaxy":1}'
       playwright_projects:
-        description: 'JSON array of Playwright project names to run.'
+        description: 'JSON array of Playwright project names to run. Must match project names in src/ui/config/playwright.ts and src/api/config/playwright.ts.'
         type: string
         required: false
-        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","iphone-15","pixel-8"]'
+        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","snapshots","a11y","mobile-iphone","mobile-galaxy"]'
       node_version:
         description: 'Node.js version for setup-node and merge job.'
         type: string
@@ -186,8 +186,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Hash content that affects the image. Same hash means same image, reused across commits.
-          hash=$(sha256sum Dockerfile package-lock.json package.json | sha256sum | cut -c1-12)
+          # The Dockerfile bakes in the whole test repo (`COPY . .`), so the tag
+          # must change whenever ANY repo content changes — tag by the checked-out
+          # commit. Hashing only Dockerfile+package files (as before) served stale
+          # test code and baselines whenever deps hadn't changed. Rebuilds stay
+          # cheap: the npm ci layer only invalidates when package files change.
+          hash=$(git rev-parse --short=12 HEAD)
           owner_lc=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           ref="ghcr.io/${owner_lc}/bjjeire-playwright:${hash}"
           echo "ref=${ref}" >> "$GITHUB_OUTPUT"
