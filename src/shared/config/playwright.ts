@@ -85,9 +85,6 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
       contextOptions: {
         reducedMotion: 'reduce',
       },
-      launchOptions: {
-        args: ['--disable-dev-shm-usage'],
-      },
     },
     captureGitInfo: { commit: true, diff: !IS_CI },
     ...overrides,

@@ -14,6 +14,10 @@ const MOBILE_TAG = /@mobile/;
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const WIDE_VIEWPORT = { width: 1728, height: 1117 };
 
+const CHROMIUM_LAUNCH_OPTIONS = { args: ['--disable-dev-shm-usage'] };
+const CHROMIUM_DESKTOP_DEVICE = { ...devices['Desktop Chrome'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
+const CHROMIUM_GALAXY_DEVICE = { ...devices['Galaxy S24'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
+
 export function createUiProjects(): Project[] {
   const authConfigured = env.uiTestUser.entraEnabled && !!env.uiTestUser.username && !!env.uiTestUser.password;
   const authDependencies = authConfigured ? ['setup'] : [];
@@ -33,19 +37,19 @@ export function createUiProjects(): Project[] {
       testMatch: UI_TEST_MATCH,
       grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
-      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
       name: 'snapshots',
       testMatch: SNAPSHOT_TEST_MATCH,
       dependencies: authDependencies,
-      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
       name: 'a11y',
       testMatch: A11Y_TEST_MATCH,
       dependencies: authDependencies,
-      use: { ...devices['Desktop Chrome'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
       name: 'firefox-desktop',
@@ -67,7 +71,7 @@ export function createUiProjects(): Project[] {
       grep: WIDE_TAGS_GREP,
       grepInvert: MOBILE_TAG,
       dependencies: authDependencies,
-      use: { ...devices['Desktop Chrome'], viewport: WIDE_VIEWPORT, ...uiUse },
+      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: WIDE_VIEWPORT, ...uiUse },
     },
     {
       name: 'mobile-iphone',
@@ -81,7 +85,7 @@ export function createUiProjects(): Project[] {
       testMatch: UI_TEST_MATCH,
       grep: MOBILE_TAGS_GREP,
       dependencies: authDependencies,
-      use: { ...devices['Galaxy S24'], ...uiUse },
+      use: { ...CHROMIUM_GALAXY_DEVICE, ...uiUse },
     },
   ];
 }
