@@ -3,15 +3,10 @@ name: Lint reusable workflow
 on:
   pull_request:
     paths:
-      - '.github/workflows/playwright-tests.yml'
-      - '.github/workflows/playwright-docker.yml'
-      - '.github/workflows/playwright-terraform.yml'
-      - '.github/workflows/playwright-report.yml'
-      - '.github/workflows/acceptance.yml'
-      - '.github/workflows/env-deploy.yml'
-      - '.github/workflows/pr-env.yml'
-      - '.github/workflows/lint-reusable.yml'
+      - '.github/workflows/**'
+      - '.github/zizmor.yml'
       - 'examples/**'
+      - '.yamllint.yml'
   workflow_dispatch:
 
 permissions:
@@ -19,23 +14,26 @@ permissions:
 
 jobs:
   actionlint:
-    name: actionlint + yamllint
+    name: actionlint + yamllint + zizmor
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Run actionlint
-        uses: raven-actions/actionlint@v2
-        with:
-          files: .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-report.yml .github/workflows/acceptance.yml .github/workflows/env-deploy.yml .github/workflows/pr-env.yml examples/*.yml
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install yamllint
-        run: pip install --quiet yamllint==1.35.1
+      - name: Install yamllint + zizmor
+        run: pip install --quiet yamllint==1.35.1 zizmor==1.26.1
 
       - name: Run yamllint
-        run: yamllint -c .yamllint.yml .github/workflows/playwright-tests.yml .github/workflows/playwright-docker.yml .github/workflows/playwright-terraform.yml .github/workflows/playwright-report.yml .github/workflows/acceptance.yml .github/workflows/env-deploy.yml .github/workflows/pr-env.yml examples/
+        run: yamllint -c .yamllint.yml .github/workflows/ examples/
+
+      - name: Run zizmor
+        run: zizmor --offline --min-severity high .github/workflows/

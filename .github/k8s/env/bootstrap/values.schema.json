@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "bjj-eire-env-bootstrap values",
+  "type": "object",
+  "required": ["envId", "rootDomain", "ttl"],
+  "additionalProperties": false,
+  "properties": {
+    "envId": {
+      "type": "string",
+      "description": "Namespace name / environment id. DNS-1123 label.",
+      "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$"
+    },
+    "rootDomain": {
+      "type": "string",
+      "description": "Root DNS zone for public hostnames.",
+      "minLength": 1
+    },
+    "ttl": {
+      "type": "string",
+      "description": "Janitor TTL annotation (e.g. 2h, 4h).",
+      "minLength": 1
+    }
+  }
+}

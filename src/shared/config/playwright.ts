@@ -1,5 +1,6 @@
 import { join } from 'path';
-import { defineConfig, type PlaywrightTestConfig } from '@playwright/test';
+
+import { defineConfig, type PlaywrightTestConfig, type ReporterDescription } from '@playwright/test';
 import { cfAccessHeaders } from './cf-access';
 import { env } from './env';
 import { TIMEOUTS } from './timeouts';
@@ -16,13 +17,11 @@ const MAX_FAILURES = IS_CI ? 0 : 1;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
-const CI_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
-  ['blob'],
-  ['github'],
-  ['junit', { outputFile: 'test-results/junit.xml' }],
-];
+export const QUARANTINE_TAG = /@quarantine/;
 
-const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
+const CI_REPORTERS: ReporterDescription[] = [['blob'], ['github'], ['junit', { outputFile: 'test-results/junit.xml' }]];
+
+const LOCAL_REPORTERS: ReporterDescription[] = [
   ['list'],
   ['html', { open: 'never', outputFolder: 'playwright-report' }],
   ['json', { outputFile: 'test-results/results.json' }],
@@ -30,19 +29,24 @@ const LOCAL_REPORTERS: NonNullable<PlaywrightTestConfig['reporter']> = [
   ['allure-playwright', { resultsDir: 'allure-results' }],
 ];
 
+function activeReporters(): ReporterDescription[] {
+  const base = IS_CI ? CI_REPORTERS : LOCAL_REPORTERS;
+  if (!process.env['OTEL_EXPORTER_OTLP_ENDPOINT']) return base;
+  return [...base, [join(REPO_ROOT, 'src', 'shared', 'otel', 'otel-reporter.ts')]];
+}
+
 export function createBaseConfig(overrides: PlaywrightTestConfig = {}): PlaywrightTestConfig {
   return defineConfig({
-    globalSetup: join(REPO_ROOT, 'global-setup.ts'),
-    globalTeardown: join(REPO_ROOT, 'global-teardown.ts'),
     testDir: './tests',
     testIgnore: /.*\/_template\/.*/,
+    grepInvert: QUARANTINE_TAG,
     fullyParallel: true,
     forbidOnly: IS_CI,
     retries: IS_CI ? 1 : 0,
     maxFailures: MAX_FAILURES,
     workers: IS_CI ? WORKERS.ci : WORKERS.local,
     timeout: TIMEOUTS.test,
-    reporter: IS_CI ? CI_REPORTERS : LOCAL_REPORTERS,
+    reporter: activeReporters(),
     expect: {
       timeout: TIMEOUTS.expect,
       toHaveScreenshot: {
@@ -59,8 +63,6 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     // {platform} keeps per-OS screenshot baselines apart — a macOS-rendered PNG
     // never diffs cleanly against a Linux CI render.
     snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{testFileName}/{arg}-{platform}{ext}',
-    // 'missing' on CI would silently write and pass a brand-new baseline;
-    // CI must only compare against committed ones.
     updateSnapshots: IS_CI ? 'none' : 'missing',
     reportSlowTests: { max: 10, threshold: 30_000 },
     use: {

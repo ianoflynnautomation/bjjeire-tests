@@ -1,0 +1,27 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Keeps the Playwright triple-pin (package.json, Dockerfile base image, workflow default image) moving in lockstep, and digest-pins GitHub Actions over time via config:best-practices.",
+  "extends": ["config:best-practices", ":timezone(Europe/Dublin)", "schedule:weekly"],
+  "packageRules": [
+    {
+      "description": "MCR Playwright tags look like v1.61.0-noble; teach Renovate the version scheme.",
+      "matchPackageNames": ["mcr.microsoft.com/playwright"],
+      "versioning": "regex:^v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-noble$"
+    },
+    {
+      "description": "One PR bumps @playwright/test + the runner image everywhere; CLAUDE.md requires these to match.",
+      "groupName": "playwright",
+      "matchPackageNames": ["@playwright/test", "playwright", "mcr.microsoft.com/playwright"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Playwright runner image referenced as a default input in reusable workflows.",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "matchStrings": ["mcr\\.microsoft\\.com/playwright:(?<currentValue>v\\d+\\.\\d+\\.\\d+-noble)"],
+      "depNameTemplate": "mcr.microsoft.com/playwright",
+      "datasourceTemplate": "docker"
+    }
+  ]
+}

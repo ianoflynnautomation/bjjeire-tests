@@ -1,5 +1,6 @@
 import { devices, type Project } from '@playwright/test';
 import { env } from '@shared/config/env';
+import { QUARANTINE_TAG } from '@shared/config/playwright';
 
 export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
 
@@ -35,7 +36,7 @@ export function createUiProjects(): Project[] {
     {
       name: 'chromium-desktop',
       testMatch: UI_TEST_MATCH,
-      grepInvert: MOBILE_TAG,
+      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: authDependencies,
       use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
@@ -54,14 +55,14 @@ export function createUiProjects(): Project[] {
     {
       name: 'firefox-desktop',
       testMatch: UI_TEST_MATCH,
-      grepInvert: MOBILE_TAG,
+      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: authDependencies,
       use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
     {
       name: 'webkit-desktop',
       testMatch: UI_TEST_MATCH,
-      grepInvert: MOBILE_TAG,
+      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: authDependencies,
       use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...uiUse },
     },
@@ -69,7 +70,7 @@ export function createUiProjects(): Project[] {
       name: 'chromium-wide',
       testMatch: UI_TEST_MATCH,
       grep: WIDE_TAGS_GREP,
-      grepInvert: MOBILE_TAG,
+      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: authDependencies,
       use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: WIDE_VIEWPORT, ...uiUse },
     },

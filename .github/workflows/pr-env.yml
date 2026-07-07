@@ -68,9 +68,13 @@ on:
         type: string
         required: true
       root_domain:
-        description: 'Root DNS zone (e.g. bjjeire.com). PR frontend becomes pr-${pr_number}-<env>.<root_domain>; api becomes api-pr-${pr_number}-<env>.<root_domain>. Where <env> is the trailing label of cluster_domain.'
+        description: >-
+          DNS base for public hostnames. Empty (the default) = use cluster_domain, so PR
+          envs nest under the environment: pr-${pr_number}.<cluster_domain>
+          (e.g. pr-42.dev.bjjeire.com) and api-pr-${pr_number}.<cluster_domain>.
         type: string
-        required: true
+        required: false
+        default: ''
       chart_ref:
         description: 'OCI Helm chart reference for the umbrella chart.'
         type: string

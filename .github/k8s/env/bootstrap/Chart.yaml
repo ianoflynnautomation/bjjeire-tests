@@ -1,0 +1,9 @@
+apiVersion: v2
+name: bjj-eire-env-bootstrap
+description: >-
+  Cluster prerequisites for an ephemeral BJJ Éire environment — Namespace,
+  ExternalSecrets, and HTTPRoutes that must exist before the umbrella chart
+  installs (the umbrella references these secrets but does not create them).
+  Rendered with `helm template` by env-deploy.yml and applied with kubectl.
+type: application
+version: 0.1.0

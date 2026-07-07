@@ -1,0 +1,208 @@
+# Reusable workflow: Tier 2 pre-deploy acceptance gate.
+#
+# Orchestrates deploy → test → destroy in three reusable-workflow calls:
+#   1. env-deploy.yml (action=deploy) — stand up an ephemeral namespace
+#   2. playwright-tests.yml           — run the configured tag/projects against it
+#   3. env-deploy.yml (action=destroy) — tear it down regardless of test result
+#
+# Caller pattern (in BjjEire/.github/workflows/ci-main.yml):
+#
+#   acceptance_tests:
+#     needs: [smoke_tests, build_push]
+#     if: |
+#       needs.smoke_tests.result == 'success' &&
+#       needs.build_push.result == 'success'
+#     uses: ianoflynnautomation/bjjeire-tests/.github/workflows/acceptance.yml@main
+#     with:
+#       env_id: staging-${{ github.sha }}
+#       image_tag: ${{ github.sha }}
+#       cluster_resource_group: ${{ vars.AKS_RESOURCE_GROUP }}
+#       cluster_name: ${{ vars.AKS_CLUSTER_NAME }}
+#       cluster_domain: ${{ vars.CLUSTER_DOMAIN }}
+#     secrets: inherit
+
+name: Acceptance Tests (Tier 2 pre-deploy gate)
+
+on:
+  workflow_call:
+    inputs:
+      env_id:
+        description: 'Environment identifier (also the namespace name). Typically staging-<commit sha> so each main-branch commit gets an isolated env.'
+        type: string
+        required: true
+      image_tag:
+        description: 'Container tag for api/frontend/seeder. Must already be pushed to GHCR (typically by an upstream build job).'
+        type: string
+        required: true
+      cluster_resource_group:
+        description: 'Azure RG containing the AKS cluster.'
+        type: string
+        required: true
+      cluster_name:
+        description: 'AKS cluster name.'
+        type: string
+        required: true
+      cluster_domain:
+        description: 'Per-cluster DNS suffix (e.g. dev.bjjeire.com). Kept for diagnostics — public hostnames use root_domain.'
+        type: string
+        required: true
+      root_domain:
+        description: 'Root DNS zone (e.g. bjjeire.com). Acceptance env hostnames compose as <env_id>.<root_domain> / api-<env_id>.<root_domain>.'
+        type: string
+        required: true
+      test_tags:
+        description: 'Playwright grep filter. Defaults to @acceptance for the full UI + API acceptance suite.'
+        type: string
+        required: false
+        default: '@acceptance'
+      shard_total:
+        description: 'Number of parallel shards per Playwright project. Higher = faster wall-clock at higher runner cost.'
+        type: number
+        required: false
+        default: 8
+      playwright_projects:
+        description: 'JSON array of Playwright project names. Default covers the full UI matrix + API.'
+        type: string
+        required: false
+        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide"]'
+      ttl:
+        description: 'Janitor TTL on the namespace. Safety net if the destroy job is skipped (e.g. workflow cancelled).'
+        type: string
+        required: false
+        default: '4h'
+      test_repo:
+        description: 'Owner/repo holding the test code.'
+        type: string
+        required: false
+        default: 'ianoflynnautomation/bjjeire-tests'
+      test_repo_ref:
+        description: 'Git ref of the test repo to check out.'
+        type: string
+        required: false
+        default: 'main'
+
+    secrets:
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      AZURE_TESTS_CLIENT_ID:
+        required: false
+      AZURE_TESTS_CLIENT_SECRET:
+        required: false
+      AZURE_API_SCOPE:
+        required: false
+      AZURE_AUTHORITY:
+        required: false
+      CF_ACCESS_CLIENT_ID:
+        required: false
+      CF_ACCESS_CLIENT_SECRET:
+        required: false
+      PW_TEST_USER:
+        required: false
+      PW_TEST_PASSWORD:
+        required: false
+      GHCR_TOKEN:
+        required: false
+
+    outputs:
+      test_status:
+        description: 'success | failure — result of the tests job.'
+        value: ${{ jobs.tests.outputs.test_status }}
+      namespace:
+        description: 'Kubernetes namespace the acceptance env was deployed into.'
+        value: ${{ jobs.env_up.outputs.namespace }}
+      failed_count:
+        description: 'Number of failed tests across all shards (0 on green).'
+        value: ${{ jobs.tests.outputs.failed_count }}
+      report_artifact_name:
+        description: 'Name of the merged HTML report artifact.'
+        value: ${{ jobs.tests.outputs.report_artifact_name }}
+
+permissions:
+  contents: read
+  id-token: write
+  actions: read
+
+jobs:
+  env_up:
+    name: Deploy acceptance env
+    uses: ./.github/workflows/env-deploy.yml
+    with:
+      action: deploy
+      env_id: ${{ inputs.env_id }}
+      image_tag: ${{ inputs.image_tag }}
+      cluster_resource_group: ${{ inputs.cluster_resource_group }}
+      cluster_name: ${{ inputs.cluster_name }}
+      cluster_domain: ${{ inputs.cluster_domain }}
+      root_domain: ${{ inputs.root_domain }}
+      ttl: ${{ inputs.ttl }}
+    secrets: inherit
+
+  tests:
+    name: Run acceptance suite
+    needs: env_up
+    uses: ./.github/workflows/playwright-tests.yml
+    with:
+      app_env: staging
+      base_url: ${{ needs.env_up.outputs.base_url }}
+      api_base_url: ${{ needs.env_up.outputs.api_base_url }}
+      # API shards skip the Cloudflare edge via cluster-local Service DNS.
+      internal_api_url: ${{ needs.env_up.outputs.internal_api_url }}
+      test_repo: ${{ inputs.test_repo }}
+      test_repo_ref: ${{ inputs.test_repo_ref }}
+      test_tags: ${{ inputs.test_tags }}
+      shard_total: ${{ inputs.shard_total }}
+      playwright_projects: ${{ inputs.playwright_projects }}
+    secrets: inherit
+
+  env_down:
+    name: Destroy acceptance env
+    if: needs.env_up.result == 'success' && needs.tests.result == 'success'
+    needs: [env_up, tests]
+    uses: ./.github/workflows/env-deploy.yml
+    with:
+      action: destroy
+      env_id: ${{ inputs.env_id }}
+      root_domain: ${{ inputs.root_domain }}
+      cluster_resource_group: ${{ inputs.cluster_resource_group }}
+      cluster_name: ${{ inputs.cluster_name }}
+      cluster_domain: ${{ inputs.cluster_domain }}
+    secrets: inherit
+
+  gate:
+    name: Acceptance gate
+    runs-on: ubuntu-latest
+    needs: [env_up, tests, env_down]
+    if: always()
+    steps:
+      - name: Evaluate result
+        shell: bash
+        env:
+          ENV_UP: ${{ needs.env_up.result }}
+          TESTS: ${{ needs.tests.result }}
+          ENV_DOWN: ${{ needs.env_down.result }}
+          ENV_ID: ${{ inputs.env_id }}
+          TTL: ${{ inputs.ttl }}
+        run: |
+          set -euo pipefail
+          echo "env_up=${ENV_UP} tests=${TESTS} env_down=${ENV_DOWN}"
+          if [ "${ENV_UP}" != "success" ]; then
+            echo "::error title=Acceptance failed::env_up did not succeed"
+            exit 1
+          fi
+          if [ "${TESTS}" != "success" ]; then
+            echo "::error title=Acceptance failed::tests did not pass — namespace ${ENV_ID} kept alive (TTL ${TTL}). 'Re-run failed jobs' retries against the same env; or push a fix for a fresh one."
+            exit 1
+          fi
+          # On the green path, env_down ran. Skipped is impossible here (the
+          # 'tests == success' branch above guarantees env_down was eligible).
+          # An actual destroy failure does NOT fail the gate — TTL janitor is
+          # the backstop and a failed teardown shouldn't block deploying
+          # passing code.
+          if [ "${ENV_DOWN}" = "failure" ]; then
+            echo "::warning title=Teardown failed::env_down ran but failed for ${ENV_ID} — TTL janitor will reap the namespace within ${TTL}"
+          fi
+          echo "::notice title=Acceptance gate::PASS"

@@ -40,6 +40,25 @@ on:
         type: boolean
         required: false
         default: false
+      fail_on_flaky:
+        description: 'Fail the gate when any test passed only after retry. Flake policy: flakes on the main gate are failures-in-waiting.'
+        type: boolean
+        required: false
+        default: false
+      publish_report:
+        description: >-
+          Publish the merged HTML report to the running repo's gh-pages branch
+          under reports/<run_id>/. Requires (a) GitHub Pages enabled from the
+          gh-pages branch in the repo that runs the workflow, and (b) the caller
+          granting `contents: write`.
+        type: boolean
+        required: false
+        default: false
+      report_keep_runs:
+        description: 'How many published report runs to keep on gh-pages (oldest pruned first).'
+        type: number
+        required: false
+        default: 30
       test_result:
         description: 'Result of the upstream matrix test job (needs.<job>.result). Drives the gate.'
         type: string
@@ -55,6 +74,9 @@ on:
       report_artifact_name:
         description: 'Name of the merged HTML report artifact.'
         value: ${{ jobs.merge-reports.outputs.report_artifact_name }}
+      report_url:
+        description: 'Public URL of the published HTML report (empty unless publish_report ran).'
+        value: ${{ jobs.publish-report.outputs.report_url }}
       status:
         description: 'success | failure — gated result of the upstream test job.'
         value: ${{ jobs.gate.outputs.status }}
@@ -74,6 +96,7 @@ jobs:
     outputs:
       failed_count: ${{ steps.summary.outputs.failed_count }}
       flaky_count: ${{ steps.summary.outputs.flaky_count }}
+      report_ready: ${{ steps.merge.outputs.skipped == 'false' }}
       report_artifact_name: playwright-html-report
     steps:
       - name: Checkout test repo
@@ -81,6 +104,7 @@ jobs:
         with:
           repository: ${{ inputs.test_repo }}
           ref: ${{ inputs.test_repo_ref }}
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -122,12 +146,23 @@ jobs:
         id: summary
         if: steps.merge.outputs.skipped == 'false'
         shell: bash
+        env:
+          UPSTREAM_RESULT: ${{ inputs.test_result }}
         run: |
           set -eo pipefail
-          failed=$(jq '[.suites[]?.suites[]?.specs[]? | select(.tests[]?.results[]?.status=="failed")] | length' test-results/results.json 2>/dev/null || echo 0)
+          passed=$(jq '.stats.expected // 0' test-results/results.json 2>/dev/null || echo 0)
+          failed=$(jq '.stats.unexpected // 0' test-results/results.json 2>/dev/null || echo 0)
           flaky=$(jq '.stats.flaky // 0' test-results/results.json 2>/dev/null || echo 0)
+          skipped=$(jq '.stats.skipped // 0' test-results/results.json 2>/dev/null || echo 0)
           echo "failed_count=${failed:-0}" >> "$GITHUB_OUTPUT"
           echo "flaky_count=${flaky:-0}" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Playwright results"
+            echo ""
+            echo "| Passed | Failed | Flaky | Skipped | Upstream job |"
+            echo "|-------:|-------:|------:|--------:|--------------|"
+            echo "| ${passed} | ${failed} | ${flaky} | ${skipped} | \`${UPSTREAM_RESULT}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
           if [ "${failed:-0}" -gt 0 ]; then
             echo "::error title=Tests failed::${failed} failed, ${flaky} flaky"
           elif [ "${flaky:-0}" -gt 0 ]; then
@@ -164,9 +199,70 @@ jobs:
           compression-level: 9
           if-no-files-found: ignore
 
+  publish-report:
+    name: Publish report (gh-pages)
+    runs-on: ubuntu-latest
+    needs: [merge-reports]
+    if: ${{ !cancelled() && inputs.publish_report && needs.merge-reports.outputs.report_ready == 'true' }}
+    permissions:
+      contents: write
+    outputs:
+      report_url: ${{ steps.publish.outputs.report_url }}
+    steps:
+      - name: Checkout for gh-pages push
+        uses: actions/checkout@v6
+
+      - name: Download HTML report
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-html-report
+          path: ${{ runner.temp }}/html-report
+
+      - name: Publish to gh-pages
+        id: publish
+        shell: bash
+        env:
+          RUN_ID: ${{ github.run_id }}
+          KEEP: ${{ inputs.report_keep_runs }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth 1 origin gh-pages 2>/dev/null; then
+            git checkout -B gh-pages FETCH_HEAD
+          else
+            git switch --orphan gh-pages
+          fi
+          mkdir -p reports
+          rm -rf "reports/${RUN_ID}"
+          cp -R "${RUNNER_TEMP}/html-report" "reports/${RUN_ID}"
+          # Prune to the newest KEEP runs; run ids sort numerically.
+          find reports -mindepth 1 -maxdepth 1 -type d | sort -t/ -k2 -rn \
+            | tail -n +"$((KEEP + 1))" | xargs -r rm -rf
+          touch .nojekyll
+          git add -A
+          if git diff --cached --quiet; then
+            echo "::notice title=Report publish::nothing new to publish"
+          else
+            git commit -m "ci: publish playwright report for run ${RUN_ID}"
+            # Retry: concurrent suite runs race on gh-pages pushes.
+            for attempt in 1 2 3; do
+              if git push origin gh-pages; then break; fi
+              if [ "${attempt}" = "3" ]; then exit 1; fi
+              git pull --rebase origin gh-pages
+            done
+          fi
+          owner="${REPO%%/*}"
+          name="${REPO#*/}"
+          url="https://${owner}.github.io/${name}/reports/${RUN_ID}/"
+          echo "report_url=${url}" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Report published::${url}"
+
   gate:
     name: Result gate
     runs-on: ubuntu-latest
+    needs: [merge-reports]
     if: always()
     permissions:
       contents: read
@@ -177,6 +273,8 @@ jobs:
         shell: bash
         env:
           TEST_RESULT: ${{ inputs.test_result }}
+          FAIL_ON_FLAKY: ${{ inputs.fail_on_flaky }}
+          FLAKY: ${{ needs.merge-reports.outputs.flaky_count }}
         run: |
           set -euo pipefail
           if [ "$TEST_RESULT" = "failure" ] || [ "$TEST_RESULT" = "cancelled" ]; then
@@ -184,5 +282,10 @@ jobs:
             echo "status=failure" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-          echo "::notice title=Gate passed::test job result was '${TEST_RESULT}'"
+          if [ "${FAIL_ON_FLAKY}" = "true" ] && [ "${FLAKY:-0}" -gt 0 ]; then
+            echo "::error title=Gate failed::${FLAKY} flaky test(s) and fail_on_flaky is enabled — fix or @quarantine them"
+            echo "status=failure" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "::notice title=Gate passed::test job result was '${TEST_RESULT}' (flaky: ${FLAKY:-0})"
           echo "status=success" >> "$GITHUB_OUTPUT"
