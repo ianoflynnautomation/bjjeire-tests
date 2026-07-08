@@ -1,5 +1,5 @@
 import { test as base, expect, type APIRequestContext } from '@playwright/test';
-import { buildTraceHeaders, createRequestContext, generateTraceContext } from '@api/support';
+import { buildTraceHeaders, createRequestContext, testTraceContext, traceAnnotations } from '@api/support';
 
 export type ApiFixtures = {
   apiClient: APIRequestContext;
@@ -7,8 +7,8 @@ export type ApiFixtures = {
 
 export const test = base.extend<ApiFixtures>({
   apiClient: async ({}, use, testInfo) => {
-    const trace = generateTraceContext();
-    testInfo.annotations.push({ type: 'trace-id', description: trace.traceId });
+    const trace = testTraceContext(testInfo.testId, testInfo.retry);
+    testInfo.annotations.push(...traceAnnotations(trace));
     const context = await createRequestContext({ extraHeaders: buildTraceHeaders(trace) });
     try {
       await use(context);

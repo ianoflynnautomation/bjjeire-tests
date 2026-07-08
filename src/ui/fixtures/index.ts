@@ -1,4 +1,6 @@
 import { test as base, expect } from '@playwright/test';
+import { cfAccessHeaders } from '@shared/config';
+import { buildTraceHeaders, testTraceContext, traceAnnotations } from '@shared/otel/trace-context';
 import { aboutPageFixture, type AboutPage } from './about.fixture';
 import {
   competitionsPageFixture,
@@ -39,6 +41,11 @@ export type UiFixtures = {
 };
 
 export const test = base.extend<UiFixtures>({
+  extraHTTPHeaders: async ({}, use, testInfo) => {
+    const trace = testTraceContext(testInfo.testId, testInfo.retry);
+    testInfo.annotations.push(...traceAnnotations(trace));
+    await use({ ...cfAccessHeaders(), ...buildTraceHeaders(trace) });
+  },
   aboutPage: aboutPageFixture,
   competitionsPage: competitionsPageFixture,
   eventsPage: eventsPageFixture,

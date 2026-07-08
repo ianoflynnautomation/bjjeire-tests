@@ -10,10 +10,12 @@ permissions:
   id-token: write
   actions: read
   checks: write
+  packages: write
+  pull-requests: write
 
 jobs:
   smoke_tests:
-    uses: bjjeire/bjjeire-tests/.github/workflows/playwright-docker.yml@v1
+    uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-docker.yml@main
     with:
       compose_files: |
         docker-compose.yml
@@ -26,7 +28,5 @@ jobs:
       api_base_url: http://localhost:5003
       test_tags: '@smoke'
       playwright_projects: '["api","chromium-desktop"]'
-      playwright_image: mcr.microsoft.com/playwright:v1.61.0-noble
-      test_repo: bjjeire/bjjeire-tests
-      test_repo_ref: v1
+      test_repo: ianoflynnautomation/bjjeire-tests
     secrets: inherit
