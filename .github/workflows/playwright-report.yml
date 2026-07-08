@@ -81,11 +81,6 @@ on:
         description: 'success | failure — gated result of the upstream test job.'
         value: ${{ jobs.gate.outputs.status }}
 
-# No top-level permissions on purpose: GitHub validates nested reusable-workflow
-# permission REQUESTS statically (even for skipped jobs), and a top-level block
-# here would cap what callers can pass down. Jobs that only read declare narrow
-# permissions explicitly; publish-report inherits the caller's grant instead of
-# requesting contents: write (see its comment).
 jobs:
   merge-reports:
     name: Merge reports
@@ -205,12 +200,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [merge-reports]
     if: ${{ !cancelled() && inputs.publish_report && needs.merge-reports.outputs.report_ready == 'true' }}
-    # Deliberately NO permissions block: explicitly requesting contents: write
-    # here makes every read-only caller's workflow INVALID (GitHub statically
-    # rejects nested jobs requesting more than the calling job grants — even
-    # when this job would be skipped). Instead the job inherits the caller's
-    # grant; callers enabling publish_report must set contents: write on the
-    # calling job, or the push fails at runtime.
     outputs:
       report_url: ${{ steps.publish.outputs.report_url }}
     steps:
