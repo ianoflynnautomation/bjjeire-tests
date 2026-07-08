@@ -252,6 +252,13 @@ jobs:
           url="https://${owner}.github.io/${name}/reports/${RUN_ID}/"
           echo "report_url=${url}" >> "$GITHUB_OUTPUT"
           echo "::notice title=Report published::${url}"
+          {
+            echo "## Playwright HTML report"
+            echo ""
+            echo "${url}"
+            echo ""
+            echo "_First deployment after enabling Pages can take ~1 minute to go live._"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   gate:
     name: Result gate
