@@ -143,10 +143,10 @@ on:
         description: 'Public URL of the published HTML report (empty unless publish_report).'
         value: ${{ jobs.report.outputs.report_url }}
 
-permissions:
-  contents: read
-  actions: read
-
+# No top-level permissions: a block here would cap what the `report` job can
+# pass down to playwright-report.yml's publish-report (which inherits the
+# caller's grant — see the comment there). Every job that runs steps declares
+# its own narrow permissions instead.
 jobs:
   setup:
     name: Plan matrix
