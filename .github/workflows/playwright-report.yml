@@ -47,15 +47,14 @@ on:
         default: false
       publish_report:
         description: >-
-          Publish the merged HTML report to the running repo's gh-pages branch
-          under reports/<run_id>/. Requires (a) GitHub Pages enabled from the
-          gh-pages branch in the repo that runs the workflow, and (b) the caller
-          granting `contents: write`.
+          Publish the merged HTML report with GitHub Pages Actions under
+          reports/<run_id>/. Requires Pages source set to GitHub Actions and the
+          caller granting `pages: write` plus `id-token: write`.
         type: boolean
         required: false
         default: false
       report_keep_runs:
-        description: 'How many published report runs to keep on gh-pages (oldest pruned first).'
+        description: 'Compatibility-only; GitHub Pages Actions deploys the current report artifact.'
         type: number
         required: false
         default: 30
@@ -196,15 +195,23 @@ jobs:
           if-no-files-found: ignore
 
   publish-report:
-    name: Publish report (gh-pages)
+    name: Publish report (GitHub Pages)
     runs-on: ubuntu-latest
     needs: [merge-reports]
     if: ${{ !cancelled() && inputs.publish_report && needs.merge-reports.outputs.report_ready == 'true' }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     outputs:
-      report_url: ${{ steps.publish.outputs.report_url }}
+      report_url: ${{ steps.report-url.outputs.report_url }}
     steps:
-      - name: Checkout for gh-pages push
-        uses: actions/checkout@v6
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
 
       - name: Download HTML report
         uses: actions/download-artifact@v4
@@ -212,44 +219,50 @@ jobs:
           name: playwright-html-report
           path: ${{ runner.temp }}/html-report
 
-      - name: Publish to gh-pages
-        id: publish
+      - name: Prepare Pages artifact
         shell: bash
         env:
           RUN_ID: ${{ github.run_id }}
-          KEEP: ${{ inputs.report_keep_runs }}
-          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git fetch --depth 1 origin gh-pages 2>/dev/null; then
-            git checkout -B gh-pages FETCH_HEAD
-          else
-            git switch --orphan gh-pages
-          fi
-          mkdir -p reports
-          rm -rf "reports/${RUN_ID}"
-          cp -R "${RUNNER_TEMP}/html-report" "reports/${RUN_ID}"
-          # Prune to the newest KEEP runs; run ids sort numerically.
-          find reports -mindepth 1 -maxdepth 1 -type d | sort -t/ -k2 -rn \
-            | tail -n +"$((KEEP + 1))" | xargs -r rm -rf
-          touch .nojekyll
-          git add -A
-          if git diff --cached --quiet; then
-            echo "::notice title=Report publish::nothing new to publish"
-          else
-            git commit -m "ci: publish playwright report for run ${RUN_ID}"
-            # Retry: concurrent suite runs race on gh-pages pushes.
-            for attempt in 1 2 3; do
-              if git push origin gh-pages; then break; fi
-              if [ "${attempt}" = "3" ]; then exit 1; fi
-              git pull --rebase origin gh-pages
-            done
-          fi
-          owner="${REPO%%/*}"
-          name="${REPO#*/}"
-          url="https://${owner}.github.io/${name}/reports/${RUN_ID}/"
+          pages_dir="${RUNNER_TEMP}/pages"
+          report_dir="${pages_dir}/reports/${RUN_ID}"
+          mkdir -p "${report_dir}"
+          cp -R "${RUNNER_TEMP}/html-report/." "${report_dir}/"
+          touch "${pages_dir}/.nojekyll"
+          cat > "${pages_dir}/index.html" <<EOF
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=reports/${RUN_ID}/">
+              <title>Playwright Test Report</title>
+            </head>
+            <body>
+              <p><a href="reports/${RUN_ID}/">Open Playwright test report</a></p>
+            </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/pages
+          include-hidden-files: true
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Publish report URL
+        id: report-url
+        shell: bash
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          url="${PAGE_URL%/}/reports/${RUN_ID}/"
           echo "report_url=${url}" >> "$GITHUB_OUTPUT"
           echo "::notice title=Report published::${url}"
           {
@@ -257,7 +270,7 @@ jobs:
             echo ""
             echo "${url}"
             echo ""
-            echo "_First deployment after enabling Pages can take ~1 minute to go live._"
+            echo "_First deployment after switching Pages to GitHub Actions can take ~1 minute to go live._"
           } >> "$GITHUB_STEP_SUMMARY"
 
   gate:
