@@ -51,7 +51,8 @@ export async function createRequestContext(options: RequestContextOptions = {}):
   });
 }
 
-type QueryValue = string | number | boolean | undefined;
+type QueryScalar = string | number | boolean;
+type QueryValue = QueryScalar | readonly QueryScalar[] | undefined;
 type QueryParams = Readonly<Record<string, QueryValue>>;
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -70,12 +71,18 @@ type TypedRequestOptions<T> = RequestOptions &
 
 const OK_STATUS = 200;
 
-function buildQueryParams(params?: QueryParams): Record<string, string | number | boolean> | undefined {
+function buildQueryParams(params?: QueryParams): URLSearchParams | undefined {
   if (!params) return undefined;
-  const entries = Object.entries(params).filter(
-    (entry): entry is [string, string | number | boolean] => entry[1] !== undefined,
-  );
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const item of value as readonly QueryScalar[]) search.append(key, String(item));
+    } else {
+      search.append(key, String(value));
+    }
+  }
+  return search.size > 0 ? search : undefined;
 }
 
 export async function apiRequest(

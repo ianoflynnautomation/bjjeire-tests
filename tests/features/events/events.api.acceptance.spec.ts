@@ -7,7 +7,11 @@ import {
   expectPagesAreDistinct,
   expectRelativeOrder,
 } from '@api/support';
-import { SEEDED_EVENT_FINISHED_WINTER_SOLSTICE, SEEDED_UPCOMING_EVENTS } from '../../testdata/seeded/events';
+import {
+  SEEDED_EVENT_ATLANTIC_COAST_CAMP,
+  SEEDED_EVENT_FINISHED_WINTER_SOLSTICE,
+  SEEDED_UPCOMING_EVENTS,
+} from '../../testdata/seeded/events';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;
@@ -67,12 +71,27 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     { tag: '@acceptance' },
     async ({ apiClient }) => {
       const type = BjjEventType.Seminar;
-      const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.type === type);
+      const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.types.includes(type));
 
-      const { data } = await getBjjEvents(apiClient, { type, page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(apiClient, { types: [type], page: 1, pageSize: FULL_PAGE_SIZE });
 
-      expect(data.filter(event => event.type !== type)).toEqual([]);
+      expect(data.filter(event => !event.types.includes(type))).toEqual([]);
       expectListingToInclude(data, 'name', seminarEvents);
+    },
+  );
+
+  test(
+    'Given an event has several types, when a client filters by any one of them, then the event is returned',
+    { tag: '@acceptance' },
+    async ({ apiClient }) => {
+      const multiTypeEvent = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
+
+      for (const type of multiTypeEvent.types) {
+        const { data } = await getBjjEvents(apiClient, { types: [type], page: 1, pageSize: FULL_PAGE_SIZE });
+
+        expect(data.filter(event => !event.types.includes(type))).toEqual([]);
+        expect(data.map(event => event.name)).toContain(multiTypeEvent.name);
+      }
     },
   );
 

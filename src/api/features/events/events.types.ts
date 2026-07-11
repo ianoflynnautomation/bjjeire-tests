@@ -28,6 +28,12 @@ export const EventStatus = {
 } as const;
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
 
+export const ScheduleKind = {
+  FixedDates: 'FixedDates',
+  WeeklyRecurring: 'WeeklyRecurring',
+} as const;
+export type ScheduleKind = (typeof ScheduleKind)[keyof typeof ScheduleKind];
+
 export type OrganizerDto = Readonly<{
   name: string;
   website: string;
@@ -35,28 +41,34 @@ export type OrganizerDto = Readonly<{
 
 export type BjjEventPricingModelDto = Readonly<{
   type: PricingType;
+  label?: string | null;
+  appliesToTypes?: readonly BjjEventType[] | null;
   amount: number;
   durationDays?: number | null;
   currency: string;
 }>;
 
-export type BjjEventHoursDto = Readonly<{
-  day: string;
-  openTime: string;
-  closeTime: string;
+export type BjjEventSessionDto = Readonly<{
+  date?: string | null;
+  day?: string | null;
+  startTime: string;
+  endTime: string;
+  title?: string | null;
+  types?: readonly BjjEventType[] | null;
 }>;
 
 export type BjjEventScheduleDto = Readonly<{
+  kind: ScheduleKind;
   startDate?: string | null;
   endDate?: string | null;
-  hours: readonly BjjEventHoursDto[];
+  sessions: readonly BjjEventSessionDto[];
 }>;
 
 export type BjjEventDto = BaseApiEntityModel<EventId> &
   Readonly<{
     name: string;
     description?: string | null;
-    type: BjjEventType;
+    types: readonly BjjEventType[];
     organiser: OrganizerDto;
     status: EventStatus;
     statusReason?: string | null;
@@ -64,7 +76,7 @@ export type BjjEventDto = BaseApiEntityModel<EventId> &
     county: string;
     location: LocationDto;
     schedule: BjjEventScheduleDto;
-    pricing: BjjEventPricingModelDto;
+    pricingOptions: readonly BjjEventPricingModelDto[];
     eventUrl: string;
     imageUrl: string;
   }>;
@@ -72,5 +84,5 @@ export type BjjEventDto = BaseApiEntityModel<EventId> &
 export type GetBjjEventsPaginationQuery = PaginationQuery &
   Readonly<{
     county?: 'all' | (string & {});
-    type?: 'all' | BjjEventType;
+    types?: readonly BjjEventType[];
   }>;

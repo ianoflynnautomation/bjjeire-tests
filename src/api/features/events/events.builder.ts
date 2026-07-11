@@ -2,7 +2,7 @@ import { Builder, type IBuilder } from 'builder-pattern';
 import { createEntityId } from '@api/support';
 import type { EventId, RunId } from '@shared/types';
 import { DUBLIN_CITY_CENTRE, DUBLIN_CITY_CENTRE_GEOJSON } from '@shared/testdata/geography';
-import { BjjEventType, EventStatus, PricingType } from './events.api';
+import { BjjEventType, EventStatus, PricingType, ScheduleKind } from './events.api';
 import type { BjjEventDto, BjjEventPricingModelDto, BjjEventScheduleDto, OrganizerDto } from './events.types';
 import type { LocationDto, SocialMediaDto } from '@api/support';
 
@@ -22,7 +22,7 @@ const DEFAULT_LOCATION: LocationDto = {
   },
 };
 
-const DEFAULT_SCHEDULE: BjjEventScheduleDto = { hours: [] };
+const DEFAULT_SCHEDULE: BjjEventScheduleDto = { kind: ScheduleKind.FixedDates, sessions: [] };
 
 export const FREE_PRICING: BjjEventPricingModelDto = {
   type: PricingType.Free,
@@ -37,14 +37,14 @@ export function defaultBjjEventPayload(runId: RunId): BjjEventDto {
     id: createEntityId() as EventId,
     name: `Test Event ${runId}`,
     description: 'Event created by test factory',
-    type: BjjEventType.OpenMat,
+    types: [BjjEventType.OpenMat],
     organiser: DEFAULT_ORGANISER,
     status: EventStatus.Upcoming,
     socialMedia: DEFAULT_SOCIAL_MEDIA,
     county: 'Dublin',
     location: DEFAULT_LOCATION,
     schedule: DEFAULT_SCHEDULE,
-    pricing: FREE_PRICING,
+    pricingOptions: [FREE_PRICING],
     eventUrl: 'https://example.com/events/test-event',
     imageUrl: 'https://example.com/images/test-event.jpg',
   };

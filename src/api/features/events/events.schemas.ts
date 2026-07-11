@@ -7,14 +7,38 @@ import {
   socialMediaSchema,
 } from '@api/support';
 import type { EventId } from '@shared/types';
-import { BjjEventType, EventStatus, PricingType, type BjjEventDto } from './events.types';
+import {
+  BjjEventType,
+  EventStatus,
+  PricingType,
+  ScheduleKind,
+  type BjjEventDto,
+} from './events.types';
+
+const bjjEventSessionSchema = z.object({
+  date: z.string().nullable().optional(),
+  day: z.string().nullable().optional(),
+  startTime: z.string(),
+  endTime: z.string(),
+  title: z.string().nullable().optional(),
+  types: z.array(z.enum(BjjEventType)).nullable().optional(),
+});
+
+const bjjEventPricingOptionSchema = z.object({
+  type: z.enum(PricingType),
+  label: z.string().nullable().optional(),
+  appliesToTypes: z.array(z.enum(BjjEventType)).nullable().optional(),
+  amount: z.number(),
+  durationDays: z.number().nullable().optional(),
+  currency: z.string(),
+});
 
 export const bjjEventDtoSchema = schemaFor<BjjEventDto>(
   z.object({
     ...baseApiEntityFields<EventId>(),
     name: z.string(),
     description: z.string().nullable().optional(),
-    type: z.enum(BjjEventType),
+    types: z.array(z.enum(BjjEventType)),
     organiser: z.object({ name: z.string(), website: z.string() }),
     status: z.enum(EventStatus),
     statusReason: z.string().nullable().optional(),
@@ -22,16 +46,12 @@ export const bjjEventDtoSchema = schemaFor<BjjEventDto>(
     county: z.string(),
     location: locationSchema,
     schedule: z.object({
+      kind: z.enum(ScheduleKind),
       startDate: z.string().nullable().optional(),
       endDate: z.string().nullable().optional(),
-      hours: z.array(z.object({ day: z.string(), openTime: z.string(), closeTime: z.string() })),
+      sessions: z.array(bjjEventSessionSchema),
     }),
-    pricing: z.object({
-      type: z.enum(PricingType),
-      amount: z.number(),
-      durationDays: z.number().nullable().optional(),
-      currency: z.string(),
-    }),
+    pricingOptions: z.array(bjjEventPricingOptionSchema),
     eventUrl: z.string(),
     imageUrl: z.string(),
   }),
