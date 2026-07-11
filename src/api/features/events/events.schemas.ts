@@ -7,13 +7,7 @@ import {
   socialMediaSchema,
 } from '@api/support';
 import type { EventId } from '@shared/types';
-import {
-  BjjEventType,
-  EventStatus,
-  PricingType,
-  ScheduleKind,
-  type BjjEventDto,
-} from './events.types';
+import { BjjEventType, EventStatus, PricingType, ScheduleKind, type BjjEventDto } from './events.types';
 
 const bjjEventSessionSchema = z.object({
   date: z.string().nullable().optional(),

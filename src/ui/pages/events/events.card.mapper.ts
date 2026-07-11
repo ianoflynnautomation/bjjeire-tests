@@ -28,7 +28,7 @@ function scheduleSpanDays(schedule: BjjEventScheduleDto): number {
 }
 
 function sessionsInScope(schedule: BjjEventScheduleDto, option: BjjEventPricingModelDto): number {
-  const sessions = schedule.sessions ?? [];
+  const sessions = schedule.sessions;
   if (sessions.length === 0) return 1;
   const scope = option.appliesToTypes ?? [];
   if (scope.length === 0) return sessions.length;
