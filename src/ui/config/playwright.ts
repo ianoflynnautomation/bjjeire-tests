@@ -11,6 +11,7 @@ const A11Y_TEST_MATCH = /.*\.a11y\.acceptance\.spec\.ts$/;
 const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
 const MOBILE_TAGS_GREP = /@smoke|@mobile/;
 const MOBILE_TAG = /@mobile/;
+const THEME_TAG = /@theme/;
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const WIDE_VIEWPORT = { width: 1728, height: 1117 };
@@ -51,6 +52,29 @@ export function createUiProjects(): Project[] {
       testMatch: A11Y_TEST_MATCH,
       dependencies: authDependencies,
       use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
+    },
+    {
+      name: 'chromium-desktop-light',
+      testMatch: UI_TEST_MATCH,
+      grepInvert: [MOBILE_TAG, THEME_TAG, QUARANTINE_TAG],
+      dependencies: authDependencies,
+      use: {
+        ...CHROMIUM_DESKTOP_DEVICE,
+        viewport: DESKTOP_VIEWPORT,
+        colorScheme: 'light',
+        ...uiUse,
+      },
+    },
+    {
+      name: 'a11y-light',
+      testMatch: A11Y_TEST_MATCH,
+      dependencies: authDependencies,
+      use: {
+        ...CHROMIUM_DESKTOP_DEVICE,
+        viewport: DESKTOP_VIEWPORT,
+        colorScheme: 'light',
+        ...uiUse,
+      },
     },
     {
       name: 'firefox-desktop',

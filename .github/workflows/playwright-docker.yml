@@ -64,15 +64,32 @@ on:
         required: false
         default: 6
       project_shard_overrides:
-        description: 'JSON object mapping project name to shard count. Projects not listed use shard_total. Example: {"api":3,"webkit-desktop":2}.'
+        description: 'Newline-separated project=shards overrides. Projects not listed use shard_total. Example line: api=3'
         type: string
         required: false
-        default: '{"api":3,"firefox-desktop":4,"webkit-desktop":3,"chromium-wide":3,"snapshots":1,"a11y":1,"mobile-iphone":1,"mobile-galaxy":1}'
+        default: |
+          api=3
+          firefox-desktop=4
+          webkit-desktop=3
+          chromium-wide=3
+          snapshots=1
+          a11y=1
+          mobile-iphone=1
+          mobile-galaxy=1
       playwright_projects:
-        description: 'JSON array of Playwright project names to run. Must match project names in src/ui/config/playwright.ts and src/api/config/playwright.ts.'
+        description: 'Newline-separated Playwright project names to run. Must match project names in src/ui/config/playwright.ts and src/api/config/playwright.ts.'
         type: string
         required: false
-        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","snapshots","a11y","mobile-iphone","mobile-galaxy"]'
+        default: |
+          api
+          chromium-desktop
+          firefox-desktop
+          webkit-desktop
+          chromium-wide
+          snapshots
+          a11y
+          mobile-iphone
+          mobile-galaxy
       node_version:
         description: 'Node.js version for setup-node and merge job.'
         type: string
@@ -152,14 +169,14 @@ jobs:
           set -euo pipefail
           # Expand projects × per-project shard counts into a flat matrix.
           # Each entry: { name, config, shard, shard_total }.
-          # Note: bash parses ${OVERRIDES:-{}} as ${OVERRIDES:-{} + "}", which appends
-          # a stray "}" when OVERRIDES is set. Assign to a temp var instead.
-          overrides_json="${OVERRIDES:-}"
-          if [ -z "$overrides_json" ]; then
-            overrides_json='{}'
-          fi
+          projects_json=$(printf '%s\n' "${PROJECTS}" | jq -R -n -c \
+            '[inputs | gsub("^\\s+|\\s+$"; "") | select(length > 0)]')
+          overrides_json=$(printf '%s\n' "${OVERRIDES}" | jq -R -n -c \
+            '[inputs | gsub("\\s"; "") | select(length > 0)
+              | capture("^(?<k>[^=]+)=(?<v>[0-9]+)$") | {(.k): (.v | tonumber)}]
+             | add // {}')
           matrix=$(jq -nc \
-            --argjson projects "${PROJECTS}" \
+            --argjson projects "${projects_json}" \
             --argjson overrides "${overrides_json}" \
             --argjson defaultShards "${DEFAULT_SHARDS}" '
             $projects
@@ -188,7 +205,7 @@ jobs:
       image_ref: ${{ steps.image.outputs.ref }}
     steps:
       - name: Checkout test repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           repository: ${{ inputs.test_repo }}
           ref: ${{ inputs.test_repo_ref }}
@@ -282,7 +299,7 @@ jobs:
       COMPOSE_PROJECT_NAME: bjj-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard.name }}-${{ matrix.shard.shard }}
     steps:
       - name: Checkout caller repo (compose sources)
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           persist-credentials: false
 
@@ -439,7 +456,7 @@ jobs:
 
       - name: Upload blob report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: blob-report-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: pw-out/blob-report/
@@ -449,7 +466,7 @@ jobs:
 
       - name: Upload traces
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: traces-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: pw-out/test-results/**/*.zip
@@ -501,7 +518,7 @@ jobs:
       # native GitHub REST API via actions/github-script. Idempotency comes
       # from a hidden HTML marker in the comment body.
       - name: Upsert PR comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         env:
           STATUS: ${{ needs.report.outputs.status }}
           FAILED: ${{ needs.report.outputs.failed_count }}

@@ -13,27 +13,31 @@ permissions:
   contents: read
 
 jobs:
-  actionlint:
-    name: actionlint + yamllint + zizmor
+  lint:
+    name: actionlint + zizmor
+    permissions:
+      contents: read
+      checks: write
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/lint-workflows.yml@main
+    with:
+      zizmor-args: '--offline --min-severity high'
+
+  yamllint:
+    name: yamllint
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-
-      - name: Run actionlint
-        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install yamllint + zizmor
-        run: pip install --quiet yamllint==1.35.1 zizmor==1.26.1
+      - name: Install yamllint
+        run: pip install --quiet yamllint==1.35.1
 
       - name: Run yamllint
         run: yamllint -c .yamllint.yml .github/workflows/ examples/
-
-      - name: Run zizmor
-        run: zizmor --offline --min-severity high .github/workflows/

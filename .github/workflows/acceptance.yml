@@ -61,10 +61,15 @@ on:
         required: false
         default: 8
       playwright_projects:
-        description: 'JSON array of Playwright project names. Default covers the full UI matrix + API.'
+        description: 'Newline-separated Playwright project names. Default covers the full UI matrix + API.'
         type: string
         required: false
-        default: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide"]'
+        default: |
+          api
+          chromium-desktop
+          firefox-desktop
+          webkit-desktop
+          chromium-wide
       ttl:
         description: 'Janitor TTL on the namespace. Safety net if the destroy job is skipped (e.g. workflow cancelled).'
         type: string

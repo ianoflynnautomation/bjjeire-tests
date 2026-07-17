@@ -25,8 +25,8 @@
 #         action: deploy
 #         env_id: staging-${{ github.sha }}
 #         image_tag: ${{ github.sha }}
-#         cluster_resource_group: rg-aks-bjjeire-dev-swn-01
-#         cluster_name: aks-bjjeire-dev-swn-01
+#         cluster_resource_group: rg-aks-bjjeire-dev-sdc-01
+#         cluster_name: aks-bjjeire-dev-sdc-01
 #         cluster_domain: dev.bjjeire.io
 #         ttl: 4h
 #       secrets: inherit
@@ -50,8 +50,8 @@
 #       with:
 #         action: destroy
 #         env_id: staging-${{ github.sha }}
-#         cluster_resource_group: rg-aks-bjjeire-dev-swn-01
-#         cluster_name: aks-bjjeire-dev-swn-01
+#         cluster_resource_group: rg-aks-bjjeire-dev-sdc-01
+#         cluster_name: aks-bjjeire-dev-sdc-01
 #         cluster_domain: dev.bjjeire.io
 #       secrets: inherit
 
@@ -180,12 +180,12 @@ on:
         description: 'Azure RG containing the AKS cluster.'
         type: string
         required: true
-        default: 'rg-bjjeire-dev-swn-01'
+        default: 'rg-bjjeire-dev-sdc-01'
       cluster_name:
         description: 'AKS cluster name.'
         type: string
         required: true
-        default: 'aks-bjjeire-dev-swn-01'
+        default: 'aks-bjjeire-dev-sdc-01'
       cluster_domain:
         description: 'Per-cluster DNS suffix. Diagnostics only.'
         type: string
