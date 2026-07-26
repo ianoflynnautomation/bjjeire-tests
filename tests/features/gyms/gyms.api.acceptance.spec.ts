@@ -1,6 +1,8 @@
 import { test, expect } from '@api/fixtures';
 import { getGyms } from '@api/features/gyms/gyms.api';
 import {
+  API_ROUTES,
+  apiRequest,
   expectAllFromCounty,
   expectConsecutivePagePagination,
   expectListingToInclude,
@@ -83,12 +85,14 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   );
 
   test(
-    'Given an unknown county, when a client filters by it, then the filter is ignored and the full listing is returned',
+    'Given an unknown county, when a client filters by it, then the request is rejected as a bad request',
     { tag: '@acceptance' },
     async ({ apiClient }) => {
-      const { data } = await getGyms(apiClient, { county: 'Atlantis', page: 1, pageSize: FULL_PAGE_SIZE });
+      const response = await apiRequest(apiClient, 'GET', API_ROUTES.gyms, {
+        params: { county: 'Atlantis', page: 1, pageSize: FULL_PAGE_SIZE },
+      });
 
-      expectListingToInclude(data, 'name', SEEDED_GYMS_BY_NAME);
+      expect(response.status()).toBe(400);
     },
   );
 });
