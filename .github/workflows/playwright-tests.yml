@@ -222,7 +222,7 @@ jobs:
 
     steps:
       - name: Checkout test repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           repository: ${{ inputs.test_repo }}
           ref: ${{ inputs.test_repo_ref }}
@@ -231,7 +231,7 @@ jobs:
           fetch-depth: ${{ inputs.only_changed_ref == '' && 1 || 0 }}
 
       - name: Cache npm downloads
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.npm
           key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -274,7 +274,7 @@ jobs:
 
       - name: Upload blob report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: blob-report-${{ matrix.project.name }}-shard-${{ matrix.shard }}
           path: blob-report/
@@ -283,7 +283,7 @@ jobs:
 
       - name: Upload traces
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: traces-${{ matrix.project.name }}-shard-${{ matrix.shard }}
           path: test-results/**/*.zip

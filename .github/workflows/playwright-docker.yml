@@ -205,7 +205,7 @@ jobs:
       image_ref: ${{ steps.image.outputs.ref }}
     steps:
       - name: Checkout test repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           repository: ${{ inputs.test_repo }}
           ref: ${{ inputs.test_repo_ref }}
@@ -299,7 +299,7 @@ jobs:
       COMPOSE_PROJECT_NAME: bjj-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard.name }}-${{ matrix.shard.shard }}
     steps:
       - name: Checkout caller repo (compose sources)
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           persist-credentials: false
 
@@ -456,7 +456,7 @@ jobs:
 
       - name: Upload blob report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: blob-report-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: pw-out/blob-report/
@@ -466,7 +466,7 @@ jobs:
 
       - name: Upload traces
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: traces-${{ matrix.shard.name }}-shard-${{ matrix.shard.shard }}-docker
           path: pw-out/test-results/**/*.zip
@@ -518,7 +518,7 @@ jobs:
       # native GitHub REST API via actions/github-script. Idempotency comes
       # from a hidden HTML marker in the comment body.
       - name: Upsert PR comment
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           STATUS: ${{ needs.report.outputs.status }}
           FAILED: ${{ needs.report.outputs.failed_count }}
