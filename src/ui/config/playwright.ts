@@ -20,97 +20,115 @@ const CHROMIUM_LAUNCH_OPTIONS = { args: ['--disable-dev-shm-usage'] };
 const CHROMIUM_DESKTOP_DEVICE = { ...devices['Desktop Chrome'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
 const CHROMIUM_GALAXY_DEVICE = { ...devices['Galaxy S24'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
 
-export function createUiProjects(): Project[] {
-  const authConfigured = env.uiTestUser.entraEnabled && !!env.uiTestUser.username && !!env.uiTestUser.password;
-  const authDependencies = authConfigured ? ['setup'] : [];
-  const uiUse = authConfigured ? ({ storageState: STORAGE_STATE_PATH } as const) : {};
+type UiUse = NonNullable<Project['use']>;
 
+type AuthContext = {
+  readonly configured: boolean;
+  readonly dependencies: string[];
+  readonly use: UiUse;
+};
+
+function resolveAuthContext(): AuthContext {
+  const configured = env.uiTestUser.entraEnabled && !!env.uiTestUser.username && !!env.uiTestUser.password;
+  return {
+    configured,
+    dependencies: configured ? ['setup'] : [],
+    use: configured ? { storageState: STORAGE_STATE_PATH } : {},
+  };
+}
+
+const desktopUse = (ctx: AuthContext, overrides: UiUse = {}): UiUse => ({
+  ...CHROMIUM_DESKTOP_DEVICE,
+  viewport: DESKTOP_VIEWPORT,
+  ...overrides,
+  ...ctx.use,
+});
+
+function desktopProjects(ctx: AuthContext): Project[] {
   return [
-    ...(authConfigured
-      ? [
-          {
-            name: 'setup',
-            testMatch: UI_SETUP_TEST_MATCH,
-          },
-        ]
-      : []),
     {
       name: 'chromium-desktop',
       testMatch: UI_TEST_MATCH,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
-      dependencies: authDependencies,
-      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx),
     },
     {
       name: 'snapshots',
       testMatch: SNAPSHOT_TEST_MATCH,
-      dependencies: authDependencies,
-      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx),
     },
     {
       name: 'a11y',
       testMatch: A11Y_TEST_MATCH,
-      dependencies: authDependencies,
-      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: DESKTOP_VIEWPORT, ...uiUse },
-    },
-    {
-      name: 'chromium-desktop-light',
-      testMatch: UI_TEST_MATCH,
-      grepInvert: [MOBILE_TAG, THEME_TAG, QUARANTINE_TAG],
-      dependencies: authDependencies,
-      use: {
-        ...CHROMIUM_DESKTOP_DEVICE,
-        viewport: DESKTOP_VIEWPORT,
-        colorScheme: 'light',
-        ...uiUse,
-      },
-    },
-    {
-      name: 'a11y-light',
-      testMatch: A11Y_TEST_MATCH,
-      dependencies: authDependencies,
-      use: {
-        ...CHROMIUM_DESKTOP_DEVICE,
-        viewport: DESKTOP_VIEWPORT,
-        colorScheme: 'light',
-        ...uiUse,
-      },
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx),
     },
     {
       name: 'firefox-desktop',
       testMatch: UI_TEST_MATCH,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
-      dependencies: authDependencies,
-      use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
     },
     {
       name: 'webkit-desktop',
       testMatch: UI_TEST_MATCH,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
-      dependencies: authDependencies,
-      use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
     },
     {
       name: 'chromium-wide',
       testMatch: UI_TEST_MATCH,
       grep: WIDE_TAGS_GREP,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
-      dependencies: authDependencies,
-      use: { ...CHROMIUM_DESKTOP_DEVICE, viewport: WIDE_VIEWPORT, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx, { viewport: WIDE_VIEWPORT }),
     },
+  ];
+}
+
+function lightProjects(ctx: AuthContext): Project[] {
+  return [
+    {
+      name: 'chromium-desktop-light',
+      testMatch: UI_TEST_MATCH,
+      grepInvert: [MOBILE_TAG, THEME_TAG, QUARANTINE_TAG],
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx, { colorScheme: 'light' }),
+    },
+    {
+      name: 'a11y-light',
+      testMatch: A11Y_TEST_MATCH,
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx, { colorScheme: 'light' }),
+    },
+  ];
+}
+
+function mobileProjects(ctx: AuthContext): Project[] {
+  return [
     {
       name: 'mobile-iphone',
       testMatch: UI_TEST_MATCH,
       grep: MOBILE_TAGS_GREP,
-      dependencies: authDependencies,
-      use: { ...devices['iPhone 16'], ...uiUse },
+      dependencies: ctx.dependencies,
+      use: { ...devices['iPhone 16'], ...ctx.use },
     },
     {
       name: 'mobile-galaxy',
       testMatch: UI_TEST_MATCH,
       grep: MOBILE_TAGS_GREP,
-      dependencies: authDependencies,
-      use: { ...CHROMIUM_GALAXY_DEVICE, ...uiUse },
+      dependencies: ctx.dependencies,
+      use: { ...CHROMIUM_GALAXY_DEVICE, ...ctx.use },
     },
   ];
+}
+
+export function createUiProjects(): Project[] {
+  const ctx = resolveAuthContext();
+  const setup: Project[] = ctx.configured ? [{ name: 'setup', testMatch: UI_SETUP_TEST_MATCH }] : [];
+  return [...setup, ...desktopProjects(ctx), ...lightProjects(ctx), ...mobileProjects(ctx)];
 }
