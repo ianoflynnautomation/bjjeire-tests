@@ -161,6 +161,10 @@ jobs:
       test_tags: ${{ inputs.test_tags }}
       shard_total: ${{ inputs.shard_total }}
       playwright_projects: ${{ inputs.playwright_projects }}
+      # Tier-2 pre-deploy gate: a test that only passes on retry is a
+      # failure-in-waiting. Fail the gate on flakes so they get fixed or
+      # @quarantined rather than shipped.
+      fail_on_flaky: true
     secrets: inherit
 
   env_down:

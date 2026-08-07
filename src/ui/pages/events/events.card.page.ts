@@ -1,5 +1,5 @@
 import type { Locator } from '@playwright/test';
-import { getText, getTextIfVisible } from '@ui/support';
+import { getText, getTextIfPresent } from '@ui/support';
 import { type BjjEventCard } from './events.types';
 import { EVENT_CARD_TEST_IDS } from './events.constants';
 
@@ -18,7 +18,7 @@ export async function getEventCardData(locator: Locator): Promise<BjjEventCard> 
     getText(locator.getByTestId(EVENT_CARD_TEST_IDS.county)),
     getJoinedText(locator.getByTestId(EVENT_CARD_TEST_IDS.pricing), ' | '),
 
-    getTextIfVisible(locator.getByTestId(EVENT_CARD_TEST_IDS.schedule).first()),
+    getTextIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.schedule)),
   ]);
 
   return { name, type: type ?? '', county: stripCountySuffix(countyRaw), pricing, schedule };

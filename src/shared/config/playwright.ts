@@ -26,13 +26,17 @@ const LOCAL_REPORTERS: ReporterDescription[] = [
   ['html', { open: 'never', outputFolder: 'playwright-report' }],
   ['json', { outputFile: 'test-results/results.json' }],
   ['junit', { outputFile: 'test-results/junit.xml' }],
-  ['allure-playwright', { resultsDir: 'allure-results' }],
 ];
 
 function activeReporters(): ReporterDescription[] {
-  const base = IS_CI ? CI_REPORTERS : LOCAL_REPORTERS;
-  if (!process.env['OTEL_EXPORTER_OTLP_ENDPOINT']) return base;
-  return [...base, [join(REPO_ROOT, 'src', 'shared', 'otel', 'otel-reporter.ts')]];
+  const reporters: ReporterDescription[] = IS_CI ? [...CI_REPORTERS] : [...LOCAL_REPORTERS];
+  if (!IS_CI && process.env['ALLURE']) {
+    reporters.push(['allure-playwright', { resultsDir: 'allure-results' }]);
+  }
+  if (process.env['OTEL_EXPORTER_OTLP_ENDPOINT']) {
+    reporters.push([join(REPO_ROOT, 'src', 'shared', 'otel', 'otel-reporter.ts')]);
+  }
+  return reporters;
 }
 
 export function createBaseConfig(overrides: PlaywrightTestConfig = {}): PlaywrightTestConfig {

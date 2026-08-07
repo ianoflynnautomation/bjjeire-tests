@@ -53,11 +53,6 @@ on:
         type: boolean
         required: false
         default: false
-      report_keep_runs:
-        description: 'Compatibility-only; GitHub Pages Actions deploys the current report artifact.'
-        type: number
-        required: false
-        default: 30
       test_result:
         description: 'Result of the upstream matrix test job (needs.<job>.result). Drives the gate.'
         type: string
@@ -127,8 +122,26 @@ jobs:
           REPORTERS: ${{ inputs.reporters }}
         run: |
           set -eo pipefail
+          shopt -s nullglob
           if [ -z "$(ls -A all-blob-reports 2>/dev/null)" ]; then
             echo "::warning title=Merge skipped::No blob reports found; nothing to merge"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A shard that crashed or ran against an unhealthy stack can upload an empty or truncated
+          # blob zip. playwright merge-reports fails hard on it ("End of central directory record
+          # signature not found"), so drop invalid blobs first and let the healthy shards still merge.
+          valid=0
+          for blob in all-blob-reports/*.zip; do
+            if [ -s "$blob" ] && unzip -tqq "$blob" >/dev/null 2>&1; then
+              valid=$((valid + 1))
+            else
+              echo "::warning title=Corrupt blob discarded::${blob} is empty or truncated; excluding it from the merge"
+              rm -f "$blob"
+            fi
+          done
+          if [ "$valid" -eq 0 ]; then
+            echo "::warning title=Merge skipped::No valid blob reports after integrity check; nothing to merge"
             echo "skipped=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi

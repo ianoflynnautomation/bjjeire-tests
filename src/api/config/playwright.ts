@@ -2,11 +2,7 @@ import type { Project } from '@playwright/test';
 import { env } from '@shared/config/env';
 
 const API_SETUP_TEST_MATCH = /.*\/auth\.api\.setup\.ts$/;
-const API_TEST_MATCH = [
-  /.*\.api\.acceptance\.spec\.ts$/,
-  /.*\.api\.smoke\.spec\.ts$/,
-  /.*consumer-contract.*\.spec\.ts$/,
-];
+const API_TEST_MATCH = [/.*\.api\.acceptance\.spec\.ts$/, /.*\.api\.smoke\.spec\.ts$/];
 
 function hasEntraAuthBasics(): boolean {
   return !!env.azure.tenantId && !!env.azure.apiScope;

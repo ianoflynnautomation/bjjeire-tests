@@ -5,17 +5,11 @@ export function cardByName(page: Page, items: Locator, cardNameTestId: string, n
   return items.filter({ has: cardName });
 }
 
-export async function readTaggedItemsIfVisible(
-  container: Locator,
-  items: Locator,
-  options?: TimeoutOption,
-): Promise<string[]> {
-  if (!(await container.isVisible(options))) {
+export async function readTaggedItemsIfPresent(container: Locator, items: Locator): Promise<string[]> {
+  if ((await container.count()) === 0) {
     return [];
   }
 
   const values = await items.allInnerTexts();
   return values.map(value => value.trim()).filter(Boolean);
 }
-
-type TimeoutOption = { timeout?: number };
