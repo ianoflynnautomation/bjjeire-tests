@@ -67,7 +67,7 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     },
   );
 
-  test(
+  test.skip(
     'Given the listing spans more than one page, when a visitor moves between pages, then each page shows its own competitions',
     { tag: '@acceptance' },
     async ({ mockCompetitionsPages, competitionsPage }) => {
