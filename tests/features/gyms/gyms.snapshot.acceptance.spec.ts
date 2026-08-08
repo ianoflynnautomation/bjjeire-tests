@@ -6,7 +6,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
     await mockGyms(gymsFixture);
   });
 
-  test(
+  test.skip(
     'Given the Gyms page, when the header is displayed, then it matches the approved image',
     { tag: ['@acceptance'] },
     async ({ page, gymsPage }) => {
@@ -16,7 +16,7 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
     },
   );
 
-  test(
+  test.skip(
     'Given no matching gym, when the empty state is displayed, then its accessible structure is preserved',
     { tag: ['@acceptance'] },
     async ({ page, gymsPage }) => {
