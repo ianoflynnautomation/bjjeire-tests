@@ -1,0 +1,207 @@
+// BjjEire acceptance tests — Playwright + TypeScript dev container.
+// Reference: https://containers.dev/implementors/json_reference/
+{
+  "name": "BjjEire Acceptance Tests",
+  // Built from the pinned Playwright CI image; see .devcontainer/Dockerfile for
+  // why that beats devcontainers/typescript-node here.
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "vscode",
+  // --init reaps orphaned browser processes; --ipc=host stops Chromium running
+  // out of shared memory (same setting as docker-compose.yml);
+  // --add-host makes host.docker.internal resolve on Linux hosts too, which the
+  // host-relay depends on.
+  "runArgs": ["--init", "--ipc=host", "--add-host=host.docker.internal:host-gateway"],
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+  // Node 24 + TypeScript + the browsers come from the base image, and git is
+  // already on it — installing the node/typescript/git Features on top would
+  // only add build time. `upgradePackages` stays false on purpose: an apt
+  // upgrade can pull new font packages and shift every screenshot baseline.
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": false,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    },
+    // Lets you run docker-compose.yml / the CI runner image from inside the
+    // container. Paths resolve against the container filesystem, so the
+    // `./playwright-report`-style bind mounts in docker-compose.yml still work.
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {},
+    // Local feature: makes `localhost:<port>` in here reach the same port on
+    // the Docker host, where the app under test runs. See
+    // features/host-relay/install.sh for why it is a feature and not a
+    // postStartCommand.
+    "./features/host-relay": {
+      "ports": "8080,3000,5000,5003,4318",
+      "target": "host.docker.internal"
+    }
+  },
+  "containerEnv": {
+    "PLAYWRIGHT_BROWSERS_PATH": "/ms-playwright",
+    "DOCKER_BUILDKIT": "1",
+    // Host ports the relay re-publishes on the container's loopback. Covers the
+    // minikube ingress (8080), the app-repo compose stack (3000/5000/5003) and
+    // the OTLP collector (4318). Ports already bound are skipped.
+    "HOST_RELAY_PORTS": "8080,3000,5000,5003,4318"
+  },
+  "mounts": [
+    // The workspace is bind-mounted from macOS, where node_modules holds
+    // darwin-arm64 native bindings (fsevents, @unrs/resolver-binding-*). A
+    // named volume gives the container its own Linux tree — and dodges the
+    // bind-mount I/O penalty on macOS.
+    "source=bjjeire-tests-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=bjjeire-tests-npm-cache,target=/home/vscode/.npm,type=volume",
+    // Keeps the Claude Code login across rebuilds.
+    "source=bjjeire-tests-claude,target=/home/vscode/.claude,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "forwardPorts": [9323],
+  "portsAttributes": {
+    "9323": {
+      "label": "Playwright HTML report",
+      "onAutoForward": "openBrowser"
+    },
+    // These are inbound relays from the Docker host, not services this
+    // container publishes — forwarding them back out would collide with the
+    // host process they point at.
+    "8080": {
+      "label": "App under test (relay → host)",
+      "onAutoForward": "ignore"
+    },
+    "3000": {
+      "label": "Frontend / Grafana (relay → host)",
+      "onAutoForward": "ignore"
+    },
+    "5000": {
+      "label": "API (relay → host)",
+      "onAutoForward": "ignore"
+    },
+    "5003": {
+      "label": "API compose (relay → host)",
+      "onAutoForward": "ignore"
+    },
+    "4318": {
+      "label": "OTLP collector (relay → host)",
+      "onAutoForward": "ignore"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // --- Testing ---
+        "ms-playwright.playwright",
+        // --- TypeScript / lint / format ---
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        // --- Editor quality-of-life ---
+        "streetsidesoftware.code-spell-checker",
+        "christian-kohler.path-intellisense",
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig",
+        // --- Repo workflow ---
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
+        "redhat.vscode-yaml",
+        "davidanson.vscode-markdownlint",
+        "ms-azuretools.vscode-containers"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        // ── Format on save ──────────────────────────────────────────────────
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[markdown]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        // ── ESLint ──────────────────────────────────────────────────────────
+        "eslint.enable": true,
+        "eslint.useFlatConfig": true,
+        "eslint.validate": ["typescript"],
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        // ── Playwright test explorer ────────────────────────────────────────
+        "playwright.reuseBrowser": false,
+        "playwright.showTrace": true,
+        // ── TypeScript: use the workspace TS, not the bundled one ───────────
+        "js/ts.tsdk.path": "node_modules/typescript/lib",
+        "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+        // ── Noise reduction: generated output is not source ─────────────────
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/test-results/**": true,
+          "**/playwright-report/**": true,
+          "**/blob-report/**": true,
+          "**/allure-results/**": true
+        },
+        "search.exclude": {
+          "**/test-results": true,
+          "**/playwright-report": true,
+          "**/blob-report": true,
+          "**/allure-results": true
+        },
+        // ── Misc ────────────────────────────────────────────────────────────
+        "files.eol": "\n",
+        "editor.rulers": [120],
+        "redhat.telemetry.enabled": false,
+        "cSpell.words": [
+          "ADCC",
+          "allure",
+          "anthropics",
+          "bjjeire",
+          "buildkit",
+          "davidanson",
+          "dbaeumer",
+          "devcontainer",
+          "dotenv",
+          "eamodio",
+          "errorlens",
+          "esbenp",
+          "husky",
+          "minikube",
+          "moby",
+          "modelcontextprotocol",
+          "msal",
+          "noble",
+          "playwright",
+          "pwuser",
+          "testcontainer",
+          "testcontainers",
+          "testdata",
+          "tslib",
+          "unrs",
+          "usernamehw"
+        ]
+      }
+    }
+  }
+}

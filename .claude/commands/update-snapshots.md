@@ -19,24 +19,18 @@ Steps:
    app does not mount on `host.docker.internal` — so run a TCP relay:
 
    ```sh
-   cat > /tmp/relay.cjs << 'EOF'
-   const net = require('net');
-   net.createServer(c => {
-     const u = net.connect(8080, 'host.docker.internal');
-     c.pipe(u).pipe(c);
-     c.on('error', () => u.destroy());
-     u.on('error', () => c.destroy());
-   }).listen(8080, '127.0.0.1');
-   EOF
    docker run --rm --add-host=host.docker.internal:host-gateway \
-     -v "$PWD":/work -v /tmp/relay.cjs:/relay.cjs -w /work \
-     -e CI=true -e APP_ENV=local \
+     -v "$PWD":/work -w /work \
+     -e CI=true -e APP_ENV=local -e HOST_RELAY_PORTS=8080 \
      -e BASE_URL=http://localhost:8080 -e API_URL=http://localhost:8080 \
      mcr.microsoft.com/playwright:v1.61.0-noble \
-     bash -c "node /relay.cjs & sleep 1 && npx playwright test -c playwright.ui.config.ts --project=snapshots --update-snapshots"
+     bash -c "node .devcontainer/features/host-relay/host-relay.cjs & sleep 1 && npx playwright test -c playwright.ui.config.ts --project=snapshots --update-snapshots"
    ```
 
    (Keep the image tag in sync with the pinned `@playwright/test` version.)
+
+   **In the dev container this step is just `npm run snapshots:update`** — it is
+   built on the same image and the relay is already running.
 
 3. Verify: re-run `npm run test:snapshots` locally AND the container command from
    step 2 without `--update-snapshots` — both must pass 8/8.

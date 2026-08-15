@@ -1,0 +1,19 @@
+{
+  "id": "host-relay",
+  "version": "1.0.0",
+  "name": "Host port relay",
+  "description": "Re-publishes Docker-host ports on the container loopback, so localhost URLs inside the container reach the app under test running on the host.",
+  "options": {
+    "ports": {
+      "type": "string",
+      "default": "8080,3000,5000,5003,4318",
+      "description": "Comma-separated ports to relay. Overridden at runtime by HOST_RELAY_PORTS."
+    },
+    "target": {
+      "type": "string",
+      "default": "host.docker.internal",
+      "description": "Host to forward to. Overridden at runtime by HOST_RELAY_TARGET."
+    }
+  },
+  "entrypoint": "/usr/local/share/host-relay-init.sh"
+}

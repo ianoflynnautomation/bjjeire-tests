@@ -18,24 +18,34 @@
 #         action: ${{ github.event.action == 'closed' && 'destroy' || 'deploy' }}
 #         pr_number: ${{ github.event.pull_request.number }}
 #         image_tag: ${{ github.event.pull_request.head.sha }}
-#         cluster_resource_group: rg-aks-bjjeire-dev-swn-01
-#         cluster_name: aks-bjjeire-dev-swn-01
+#         cluster_resource_group: rg-aks-bjjeire-dev-sdc-01
+#         cluster_name: aks-bjjeire-dev-sdc-01
 #         cluster_domain: dev.bjjeire.io
 #       secrets: inherit
 #
 #     pr-tests:
 #       if: github.event.action != 'closed'
 #       needs: [pr-env]
-#       uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-tests.yml@main
+#       uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/playwright-tests.yml@v1
 #       with:
-#         app_env: staging
-#         base_url: ${{ needs.pr-env.outputs.base_url }}
-#         api_base_url: ${{ needs.pr-env.outputs.api_base_url }}
+#         app-env: staging
+#         base-url: ${{ needs.pr-env.outputs.base_url }}
+#         api-url: ${{ needs.pr-env.outputs.api_base_url }}
+#         test-repo: ianoflynnautomation/bjjeire-tests
+#         test-tags: "@smoke|@acceptance"
+#         playwright-projects: |
+#           api
+#           chromium-desktop
+#         runs-on: gha-runner-scale-set
 #         # API shards skip the Cloudflare edge via in-cluster Service DNS.
-#         internal_api_url: ${{ needs.pr-env.outputs.internal_api_url }}
-#         test_repo: ianoflynnautomation/bjjeire-tests
-#         test_tags: "@smoke|@acceptance"
-#       secrets: inherit
+#         project-env-overrides: |
+#           api:API_URL=${{ needs.pr-env.outputs.internal_api_url }}
+#           api:CF_ACCESS_CLIENT_ID=
+#           api:CF_ACCESS_CLIENT_SECRET=
+#       secrets:
+#         test-env-vars: |
+#           PW_TEST_USER=${{ secrets.PW_TEST_USER }}
+#           PW_TEST_PASSWORD=${{ secrets.PW_TEST_PASSWORD }}
 
 name: PR ephemeral environment
 
