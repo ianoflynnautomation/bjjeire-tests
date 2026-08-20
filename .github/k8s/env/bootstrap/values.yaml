@@ -1,7 +1,0 @@
-# Values for the ephemeral-env bootstrap chart. All three are required and
-# validated by values.schema.json — `helm template` fails fast if any is empty
-# or malformed, replacing the old (silent) envsubst-on-unset-var behaviour.
-
-envId: ""
-rootDomain: ""
-ttl: "2h"
