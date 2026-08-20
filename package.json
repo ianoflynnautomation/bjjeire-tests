@@ -8,7 +8,7 @@
     "*.{json,md,yml,yaml}": [
       "prettier --write"
     ],
-    "*.{ts}": [
+    "*.ts": [
       "prettier --write",
       "eslint --fix"
     ]
