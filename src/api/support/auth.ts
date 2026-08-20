@@ -6,17 +6,13 @@ import { z } from 'zod';
 import { fromError } from 'zod-validation-error';
 import { env, requireApiAuthBasics, requireAzureConfig } from '@shared/config';
 
-// ─── Config ─────────────────────────────────────────────────────────────────
-
 const CACHE_FILE = 'playwright/.auth/api-tokens.json';
 const EXPIRY_BUFFER_MS = 60_000;
 const FILE_MODE = 0o600;
 const FALLTHROUGH_ERROR_NAMES = new Set(['CredentialUnavailableError', 'AggregateAuthenticationError']);
 
-// ─── Public surface ─────────────────────────────────────────────────────────
-
 export function shouldUseEntraAuthorization(): boolean {
-  return env.apiAuth.required || hasEntraAuthBasics();
+  return env.apiAuth.required;
 }
 
 export function assertApiAuthEnvironment(): void {
@@ -57,12 +53,6 @@ export async function acquireEntraAccessToken(scope: string = requireApiAuthBasi
   return (await mintToken(cacheKey)).token;
 }
 
-// ─── Policy ─────────────────────────────────────────────────────────────────
-
-function hasEntraAuthBasics(): boolean {
-  return !!env.azure.tenantId && !!env.azure.apiScope;
-}
-
 function hasKnownStrategy(): boolean {
   return env.context.hasWorkloadIdentity || !!env.azure.clientSecret || env.context.isLocal;
 }
@@ -70,11 +60,6 @@ function hasKnownStrategy(): boolean {
 function hasCfCreds(): boolean {
   return !!env.cfAccess.clientId && !!env.cfAccess.clientSecret;
 }
-
-// ─── Token cache (memory + disk) ────────────────────────────────────────────
-// All caches are per-worker (each Playwright worker is a separate Node process).
-// Disk writes use atomic tmp+rename. Multi-worker races against the disk file
-// are benign — worst case one extra token mint, never corruption.
 
 const CachedTokenSchema = z
   .object({

@@ -12,10 +12,10 @@ export async function warmApiAuthSetup(): Promise<void> {
     expect(token, 'Entra returned an empty access token').toMatch(JWT_SHAPE_PATTERN);
   }
 
-  if (env.cfAccess.required) {
+  if (env.cfAccess.required || env.cfAccess.clientId || env.cfAccess.clientSecret) {
     expect(
       Object.keys(cfAccessHeaders()),
-      'CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET unset. Populate them for Cloudflare-protected CI/AKS environments or set CF_ACCESS_REQUIRED=false for local-only runs.',
+      'CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET unset. Populate them for Cloudflare-protected environments or set CF_ACCESS_REQUIRED=false for local-only runs.',
     ).toEqual(expect.arrayContaining(['CF-Access-Client-Id', 'CF-Access-Client-Secret']));
   }
 }
