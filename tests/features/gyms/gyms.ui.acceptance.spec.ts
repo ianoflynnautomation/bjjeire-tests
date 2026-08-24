@@ -46,7 +46,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(seededGym.name);
-      await gymsPage.expectSearchValue(seededGym.name);
+      await gymsPage.expectResultCount(1);
       await gymsPage.expectCardData(seededGymCard);
     },
   );
@@ -57,7 +57,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(seededGymPartialName);
-      await gymsPage.expectSearchValue(seededGymPartialName);
+      await gymsPage.expectResultCount(1);
       await gymsPage.expectCardData(seededGymCard);
     },
   );

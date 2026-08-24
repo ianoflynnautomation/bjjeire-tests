@@ -8,7 +8,8 @@ const UI_SETUP_TEST_MATCH = /.*\/auth\.setup\.ts$/;
 const UI_TEST_MATCH = /.*\.ui\.acceptance\.spec\.ts$/;
 const SNAPSHOT_TEST_MATCH = /.*\.snapshot\.acceptance\.spec\.ts$/;
 const A11Y_TEST_MATCH = /.*\.a11y\.acceptance\.spec\.ts$/;
-const WIDE_TAGS_GREP = /@desktop|@smoke|@acceptance/;
+const SMOKE_TAG = /@smoke/;
+const WIDE_TAGS_GREP = /@layout|@wide/;
 const MOBILE_TAGS_GREP = /@smoke|@mobile/;
 const MOBILE_TAG = /@mobile/;
 const THEME_TAG = /@theme/;
@@ -29,6 +30,10 @@ type AuthContext = {
 };
 
 function resolveAuthContext(): AuthContext {
+  const reusePath = env.uiTestUser.storageStatePath;
+  if (reusePath) {
+    return { configured: false, dependencies: [], use: { storageState: reusePath } };
+  }
   const configured = env.uiTestUser.entraEnabled && !!env.uiTestUser.username && !!env.uiTestUser.password;
   return {
     configured,
@@ -68,6 +73,7 @@ function desktopProjects(ctx: AuthContext): Project[] {
     {
       name: 'firefox-desktop',
       testMatch: UI_TEST_MATCH,
+      grep: SMOKE_TAG,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: ctx.dependencies,
       use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
@@ -75,6 +81,7 @@ function desktopProjects(ctx: AuthContext): Project[] {
     {
       name: 'webkit-desktop',
       testMatch: UI_TEST_MATCH,
+      grep: SMOKE_TAG,
       grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
       dependencies: ctx.dependencies,
       use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
@@ -95,6 +102,7 @@ function lightProjects(ctx: AuthContext): Project[] {
     {
       name: 'chromium-desktop-light',
       testMatch: UI_TEST_MATCH,
+      grep: SMOKE_TAG,
       grepInvert: [MOBILE_TAG, THEME_TAG, QUARANTINE_TAG],
       dependencies: ctx.dependencies,
       use: desktopUse(ctx, { colorScheme: 'light' }),

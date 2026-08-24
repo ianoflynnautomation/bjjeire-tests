@@ -4,8 +4,8 @@ export const TIMEOUTS = {
   standard: 15_000,
   big: 30_000,
   max: 60_000,
-  expect: 5_000,
+  expect: 8_000,
   action: 10_000,
   navigation: 30_000,
-  test: 2 * 60_000,
+  test: 45_000,
 } as const;

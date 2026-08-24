@@ -50,6 +50,7 @@ type OptionalUserCredentials = Readonly<{
   username: string | undefined;
   password: string | undefined;
   entraEnabled: boolean;
+  storageStatePath: string | undefined;
 }>;
 
 export type Env = Readonly<{
@@ -166,6 +167,7 @@ export const env: Env = Object.freeze({
     username: readEnv('PW_TEST_USER'),
     password: readEnv('PW_TEST_PASSWORD'),
     entraEnabled: readEnvFlag('PW_UI_ENTRA_AUTH', false),
+    storageStatePath: readEnv('PW_UI_STORAGE_STATE'),
   }),
 });
 

@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import type { TextMatcher } from '@ui/support';
+import { fillListSearch, type TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
@@ -14,7 +14,7 @@ const header = (page: Page) => page.getByTestId(TEST_IDS.header);
 const headerTitle = (page: Page) => page.getByTestId(TEST_IDS.headerTitle);
 const searchContainer = (page: Page) => page.getByTestId(TEST_IDS.search);
 const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.searchInput);
-const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
+export const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
 const emptyState = (page: Page) => page.getByTestId(TEST_IDS.emptyState);
 const storeCard = (page: Page, name: string): Locator => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
@@ -29,13 +29,15 @@ export async function verifyIsLoaded(page: Page): Promise<void> {
 }
 
 export async function searchFor(page: Page, term: string): Promise<void> {
-  const input = searchInput(page);
-  await input.clear();
-  await input.fill(term);
+  await fillListSearch(page, searchInput(page), term);
 }
 
 export async function clearSearch(page: Page): Promise<void> {
-  await searchInput(page).clear();
+  await fillListSearch(page, searchInput(page), '');
+}
+
+export async function expectResultCount(page: Page, count: number): Promise<void> {
+  await expect(listItems(page)).toHaveCount(count);
 }
 
 export async function expectSearchValue(page: Page, term: TextMatcher): Promise<void> {

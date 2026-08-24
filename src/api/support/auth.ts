@@ -44,13 +44,21 @@ export async function acquireEntraAccessToken(scope: string = requireApiAuthBasi
   const fromMemory = memoryCache.get(cacheKey);
   if (isFresh(fromMemory)) return fromMemory.token;
 
+  let pending = inflight.get(cacheKey);
+  if (!pending) {
+    pending = loadOrMintToken(cacheKey).finally(() => inflight.delete(cacheKey));
+    inflight.set(cacheKey, pending);
+  }
+  return (await pending).token;
+}
+
+async function loadOrMintToken(cacheKey: string): Promise<CachedToken> {
   const fromDisk = readDiskCache()[cacheKey];
   if (isFresh(fromDisk)) {
     memoryCache.set(cacheKey, fromDisk);
-    return fromDisk.token;
+    return fromDisk;
   }
-
-  return (await mintToken(cacheKey)).token;
+  return mintToken(cacheKey);
 }
 
 function hasKnownStrategy(): boolean {
@@ -73,6 +81,7 @@ type CachedToken = z.infer<typeof CachedTokenSchema>;
 const TokenCacheFileSchema = z.record(z.string().min(1), CachedTokenSchema);
 
 const memoryCache = new Map<string, CachedToken>();
+const inflight = new Map<string, Promise<CachedToken>>();
 
 function isFresh(entry: CachedToken | undefined): entry is CachedToken {
   return !!entry && entry.expiresAtMs - EXPIRY_BUFFER_MS > Date.now();

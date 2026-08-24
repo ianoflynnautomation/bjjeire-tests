@@ -9,7 +9,9 @@ const REPO_ROOT = join(__dirname, '..', '..', '..');
 
 const IS_CI = env.isCI;
 
-const WORKERS = { local: '50%', ci: '100%' } as const;
+// Cap CI workers so a single SUT (one API + Mongo, or two API replicas in
+// ephemeral) is not the flake source. Override with PLAYWRIGHT_WORKERS.
+const WORKERS = { local: '50%', ci: 4 } as const;
 // Locally we abort on first failure for tight feedback. CI runs the whole suite
 // so every regression shows up in one report — fail-fast there hides 99% of the
 // signal.
@@ -18,6 +20,16 @@ const MAX_FAILURES = IS_CI ? 0 : 1;
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export const QUARANTINE_TAG = /@quarantine/;
+
+function resolveWorkers(): number | string {
+  const override = process.env['PLAYWRIGHT_WORKERS']?.trim();
+  if (override) {
+    if (override.endsWith('%')) return override;
+    const parsed = Number(override);
+    if (Number.isInteger(parsed) && parsed > 0) return parsed;
+  }
+  return IS_CI ? WORKERS.ci : WORKERS.local;
+}
 
 const CI_REPORTERS: ReporterDescription[] = [['blob'], ['github'], ['junit', { outputFile: 'test-results/junit.xml' }]];
 
@@ -48,7 +60,7 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     forbidOnly: IS_CI,
     retries: IS_CI ? 1 : 0,
     maxFailures: MAX_FAILURES,
-    workers: IS_CI ? WORKERS.ci : WORKERS.local,
+    workers: resolveWorkers(),
     timeout: TIMEOUTS.test,
     reporter: activeReporters(),
     expect: {

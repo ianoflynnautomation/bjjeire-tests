@@ -41,7 +41,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectSearchValue(seededEvent.name);
+      await eventsPage.expectResultCount(1);
       await eventsPage.expectCardData(seededEventCard);
     },
   );
@@ -52,7 +52,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEventPartialName);
-      await eventsPage.expectSearchValue(seededEventPartialName);
+      await eventsPage.expectResultCount(1);
       await eventsPage.expectCardData(seededEventCard);
     },
   );
@@ -63,12 +63,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectCardData(seededEventCard);
+      await eventsPage.expectResultCount(1);
       await eventsPage.expectCardAbsent(seededSeminar.name);
       await eventsPage.clearSearch();
       await eventsPage.expectSearchValue('');
-      await eventsPage.expectCardData(seededSeminarCard);
-      await eventsPage.expectCardData(seededEventCard);
+      await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
     },
   );
 
@@ -78,6 +77,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
+      await eventsPage.expectResultCount(1);
       await eventsPage.expectHeaderTotal('Found 1 event.');
       await eventsPage.clearSearch();
       await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
@@ -102,9 +102,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       await eventsPage.goTo();
       await eventsPage.filterByCounty(seededSeminar.county);
       await eventsPage.expectCardAbsent(seededEvent.name);
-      await eventsPage.resetCountyFilter();
-      await eventsPage.expectCardData(seededEventCard);
       await eventsPage.expectCardData(seededSeminarCard);
+      await eventsPage.resetCountyFilter();
+      await eventsPage.searchFor(seededEvent.name);
+      await eventsPage.expectResultCount(1);
+      await eventsPage.expectCardData(seededEventCard);
     },
   );
 

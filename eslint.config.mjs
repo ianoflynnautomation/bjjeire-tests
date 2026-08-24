@@ -129,7 +129,7 @@ export default [
     ...playwright.configs['flat/recommended'],
     rules: {
       ...playwright.configs['flat/recommended'].rules,
-      'playwright/no-skipped-test': 'off',
+      'playwright/no-skipped-test': 'error',
       'playwright/no-conditional-in-test': 'off',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',
@@ -177,6 +177,13 @@ export default [
     files: ['tests/**/*.ts', '**/*.spec.ts'],
     rules: {
       'max-depth': ['error', 5],
+    },
+  },
+
+  {
+    files: ['**/*.snapshot.acceptance.spec.ts'],
+    rules: {
+      'playwright/no-skipped-test': 'off',
     },
   },
 

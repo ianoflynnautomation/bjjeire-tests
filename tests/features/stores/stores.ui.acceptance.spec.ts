@@ -34,7 +34,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.searchFor(seededStore.name);
-      await storesPage.expectSearchValue(seededStore.name);
+      await storesPage.expectResultCount(1);
       await storesPage.expectCardData(seededStoreCard);
     },
   );
@@ -45,7 +45,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.searchFor(seededStorePartialName);
-      await storesPage.expectSearchValue(seededStorePartialName);
+      await storesPage.expectResultCount(1);
       await storesPage.expectCardData(seededStoreCard);
     },
   );

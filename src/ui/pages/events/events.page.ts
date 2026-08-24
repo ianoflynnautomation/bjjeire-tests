@@ -1,5 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import type { TextMatcher } from '@ui/support';
+import {
+  clearListSearch,
+  fillListSearch,
+  LIST_API_URL,
+  performAndWaitForApi,
+  waitForListOrEmpty,
+  type TextMatcher,
+} from '@ui/support';
 import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
@@ -20,7 +27,7 @@ const searchInput = (page: Page) => searchContainer(page).getByTestId(TEST_IDS.s
 const filters = (page: Page) => page.getByTestId(TEST_IDS.filters);
 const countySelect = (page: Page) => filters(page).getByTestId(TEST_IDS.countySelect);
 const typeFilterButton = (page: Page, label: string) => filters(page).getByRole('button', { name: label, exact: true });
-const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
+export const listItems = (page: Page) => page.getByTestId(TEST_IDS.listItem);
 const emptyState = (page: Page) => page.getByTestId(TEST_IDS.emptyState);
 const eventCard = (page: Page, name: string): Locator => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
@@ -35,13 +42,11 @@ export async function verifyIsLoaded(page: Page): Promise<void> {
 }
 
 export async function searchFor(page: Page, term: string): Promise<void> {
-  const input = searchInput(page);
-  await input.clear();
-  await input.fill(term);
+  await fillListSearch(page, searchInput(page), term);
 }
 
 export async function clearSearch(page: Page): Promise<void> {
-  await searchInput(page).clear();
+  await clearListSearch(page, searchInput(page));
 }
 
 export async function expectSearchValue(page: Page, term: TextMatcher): Promise<void> {
@@ -49,15 +54,20 @@ export async function expectSearchValue(page: Page, term: TextMatcher): Promise<
 }
 
 export async function filterByCounty(page: Page, county: string): Promise<void> {
-  await countySelect(page).selectOption(county);
+  await waitForListOrEmpty(listItems(page), emptyState(page));
+  await performAndWaitForApi(page, LIST_API_URL.events, () => countySelect(page).selectOption(county), { county });
 }
 
 export async function resetCountyFilter(page: Page): Promise<void> {
-  await countySelect(page).selectOption(ALL_COUNTIES_OPTION);
+  await waitForListOrEmpty(listItems(page), emptyState(page));
+  await performAndWaitForApi(page, LIST_API_URL.events, () => countySelect(page).selectOption(ALL_COUNTIES_OPTION), {
+    county: null,
+  });
 }
 
 export async function filterByType(page: Page, typeLabel: string): Promise<void> {
-  await typeFilterButton(page, typeLabel).click();
+  await waitForListOrEmpty(listItems(page), emptyState(page));
+  await performAndWaitForApi(page, LIST_API_URL.events, () => typeFilterButton(page, typeLabel).click());
 }
 
 export async function expectTitle(page: Page, title: string): Promise<void> {

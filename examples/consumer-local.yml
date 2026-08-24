@@ -11,13 +11,29 @@ permissions:
 
 jobs:
   e2e:
-    uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-tests.yml@main
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/playwright-tests.yml@main
     with:
-      app_env: staging
-      base_url: https://staging.example.com
-      api_base_url: https://api.staging.example.com
-      test_tags: '@acceptance'
-      shard_total: 6
-      playwright_projects: '["api","chromium-desktop","firefox-desktop","webkit-desktop","chromium-wide","snapshots","a11y","mobile-iphone","mobile-galaxy"]'
-      test_repo: ianoflynnautomation/bjjeire-tests
+      app-env: staging
+      base-url: https://staging.example.com
+      api-url: https://api.staging.example.com
+      test-tags: '@acceptance'
+      shard-total: 4
+      playwright-projects: |
+        api
+        chromium-desktop
+        firefox-desktop
+        webkit-desktop
+        snapshots
+        a11y
+        mobile-iphone
+      project-shard-overrides: |
+        api=2
+        chromium-desktop=8
+        firefox-desktop=2
+        webkit-desktop=2
+        snapshots=2
+        a11y=2
+        mobile-iphone=2
+      test-repo: ianoflynnautomation/bjjeire-tests
+      fail-on-flaky: true
     secrets: inherit

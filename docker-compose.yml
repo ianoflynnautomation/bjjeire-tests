@@ -30,12 +30,10 @@ services:
       ACCEPT_INVALID_CERTS: ${ACCEPT_INVALID_CERTS:-true}
       MONGO_URL: ${MONGO_URL:-}
       MONGO_DB: ${MONGO_DB:-}
-      TEST_USER_EMAIL: ${TEST_USER_EMAIL:-}
-      TEST_USER_PASSWORD: ${TEST_USER_PASSWORD:-}
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      # bjjeire-tests app registration (client-credentials / Tests.Invoke).
+      # Not a user. AZURE_CLIENT_ID is the GHA/UAMI principal — do not pass it here.
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
-      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
-      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_TESTS_CLIENT_ID: ${AZURE_TESTS_CLIENT_ID:-}
+      AZURE_TESTS_CLIENT_SECRET: ${AZURE_TESTS_CLIENT_SECRET:-}
       AZURE_API_SCOPE: ${AZURE_API_SCOPE:-}
       AZURE_AUTHORITY: ${AZURE_AUTHORITY:-}

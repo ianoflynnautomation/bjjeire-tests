@@ -51,7 +51,7 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.searchFor(seededCompetition.name);
-      await competitionsPage.expectSearchValue(seededCompetition.name);
+      await competitionsPage.expectResultCount(1);
       await competitionsPage.expectCardData(seededCompetitionCard);
     },
   );
@@ -62,12 +62,12 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.searchFor(seededCompetitionPartialName);
-      await competitionsPage.expectSearchValue(seededCompetitionPartialName);
+      await competitionsPage.expectResultCount(1);
       await competitionsPage.expectCardData(seededCompetitionCard);
     },
   );
 
-  test.skip(
+  test(
     'Given the listing spans more than one page, when a visitor moves between pages, then each page shows its own competitions',
     { tag: '@acceptance' },
     async ({ mockCompetitionsPages, competitionsPage }) => {

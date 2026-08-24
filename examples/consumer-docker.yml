@@ -15,18 +15,24 @@ permissions:
 
 jobs:
   smoke_tests:
-    uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-docker.yml@main
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/playwright-docker-tests.yml@main
     with:
-      compose_files: |
+      compose-files: |
         docker-compose.yml
         docker-compose.override.local.yml
         docker-compose.override.ci.yml
-      compose_pre_up_script: .github/scripts/smoke-pre-up.sh
-      seed_data: true
-      compose_health_url: http://localhost:5003/health
-      base_url: http://localhost:3000
-      api_base_url: http://localhost:5003
-      test_tags: '@smoke'
-      playwright_projects: '["api","chromium-desktop"]'
-      test_repo: ianoflynnautomation/bjjeire-tests
+      compose-pre-up-script: .github/scripts/smoke-pre-up.sh
+      seed-command: docker compose run --rm seeder
+      compose-health-url: http://localhost:5003/health
+      base-url: http://localhost:3000
+      api-url: http://localhost:5003
+      test-tags: '@smoke'
+      playwright-projects: |
+        api
+        chromium-desktop
+      project-shard-overrides: |
+        api=1
+        chromium-desktop=2
+      test-repo: ianoflynnautomation/bjjeire-tests
+      fail-on-flaky: true
     secrets: inherit

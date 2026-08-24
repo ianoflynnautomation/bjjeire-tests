@@ -1,5 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
 import { expect } from '@playwright/test';
+import { TIMEOUTS } from '@shared/config/timeouts';
 import { test } from '@ui/fixtures';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
@@ -18,6 +19,7 @@ test.describe('Accessibility acceptance', { tag: ['@a11y', '@desktop'] }, () => 
       `Given the ${name} page, when it is scanned against WCAG 2.1 A/AA, then no violations are reported`,
       { tag: '@acceptance' },
       async ({ page }) => {
+        test.setTimeout(TIMEOUTS.max);
         await page.goto(path);
         await expect(page.getByTestId(readySelector).first()).toBeVisible();
 
