@@ -1,12 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export const LIST_API_URL = {
-  gyms: /\/api\/v[12]\/gym(?:\?|$)/i,
-  events: /\/api\/v[12]\/bjjevent(?:\?|$)/i,
-  competitions: /\/api\/v[12]\/competition(?:\?|$)/i,
-  stores: /\/api\/v[12]\/store(?:\?|$)/i,
-} as const;
-
 export async function fillListSearch(page: Page, input: Locator, term: string): Promise<void> {
   await input.clear();
   if (term.length === 0) {
@@ -27,20 +20,20 @@ export async function waitForListOrEmpty(listItems: Locator, emptyState: Locator
   await expect(listItems.or(emptyState).first()).toBeVisible();
 }
 
-export async function performAndWaitForApi(
-  page: Page,
-  urlPattern: RegExp,
-  action: () => Promise<unknown>,
-  query?: Readonly<Record<string, string | null>>,
+export async function waitForCardsMatching(
+  listItems: Locator,
+  emptyState: Locator,
+  fieldTestId: string,
+  expectedText: string,
 ): Promise<void> {
-  const pending = page.waitForResponse(response => {
-    if (!urlPattern.test(response.url()) || response.request().method() !== 'GET') return false;
-    if (!query) return true;
-    const params = new URL(response.url()).searchParams;
-    return Object.entries(query).every(([key, value]) =>
-      value === null ? !params.has(key) : params.get(key) === value,
-    );
-  });
-  await action();
-  await pending;
+  await expect(async () => {
+    if (await emptyState.isVisible()) {
+      return;
+    }
+    const count = await listItems.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(listItems.nth(i).getByTestId(fieldTestId)).toContainText(expectedText);
+    }
+  }).toPass();
 }

@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { fillListSearch, LIST_API_URL, performAndWaitForApi, type TextMatcher } from '@ui/support';
+import { fillListSearch, type TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
@@ -92,11 +92,11 @@ export async function expectCardAbsent(page: Page, name: string): Promise<void> 
 }
 
 export async function goToNextPage(page: Page): Promise<void> {
-  await performAndWaitForApi(page, LIST_API_URL.competitions, () => goToNextListPage(page));
+  await goToNextListPage(page);
 }
 
 export async function goToPreviousPage(page: Page): Promise<void> {
-  await performAndWaitForApi(page, LIST_API_URL.competitions, () => goToPreviousListPage(page));
+  await goToPreviousListPage(page);
 }
 
 export async function expectPagination(page: Page, currentPage: number, totalPages: number): Promise<void> {

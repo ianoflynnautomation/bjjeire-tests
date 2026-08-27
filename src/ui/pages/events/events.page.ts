@@ -2,8 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import {
   clearListSearch,
   fillListSearch,
-  LIST_API_URL,
-  performAndWaitForApi,
+  waitForCardsMatching,
   waitForListOrEmpty,
   type TextMatcher,
 } from '@ui/support';
@@ -14,7 +13,7 @@ import {
   expectServerError as expectServerErrorState,
 } from '../common/error.page';
 import { getEventCardData } from './events.card.page';
-import { NO_DATA_COPY, TEST_IDS } from './events.constants';
+import { EVENT_CARD_TEST_IDS, NO_DATA_COPY, TEST_IDS } from './events.constants';
 import { type BjjEventCard } from './events.types';
 
 const ALL_COUNTIES_OPTION = 'all';
@@ -55,19 +54,24 @@ export async function expectSearchValue(page: Page, term: TextMatcher): Promise<
 
 export async function filterByCounty(page: Page, county: string): Promise<void> {
   await waitForListOrEmpty(listItems(page), emptyState(page));
-  await performAndWaitForApi(page, LIST_API_URL.events, () => countySelect(page).selectOption(county), { county });
+  await countySelect(page).selectOption(county);
+  await expect(countySelect(page)).toHaveValue(county);
+  await waitForCardsMatching(listItems(page), emptyState(page), EVENT_CARD_TEST_IDS.county, county);
 }
 
 export async function resetCountyFilter(page: Page): Promise<void> {
   await waitForListOrEmpty(listItems(page), emptyState(page));
-  await performAndWaitForApi(page, LIST_API_URL.events, () => countySelect(page).selectOption(ALL_COUNTIES_OPTION), {
-    county: null,
-  });
+  await countySelect(page).selectOption(ALL_COUNTIES_OPTION);
+  await expect(countySelect(page)).toHaveValue(ALL_COUNTIES_OPTION);
+  await waitForListOrEmpty(listItems(page), emptyState(page));
 }
 
 export async function filterByType(page: Page, typeLabel: string): Promise<void> {
   await waitForListOrEmpty(listItems(page), emptyState(page));
-  await performAndWaitForApi(page, LIST_API_URL.events, () => typeFilterButton(page, typeLabel).click());
+  const button = typeFilterButton(page, typeLabel);
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await waitForCardsMatching(listItems(page), emptyState(page), EVENT_CARD_TEST_IDS.type, typeLabel);
 }
 
 export async function expectTitle(page: Page, title: string): Promise<void> {
