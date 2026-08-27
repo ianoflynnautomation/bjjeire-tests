@@ -2,8 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import {
   clearListSearch,
   fillListSearch,
-  LIST_API_URL,
-  performAndWaitForApi,
+  waitForCardsMatching,
   waitForListOrEmpty,
   type TextMatcher,
 } from '@ui/support';
@@ -16,7 +15,7 @@ import {
   retryAfterError as retryAfterErrorState,
 } from '../common/error.page';
 import { getGymCardData } from './gyms.card.page';
-import { NO_DATA_COPY, TEST_IDS } from './gyms.constants';
+import { GYM_CARD_TEST_IDS, NO_DATA_COPY, TEST_IDS } from './gyms.constants';
 import type { GymCard } from './gyms.types';
 
 const ALL_COUNTIES_OPTION = 'all';
@@ -54,14 +53,16 @@ export async function expectSearchValue(page: Page, term: TextMatcher): Promise<
 
 export async function filterByCounty(page: Page, county: string): Promise<void> {
   await waitForListOrEmpty(listItems(page), emptyState(page));
-  await performAndWaitForApi(page, LIST_API_URL.gyms, () => countySelect(page).selectOption(county), { county });
+  await countySelect(page).selectOption(county);
+  await expect(countySelect(page)).toHaveValue(county);
+  await waitForCardsMatching(listItems(page), emptyState(page), GYM_CARD_TEST_IDS.county, county);
 }
 
 export async function resetCountyFilter(page: Page): Promise<void> {
   await waitForListOrEmpty(listItems(page), emptyState(page));
-  await performAndWaitForApi(page, LIST_API_URL.gyms, () => countySelect(page).selectOption(ALL_COUNTIES_OPTION), {
-    county: null,
-  });
+  await countySelect(page).selectOption(ALL_COUNTIES_OPTION);
+  await expect(countySelect(page)).toHaveValue(ALL_COUNTIES_OPTION);
+  await waitForListOrEmpty(listItems(page), emptyState(page));
 }
 
 export async function expectResultCount(page: Page, count: number): Promise<void> {
