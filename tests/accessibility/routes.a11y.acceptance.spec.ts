@@ -2,6 +2,7 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '@shared/config/timeouts';
 import { test } from '@ui/fixtures';
+import { gotoRoute } from '@ui/support';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
@@ -20,8 +21,9 @@ test.describe('Accessibility acceptance', { tag: ['@a11y', '@desktop'] }, () => 
       { tag: '@acceptance' },
       async ({ page }) => {
         test.setTimeout(TIMEOUTS.max);
-        await page.goto(path);
-        await expect(page.getByTestId(readySelector).first()).toBeVisible();
+        const ready = page.getByTestId(readySelector).first();
+        await gotoRoute(page, path, ready);
+        await expect(ready).toBeVisible();
 
         const results = await new AxeBuilder({ page }).withTags([...WCAG_TAGS]).analyze();
 

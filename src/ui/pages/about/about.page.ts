@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { gotoRoute, waitForRouteMounted } from '@ui/support';
 import { TEST_IDS } from './about.constants';
 
 const main = (page: Page) => page.getByRole(TEST_IDS.main);
@@ -8,10 +9,11 @@ const valuesSection = (page: Page) => page.getByTestId(TEST_IDS.valuesSection);
 const contactSection = (page: Page) => page.getByTestId(TEST_IDS.contactSection);
 
 export async function navigate(page: Page): Promise<void> {
-  await page.goto('/about');
+  await gotoRoute(page, '/about', headerTitle(page));
 }
 
 export async function verifyIsLoaded(page: Page): Promise<void> {
+  await waitForRouteMounted(headerTitle(page));
   await expect(page).toHaveURL(/\/about$/);
   await expect(main(page)).toBeVisible();
   await expect(headerTitle(page)).toBeVisible();

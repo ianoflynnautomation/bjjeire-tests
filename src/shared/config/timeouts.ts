@@ -8,4 +8,5 @@ export const TIMEOUTS = {
   action: 10_000,
   navigation: 30_000,
   test: 45_000,
+  appBoot: 30_000,
 } as const;

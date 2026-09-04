@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { fillListSearch, type TextMatcher } from '@ui/support';
+import { fillListSearch, gotoRoute, waitForRouteMounted, type TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
@@ -24,7 +24,7 @@ const competitionCard = (page: Page, name: string): Locator =>
   cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
 export async function goTo(page: Page): Promise<void> {
-  await page.goto('/competitions');
+  await gotoRoute(page, '/competitions', header(page));
 }
 
 export async function expectTitle(page: Page, title: string): Promise<void> {
@@ -32,6 +32,7 @@ export async function expectTitle(page: Page, title: string): Promise<void> {
 }
 
 export async function verifyIsLoaded(page: Page): Promise<void> {
+  await waitForRouteMounted(header(page));
   await expect(header(page)).toBeVisible();
   await expect(headerTitle(page)).toBeVisible();
   await expect(searchContainer(page)).toBeVisible();

@@ -11,6 +11,7 @@ import {
   type MockCompetitionsPages,
 } from './competitions.fixture';
 import { eventsPageFixture, mockBjjEventsFixture, type EventsPage, type MockBjjEvents } from './events.fixture';
+import { stubFeatureFlags } from './feature-flags.fixture';
 import { gymsPageFixture, mockGymsFixture, type GymsPage, type MockGyms } from './gyms.fixture';
 import { storesPageFixture, mockStoresFixture, type StoresPage, type MockStores } from './stores.fixture';
 import {
@@ -24,6 +25,7 @@ import {
 import { templatePageFixture, type TemplatePage } from './_template.fixture';
 
 export type UiFixtures = {
+  featureFlags: void;
   aboutPage: AboutPage;
   competitionsPage: CompetitionsPage;
   eventsPage: EventsPage;
@@ -46,6 +48,14 @@ export const test = base.extend<UiFixtures>({
     testInfo.annotations.push(...traceAnnotations(trace));
     await use({ ...cfAccessHeaders(), ...buildTraceHeaders(trace) });
   },
+
+  featureFlags: [
+    async ({ page }, use) => {
+      await stubFeatureFlags(page);
+      await use();
+    },
+    { auto: true },
+  ],
   aboutPage: aboutPageFixture,
   competitionsPage: competitionsPageFixture,
   eventsPage: eventsPageFixture,

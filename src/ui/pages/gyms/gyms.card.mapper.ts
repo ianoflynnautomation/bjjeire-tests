@@ -9,8 +9,6 @@ const CLASS_CATEGORY_LABELS: Partial<Record<ClassCategory, string>> = {
   Wrestling: 'Wrestling',
 };
 
-// Mirrors frontend getGymStatusLabel, then the badge `uppercase` class.
-// Playwright innerText() returns the rendered (uppercased) copy.
 const STATUS_BADGE_LABELS: Record<GymStatus, string> = {
   [GymStatus.Active]: 'ACTIVE',
   [GymStatus.PendingApproval]: 'PENDING APPROVAL',

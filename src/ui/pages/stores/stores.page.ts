@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { fillListSearch, type TextMatcher } from '@ui/support';
+import { fillListSearch, gotoRoute, waitForRouteMounted, type TextMatcher } from '@ui/support';
 import { cardByName } from '../common/card.page';
 import { expectNoDataState } from '../common/empty.page';
 import {
@@ -19,10 +19,11 @@ const emptyState = (page: Page) => page.getByTestId(TEST_IDS.emptyState);
 const storeCard = (page: Page, name: string): Locator => cardByName(page, listItems(page), TEST_IDS.cardName, name);
 
 export async function goTo(page: Page): Promise<void> {
-  await page.goto('/stores');
+  await gotoRoute(page, '/stores', header(page));
 }
 
 export async function verifyIsLoaded(page: Page): Promise<void> {
+  await waitForRouteMounted(header(page));
   await expect(header(page)).toBeVisible();
   await expect(headerTitle(page)).toBeVisible();
   await expect(searchContainer(page)).toBeVisible();
