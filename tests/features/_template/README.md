@@ -1,4 +1,6 @@
 Use this slice as the starting point for every new feature (scaffold with `/add-feature`).
+Add or update `specs/features/<feature>.md` in the same change — Playwright titles
+must match the acceptance scenarios listed there.
 
 Layout:
 

@@ -18,4 +18,6 @@ level only — unit/integration/security tests live in the app repository.
 - Prefer the existing feature-slice patterns: specs in `tests/features/<feature>/`,
   page objects in `src/ui/pages/<feature>/`, fixtures in `src/ui/fixtures/`,
   API clients in `src/api/features/<feature>/`.
+- Living acceptance specs live in `specs/features/`; Playwright titles must match them.
 - Keep generated reports and test output out of source changes.
+- Do not hand-edit `.github/workflows/*.lock.yml` — compile from the Markdown source.
