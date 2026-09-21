@@ -1,7 +1,7 @@
 import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
-import { emptyPage } from '@ui/pages/common/empty.page';
+import { emptyPage } from '../../testdata/mocks/empty-page';
 import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from '../../testdata/seeded/stores';
 
 const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;

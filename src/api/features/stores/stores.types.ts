@@ -10,4 +10,4 @@ export type StoreDto = BaseApiEntityModel<StoreId> &
     isActive: boolean;
   }>;
 
-export type GetStorePaginationQuery = PaginationQuery;
+export type GetStoresPaginationQuery = PaginationQuery;

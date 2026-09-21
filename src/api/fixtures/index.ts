@@ -1,20 +1,17 @@
-import { test as base, expect, type APIRequestContext } from '@playwright/test';
-import { buildTraceHeaders, createRequestContext, testTraceContext, traceAnnotations } from '@api/support';
+import { test as base, expect } from '@playwright/test';
+import { apiAuthHeaders } from '@api/support';
+import { buildTraceHeaders, testTraceContext, traceAnnotations } from '@shared/otel/trace-context';
 
-export type ApiFixtures = {
-  apiClient: APIRequestContext;
-};
-
-export const test = base.extend<ApiFixtures>({
-  apiClient: async ({}, use, testInfo) => {
+export const test = base.extend({
+  extraHTTPHeaders: async ({ extraHTTPHeaders }, use, testInfo) => {
     const trace = testTraceContext(testInfo.testId, testInfo.retry);
     testInfo.annotations.push(...traceAnnotations(trace));
-    const context = await createRequestContext({ extraHeaders: buildTraceHeaders(trace) });
-    try {
-      await use(context);
-    } finally {
-      await context.dispose();
-    }
+
+    await use({
+      ...extraHTTPHeaders,
+      ...buildTraceHeaders(trace),
+      ...(await apiAuthHeaders()),
+    });
   },
 });
 

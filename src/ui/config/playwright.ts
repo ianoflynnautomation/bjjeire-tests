@@ -1,6 +1,6 @@
 import { devices, type Project } from '@playwright/test';
 import { env } from '@shared/config/env';
-import { QUARANTINE_TAG } from '@shared/config/playwright';
+import { DESKTOP_VIEWPORT, QUARANTINE_TAG } from '@shared/config/playwright';
 
 export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
 
@@ -14,7 +14,6 @@ const MOBILE_TAGS_GREP = /@smoke|@mobile/;
 const MOBILE_TAG = /@mobile/;
 const THEME_TAG = /@theme/;
 
-const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const WIDE_VIEWPORT = { width: 1728, height: 1117 };
 
 const CHROMIUM_LAUNCH_OPTIONS = { args: ['--disable-dev-shm-usage'] };
@@ -22,6 +21,19 @@ const CHROMIUM_DESKTOP_DEVICE = { ...devices['Desktop Chrome'], launchOptions: C
 const CHROMIUM_GALAXY_DEVICE = { ...devices['Galaxy S24'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
 
 type UiUse = NonNullable<Project['use']>;
+
+/**
+ * A project's `grepInvert` REPLACES the config-level one rather than adding to
+ * it — verified by dropping `QUARANTINE_TAG` from one project, which promptly
+ * ran a `@quarantine` test. So every project that filters has to restate the
+ * quarantine exclusion, and this helper is the only way to write it.
+ *
+ * Projects with no `grepInvert` of their own (snapshots, a11y, mobile) inherit
+ * the config-level filter and stay quarantine-free without it.
+ */
+function excluding(...tags: RegExp[]): RegExp[] {
+  return [...tags, QUARANTINE_TAG];
+}
 
 type AuthContext = {
   readonly configured: boolean;
@@ -42,57 +54,60 @@ function resolveAuthContext(): AuthContext {
   };
 }
 
-const desktopUse = (ctx: AuthContext, overrides: UiUse = {}): UiUse => ({
-  ...CHROMIUM_DESKTOP_DEVICE,
-  viewport: DESKTOP_VIEWPORT,
-  ...overrides,
-  ...ctx.use,
-});
+/** Desktop projects pin one shared viewport, whatever the device preset says. */
+function desktopUse(ctx: AuthContext, device: UiUse, overrides: UiUse = {}): UiUse {
+  return { ...device, viewport: DESKTOP_VIEWPORT, ...overrides, ...ctx.use };
+}
+
+/** Mobile projects keep the device preset's own viewport and scale factor. */
+function mobileUse(ctx: AuthContext, device: UiUse): UiUse {
+  return { ...device, ...ctx.use };
+}
 
 function desktopProjects(ctx: AuthContext): Project[] {
   return [
     {
       name: 'chromium-desktop',
       testMatch: UI_TEST_MATCH,
-      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
+      grepInvert: excluding(MOBILE_TAG),
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE),
     },
     {
       name: 'snapshots',
       testMatch: SNAPSHOT_TEST_MATCH,
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE),
     },
     {
       name: 'a11y',
       testMatch: A11Y_TEST_MATCH,
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE),
     },
     {
       name: 'firefox-desktop',
       testMatch: UI_TEST_MATCH,
       grep: SMOKE_TAG,
-      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
+      grepInvert: excluding(MOBILE_TAG),
       dependencies: ctx.dependencies,
-      use: { ...devices['Desktop Firefox'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
+      use: desktopUse(ctx, devices['Desktop Firefox']),
     },
     {
       name: 'webkit-desktop',
       testMatch: UI_TEST_MATCH,
       grep: SMOKE_TAG,
-      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
+      grepInvert: excluding(MOBILE_TAG),
       dependencies: ctx.dependencies,
-      use: { ...devices['Desktop Safari'], viewport: DESKTOP_VIEWPORT, ...ctx.use },
+      use: desktopUse(ctx, devices['Desktop Safari']),
     },
     {
       name: 'chromium-wide',
       testMatch: UI_TEST_MATCH,
       grep: WIDE_TAGS_GREP,
-      grepInvert: [MOBILE_TAG, QUARANTINE_TAG],
+      grepInvert: excluding(MOBILE_TAG),
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx, { viewport: WIDE_VIEWPORT }),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE, { viewport: WIDE_VIEWPORT }),
     },
   ];
 }
@@ -103,15 +118,15 @@ function lightProjects(ctx: AuthContext): Project[] {
       name: 'chromium-desktop-light',
       testMatch: UI_TEST_MATCH,
       grep: SMOKE_TAG,
-      grepInvert: [MOBILE_TAG, THEME_TAG, QUARANTINE_TAG],
+      grepInvert: excluding(MOBILE_TAG, THEME_TAG),
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx, { colorScheme: 'light' }),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE, { colorScheme: 'light' }),
     },
     {
       name: 'a11y-light',
       testMatch: A11Y_TEST_MATCH,
       dependencies: ctx.dependencies,
-      use: desktopUse(ctx, { colorScheme: 'light' }),
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE, { colorScheme: 'light' }),
     },
   ];
 }
@@ -123,14 +138,14 @@ function mobileProjects(ctx: AuthContext): Project[] {
       testMatch: UI_TEST_MATCH,
       grep: MOBILE_TAGS_GREP,
       dependencies: ctx.dependencies,
-      use: { ...devices['iPhone 16'], ...ctx.use },
+      use: mobileUse(ctx, devices['iPhone 16']),
     },
     {
       name: 'mobile-galaxy',
       testMatch: UI_TEST_MATCH,
       grep: MOBILE_TAGS_GREP,
       dependencies: ctx.dependencies,
-      use: { ...CHROMIUM_GALAXY_DEVICE, ...ctx.use },
+      use: mobileUse(ctx, CHROMIUM_GALAXY_DEVICE),
     },
   ];
 }

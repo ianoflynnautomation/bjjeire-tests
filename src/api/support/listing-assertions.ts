@@ -7,11 +7,11 @@ export function expectListingToInclude<T extends object, K extends keyof T>(
   expected: readonly (Partial<T> & Pick<T, K>)[],
 ): void {
   for (const item of expected) {
-    const match = data.find(candidate => candidate[key] === item[key]);
+    const match: object | undefined = data.find(candidate => candidate[key] === item[key]);
     if (match === undefined) {
       throw new Error(`expected listing to include an item with ${String(key)} '${String(item[key])}'`);
     }
-    expect<object>(match).toMatchObject(item);
+    expect(match).toMatchObject(item);
   }
 }
 

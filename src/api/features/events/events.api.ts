@@ -3,8 +3,6 @@ import { API_ROUTES, DEFAULT_PAGE, DEFAULT_PAGE_SIZE, get, type PaginatedRespons
 import { bjjEventsPageSchema } from './events.schemas';
 import type { BjjEventDto, GetBjjEventsPaginationQuery } from './events.types';
 
-export { BjjEventType, EventStatus, PricingType, ScheduleKind, type BjjEventDto } from './events.types';
-
 export async function getBjjEvents(
   request: APIRequestContext,
   { county, types, page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE }: GetBjjEventsPaginationQuery = {},

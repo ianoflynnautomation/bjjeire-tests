@@ -1,7 +1,7 @@
 import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
-import { emptyPage } from '@ui/pages/common/empty.page';
+import { emptyPage } from '../../testdata/mocks/empty-page';
 import {
   SEEDED_EVENT_LEINSTER_OPEN_MAT,
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,

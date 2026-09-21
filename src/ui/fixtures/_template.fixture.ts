@@ -1,12 +1,6 @@
-import type { Page } from '@playwright/test';
-import { bindPage, type BoundPageObject } from './bind-page';
-import * as TemplatePageMod from '@ui/pages/_template/_template.page';
+import { TemplatePage } from '@ui/pages/_template/_template.page';
+import { pageFixture } from './mock-fixture';
 
-export type TemplatePage = BoundPageObject<typeof TemplatePageMod>;
+export type { TemplatePage };
 
-export async function templatePageFixture(
-  { page }: { page: Page },
-  use: (templatePage: TemplatePage) => Promise<void>,
-): Promise<void> {
-  await use(bindPage(TemplatePageMod, page));
-}
+export const templatePageFixture = pageFixture(TemplatePage);

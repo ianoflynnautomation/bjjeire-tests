@@ -1,1 +1,1 @@
-export { default } from './playwright.ui.config';
+export { default } from './playwright.acceptance.config';

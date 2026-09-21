@@ -18,11 +18,13 @@ Steps:
    - `tests/features/_template/_template.api.acceptance.spec.ts`
      → `tests/features/$ARGUMENTS/$ARGUMENTS.api.acceptance.spec.ts` (if API tests apply)
    - `src/ui/pages/_template/_template.page.ts`
-     → `src/ui/pages/$ARGUMENTS/$ARGUMENTS.page.ts` (+ `.constants.ts` for test IDs)
+     → `src/ui/pages/$ARGUMENTS/$ARGUMENTS.page.ts` (+ `.constants.ts` for test IDs).
+     A card-list feature should extend `ListPage` instead — copy `gyms.page.ts`,
+     which only supplies `readCardData` and its own filters.
    - `src/ui/fixtures/_template.fixture.ts` → `src/ui/fixtures/$ARGUMENTS.fixture.ts`
-   - `src/api/features/_template/_template.builder.ts`
-     → `src/api/features/$ARGUMENTS/$ARGUMENTS.builder.ts`, plus `.api.ts`, `.types.ts`,
-     and `.schemas.ts` (Zod page schema — required by the mock drift guard)
+   - `src/api/features/stores/` (the simplest slice) → `src/api/features/$ARGUMENTS/`:
+     `.api.ts` (one `get` call per endpoint), `.types.ts` (DTOs) and `.schemas.ts`
+     (Zod page schema — required by the mock drift guard)
 3. Replace all `_template` references with `$ARGUMENTS`.
 4. Register the new fixture in `src/ui/fixtures/index.ts` (type + `test.extend` entry) —
    the slice is invisible to specs without this.

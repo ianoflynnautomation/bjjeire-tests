@@ -1,7 +1,7 @@
 import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
-import { emptyPage } from '@ui/pages/common/empty.page';
+import { emptyPage } from '../../testdata/mocks/empty-page';
 import {
   SEEDED_GYM_BLACKWATER_VALLEY,
   SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME,

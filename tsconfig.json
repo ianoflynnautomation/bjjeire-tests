@@ -41,7 +41,6 @@
     "src/**/*.ts",
     "tests/**/*.ts",
     "playwright.config.ts",
-    "playwright.base.config.ts",
     "playwright.ui.config.ts",
     "playwright.api.config.ts",
     "playwright.acceptance.config.ts"

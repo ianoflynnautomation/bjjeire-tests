@@ -1,18 +1,28 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DefaultAzureCredential, type TokenCredential } from '@azure/identity';
-import { ConfidentialClientApplication, type AuthenticationResult } from '@azure/msal-node';
+import { ConfidentialClientApplication } from '@azure/msal-node';
 import { z } from 'zod';
-import { fromError } from 'zod-validation-error';
 import { env, requireApiAuthBasics, requireAzureConfig } from '@shared/config';
 
-const CACHE_FILE = 'playwright/.auth/api-tokens.json';
+const CACHE_FILE = 'playwright/.auth/api-token.json';
 const EXPIRY_BUFFER_MS = 60_000;
 const FILE_MODE = 0o600;
+// Every credential in the DefaultAzureCredential chain raises one of these when
+// it simply isn't configured here; anything else is a real auth failure.
 const FALLTHROUGH_ERROR_NAMES = new Set(['CredentialUnavailableError', 'AggregateAuthenticationError']);
 
 export function shouldUseEntraAuthorization(): boolean {
   return env.apiAuth.required;
+}
+
+/**
+ * Authorization headers for API request contexts. Returns `{}` for unprotected
+ * environments (local, docker), so the same fixture works everywhere.
+ */
+export async function apiAuthHeaders(): Promise<Record<string, string>> {
+  if (!shouldUseEntraAuthorization()) return {};
+  return { authorization: `Bearer ${await acquireEntraAccessToken()}` };
 }
 
 export function assertApiAuthEnvironment(): void {
@@ -38,27 +48,44 @@ export function assertApiAuthEnvironment(): void {
   }
 }
 
-export async function acquireEntraAccessToken(scope: string = requireApiAuthBasics().apiScope): Promise<string> {
-  const cacheKey = normaliseScope(scope);
+const cachedTokenSchema = z.object({
+  scope: z.string().min(1),
+  token: z.string().min(1),
+  expiresAtMs: z.number().int().positive(),
+});
 
-  const fromMemory = memoryCache.get(cacheKey);
-  if (isFresh(fromMemory)) return fromMemory.token;
+type CachedToken = z.infer<typeof cachedTokenSchema>;
 
-  let pending = inflight.get(cacheKey);
-  if (!pending) {
-    pending = loadOrMintToken(cacheKey).finally(() => inflight.delete(cacheKey));
-    inflight.set(cacheKey, pending);
-  }
-  return (await pending).token;
+let memoryToken: CachedToken | undefined;
+let inflight: Promise<CachedToken> | undefined;
+
+/**
+ * Minting is expensive and every Playwright worker is its own process, so the
+ * token is cached three ways: in-process (module state), across processes (a
+ * 0600 file under playwright/.auth), and de-duplicated within a process while a
+ * mint is in flight. The `api-setup` project warms it once before the suite runs.
+ */
+export async function acquireEntraAccessToken(): Promise<string> {
+  const scope = normaliseScope(requireApiAuthBasics().apiScope);
+  if (isFresh(memoryToken, scope)) return memoryToken.token;
+
+  inflight ??= loadOrMintToken(scope).finally(() => {
+    inflight = undefined;
+  });
+  return (await inflight).token;
 }
 
-async function loadOrMintToken(cacheKey: string): Promise<CachedToken> {
-  const fromDisk = readDiskCache()[cacheKey];
-  if (isFresh(fromDisk)) {
-    memoryCache.set(cacheKey, fromDisk);
+async function loadOrMintToken(scope: string): Promise<CachedToken> {
+  const fromDisk = readDiskCache();
+  if (isFresh(fromDisk, scope)) {
+    memoryToken = fromDisk;
     return fromDisk;
   }
-  return mintToken(cacheKey);
+  return mintToken(scope);
+}
+
+function isFresh(entry: CachedToken | undefined, scope: string): entry is CachedToken {
+  return !!entry && entry.scope === scope && entry.expiresAtMs - EXPIRY_BUFFER_MS > Date.now();
 }
 
 function hasKnownStrategy(): boolean {
@@ -69,99 +96,44 @@ function hasCfCreds(): boolean {
   return !!env.cfAccess.clientId && !!env.cfAccess.clientSecret;
 }
 
-const CachedTokenSchema = z
-  .object({
-    token: z.string().min(1),
-    expiresAtMs: z.number().int().positive(),
-  })
-  .readonly();
-
-type CachedToken = z.infer<typeof CachedTokenSchema>;
-
-const TokenCacheFileSchema = z.record(z.string().min(1), CachedTokenSchema);
-
-const memoryCache = new Map<string, CachedToken>();
-const inflight = new Map<string, Promise<CachedToken>>();
-
-function isFresh(entry: CachedToken | undefined): entry is CachedToken {
-  return !!entry && entry.expiresAtMs - EXPIRY_BUFFER_MS > Date.now();
+function normaliseScope(scope: string): string {
+  return scope.endsWith('/.default') ? scope : `${scope}/.default`;
 }
 
-function readDiskCache(): Record<string, CachedToken> {
-  let raw: string;
+function readDiskCache(): CachedToken | undefined {
   try {
-    raw = readFileSync(CACHE_FILE, 'utf-8');
+    const parsed = cachedTokenSchema.safeParse(JSON.parse(readFileSync(CACHE_FILE, 'utf-8')));
+    return parsed.success ? parsed.data : undefined;
   } catch {
-    return {};
+    // Missing or corrupt cache is not an error — mint a fresh token instead.
+    return undefined;
   }
-
-  let json: unknown;
-  try {
-    json = JSON.parse(raw);
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn(`[entra-token] discarding invalid JSON cache at ${CACHE_FILE}: ${message}`);
-    return {};
-  }
-
-  const result = TokenCacheFileSchema.safeParse(json);
-  if (result.success) return result.data;
-
-  console.warn(`[entra-token] discarding malformed cache at ${CACHE_FILE}: ${fromError(result.error).message}`);
-  return {};
 }
 
-function persistToken(scopeKey: string, entry: CachedToken): CachedToken {
-  memoryCache.set(scopeKey, entry);
-  const merged: Record<string, CachedToken> = { ...readDiskCache(), [scopeKey]: entry };
+function persistToken(entry: CachedToken): CachedToken {
+  memoryToken = entry;
+  // Write-then-rename: parallel workers never observe a half-written token.
   const tmpPath = `${CACHE_FILE}.${process.pid}.tmp`;
   mkdirSync(dirname(CACHE_FILE), { recursive: true });
-  writeFileSync(tmpPath, JSON.stringify(merged, null, 2), { mode: FILE_MODE });
+  writeFileSync(tmpPath, JSON.stringify(entry, null, 2), { mode: FILE_MODE });
   renameSync(tmpPath, CACHE_FILE);
   return entry;
 }
 
 type AuthStrategy = 'chain' | 'client-credentials';
 
-let loggedStrategy: AuthStrategy | undefined;
 let cachedCredential: TokenCredential | undefined;
 let cachedClient: ConfidentialClientApplication | undefined;
 
 function selectStrategy(): AuthStrategy {
-  if (env.context.hasWorkloadIdentity) return 'chain';
-  if (env.azure.clientSecret) return 'client-credentials';
-  return 'chain';
+  return !env.context.hasWorkloadIdentity && env.azure.clientSecret ? 'client-credentials' : 'chain';
 }
 
-function logStrategyOnce(strategy: AuthStrategy): void {
-  if (loggedStrategy === strategy) return;
-  loggedStrategy = strategy;
-  console.log(`[entra-token] auth strategy: ${strategy} (context=${env.context.executionContext})`);
-}
+async function mintToken(scope: string): Promise<CachedToken> {
+  if (selectStrategy() === 'chain') {
+    const fromChain = await mintViaChain(scope);
+    if (fromChain) return persist('chain', fromChain);
 
-function isCredentialChainFallthrough(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'name' in error &&
-    typeof error.name === 'string' &&
-    FALLTHROUGH_ERROR_NAMES.has(error.name)
-  );
-}
-
-function normaliseScope(scope: string): string {
-  return scope.endsWith('/.default') ? scope : `${scope}/.default`;
-}
-
-async function mintToken(scopeKey: string): Promise<CachedToken> {
-  const strategy = selectStrategy();
-
-  if (strategy === 'chain') {
-    const fromChain = await mintViaChain(scopeKey);
-    if (fromChain) {
-      logStrategyOnce('chain');
-      return persistToken(scopeKey, fromChain);
-    }
     if (!env.azure.clientSecret) {
       throw new Error(
         'No auth strategy available. Either:\n' +
@@ -172,36 +144,34 @@ async function mintToken(scopeKey: string): Promise<CachedToken> {
     }
   }
 
-  const fromSecret = await mintViaClientCredentials(scopeKey);
-  logStrategyOnce('client-credentials');
-  return persistToken(scopeKey, fromSecret);
+  return persist('client-credentials', await mintViaClientCredentials(scope));
 }
 
-async function mintViaChain(scopeKey: string): Promise<CachedToken | undefined> {
+function persist(strategy: AuthStrategy, entry: CachedToken): CachedToken {
+  console.log(`[entra-token] minted via ${strategy} (context=${env.context.executionContext})`);
+  return persistToken(entry);
+}
+
+async function mintViaChain(scope: string): Promise<CachedToken | undefined> {
   cachedCredential ??= new DefaultAzureCredential();
   try {
-    const result = await cachedCredential.getToken(scopeKey);
-    if (!result) return undefined;
-    return { token: result.token, expiresAtMs: result.expiresOnTimestamp };
+    const result = await cachedCredential.getToken(scope);
+    return result ? { scope, token: result.token, expiresAtMs: result.expiresOnTimestamp } : undefined;
   } catch (error: unknown) {
-    if (isCredentialChainFallthrough(error)) return undefined;
+    if (error instanceof Error && FALLTHROUGH_ERROR_NAMES.has(error.name)) return undefined;
     throw error;
   }
 }
 
-async function mintViaClientCredentials(scopeKey: string): Promise<CachedToken> {
+async function mintViaClientCredentials(scope: string): Promise<CachedToken> {
   if (!cachedClient) {
     const cfg = requireAzureConfig();
     cachedClient = new ConfidentialClientApplication({
-      auth: {
-        clientId: cfg.clientId,
-        clientSecret: cfg.clientSecret,
-        authority: cfg.authority,
-      },
+      auth: { clientId: cfg.clientId, clientSecret: cfg.clientSecret, authority: cfg.authority },
     });
   }
-  const result: AuthenticationResult | null = await cachedClient.acquireTokenByClientCredential({ scopes: [scopeKey] });
-  if (!result?.accessToken) throw new Error(`MSAL returned no access token for scope ${scopeKey}.`);
-  if (!result.expiresOn) throw new Error(`MSAL returned no expiresOn for scope ${scopeKey}.`);
-  return { token: result.accessToken, expiresAtMs: result.expiresOn.getTime() };
+  const result = await cachedClient.acquireTokenByClientCredential({ scopes: [scope] });
+  if (!result?.accessToken) throw new Error(`MSAL returned no access token for scope ${scope}.`);
+  if (!result.expiresOn) throw new Error(`MSAL returned no expiresOn for scope ${scope}.`);
+  return { scope, token: result.accessToken, expiresAtMs: result.expiresOn.getTime() };
 }

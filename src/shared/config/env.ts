@@ -3,7 +3,8 @@ import { isRemoteProfile, PROFILE_DEFAULTS } from './profile-defaults';
 import { loadEnvForProfile, resolveProfile, type Profile } from './profile';
 import { readEnv, readEnvFlag, readRequiredEnv } from './process-env';
 
-loadEnvForProfile();
+const PROFILE: Profile = resolveProfile();
+loadEnvForProfile(PROFILE);
 
 const DEFAULT_AZURE_AUTHORITY_PREFIX = 'https://login.microsoftonline.com';
 
@@ -25,8 +26,6 @@ export type ExecutionContext = 'arc-runner' | 'ci-hosted' | 'local';
 
 export type RuntimeContext = Readonly<{
   executionContext: ExecutionContext;
-  isCI: boolean;
-  isGithubActions: boolean;
   isInCluster: boolean;
   hasWorkloadIdentity: boolean;
   isLocal: boolean;
@@ -57,11 +56,8 @@ export type Env = Readonly<{
   profile: Profile;
   baseUrl: string;
   apiUrl: string;
-  mongoUrl: string;
-  mongoDb: string;
   isCI: boolean;
   acceptInvalidCerts: boolean;
-  useMocks: boolean;
   context: RuntimeContext;
   apiAuth: Readonly<{
     required: boolean;
@@ -79,7 +75,6 @@ function pick(name: string, fallback: string): string {
   return readEnv(name) ?? fallback;
 }
 
-const PROFILE: Profile = resolveProfile();
 const defaults = PROFILE_DEFAULTS[PROFILE];
 
 const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
@@ -95,11 +90,10 @@ if (isRemoteProfile(PROFILE)) {
 // =====================================================================
 // Used by tests to make environment-aware decisions like
 // `test.skip(env.context.isLocal, 'requires CI environment')`, and by
-// `entra-token.ts` to pick the right auth strategy. All signals are derived
+// `src/api/support/auth.ts` to pick the right credential strategy. All signals are derived
 // from environment variables that the runtime sets for us — no heuristics.
 
 const isCI = readEnv('CI') !== undefined;
-const isGithubActions = readEnv('GITHUB_ACTIONS') !== undefined;
 // AZURE_FEDERATED_TOKEN_FILE is injected by the Azure Workload Identity
 // webhook into pods that have the right label/annotation. Its presence is
 // the canonical signal that we're running with a workload identity.
@@ -120,8 +114,6 @@ const executionContext: ExecutionContext = hasWorkloadIdentity ? 'arc-runner' : 
 
 const runtimeContext: RuntimeContext = Object.freeze({
   executionContext,
-  isCI,
-  isGithubActions,
   isInCluster,
   hasWorkloadIdentity,
   isLocal,
@@ -138,11 +130,8 @@ export const env: Env = Object.freeze({
   profile: PROFILE,
   baseUrl,
   apiUrl,
-  mongoUrl: pick('MONGO_URL', defaults.mongoUrl),
-  mongoDb: pick('MONGO_DB', 'bjjeire'),
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
-  useMocks: readEnvFlag('USE_API_MOCKS', !isRemoteProfile(PROFILE)),
   context: runtimeContext,
   apiAuth: Object.freeze({
     required: readEnvFlag('API_AUTH_REQUIRED', requireProtectedPipelineCredentials),

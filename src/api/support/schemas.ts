@@ -1,20 +1,16 @@
 import { z, type ZodType } from 'zod';
+import { fromError } from 'zod-validation-error';
 import type { GeoCoordinatesDto, LocationDto, Pagination, PaginatedResponse, SocialMediaDto } from './types';
 
-export const featureFlagMapSchema = z.record(z.string(), z.boolean());
-
-export const problemDetailsSchema = z
-  .object({
-    type: z.string().optional(),
-    title: z.string().optional(),
-    status: z.number().optional(),
-    detail: z.string().optional(),
-    instance: z.string().optional(),
-  })
-  .loose();
-
-export type FeatureFlagMap = z.infer<typeof featureFlagMapSchema>;
-export type ProblemDetails = z.infer<typeof problemDetailsSchema>;
+/**
+ * Single parse gate for anything that crosses the wire (API responses, mocked
+ * bodies). Zod already proves the shape, so specs assert values — never `typeof`.
+ */
+export function parseWithSchema<T>(schema: ZodType<T>, data: unknown, subject: string): T {
+  const parsed = schema.safeParse(data);
+  if (parsed.success) return parsed.data;
+  throw new Error(`${subject} failed schema validation: ${fromError(parsed.error).message}`);
+}
 
 type LoosenOptional<T> = T extends string | number | boolean | null | undefined
   ? T
@@ -26,13 +22,13 @@ export function schemaFor<T>(schema: ZodType<LoosenOptional<T>>): ZodType<T> {
   return schema as unknown as ZodType<T>;
 }
 
-export function entityIdSchema<TId extends string>(): ZodType<TId> {
+function brandedIdSchema<TId extends string>(): ZodType<TId> {
   return z.string() as unknown as ZodType<TId>;
 }
 
 export function baseApiEntityFields<TId extends string>() {
   return {
-    id: entityIdSchema<TId>().optional(),
+    id: brandedIdSchema<TId>().optional(),
     createdOnUtc: z.string().nullable().optional(),
     updatedOnUtc: z.string().nullable().optional(),
   };

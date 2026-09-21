@@ -1,7 +1,7 @@
 import { test } from '@ui/fixtures';
 import { faker } from '@faker-js/faker';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
-import { emptyPage } from '@ui/pages/common/empty.page';
+import { emptyPage } from '../../testdata/mocks/empty-page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
 import {
   SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
