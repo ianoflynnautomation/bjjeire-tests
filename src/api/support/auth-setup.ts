@@ -1,10 +1,18 @@
 import { expect } from '@playwright/test';
-import { acquireEntraAccessToken, assertApiAuthEnvironment, shouldUseEntraAuthorization } from '@api/support';
 import { cfAccessHeaders, env } from '@shared/config';
+import { acquireEntraAccessToken, assertApiAuthEnvironment, shouldUseEntraAuthorization } from './auth';
 
 const JWT_SHAPE_PATTERN = /^[\w-]+\.[\w-]+\.[\w-]+$/;
 
-export async function warmApiAuthSetup(): Promise<void> {
+/**
+ * The `api-setup` project's whole job: fail the run here, once, with a message
+ * that names the missing variable — instead of letting every API spec fail on a
+ * 401 later. Also warms the token cache so the workers don't each mint one.
+ *
+ * Named `expect*` because it asserts: that is what lets the setup spec call it
+ * as its assertion rather than padding the test with `expect(true).toBe(true)`.
+ */
+export async function expectApiAuthReady(): Promise<void> {
   assertApiAuthEnvironment();
 
   if (shouldUseEntraAuthorization()) {

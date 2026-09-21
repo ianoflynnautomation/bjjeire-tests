@@ -1,12 +1,6 @@
-import type { Page } from '@playwright/test';
-import { bindPage, type BoundPageObject } from './bind-page';
-import * as AboutPageMod from '@ui/pages/about/about.page';
+import { AboutPage } from '@ui/pages/about/about.page';
+import { pageFixture } from './mock-fixture';
 
-export type AboutPage = BoundPageObject<typeof AboutPageMod>;
+export type { AboutPage };
 
-export async function aboutPageFixture(
-  { page }: { page: Page },
-  use: (aboutPage: AboutPage) => Promise<void>,
-): Promise<void> {
-  await use(bindPage(AboutPageMod, page));
-}
+export const aboutPageFixture = pageFixture(AboutPage);

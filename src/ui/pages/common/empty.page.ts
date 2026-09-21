@@ -17,17 +17,3 @@ export async function expectNoDataState(page: Page, copy: NoDataCopy): Promise<v
   await expect(page.getByTestId(NO_DATA.messageLine1)).toHaveText(copy.line1);
   await expect(page.getByTestId(NO_DATA.messageLine2)).toHaveText(copy.line2);
 }
-
-export const emptyPage = {
-  data: [],
-  pagination: {
-    totalItems: 0,
-    currentPage: 1,
-    pageSize: 25,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-    nextPageUrl: null,
-    previousPageUrl: null,
-  },
-};

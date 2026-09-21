@@ -13,12 +13,14 @@ const pagination = (page: Page) => page.getByTestId(TEST_IDS.root);
 const pageIndicator = (page: Page) => pagination(page).getByTestId(TEST_IDS.pageIndicator);
 
 async function readPageIndicator(page: Page): Promise<{ current: number; total: number }> {
+  await expect(pageIndicator(page)).toHaveText(PAGE_INDICATOR_PATTERN);
+
   const text = (await pageIndicator(page).innerText()).trim();
-  const match = PAGE_INDICATOR_PATTERN.exec(text);
-  if (!match) {
+  const [, current, total] = PAGE_INDICATOR_PATTERN.exec(text) ?? [];
+  if (current === undefined || total === undefined) {
     throw new Error(`Unexpected pagination indicator: ${text}`);
   }
-  return { current: Number(match[1]), total: Number(match[2]) };
+  return { current: Number(current), total: Number(total) };
 }
 
 export async function goToNextListPage(page: Page): Promise<void> {

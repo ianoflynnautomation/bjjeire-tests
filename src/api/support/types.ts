@@ -3,6 +3,14 @@ export type PaginationQuery = Readonly<{
   pageSize?: number;
 }>;
 
+/**
+ * County filter accepted by the listing endpoints. `'all'` is the API's own
+ * "no filter" value (the UI's county select sends it); any other county name is
+ * valid too. The `string & {}` half keeps `'all'` in editor completions instead
+ * of the union collapsing to plain `string`.
+ */
+export type CountyFilter = 'all' | (string & {});
+
 export type Pagination = Readonly<{
   totalItems: number;
   currentPage: number;

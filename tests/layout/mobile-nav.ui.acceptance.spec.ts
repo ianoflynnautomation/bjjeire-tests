@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '@ui/fixtures';
-import { HEADER_NAV_LINKS } from '@ui/sections/header.constants';
+import { HEADER_NAV_LINKS } from '@ui/pages/sections/header.constants';
 import { goto } from '@ui/support';
 
 const mobileToggle = 'navigation-mobile-toggle';

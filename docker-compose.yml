@@ -28,10 +28,6 @@ services:
       BASE_URL: ${BASE_URL:-}
       API_URL: ${API_URL:-}
       ACCEPT_INVALID_CERTS: ${ACCEPT_INVALID_CERTS:-true}
-      MONGO_URL: ${MONGO_URL:-}
-      MONGO_DB: ${MONGO_DB:-}
-      # bjjeire-tests app registration (client-credentials / Tests.Invoke).
-      # Not a user. AZURE_CLIENT_ID is the GHA/UAMI principal — do not pass it here.
       AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
       AZURE_TESTS_CLIENT_ID: ${AZURE_TESTS_CLIENT_ID:-}
       AZURE_TESTS_CLIENT_SECRET: ${AZURE_TESTS_CLIENT_SECRET:-}

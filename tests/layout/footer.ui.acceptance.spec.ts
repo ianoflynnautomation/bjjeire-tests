@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '@ui/fixtures';
-import { FOOTER_QUICK_LINKS } from '@ui/sections/footer.constants';
+import { FOOTER_QUICK_LINKS } from '@ui/pages/sections/footer.constants';
 import { goto } from '@ui/support';
 
 test.describe('Footer UI acceptance', { tag: ['@layout', '@footer', '@ui', '@desktop'] }, () => {

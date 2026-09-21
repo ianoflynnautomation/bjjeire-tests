@@ -1,4 +1,4 @@
-import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
+import type { BaseApiEntityModel, CountyFilter, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
 import type { GymId } from '@shared/types';
 
 export const ClassCategory = {
@@ -64,5 +64,5 @@ export type GymDto = BaseApiEntityModel<GymId> &
 
 export type GetGymsByCountyPaginationQuery = PaginationQuery &
   Readonly<{
-    county?: 'all' | (string & {});
+    county?: CountyFilter;
   }>;

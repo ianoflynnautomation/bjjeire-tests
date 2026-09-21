@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 import { InvalidProfileError } from './config-errors';
 import { readEnv } from './process-env';
 
-export const PROFILES = ['local', 'docker', 'dev', 'staging', 'production'] as const;
+export const PROFILES = ['local', 'docker', 'dev', 'staging'] as const;
 export type Profile = (typeof PROFILES)[number];
 
-export function isProfile(value: string): value is Profile {
+function isProfile(value: string): value is Profile {
   return PROFILES.some(profile => profile === value);
 }
 
@@ -17,15 +17,9 @@ export function resolveProfile(): Profile {
   throw new InvalidProfileError(raw, PROFILES);
 }
 
-export function loadEnvForProfile(profile: Profile = resolveProfile(), cwd: string = process.cwd()): readonly string[] {
-  const candidateFiles = [`.env.${profile}.local`, `.env.${profile}`, `.env.local`, `.env`];
-  const loadedFiles: string[] = [];
-  for (const file of candidateFiles) {
+export function loadEnvForProfile(profile: Profile = resolveProfile(), cwd: string = process.cwd()): void {
+  for (const file of [`.env.${profile}.local`, `.env.${profile}`, `.env.local`, `.env`]) {
     const fullPath = resolve(cwd, file);
-    if (existsSync(fullPath)) {
-      dotenv.config({ path: fullPath });
-      loadedFiles.push(fullPath);
-    }
+    if (existsSync(fullPath)) dotenv.config({ path: fullPath });
   }
-  return loadedFiles;
 }

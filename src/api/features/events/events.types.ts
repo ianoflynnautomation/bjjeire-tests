@@ -1,4 +1,4 @@
-import type { BaseApiEntityModel, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
+import type { BaseApiEntityModel, CountyFilter, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
 import type { EventId } from '@shared/types';
 
 export const BjjEventType = {
@@ -34,7 +34,7 @@ export const ScheduleKind = {
 } as const;
 export type ScheduleKind = (typeof ScheduleKind)[keyof typeof ScheduleKind];
 
-export type OrganizerDto = Readonly<{
+export type OrganiserDto = Readonly<{
   name: string;
   website: string;
 }>;
@@ -69,7 +69,7 @@ export type BjjEventDto = BaseApiEntityModel<EventId> &
     name: string;
     description?: string | null;
     types: readonly BjjEventType[];
-    organiser: OrganizerDto;
+    organiser: OrganiserDto;
     status: EventStatus;
     statusReason?: string | null;
     socialMedia: SocialMediaDto;
@@ -83,6 +83,6 @@ export type BjjEventDto = BaseApiEntityModel<EventId> &
 
 export type GetBjjEventsPaginationQuery = PaginationQuery &
   Readonly<{
-    county?: 'all' | (string & {});
+    county?: CountyFilter;
     types?: readonly BjjEventType[];
   }>;

@@ -10,11 +10,5 @@ export const API_ROUTES = {
   openApiV1: `/openapi/${API_VERSION}.json`,
 } as const;
 
-export function withRouteId(route: string, id: string): string {
-  return `${route}/${id}`;
-}
-
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 20;
-export const MIN_PAGE_SIZE = 1;
-export const MAX_PAGE_SIZE = 100;

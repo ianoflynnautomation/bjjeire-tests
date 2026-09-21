@@ -33,13 +33,14 @@ flag API.
 
 ```
 tests/features/<feature>/                 # spec files only
-src/ui/pages/<feature>/                   # page objects — pure functions taking page
+src/ui/pages/<feature>/                   # page object class; list pages extend ListPage
 src/ui/fixtures/<feature>.fixture.ts      # one fixture per feature
 src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts + .builder.ts
 tests/testdata/seeded/<feature>.ts        # DTO-typed seeded fixtures
 ```
 
-Page objects are pure functions taking `page: Page` first. No page singletons.
+Page objects are classes taking `page` in the constructor. No page singletons, no
+state beyond `page`.
 `route.fulfill()` only for empty/error/pagination/snapshot-determinism cases,
 and every mocked body is parsed with the feature Zod page schema.
 

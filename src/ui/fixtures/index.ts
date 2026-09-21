@@ -1,5 +1,4 @@
 import { test as base, expect } from '@playwright/test';
-import { cfAccessHeaders } from '@shared/config';
 import { buildTraceHeaders, testTraceContext, traceAnnotations } from '@shared/otel/trace-context';
 import { aboutPageFixture, type AboutPage } from './about.fixture';
 import {
@@ -23,6 +22,14 @@ import {
   type MockServerErrorOnce,
 } from './failure.fixture';
 import { templatePageFixture, type TemplatePage } from './_template.fixture';
+import {
+  footerSectionFixture,
+  headerSectionFixture,
+  supportModalFixture,
+  type FooterSection,
+  type HeaderSection,
+  type SupportModal,
+} from './sections.fixture';
 
 export type UiFixtures = {
   featureFlags: void;
@@ -40,13 +47,20 @@ export type UiFixtures = {
   mockStores: MockStores;
   storesPage: StoresPage;
   templatePage: TemplatePage;
+  headerSection: HeaderSection;
+  footerSection: FooterSection;
+  supportModal: SupportModal;
 };
 
 export const test = base.extend<UiFixtures>({
-  extraHTTPHeaders: async ({}, use, testInfo) => {
+  // Layers the per-test traceparent onto whatever `use` already declared,
+  // rather than rebuilding it: re-deriving `cfAccessHeaders()` here duplicated
+  // the config's decision, so any header later added to the base `use` block
+  // would have been silently dropped for every UI test.
+  extraHTTPHeaders: async ({ extraHTTPHeaders }, use, testInfo) => {
     const trace = testTraceContext(testInfo.testId, testInfo.retry);
     testInfo.annotations.push(...traceAnnotations(trace));
-    await use({ ...cfAccessHeaders(), ...buildTraceHeaders(trace) });
+    await use({ ...extraHTTPHeaders, ...buildTraceHeaders(trace) });
   },
 
   featureFlags: [
@@ -70,6 +84,9 @@ export const test = base.extend<UiFixtures>({
   mockStores: mockStoresFixture,
   storesPage: storesPageFixture,
   templatePage: templatePageFixture,
+  headerSection: headerSectionFixture,
+  footerSection: footerSectionFixture,
+  supportModal: supportModalFixture,
 });
 
 export { expect };

@@ -5,16 +5,16 @@ Full narrative: `CLAUDE.md`.
 
 ## Layout
 
-| Kind        | Path                                                                      |
-| ----------- | ------------------------------------------------------------------------- |
-| UI spec     | `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`                |
-| API spec    | `tests/features/<feature>/<feature>.api.acceptance.spec.ts`               |
-| Snapshot    | `tests/features/<feature>/<feature>.snapshot.acceptance.spec.ts`          |
-| A11y        | `tests/accessibility/*.a11y.acceptance.spec.ts`                           |
-| Page object | `src/ui/pages/<feature>/` — pure functions, `page: Page` first            |
-| Fixture     | `src/ui/fixtures/<feature>.fixture.ts`, registered in `fixtures/index.ts` |
-| API client  | `src/api/features/<feature>/`                                             |
-| Seeded data | `tests/testdata/seeded/<feature>.ts`                                      |
+| Kind        | Path                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------- |
+| UI spec     | `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`                              |
+| API spec    | `tests/features/<feature>/<feature>.api.acceptance.spec.ts`                             |
+| Snapshot    | `tests/features/<feature>/<feature>.snapshot.acceptance.spec.ts`                        |
+| A11y        | `tests/accessibility/*.a11y.acceptance.spec.ts`                                         |
+| Page object | `src/ui/pages/<feature>/` — class, `page` via constructor; list pages extend `ListPage` |
+| Fixture     | `src/ui/fixtures/<feature>.fixture.ts`, registered in `fixtures/index.ts`               |
+| API client  | `src/api/features/<feature>/`                                                           |
+| Seeded data | `tests/testdata/seeded/<feature>.ts`                                                    |
 
 Titles: `Given <context>, when <action>, then <business outcome>`.
 

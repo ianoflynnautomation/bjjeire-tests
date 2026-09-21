@@ -10,7 +10,7 @@ read-only directory of BJJ gyms, events, competitions, and stores across Ireland
 
 Playwright + TypeScript, covering **API**, **UI** (Chromium / Firefox / WebKit), **visual +
 aria snapshots**, **accessibility** (axe, WCAG 2.1 AA), and **mobile** (iPhone 16, Galaxy
-S24) — against real seeded data in local, Docker, and staging environments.
+S24) — against real seeded data in local, Docker, and remote (dev / staging) environments.
 
 ## Quick start
 
@@ -25,29 +25,34 @@ cp .env.local.example .env      # then point BASE_URL / API_URL at your app
 npm run test:smoke              # first green run 🎉
 ```
 
+Prefer a container? **Reopen in Container** in VS Code gives you the pinned CI
+image with all three browsers pre-installed, and relays `localhost` to the app
+running on your host — see [`.devcontainer/README.md`](.devcontainer/README.md).
+
 Key `.env` variables:
 
-| Variable               | Purpose                                   | Example                 |
-| ---------------------- | ----------------------------------------- | ----------------------- |
-| `APP_ENV`              | Profile: `local` \| `docker` \| `staging` | `local`                 |
-| `BASE_URL`             | App under test                            | `http://127.0.0.1:8080` |
-| `API_URL`              | API under test                            | `http://127.0.0.1:8080` |
-| `ACCEPT_INVALID_CERTS` | Allow self-signed certs                   | `true`                  |
+| Variable               | Purpose                                            | Example                 |
+| ---------------------- | -------------------------------------------------- | ----------------------- |
+| `APP_ENV`              | Profile: `local` \| `docker` \| `dev` \| `staging` | `local`                 |
+| `BASE_URL`             | App under test                                     | `http://127.0.0.1:8080` |
+| `API_URL`              | API under test                                     | `http://127.0.0.1:8080` |
+| `ACCEPT_INVALID_CERTS` | Allow self-signed certs                            | `true`                  |
 
 There is one `.env.<profile>.example` per environment. Local runs stop on the first
 failure by design; CI runs the whole suite.
 
 ## Running tests
 
-| Command                              | What it runs                                  |
-| ------------------------------------ | --------------------------------------------- |
-| `npm run test:smoke`                 | Critical subset (`@smoke`)                    |
-| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)       |
-| `npm run test:snapshots`             | Visual + aria snapshots                       |
-| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route             |
-| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)       |
-| `npm run test:docker`                | Full suite against the Docker Compose profile |
-| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`            |
+| Command                              | What it runs                                                      |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| `npm run test:smoke`                 | Critical subset (`@smoke`)                                        |
+| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)                           |
+| `npm run test:snapshots`             | Visual + aria snapshots                                           |
+| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route                                 |
+| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)                           |
+| `npm run test:docker`                | Full suite against the Docker Compose profile                     |
+| `npm run test:dev` / `test:dev:api`  | Live AKS **dev** cluster — see [docs/dev-env.md](docs/dev-env.md) |
+| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`                                |
 
 Handy filters (any Playwright flag works):
 
@@ -69,15 +74,34 @@ npm run trace          # inspect a trace file (traces upload on CI failure)
 Updating screenshot baselines? They are **per-platform** (`-darwin` locally, `-linux`
 in CI) — regenerate both; see `.claude/commands/update-snapshots.md` for the procedure.
 
+### Tracing test runs (OTel, opt-in)
+
+The suite ships an opt-in OpenTelemetry reporter (one trace per run, a span per
+test). It activates only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set — unset means
+the module is never loaded. Against the local minikube observability stack
+(`bjjeire-deploy/…/observability/install.sh full`):
+
+```sh
+npm run otel:forward     # port-forward the collector (4318) — keep running
+OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 npm run test:smoke
+npm run otel:grafana     # Grafana at http://localhost:3000 → Explore → Tempo
+```
+
+Every test is the root of its own **distributed trace**: fixtures inject the
+test's `traceparent` into all browser/API requests, so the app spans a test
+caused (frontend proxy → API → Mongo) appear as its children in Tempo. Search
+`service.name = bjjeire-acceptance-tests`; shards of one CI run share a
+`test.run.id` resource attribute. Each test's trace id lands in the HTML report
+annotations — set `GRAFANA_URL=http://localhost:3000` to make it a clickable
+Grafana link. In CI the endpoint/headers arrive as optional secrets
+(`OTEL_EXPORTER_OTLP_ENDPOINT` / `OTEL_EXPORTER_OTLP_HEADERS`).
+
 ## CI
 
 - **This repo** ([`ci.yml`](.github/workflows/ci.yml)): lint + typecheck on every push/PR.
-- **The app repo** calls the reusable
-  [`playwright-docker.yml`](.github/workflows/playwright-docker.yml) on every push to
-  main: it boots the Docker Compose stack, seeds data, and runs the full `@acceptance`
-  suite as a sharded matrix across all projects (API, three desktop browsers, wide,
-  snapshots, a11y, both mobile devices). Results land as a merged HTML report artifact
-  and a PR comment.
+- **The app repo** calls `bjjeire-ci-templates` `playwright-docker-tests.yml` (PR compose
+  smoke) and `acceptance-gate.yml` (main ephemeral AKS). Chromium desktop is the system
+  of record; Firefox/WebKit run `@smoke` only. Results land as a merged HTML report.
 - Callers pin the workflow by commit SHA; test code is always checked out from `main`.
 
 Minimal consumer example ([more in `examples/`](examples/)):
@@ -85,18 +109,24 @@ Minimal consumer example ([more in `examples/`](examples/)):
 ```yaml
 jobs:
   acceptance:
-    uses: ianoflynnautomation/bjjeire-tests/.github/workflows/playwright-docker.yml@<sha>
+    uses: ianoflynnautomation/bjjeire-ci-templates/.github/workflows/playwright-docker-tests.yml@<sha>
     with:
-      compose_file: docker-compose.yml
-      compose_health_url: http://localhost:5003/health
-      base_url: http://localhost:3000
-      api_base_url: http://localhost:5003
-      test_repo: ianoflynnautomation/bjjeire-tests
-      test_tags: '@acceptance'
+      compose-files: docker-compose.yml
+      compose-health-url: http://localhost:5003/health
+      base-url: http://localhost:3000
+      api-url: http://localhost:5003
+      test-repo: ianoflynnautomation/bjjeire-tests
+      test-tags: '@acceptance'
+      playwright-projects: |
+        api
+        chromium-desktop
 ```
 
 All inputs, secrets, and outputs are documented inline in the workflow files.
-`playwright-terraform.yml` covers Terraform-provisioned ephemeral environments.
+Provisioned AKS environments are owned by Flux in `bjjeire-gitops`
+(`bjj-eire-preview`). Callers use
+`bjjeire-ci-templates` `acceptance-gate.yml` (SHA / existing)
+and `BjjEire` `pr-env-validation.yml` (PR previews).
 
 ## Project structure
 

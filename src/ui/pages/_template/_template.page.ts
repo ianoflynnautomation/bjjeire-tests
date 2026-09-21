@@ -1,14 +1,20 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { gotoRoute, waitForRouteMounted } from '@ui/support';
 
-const main = (page: Page) => page.getByRole('main');
+export class TemplatePage {
+  constructor(private readonly page: Page) {}
 
-export async function navigate(page: Page): Promise<void> {
-  await gotoRoute(page, '/template', main(page));
-}
+  private get main(): Locator {
+    return this.page.getByRole('main');
+  }
 
-export async function verifyIsLoaded(page: Page): Promise<void> {
-  await waitForRouteMounted(main(page));
-  await expect(page).toHaveURL(/\/template$/);
-  await expect(main(page)).toBeVisible();
+  async navigate(): Promise<void> {
+    await gotoRoute(this.page, '/template', this.main);
+  }
+
+  async verifyIsLoaded(): Promise<void> {
+    await waitForRouteMounted(this.main);
+    await expect(this.page).toHaveURL(/\/template$/);
+    await expect(this.main).toBeVisible();
+  }
 }
