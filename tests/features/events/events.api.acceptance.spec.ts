@@ -12,7 +12,7 @@ import {
   SEEDED_EVENT_ATLANTIC_COAST_CAMP,
   SEEDED_EVENT_FINISHED_WINTER_SOLSTICE,
   SEEDED_UPCOMING_EVENTS,
-} from '../../testdata/seeded/events';
+} from './testdata/seeded';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;

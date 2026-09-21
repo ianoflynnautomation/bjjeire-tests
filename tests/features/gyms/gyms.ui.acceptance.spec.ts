@@ -1,12 +1,14 @@
-import { test } from '@ui/fixtures';
+import { test, gymsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
-import { emptyPage } from '../../testdata/mocks/empty-page';
+import { emptyPage } from '../common/testdata/mocks/empty-page';
 import {
   SEEDED_GYM_BLACKWATER_VALLEY,
   SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME,
   SEEDED_GYM_LIFFEY_GRAPPLING,
-} from '../../testdata/seeded/gyms';
+} from './seeded';
+
+test.use(gymsTestConfig);
 
 const seededGym = SEEDED_GYM_BLACKWATER_VALLEY;
 const seededGymCard = gymCardFromDto(seededGym);
@@ -111,7 +113,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given the API request fails, when a visitor opens Gyms, then a network error message is shown',
     { tag: '@acceptance' },
     async ({ mockNetworkError, gymsPage }) => {
-      await mockNetworkError('gyms');
+      await mockNetworkError();
       await gymsPage.goTo();
       await gymsPage.expectNetworkErrorMessage();
     },
@@ -121,7 +123,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given the API returns a server error, when a visitor opens Gyms, then a server error message is shown',
     { tag: '@acceptance' },
     async ({ mockServerError, gymsPage }) => {
-      await mockServerError('gyms');
+      await mockServerError();
       await gymsPage.goTo();
       await gymsPage.expectServerErrorMessage();
     },
@@ -131,7 +133,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
     'Given the API failed once, when the visitor retries, then the gym list is displayed',
     { tag: '@acceptance' },
     async ({ mockServerErrorOnce, gymsPage }) => {
-      await mockServerErrorOnce('gyms');
+      await mockServerErrorOnce();
       await gymsPage.goTo();
       await gymsPage.expectServerErrorMessage();
       await gymsPage.retryAfterError();

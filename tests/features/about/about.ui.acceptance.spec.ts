@@ -1,4 +1,6 @@
-import { test } from '@ui/fixtures';
+import { test, aboutTestConfig } from './fixtures';
+
+test.use(aboutTestConfig);
 
 test.describe('About UI acceptance', { tag: ['@about', '@ui', '@desktop'] }, () => {
   test(

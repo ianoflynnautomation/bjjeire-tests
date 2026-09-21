@@ -1,4 +1,6 @@
-import { test } from '@ui/fixtures';
+import { test, templateTestConfig } from './fixtures';
+
+test.use(templateTestConfig);
 
 // For list-style features, prefer defineListAcceptance from tests/shared/list-acceptance
 // and put expected card data under tests/testdata/<feature>.ts.

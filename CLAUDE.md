@@ -96,6 +96,13 @@ CI workers default to 4 (not 100% of the box) so a single API is not the flake s
 Override with `PLAYWRIGHT_WORKERS`. UI Entra setup is skipped when `PW_UI_STORAGE_STATE`
 points at a pre-built `storageState` file — shards must not each drive the login form.
 
+Both auth artefacts live in the gitignored `playwright/.auth/`: `api-token.json`
+(the Entra token cache — one entry, `0600`, written atomically so parallel workers
+never read a half-written token) and `ui-user.json` (`STORAGE_STATE_PATH`, written
+by the `setup` project). Both are caches: delete them to force a fresh mint or
+sign-in. A cache from an earlier scope is ignored rather than reused, because the
+scope is stored alongside the token.
+
 ## Tags
 
 Two-tier taxonomy:
@@ -140,11 +147,10 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
 ### Feature slice layout
 
 ```
-tests/features/<feature>/                 # Spec files only
+tests/features/<feature>/                 # Specs, `fixtures.ts`, `mocks.ts`, `seeded.ts`,
+                                          # and the feature's static JSON bodies
 src/ui/pages/<feature>/                   # Page object class; list pages extend ListPage
-src/ui/fixtures/<feature>.fixture.ts      # One fixture per feature; register in fixtures/index.ts
 src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts
-tests/testdata/seeded/<feature>.ts        # DTO-typed seeded fixtures + partial search terms
 ```
 
 See `tests/features/_template/README.md`; scaffold with `/add-feature`.
@@ -152,7 +158,9 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
 ### Data policy (in priority order)
 
 1. **Real seeded data first.** Acceptance specs assert the seeded fixtures in
-   `tests/testdata/seeded/` against the real backend (seeder lives in the app repo).
+   `tests/features/<feature>/seeded.ts` against the real backend (the seeder lives in
+   the app repo). Shared helpers — `seededCoordinates`, `partialNameOf` — stay in
+   `tests/testdata/seeded/`.
 2. **Environments hold full datasets** (e.g. 61 gyms locally), not just the acceptance
    fixtures — never assert a fixture card is on page 1 of an _unfiltered_ list. Narrow
    the view (search/filter) first, or prove state changes via search. Search is
@@ -185,6 +193,13 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   `extraHTTPHeaders` option in `src/api/fixtures/index.ts`. `get()` from
   `@api/support` is the only helper: native `request.get` + a required Zod schema.
   Specs asserting an error status call `request.get(...)` and read the `APIResponse`.
+- **Calling the API unauthenticated** — `requestAuth` is an option on
+  `@api/fixtures`: a file declares `test.use({ requestAuth: 'none' })` to withhold
+  the Entra bearer (Cloudflare Access headers still apply — they clear the edge,
+  not the API's authorization). Only `tests/api/authorization.api.acceptance.spec.ts`
+  does this, and it gates itself with `test.skip(!env.apiAuth.required, ...)` because
+  local and docker targets do not enforce auth. Conditional skips are the supported
+  way to gate on environment; unconditional `test.skip` stays a lint error.
 - Axe gotcha: disabled elements are exempt from color-contrast — a11y scans must wait
   for list content (filters enable after data loads) before analyzing.
 
@@ -197,18 +212,42 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   own filters. Card-data readers, `common/card.page.ts`, `empty.page.ts`,
   `error.page.ts` and `pagination.page.ts` stay plain functions: they act on a
   locator or a page, not on a page object.
+- **One test object per feature, no central registry.** `src/ui/fixtures/base.ts`
+  holds only cross-cutting fixtures (feature-flag option, trace headers, header /
+  footer / support-modal sections, failure mocks) and is re-exported as
+  `@ui/fixtures`. Each feature owns `tests/features/<feature>/fixtures.ts`, which
+  sits beside its specs, extends the core with that feature's page object and
+  route mocks, and exports its own `test`. A feature spec imports `./fixtures`; a
+  cross-cutting spec (layout, a11y, support) imports `@ui/fixtures`. Each feature
+  names its fixture set (`GymsUiFixtures`, …) so helpers can take it as a
+  parameter, and exports a `<feature>TestConfig` that every one of its UI specs
+  passes to `test.use(...)` — empty by default, and the single place to put an
+  option the whole feature needs. A feature is
+  exactly three directories — `tests/features/<f>/`, `src/ui/pages/<f>/` and
+  `src/api/features/<f>/` — and `rm -rf` on all three removes it completely:
+  typecheck, lint and the remaining suite stay green with no shared file edited.
 - Fixtures are declared with the factories in `src/ui/fixtures/mock-fixture.ts` —
   `pageFixture(PageClass)` constructs a page object per test, `mockFixture(mock)`
-  binds a route mock to `page` — and are composed in `src/ui/fixtures/index.ts`;
-  specs `import { test } from '@ui/fixtures'` and never construct a page object.
+  binds a route mock to `page`. Specs never construct a page object.
 - **Feature flags are pinned on, never observed.** An auto fixture
   (`feature-flags.fixture.ts`) sets the app's `__BJJEIRE_TEST_FLAG_OVERRIDES__`
   global via `addInitScript`; the app layers flags as `DEFAULT_FLAGS → remote →
 overrides`, so this wins even if the remote fetch is slow or fails. Feature
   availability is a precondition of these specs, not their subject — without it a
-  failed flag fetch fails closed and every feature route redirects to `/about`,
+  failed flag fetch fails closed and the feature's route redirects away,
   producing failures far from the cause. Never assert the flag API.
-- Mocks live in `src/ui/mocks/` and are exposed to specs only through fixtures.
+- **Varying flags for one spec file** — `featureFlagOverrides` is a Playwright
+  _option_, so a file that deliberately exercises a disabled feature declares
+  `test.use({ featureFlagOverrides: { ...ALL_FEATURES_ENABLED, Stores: false } })`
+  at file scope (see `tests/layout/feature-flags.ui.acceptance.spec.ts`). Every
+  other spec keeps the pinned-on default. `test.use` also accepts Playwright's
+  built-in options (`colorScheme`, `viewport`, `timezoneId`, `storageState`, …),
+  but note it beats the _project_ value: a spec forcing `colorScheme: 'light'`
+  runs light in every project, including `a11y` and the dark snapshot project.
+- A feature's route mocks live in `tests/features/<feature>/mocks.ts` and reach specs
+  only through that feature's fixtures. `src/ui/mocks/` keeps just the feature-agnostic
+  machinery (`json-response`, `paginate`, `failure`); `failure.mock.ts` takes the route
+  to break as an argument, so nothing shared imports a feature.
 
 ### Snapshots
 

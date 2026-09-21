@@ -1,7 +1,7 @@
-import { SupportModal } from '@ui/pages/sections/bitcoin-support.modal';
 import { FooterSection } from '@ui/pages/sections/footer.section';
 import { HeaderSection } from '@ui/pages/sections/header.section';
 import { pageFixture } from './mock-fixture';
+import { SupportModal } from '@ui/pages/support/bitcoin-support.modal';
 
 export type { FooterSection, HeaderSection, SupportModal };
 

@@ -1,13 +1,15 @@
-import { test } from '@ui/fixtures';
+import { test, competitionsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
-import { emptyPage } from '../../testdata/mocks/empty-page';
+import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
 import {
   SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
   SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME,
-} from '../../testdata/seeded/competitions';
-import competitionsFixture from '../../testdata/mocks/competitions.page-1.json';
+} from './testdata/seeded';
+import competitionsFixture from './testdata/competitions.page-1.json';
+
+test.use(competitionsTestConfig);
 
 const seededCompetition = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC;
 const seededCompetitionCard = competitionCardFromDto(seededCompetition);
@@ -17,7 +19,7 @@ const PAGINATION_PAGE_SIZE = 10;
 const pagedCompetitions = paginatePages(competitionsFixture.data, PAGINATION_PAGE_SIZE, '/api/v1/competition');
 const firstPageCompetition = competitionsFixture.data
   .slice(0, PAGINATION_PAGE_SIZE)
-  .find(competition => competition.name === 'Grappling Series Cork Open Summer 2026');
+  .find((competition: { name: string }) => competition.name === 'Grappling Series Cork Open Summer 2026');
 const secondPageCompetition = competitionsFixture.data
   .slice(PAGINATION_PAGE_SIZE)
   .find(competition => competition.name === 'Grappling Industries Dublin');
@@ -102,7 +104,7 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     'Given the API request fails, when a visitor opens Competitions, then a network error message is shown',
     { tag: '@acceptance' },
     async ({ mockNetworkError, competitionsPage }) => {
-      await mockNetworkError('competitions');
+      await mockNetworkError();
       await competitionsPage.goTo();
       await competitionsPage.expectNetworkErrorMessage();
     },
@@ -112,7 +114,7 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
     'Given the API returns a server error, when a visitor opens Competitions, then a server error message is shown',
     { tag: '@acceptance' },
     async ({ mockServerError, competitionsPage }) => {
-      await mockServerError('competitions');
+      await mockServerError();
       await competitionsPage.goTo();
       await competitionsPage.expectServerErrorMessage();
     },

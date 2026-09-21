@@ -1,12 +1,14 @@
-import { test } from '@ui/fixtures';
+import { test, eventsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
-import { emptyPage } from '../../testdata/mocks/empty-page';
+import { emptyPage } from '../common/testdata/mocks/empty-page';
 import {
   SEEDED_EVENT_LEINSTER_OPEN_MAT,
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
-} from '../../testdata/seeded/events';
+} from './testdata/seeded';
+
+test.use(eventsTestConfig);
 
 const seededEvent = SEEDED_EVENT_LEINSTER_OPEN_MAT;
 const seededEventCard = eventCardFromDto(seededEvent);
@@ -136,7 +138,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given the API request fails, when a visitor opens Events, then a network error message is shown',
     { tag: '@acceptance' },
     async ({ mockNetworkError, eventsPage }) => {
-      await mockNetworkError('events');
+      await mockNetworkError();
       await eventsPage.goTo();
       await eventsPage.expectNetworkErrorMessage();
     },
@@ -146,7 +148,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     'Given the API returns a server error, when a visitor opens Events, then a server error message is shown',
     { tag: '@acceptance' },
     async ({ mockServerError, eventsPage }) => {
-      await mockServerError('events');
+      await mockServerError();
       await eventsPage.goTo();
       await eventsPage.expectServerErrorMessage();
     },

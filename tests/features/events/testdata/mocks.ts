@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { bjjEventsPageSchema } from '@api/features/events/events.schemas';
-import { mockJsonResponse, parseMockBody } from './json-response.mock';
+import { mockJsonResponse, parseMockBody } from '@ui/mocks/json-response.mock';
 
 export const EVENTS_ROUTE = /\/api\/v[12]\/bjjevent(?:\?|$)/i;
 

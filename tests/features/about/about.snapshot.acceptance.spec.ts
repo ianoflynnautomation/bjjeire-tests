@@ -1,4 +1,6 @@
-import { expect, test } from '@ui/fixtures';
+import { expect, test, aboutTestConfig } from './fixtures';
+
+test.use(aboutTestConfig);
 
 test.describe('About snapshot acceptance', { tag: ['@about', '@snapshot', '@desktop'] }, () => {
   test.skip(

@@ -129,7 +129,10 @@ export default [
     ...playwright.configs['flat/recommended'],
     rules: {
       ...playwright.configs['flat/recommended'].rules,
-      'playwright/no-skipped-test': 'error',
+      // Unconditional skips stay banned; `test.skip(condition, reason)` is the
+      // supported way to gate a spec on the environment (see
+      // tests/api/authorization.api.acceptance.spec.ts).
+      'playwright/no-skipped-test': ['error', { allowConditional: true }],
       'playwright/no-conditional-in-test': 'off',
       'playwright/prefer-web-first-assertions': 'error',
       'playwright/no-wait-for-timeout': 'error',

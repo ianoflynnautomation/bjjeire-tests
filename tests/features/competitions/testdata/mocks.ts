@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { competitionsPageSchema } from '@api/features/competitions/competitions.schemas';
-import { mockJsonResponse, mockPagedJsonResponse, parseMockBody } from './json-response.mock';
+import { mockJsonResponse, mockPagedJsonResponse, parseMockBody } from '@ui/mocks/json-response.mock';
 
 export const COMPETITIONS_ROUTE = /\/api\/v[12]\/competition(?:\?|$)/i;
 

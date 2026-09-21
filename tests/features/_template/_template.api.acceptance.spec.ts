@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { test, expect } from '@api/fixtures';
 import { API_BASE_PATH, get, paginatedResponseSchema, schemaFor } from '@api/support';
-import expectedTemplatePage1 from '../../testdata/expected/_template.page-1.json';
+import expectedTemplatePage1 from './_template.page-1.json';
 
 const TEMPLATE_ROUTE = `${API_BASE_PATH}/template`;
 

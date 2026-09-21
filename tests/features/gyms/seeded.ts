@@ -1,7 +1,7 @@
 import { ClassCategory, GymStatus, type GymDto } from '@api/features/gyms/gyms.types';
 import type { GymId } from '@shared/types';
-import { seededCoordinates } from './geo';
-import { partialNameOf } from './partial-name';
+import { seededCoordinates } from '../common/testdata/seeded/geo';
+import { partialNameOf } from '../common/testdata/seeded/partial-name';
 
 const gymId = (id: string): GymId => id as GymId;
 

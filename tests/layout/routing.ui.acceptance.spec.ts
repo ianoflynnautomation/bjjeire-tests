@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '@ui/fixtures';
+import { test } from '../features/events/fixtures';
 import { goto } from '@ui/support';
 
 const DEFAULT_PATH_PATTERN = /\/events(?:[/?#]|$)/;

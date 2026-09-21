@@ -1,6 +1,6 @@
 import type { CompetitionDto } from '@api/features/competitions/competitions.types';
 import type { CompetitionId } from '@shared/types';
-import { partialNameOf } from './partial-name';
+import { partialNameOf } from '../../common/testdata/seeded/partial-name';
 
 const competitionId = (id: string): CompetitionId => id as CompetitionId;
 

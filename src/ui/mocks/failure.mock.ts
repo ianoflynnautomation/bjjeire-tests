@@ -1,41 +1,30 @@
 import type { Page } from '@playwright/test';
-import { COMPETITIONS_ROUTE } from './competitions.mock';
-import { EVENTS_ROUTE } from './events.mock';
-import { GYMS_ROUTE } from './gyms.mock';
-import { STORES_ROUTE } from './stores.mock';
 
-const ROUTES = {
-  competitions: COMPETITIONS_ROUTE,
-  events: EVENTS_ROUTE,
-  gyms: GYMS_ROUTE,
-  stores: STORES_ROUTE,
-} as const;
+export type MockRoute = string | RegExp;
 
-export type ApiResource = keyof typeof ROUTES;
+const SERVER_ERROR = 500;
 
-export async function mockNetworkError(page: Page, resource: ApiResource): Promise<void> {
-  await page.route(ROUTES[resource], route => route.abort('failed'));
+function problemDetails(status: number): string {
+  return JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status });
 }
 
-export async function mockServerError(page: Page, resource: ApiResource, status = 500): Promise<void> {
-  await page.route(ROUTES[resource], route =>
-    route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status }),
-    }),
+// Takes the route to break rather than a feature name: a shared helper that
+// imported every feature's route constant would have to be edited whenever a
+// feature is added or removed.
+export async function mockNetworkError(page: Page, route: MockRoute): Promise<void> {
+  await page.route(route, handler => handler.abort('failed'));
+}
+
+export async function mockServerError(page: Page, route: MockRoute, status = SERVER_ERROR): Promise<void> {
+  await page.route(route, handler =>
+    handler.fulfill({ status, contentType: 'application/json', body: problemDetails(status) }),
   );
 }
 
-export async function mockServerErrorOnce(page: Page, resource: ApiResource, status = 500): Promise<void> {
+export async function mockServerErrorOnce(page: Page, route: MockRoute, status = SERVER_ERROR): Promise<void> {
   await page.route(
-    ROUTES[resource],
-    route =>
-      route.fulfill({
-        status,
-        contentType: 'application/json',
-        body: JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status }),
-      }),
+    route,
+    handler => handler.fulfill({ status, contentType: 'application/json', body: problemDetails(status) }),
     { times: 1 },
   );
 }

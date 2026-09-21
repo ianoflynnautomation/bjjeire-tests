@@ -1,8 +1,10 @@
-import { test } from '@ui/fixtures';
+import { test, storesTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
-import { emptyPage } from '../../testdata/mocks/empty-page';
-import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from '../../testdata/seeded/stores';
+import { emptyPage } from '../common/testdata/mocks/empty-page';
+import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './testdata/seeded';
+
+test.use(storesTestConfig);
 
 const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;
 const seededStoreCard = storeCardFromDto(seededStore);
@@ -65,7 +67,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given the API request fails, when a visitor opens Stores, then a network error message is shown',
     { tag: '@acceptance' },
     async ({ mockNetworkError, storesPage }) => {
-      await mockNetworkError('stores');
+      await mockNetworkError();
       await storesPage.goTo();
       await storesPage.expectNetworkErrorMessage();
     },
@@ -75,7 +77,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
     'Given the API returns a server error, when a visitor opens Stores, then a server error message is shown',
     { tag: '@acceptance' },
     async ({ mockServerError, storesPage }) => {
-      await mockServerError('stores');
+      await mockServerError();
       await storesPage.goTo();
       await storesPage.expectServerErrorMessage();
     },

@@ -35,7 +35,7 @@
 
 ### Key Entities
 
-- Seeded from `tests/testdata/seeded/<feature>.ts`
+- Seeded from `tests/features/<feature>/seeded.ts`
 
 ## Success Criteria _(mandatory)_
 

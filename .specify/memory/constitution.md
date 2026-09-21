@@ -16,7 +16,7 @@ integers as the story — assert the business outcome.
 ### II. Spec is the oracle; seeded data is the fixture
 
 Feature behaviour is specified in `specs/features/` here and in
-`bjjeire-java/specs/`. Tests consume the seeded DTOs in `tests/testdata/seeded/`.
+`bjjeire-java/specs/`. Tests consume the seeded DTOs in `tests/features/<feature>/seeded.ts`.
 Partial search terms live next to those DTOs (`SEEDED_*_PARTIAL_NAME`), never
 `name.slice(...)` in a spec. Environments hold full datasets — search or
 filter before asserting a specific card.
@@ -34,9 +34,9 @@ flag API.
 ```
 tests/features/<feature>/                 # spec files only
 src/ui/pages/<feature>/                   # page object class; list pages extend ListPage
-src/ui/fixtures/<feature>.fixture.ts      # one fixture per feature
-src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts + .builder.ts
-tests/testdata/seeded/<feature>.ts        # DTO-typed seeded fixtures
+tests/features/<feature>/fixtures.ts      # feature's own `test`, extends fixtures/base.ts
+src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts
+tests/features/<feature>/seeded.ts        # DTO-typed seeded fixtures + mocks.ts
 ```
 
 Page objects are classes taking `page` in the constructor. No page singletons, no

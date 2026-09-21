@@ -25,7 +25,7 @@ internals live in the app repo spec. Do not contradict it.
 
 ## Seeded fixtures
 
-- DTO: `tests/testdata/seeded/<feature>.ts`
+- DTO: `tests/features/<feature>/seeded.ts`
 - Partial name: `SEEDED_*_PARTIAL_NAME`
 - Search is client-side on the loaded page: after `searchFor`, assert
   `expectResultCount(1)` for uniqueness.
@@ -35,7 +35,7 @@ internals live in the app repo spec. Do not contradict it.
 - [ ] `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`
 - [ ] `tests/features/<feature>/<feature>.api.acceptance.spec.ts`
 - [ ] Page objects under `src/ui/pages/<feature>/`
-- [ ] Fixture registered in `src/ui/fixtures/index.ts`
+- [ ] Feature `test` + `<feature>TestConfig` in `tests/features/<feature>/fixtures.ts`; specs import `./fixtures` and `test.use(<feature>TestConfig)`
 - [ ] Zod page schema in `src/api/features/<feature>/`
 
 ## Out of scope

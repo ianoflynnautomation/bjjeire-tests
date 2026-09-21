@@ -1,5 +1,7 @@
-import { expect, test } from '@ui/fixtures';
-import gymsFixture from '../../testdata/mocks/gyms.page-1.json';
+import { expect, test, gymsTestConfig } from './fixtures';
+import gymsFixture from './testdata/gyms.page-1.json';
+
+test.use(gymsTestConfig);
 
 test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@desktop'] }, () => {
   test.beforeEach(async ({ mockGyms }) => {
