@@ -135,6 +135,18 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
 `gh aw compile spec-review playwright-fix`. Keep the `workflows-aw` and
 `workflows` copies identical.
 
+## Browser exploration
+
+Live browsing uses either the Playwright MCP server or the CLI shipped with the
+pinned Playwright (`npx playwright cli` from the repo root). Both are valid; the
+procedure (snapshot, act, re-snapshot, close) lives in
+[`.claude/skills/playwright-cli/SKILL.md`](.claude/skills/playwright-cli/SKILL.md).
+CLI task notes (tests, mocks, storage, traces, video, and the rest) are in
+that skill's `references/` directory.
+The companion skills `playwright-explore-website`, `playwright-generate-test`, and
+`playwright-automation-fill-in-form` call that procedure. Specs generated from a
+session still follow the feature-slice rules below; snapshot refs are session-only.
+
 ## Test conventions
 
 ### File naming
@@ -308,4 +320,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`AGENTS.md` points here). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-09-18.
+script, project, or workflow it documents. Last reviewed: 2026-09-23.

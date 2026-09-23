@@ -1,17 +1,13 @@
 ---
 name: playwright-generate-test
-description: 'Generate a Playwright test based on a scenario using Playwright MCP'
+description: Generate a Playwright acceptance spec from a scenario by driving the live page with Playwright MCP or the pinned CLI first. Use when asked to turn a user flow into a test.
 ---
 
-# Test Generation with Playwright MCP
+# Test generation
 
-Your goal is to generate a Playwright test based on the provided scenario after completing all prescribed steps.
+Follow `.claude/skills/playwright-cli/SKILL.md` and `.specify/rules/playwright-rules.md`. CLI codegen, `--debug=cli` attach, and healing are in `.claude/skills/playwright-cli/references/test-generation.md`.
 
-## Specific Instructions
-
-- You are given a scenario, and you need to generate a playwright test for it. If the user does not provide a scenario, you will ask them to provide one.
-- DO NOT generate test code prematurely or based solely on the scenario without completing all prescribed steps.
-- DO run steps one by one using the tools provided by the Playwright MCP.
-- Only after all steps are completed, emit a Playwright TypeScript test that uses `@playwright/test` based on message history
-- Save generated test file in the tests directory
-- Execute the test file and iterate until the test passes
+1. If the user gives no scenario, ask for one. Do not write a spec from the scenario text alone.
+2. Drive every step with MCP or the CLI. Snapshot before each action.
+3. After the flow succeeds, add the spec under `tests/features/<feature>/` using that feature's `./fixtures` and page object. Titles: `Given <context>, when <action>, then <business outcome>`, matching `specs/features/` when a living spec exists. Locators go through the page object. On the CLI, `generate-locator` is the bridge from a ref. Never paste snapshot refs into a spec.
+4. Run that spec and fix it until it passes. If the app is wrong, stop and report it. Do not weaken the assertion.

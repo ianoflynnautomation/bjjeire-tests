@@ -21,3 +21,5 @@ level only — unit/integration/security tests live in the app repository.
 - Living acceptance specs live in `specs/features/`; Playwright titles must match them.
 - Keep generated reports and test output out of source changes.
 - Do not hand-edit `.github/workflows/*.lock.yml` — compile from the Markdown source.
+- Browser exploration uses Playwright MCP or the pinned CLI (`npx playwright cli`).
+  Procedure: `.claude/skills/playwright-cli/SKILL.md`.

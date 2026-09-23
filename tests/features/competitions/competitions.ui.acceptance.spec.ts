@@ -7,7 +7,7 @@ import {
   SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
   SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME,
 } from './testdata/seeded';
-import competitionsFixture from './testdata/competitions.page-1.json';
+import competitionsFixture from './testdata/competitions-pagination-page-1.json';
 
 test.use(competitionsTestConfig);
 

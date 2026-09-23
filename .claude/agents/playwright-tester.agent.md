@@ -24,8 +24,10 @@ model: Claude Sonnet 4
 
 ## Core Responsibilities
 
-1.  **Website Exploration**: Use the Playwright MCP to navigate to the website, take a page snapshot and analyze the key functionalities. Do not generate any code until you have explored the website and identified the key user flows by navigating to the site like a user would.
-2.  **Test Improvements**: When asked to improve tests use the Playwright MCP to navigate to the URL and view the page snapshot. Use the snapshot to identify the correct locators for the tests. You may need to run the development server first.
-3.  **Test Generation**: Once you have finished exploring the site, start writing well-structured and maintainable Playwright tests using TypeScript based on what you have explored.
-4.  **Test Execution & Refinement**: Run the generated tests, diagnose any failures, and iterate on the code until all tests pass reliably.
-5.  **Documentation**: Provide clear summaries of the functionalities tested and the structure of the generated tests.
+Browser driving uses Playwright MCP or the pinned CLI, per `.claude/skills/playwright-cli/SKILL.md`. Specs follow `.specify/rules/playwright-rules.md` and `CLAUDE.md`.
+
+1. **Website exploration.** Open the page, snapshot, and walk the user flows before writing code.
+2. **Test improvements.** Snapshot the live page with MCP or the CLI and fix locators from that snapshot, then the feature page object. The app under test runs on the host; start it or the port-forward before exploring.
+3. **Test generation.** After the flow has been driven, add a TypeScript acceptance spec in the feature slice. Snapshot refs stay in the CLI session; specs use page objects.
+4. **Execution.** Run the spec and iterate until it passes. If the app is wrong, report that instead of weakening the assertion.
+5. **Documentation.** Summarize the flows covered and where the spec and page object live. Close the browser.

@@ -11,6 +11,7 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+.playwright-cli/
 
 /allure-results/
 /allure-report/

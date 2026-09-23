@@ -1,17 +1,13 @@
 ---
 name: playwright-explore-website
-description: 'Website exploration for testing using Playwright MCP'
+description: Explore a website for acceptance testing with Playwright MCP or the pinned CLI. Use when asked to explore a page, map user flows, or find what to cover.
 ---
 
-# Website Exploration for Testing
+# Website exploration for testing
 
-Your goal is to explore the website and identify key functionalities.
+Follow `.claude/skills/playwright-cli/SKILL.md`.
 
-## Specific Instructions
-
-1. Navigate to the provided URL using the Playwright MCP Server. If no URL is provided, ask the user to provide one.
-2. Identify and interact with 3-5 core features or user flows.
-3. Document the user interactions, relevant UI elements (and their locators), and the expected outcomes.
-4. Close the browser context upon completion.
-5. Provide a concise summary of your findings.
-6. Propose and generate test cases based on the exploration.
+1. Open the URL the user gave. If they mean the app under test and give no URL, use `http://127.0.0.1:8080`. If neither is clear, ask for a URL.
+2. Walk 3–5 core flows. Snapshot before each interaction. Record the accessible name and role, plus the outcome you observed.
+3. Close the browser.
+4. Summarize the flows. Propose acceptance cases whose titles match `specs/features/` and whose files follow `.specify/rules/playwright-rules.md`. Do not write those specs until asked.

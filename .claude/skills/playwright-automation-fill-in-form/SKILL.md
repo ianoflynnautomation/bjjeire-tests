@@ -1,28 +1,13 @@
 ---
 name: playwright-automation-fill-in-form
-description: 'Automate filling in a form using Playwright MCP'
+description: Fill a web form with Playwright MCP or the pinned CLI and stop before submit. Use when asked to complete a form, enter field values, or upload a file into a form.
 ---
 
-# Automating Filling in a Form with Playwright MCP
+# Fill a form
 
-Your goal is to automate the process of filling in a form using Playwright MCP.
+Follow `.claude/skills/playwright-cli/SKILL.md`.
 
-## Specific Instructions
-
-Navigate to https://forms.microsoft.com/url-of-my-form
-
-### Fill in the form with the following details:
-
-1. Show: playwright live
-
-2. Date: 15 July
-
-3. Time: 1:00 AM
-
-4. Topic: Playwright Live - Latest updates on Playwright MCP + Live Demo
-
-5. Upload image: /Users/myuserName/Downloads/my-image.png
-
-DO NOT SUBMIT THE FORM.
-
-Ask for a review of the form before submitting it.
+1. Open the URL the user gave and snapshot the form. If they give no URL or no field values, ask for them.
+2. Fill each field from the latest snapshot ref. On the CLI, file inputs use `upload` with an absolute path, or `drop <ref> --path=<absolute path>`. On MCP, use `browser_file_upload` or `browser_drop`.
+3. Snapshot again and read the values back.
+4. Do not submit. Ask the user to review the filled form first. Submit only after they say to.
