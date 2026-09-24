@@ -1,7 +1,7 @@
 # bjjeire-tests
 
 [![CI](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml)
-![Playwright](https://img.shields.io/badge/Playwright-1.61-2EAD33?logo=playwright&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.63-2EAD33?logo=playwright&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
 ![Node](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white)
 
@@ -43,16 +43,16 @@ failure by design; CI runs the whole suite.
 
 ## Running tests
 
-| Command                              | What it runs                                                      |
-| ------------------------------------ | ----------------------------------------------------------------- |
-| `npm run test:smoke`                 | Critical subset (`@smoke`)                                        |
-| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)                           |
-| `npm run test:snapshots`             | Visual + aria snapshots                                           |
-| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route                                 |
-| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)                           |
-| `npm run test:docker`                | Full suite against the Docker Compose profile                     |
-| `npm run test:dev` / `test:dev:api`  | Live AKS **dev** cluster — see [docs/dev-env.md](docs/dev-env.md) |
-| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`                                |
+| Command                              | What it runs                                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test:smoke`                 | Critical subset (`@smoke`)                                                                                                |
+| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)                                                                                   |
+| `npm run test:snapshots`             | Visual + aria snapshots                                                                                                   |
+| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route                                                                                         |
+| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)                                                                                   |
+| `npm run test:docker`                | Full suite against the Docker Compose profile                                                                             |
+| `npm run test:dev` / `test:dev:api`  | Live AKS **dev** cluster — see [docs/dev-env.md](docs/dev-env.md). Auth: [docs/authentication.md](docs/authentication.md) |
+| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`                                                                                        |
 
 Handy filters (any Playwright flag works):
 

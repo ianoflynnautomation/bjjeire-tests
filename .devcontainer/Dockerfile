@@ -17,12 +17,12 @@
 # does that automatically (the "playwright" group in renovate.json also matches
 # this Dockerfile).
 # ---------------------------------------------------------------------------
-FROM mcr.microsoft.com/playwright:v1.61.0-noble
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
 
 LABEL org.opencontainers.image.title="bjjeire/playwright-devcontainer" \
       org.opencontainers.image.description="Dev container for the BjjEire Playwright acceptance suite" \
       org.opencontainers.image.source="https://github.com/ianoflynnautomation/bjjeire-tests" \
-      org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.61.0-noble"
+      org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.63.0-noble"
 
 ARG USERNAME=vscode
 

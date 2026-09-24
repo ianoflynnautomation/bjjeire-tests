@@ -3,12 +3,12 @@
 Playwright + TypeScript acceptance test suite for the BjjEire web application (read-only
 BJJ directory: gyms, events, competitions, stores). Tests run against local (minikube),
 Docker, and remote (dev / staging) environments. Acceptance-level tests only — unit/integration tests
-live in the app repository (`~/Sources/BjjEire`). Against live AKS **dev**: [docs/dev-env.md](docs/dev-env.md).
+live in the app repository (`~/Sources/BjjEire`). Against live AKS **dev**: [docs/dev-env.md](docs/dev-env.md). Auth for `.env.dev.local`: [docs/authentication.md](docs/authentication.md).
 
 ## Stack
 
 - **Runtime**: Node 22, TypeScript 5.7, CommonJS (`"type": "commonjs"`)
-- **Test framework**: `@playwright/test` 1.61.0 (pinned; must match the CI runner image)
+- **Test framework**: `@playwright/test` 1.63.0 (pinned; must match the CI runner image)
 - **Validation**: Zod v4 — wire schemas in `src/api/features/*/​*.schemas.ts`
 - **A11y**: `@axe-core/playwright`
 - **Lint**: ESLint v9 flat config + Prettier 3, Husky pre-commit runs lint-staged
@@ -21,7 +21,7 @@ npm run test:acceptance   # Full suite (@acceptance = every test)
 npm run test:snapshots    # Snapshot project (screenshots + aria)
 npm run test:a11y         # Axe WCAG 2.1 A/AA sweep per route
 npm run test:mobile       # @mobile tests (mobile-iphone + mobile-galaxy projects)
-npm run test:dev          # Live AKS dev UI (see docs/dev-env.md)
+npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentication.md)
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
@@ -53,7 +53,7 @@ kubectl rollout restart deploy/bjj-api -n bjjeire-app
 ## Dev container
 
 `.devcontainer/` builds on the **pinned CI image**
-(`mcr.microsoft.com/playwright:v1.61.0-noble`), not a generic Node image: browsers
+(`mcr.microsoft.com/playwright:v1.63.0-noble`), not a generic Node image: browsers
 come pre-installed, and `-linux.png` baselines regenerated inside it match what CI
 compares. The tag must track `@playwright/test` — Renovate's `playwright` group
 covers this Dockerfile too.

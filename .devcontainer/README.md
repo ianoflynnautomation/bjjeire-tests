@@ -14,7 +14,7 @@ devcontainer exec --workspace-folder . npm run test:smoke
 
 | Piece          | Choice                                                              |
 | -------------- | ------------------------------------------------------------------- |
-| Base image     | `mcr.microsoft.com/playwright:v1.61.0-noble` — the image CI runs in |
+| Base image     | `mcr.microsoft.com/playwright:v1.63.0-noble` — the image CI runs in |
 | User           | `vscode` (uid 1000, passwordless sudo), never root                  |
 | Browsers       | Pre-baked at `/ms-playwright`; nothing to download on first start   |
 | Features       | common-utils (zsh), github-cli, docker-in-docker, claude-code       |

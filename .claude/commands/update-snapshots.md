@@ -23,7 +23,7 @@ Steps:
      -v "$PWD":/work -w /work \
      -e CI=true -e APP_ENV=local -e HOST_RELAY_PORTS=8080 \
      -e BASE_URL=http://localhost:8080 -e API_URL=http://localhost:8080 \
-     mcr.microsoft.com/playwright:v1.61.0-noble \
+     mcr.microsoft.com/playwright:v1.63.0-noble \
      bash -c "node .devcontainer/features/host-relay/host-relay.cjs & sleep 1 && npx playwright test -c playwright.ui.config.ts --project=snapshots --update-snapshots"
    ```
 

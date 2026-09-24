@@ -62,6 +62,8 @@ Leave `PW_UI_ENTRA_AUTH` unset/`false`. Public listing pages do not use in-app M
 
 ## Auth: what is sent
 
+The full strategy — gates, when a Bearer is minted, and what `.env.dev.local` contributes on a laptop — is [authentication.md](authentication.md). Summary for this cluster:
+
 | Layer             | Local `APP_ENV=dev`                                                | Why                                                                                                                                                                                                                                |
 | ----------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cloudflare Access | `CF-Access-Client-Id` / `CF-Access-Client-Secret` on every request | Required or the edge returns 302/401                                                                                                                                                                                               |
