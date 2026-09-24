@@ -1,4 +1,4 @@
-import { mockCompetitions, mockCompetitionsPages, COMPETITIONS_ROUTE } from './testdata/mocks';
+import { mockCompetitions, mockCompetitionsPages, COMPETITIONS_ROUTE } from './mocks';
 import { CompetitionsPage } from '@ui/pages/competitions/competitions.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';

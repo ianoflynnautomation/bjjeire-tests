@@ -170,7 +170,7 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
 1. **Real seeded data first.** Acceptance specs assert the seeded fixtures in
    `tests/features/<feature>/seeded.ts` against the real backend (the seeder lives in
    the app repo). Shared helpers — `seededCoordinates`, `partialNameOf` — stay in
-   `tests/testdata/seeded/`.
+   `tests/features/common/testdata/seeded/`.
 2. **Environments hold full datasets** (e.g. 61 gyms locally), not just the acceptance
    fixtures — never assert a fixture card is on page 1 of an _unfiltered_ list. Narrow
    the view (search/filter) first, or prove state changes via search. Search is
@@ -232,7 +232,12 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   names its fixture set (`GymsUiFixtures`, …) so helpers can take it as a
   parameter, and exports a `<feature>TestConfig` that every one of its UI specs
   passes to `test.use(...)` — empty by default, and the single place to put an
-  option the whole feature needs. A feature is
+  option the whole feature needs. Specs import `expect` from that same module
+  (`./fixtures`, `@ui/fixtures`, or `@api/fixtures`). The UI chain and the API
+  chain stay separate, so an API spec never imports `@ui/fixtures` and never
+  launches a browser. A layout spec that needs one feature page object extends
+  `@ui/fixtures` in that file with `pageFixture`; it does not import the
+  feature's mocks. A feature is
   exactly three directories — `tests/features/<f>/`, `src/ui/pages/<f>/` and
   `src/api/features/<f>/` — and `rm -rf` on all three removes it completely:
   typecheck, lint and the remaining suite stay green with no shared file edited.
@@ -318,4 +323,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`AGENTS.md` points here). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-09-23.
+script, project, or workflow it documents. Last reviewed: 2026-09-24.

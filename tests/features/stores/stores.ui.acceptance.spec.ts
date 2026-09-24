@@ -2,7 +2,7 @@ import { test, storesTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
-import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './testdata/seeded';
+import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './seeded';
 
 test.use(storesTestConfig);
 

@@ -2,7 +2,7 @@
 
 **App spec**: `bjjeire-java/specs/features/competitions.md`
 **Slice**: `tests/features/competitions/`
-**Seeded**: `tests/testdata/seeded/competitions.ts`
+**Seeded**: `tests/features/competitions/seeded.ts`
 
 ## UI scenarios
 

@@ -2,8 +2,8 @@ import { test, templateTestConfig } from './fixtures';
 
 test.use(templateTestConfig);
 
-// For list-style features, prefer defineListAcceptance from tests/shared/list-acceptance
-// and put expected card data under tests/testdata/<feature>.ts.
+// Seeded DTOs live in `./seeded.ts`. Route mocks live in `./mocks.ts` and are
+// exposed through `./fixtures`. Static JSON bodies stay in `./testdata/`.
 
 test.describe('Template UI acceptance', { tag: ['@template', '@ui', '@desktop'] }, () => {
   test(

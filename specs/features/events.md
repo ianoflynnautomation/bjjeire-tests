@@ -2,7 +2,7 @@
 
 **App spec**: `bjjeire-java/specs/features/events.md`
 **Slice**: `tests/features/events/`
-**Seeded**: `tests/testdata/seeded/events.ts`
+**Seeded**: `tests/features/events/seeded.ts`
 
 ## UI scenarios
 

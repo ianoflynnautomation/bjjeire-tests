@@ -1,4 +1,4 @@
-import { mockBjjEvents, EVENTS_ROUTE } from './testdata/mocks';
+import { mockBjjEvents, EVENTS_ROUTE } from './mocks';
 import { EventsPage } from '@ui/pages/events/events.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';

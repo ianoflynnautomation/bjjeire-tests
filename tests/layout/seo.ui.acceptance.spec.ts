@@ -1,5 +1,4 @@
-import { expect } from '@playwright/test';
-import { test } from '@ui/fixtures';
+import { test, expect } from '@ui/fixtures';
 
 const SITE_TITLE = 'BJJ Éire — Find BJJ Events & Gyms Across Ireland';
 const SITE_DESCRIPTION =

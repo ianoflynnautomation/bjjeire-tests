@@ -1,5 +1,4 @@
-import { expect } from '@playwright/test';
-import { test } from '@ui/fixtures';
+import { test, expect } from '@ui/fixtures';
 import { goto } from '@ui/support';
 
 test.describe('Theme UI acceptance', { tag: ['@layout', '@theme', '@ui', '@desktop'] }, () => {

@@ -12,9 +12,9 @@ import {
 
 /**
  * Cross-cutting fixtures only: app chrome and the feature-flag option.
- * A feature's own page object and route mocks live in that feature's fixture
- * module (`@ui/fixtures/gyms`, …) which extends this one — so adding or removing
- * a feature never edits a shared file.
+ * A feature's own page object and route mocks live in
+ * `tests/features/<feature>/fixtures.ts`, which extends this module. Adding or
+ * removing a feature leaves this file untouched.
  */
 export type CoreUiFixtures = {
   /**

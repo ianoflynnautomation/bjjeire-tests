@@ -6,7 +6,7 @@ import {
   expectPagesAreDistinct,
   expectRelativeOrder,
 } from '@api/support';
-import { SEEDED_COMPETITION_FINISHED_KERRY_COAST, SEEDED_COMPETITIONS_BY_START_DATE } from './testdata/seeded';
+import { SEEDED_COMPETITION_FINISHED_KERRY_COAST, SEEDED_COMPETITIONS_BY_START_DATE } from './seeded';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;

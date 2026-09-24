@@ -6,7 +6,7 @@ import {
   expectPagesAreDistinct,
   expectRelativeOrder,
 } from '@api/support';
-import { SEEDED_STORES_BY_NAME } from './testdata/seeded';
+import { SEEDED_STORES_BY_NAME } from './seeded';
 
 const FULL_PAGE_SIZE = 100;
 const SMALL_PAGE_SIZE = 2;

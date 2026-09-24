@@ -31,6 +31,7 @@ Titles: `Given <context>, when <action>, then <business outcome>`.
 ## Assertions and navigation
 
 - Web-first only. No `waitForTimeout()`, no polling loops.
+- Import `expect` from the same module as `test` (`./fixtures`, `@ui/fixtures`, or `@api/fixtures`).
 - Navigate with `gotoRoute` / `gotoAppShell`, not bare `page.goto`
   (exceptions: SEO spec, snapshot `load`).
 - API specs assert values and domain invariants, not `typeof`. Zod already

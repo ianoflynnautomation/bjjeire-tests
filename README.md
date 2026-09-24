@@ -131,11 +131,11 @@ and `BjjEire` `pr-env-validation.yml` (PR previews).
 ## Project structure
 
 ```
-tests/features/<feature>/            Spec files (Given/when/then titles)
-tests/testdata/seeded/               DTO-typed seeded fixtures
-src/ui/pages/<feature>/              Page objects (pure functions)
-src/ui/fixtures/                     Playwright fixtures (composed in index.ts)
-src/api/features/<feature>/          Typed API clients + Zod schemas + builders
+tests/features/<feature>/            Specs, fixtures.ts, mocks.ts, seeded.ts
+tests/features/common/testdata/      Shared seeded helpers (coordinates, partial names)
+src/ui/pages/<feature>/              Page objects
+src/ui/fixtures/                     Cross-cutting Playwright fixtures (base.ts)
+src/api/features/<feature>/          Typed API clients, Zod schemas, DTO types
 .github/workflows/                   Internal CI + reusable workflows
 ```
 

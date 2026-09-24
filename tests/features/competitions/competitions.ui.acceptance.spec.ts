@@ -3,10 +3,7 @@ import { faker } from '@faker-js/faker';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
-import {
-  SEEDED_COMPETITION_DONEGAL_GI_CLASSIC,
-  SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME,
-} from './testdata/seeded';
+import { SEEDED_COMPETITION_DONEGAL_GI_CLASSIC, SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME } from './seeded';
 import competitionsFixture from './testdata/competitions-pagination-page-1.json';
 
 test.use(competitionsTestConfig);

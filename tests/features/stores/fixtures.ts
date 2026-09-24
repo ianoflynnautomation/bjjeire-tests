@@ -1,4 +1,4 @@
-import { mockStores, STORES_ROUTE } from './testdata/mocks';
+import { mockStores, STORES_ROUTE } from './mocks';
 import { StoresPage } from '@ui/pages/stores/stores.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';

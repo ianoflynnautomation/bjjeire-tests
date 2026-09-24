@@ -6,7 +6,7 @@ import {
   SEEDED_EVENT_LEINSTER_OPEN_MAT,
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
-} from './testdata/seeded';
+} from './seeded';
 
 test.use(eventsTestConfig);
 

@@ -1,7 +1,6 @@
 import { AxeBuilder } from '@axe-core/playwright';
-import { expect } from '@playwright/test';
 import { TIMEOUTS } from '@shared/config/timeouts';
-import { test } from '@ui/fixtures';
+import { test, expect } from '@ui/fixtures';
 import { gotoRoute } from '@ui/support';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];

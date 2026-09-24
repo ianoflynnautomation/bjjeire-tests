@@ -1,5 +1,4 @@
-import { expect } from '@playwright/test';
-import { test } from '@ui/fixtures';
+import { test, expect } from '@ui/fixtures';
 import { HEADER_NAV_LINKS } from '@ui/pages/sections/header.constants';
 import { goto } from '@ui/support';
 

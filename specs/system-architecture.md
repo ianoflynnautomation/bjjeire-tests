@@ -33,7 +33,7 @@ smoke + a11y only.
 ## Contracts this suite owns
 
 - Zod wire schemas: `src/api/features/*/*.schemas.ts`
-- Seeded DTOs: `tests/testdata/seeded/`
+- Seeded DTOs: `tests/features/<feature>/seeded.ts` (shared helpers in `tests/features/common/testdata/seeded/`)
 - Page objects and `data-testid` usage (IDs themselves are defined in the SPA)
 
 A Zod change without a matching `bjjeire-java` OpenAPI/DTO change is schema

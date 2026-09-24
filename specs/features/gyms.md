@@ -3,7 +3,7 @@
 **App spec**: `bjjeire-java/specs/features/gyms.md`
 **Database**: `bjjeire-java/specs/database-contracts/gym.md`
 **Slice**: `tests/features/gyms/` · `src/ui/pages/gyms/` · `src/api/features/gyms/`
-**Seeded**: `tests/testdata/seeded/gyms.ts`
+**Seeded**: `tests/features/gyms/seeded.ts`
 
 ## Scenarios (must match test titles)
 

@@ -1,6 +1,6 @@
 import type { StoreDto } from '@api/features/stores/stores.types';
 import type { StoreId } from '@shared/types';
-import { partialNameOf } from '../../common/testdata/seeded/partial-name';
+import { partialNameOf } from '../common/testdata/seeded/partial-name';
 
 const storeId = (id: string): StoreId => id as StoreId;
 

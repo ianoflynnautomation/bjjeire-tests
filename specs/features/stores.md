@@ -2,7 +2,7 @@
 
 **App spec**: `bjjeire-java/specs/features/stores.md`
 **Slice**: `tests/features/stores/`
-**Seeded**: `tests/testdata/seeded/stores.ts`
+**Seeded**: `tests/features/stores/seeded.ts`
 
 ## UI scenarios
 

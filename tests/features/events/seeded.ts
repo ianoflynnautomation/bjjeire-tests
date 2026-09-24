@@ -6,8 +6,8 @@ import {
   type BjjEventDto,
 } from '@api/features/events/events.types';
 import type { EventId } from '@shared/types';
-import { seededCoordinates } from '../../common/testdata/seeded/geo';
-import { partialNameOf } from '../../common/testdata/seeded/partial-name';
+import { seededCoordinates } from '../common/testdata/seeded/geo';
+import { partialNameOf } from '../common/testdata/seeded/partial-name';
 
 const eventId = (id: string): EventId => id as EventId;
 
