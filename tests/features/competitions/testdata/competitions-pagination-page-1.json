@@ -8,14 +8,12 @@
       "country": "Ireland",
       "websiteUrl": "https://smoothcomp.com/en/event/28532",
       "registrationUrl": "https://smoothcomp.com/en/event/28532",
-      "logoUrl": null,
       "tags": ["grappling-league", "juniors", "kids"],
       "startDate": "2026-06-13T00:00:00Z",
       "endDate": "2026-06-13T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439124",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grappling-series-cork-open-summer-2026",
@@ -31,8 +29,7 @@
       "endDate": "2026-06-14T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439128",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grapplecity-connaught-summer-open-2026",
@@ -48,8 +45,7 @@
       "endDate": "2026-06-21T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439132",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grapplecity-ulster-open-2026",
@@ -65,8 +61,7 @@
       "endDate": "2026-06-28T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439126",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grapplecity-munster-summer-open-2026",
@@ -82,8 +77,7 @@
       "endDate": "2026-07-05T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439129",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "naga-ireland-grappling-championship-2026",
@@ -99,8 +93,7 @@
       "endDate": "2026-07-25T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439107",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "elite-grappling-ireland-no-gi-summer-open-2026",
@@ -116,8 +109,7 @@
       "endDate": "2026-08-01T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439121",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "national-mma-league-29-2026",
@@ -133,8 +125,7 @@
       "endDate": "2026-08-30T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439118",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "adcc-irish-open-championship-2026",
@@ -150,8 +141,7 @@
       "endDate": "2026-09-05T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439110",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "irish-jiu-jitsu-nationals-2026",
@@ -167,8 +157,7 @@
       "endDate": "2026-09-27T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439115",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "kilkenny-juniors-grappling-league-viii-2026",
@@ -178,14 +167,12 @@
       "country": "Ireland",
       "websiteUrl": "https://smoothcomp.com/en/event/28540",
       "registrationUrl": "https://smoothcomp.com/en/event/28540",
-      "logoUrl": null,
       "tags": ["grappling-league", "juniors", "kids"],
       "startDate": "2026-10-10T00:00:00Z",
       "endDate": "2026-10-10T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439125",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "national-mma-league-30-2026",
@@ -201,8 +188,7 @@
       "endDate": "2026-10-25T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439119",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grappling-industries-dublin-2026-2",
@@ -212,14 +198,12 @@
       "country": "Ireland",
       "websiteUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
       "registrationUrl": "https://grapplingindustries.smoothcomp.com/en/event/28953",
-      "logoUrl": null,
       "tags": ["grappling-industries", "gi", "no-gi", "round-robin"],
       "startDate": "2026-11-15T00:00:00Z",
       "endDate": "2026-11-15T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439114",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "national-mma-league-31-2026",
@@ -235,8 +219,7 @@
       "endDate": "2026-11-29T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439120",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "dublin-international-open-2026-subonly",
@@ -252,8 +235,7 @@
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439133",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grapplecity-munster-winter-open-2026",
@@ -269,8 +251,7 @@
       "endDate": "2026-12-06T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439130",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     },
     {
       "slug": "grapplecity-connaught-winter-open-2026",
@@ -286,8 +267,7 @@
       "endDate": "2026-12-13T00:00:00Z",
       "isActive": true,
       "id": "507f1f77bcf86cd799439131",
-      "createdOnUtc": "0001-01-01T00:00:00",
-      "updatedOnUtc": null
+      "createdOnUtc": "0001-01-01T00:00:00"
     }
   ],
   "pagination": {
@@ -296,8 +276,6 @@
     "pageSize": 25,
     "totalPages": 1,
     "hasNextPage": false,
-    "hasPreviousPage": false,
-    "nextPageUrl": null,
-    "previousPageUrl": null
+    "hasPreviousPage": false
   }
 }

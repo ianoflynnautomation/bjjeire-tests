@@ -54,12 +54,10 @@ function resolveAuthContext(): AuthContext {
   };
 }
 
-/** Desktop projects pin one shared viewport, whatever the device preset says. */
 function desktopUse(ctx: AuthContext, device: UiUse, overrides: UiUse = {}): UiUse {
   return { ...device, viewport: DESKTOP_VIEWPORT, ...overrides, ...ctx.use };
 }
 
-/** Mobile projects keep the device preset's own viewport and scale factor. */
 function mobileUse(ctx: AuthContext, device: UiUse): UiUse {
   return { ...device, ...ctx.use };
 }

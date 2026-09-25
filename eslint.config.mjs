@@ -18,6 +18,7 @@ export default [
       'allure-results/**',
       'allure-report/**',
       '**/*.js',
+      'src/api/generated/zod.gen.ts',
     ],
   },
 

@@ -20,8 +20,9 @@ Layout:
   different still calls `test.use({ ... })` in its own file, which wins over the
   feature config
 - `src/api/features/<feature>/` holds `<feature>.api.ts` (typed client),
-  `<feature>.types.ts` (DTOs mirroring the app repo) and `<feature>.schemas.ts` (Zod
-  wire schemas — also used by the mock drift guard). The app is read-only, so there
+  `<feature>.types.ts` (DTOs mirroring the app repo) and `<feature>.schemas.ts`.
+  The page schema is the generated OpenAPI schema (`npm run gen:api-schemas`),
+  re-exported for the client and the mock drift guard. The app is read-only, so there
   are no entity builders: `tests/features/<feature>/seeded.ts` is the data.
 - `tests/features/<feature>/seeded.ts` for DTO-typed seeded fixtures and
   `SEEDED_*_PARTIAL_NAME` search terms (guarded by `partialNameOf`)

@@ -27,7 +27,8 @@ Steps:
      `test.use(<feature>TestConfig)`)
    - `src/api/features/stores/` (the simplest slice) → `src/api/features/$ARGUMENTS/`:
      `.api.ts` (one `get` call per endpoint), `.types.ts` (DTOs) and `.schemas.ts`
-     (Zod page schema — required by the mock drift guard)
+     (re-export the generated OpenAPI page schema — required by the mock drift guard).
+     Regenerate `src/api/generated/zod.gen.ts` when the feature is in the served spec.
 3. Replace all `_template` references with `$ARGUMENTS`.
 4. Nothing central to register: `tests/features/$ARGUMENTS/fixtures.ts` exports its
    own `test`, and its specs import `./fixtures`. Only add to

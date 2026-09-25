@@ -14,5 +14,8 @@ build/**/*
 # Generated Playwright aria snapshots
 **/__aria__/
 
+# Generated from the served OpenAPI document. Regenerate with npm run gen:api-schemas.
+src/api/generated/zod.gen.ts
+
 # Helm templates (Go templating is not valid YAML)
 .github/k8s/

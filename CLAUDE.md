@@ -9,7 +9,7 @@ live in the app repository (`~/Sources/BjjEire`). Against live AKS **dev**: [doc
 
 - **Runtime**: Node 22, TypeScript 5.7, CommonJS (`"type": "commonjs"`)
 - **Test framework**: `@playwright/test` 1.63.0 (pinned; must match the CI runner image)
-- **Validation**: Zod v4 — wire schemas in `src/api/features/*/​*.schemas.ts`
+- **Validation**: Zod v4 generated from the served OpenAPI document (`npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema.
 - **A11y**: `@axe-core/playwright`
 - **Lint**: ESLint v9 flat config + Prettier 3, Husky pre-commit runs lint-staged
 
@@ -194,8 +194,13 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   route anchor on a `TIMEOUTS.appBoot` budget; assertions after that keep the tight
   `TIMEOUTS.expect` default. Exceptions: the SEO spec (asserts static `index.html`
   tags) and snapshot specs (keep `load` so images are settled).
-- API specs assert returned values and domain invariants, not `typeof` shape checks —
-  Zod schemas already validate the wire shape.
+- API specs assert returned values and domain invariants, not `typeof` shape checks.
+  `get()` parses each body with the Zod schema generated from the served OpenAPI
+  document (`src/api/generated/zod.gen.ts`). Regenerate with `npm run gen:api-schemas`
+  after replacing `contracts/openapi-v1.json` (gitignored; `GET /v3/api-docs` on the
+  API, or the `openapi-v1.json` artifact). The path must be `./contracts/openapi-v1.json`.
+  Schema compatibility stays with `oasdiff` in the app repo. These specs do not assert
+  field types.
 - Specs make API calls explicitly; assertion helpers receive responses, never fetch.
 - API specs take Playwright's built-in `request` fixture — there is no custom client.
   `baseURL` / TLS / static headers are declared in `src/api/config/playwright.ts`;
@@ -323,4 +328,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`AGENTS.md` points here). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-09-24.
+script, project, or workflow it documents. Last reviewed: 2026-09-25.

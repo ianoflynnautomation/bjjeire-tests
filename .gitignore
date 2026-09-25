@@ -19,5 +19,9 @@ node_modules/
 /dist/
 /build/
 
+# Served OpenAPI document used as input to npm run gen:api-schemas. The
+# generated Zod file is committed; this download is not.
+/contracts/
+
 *.log
 .DS_STORE
