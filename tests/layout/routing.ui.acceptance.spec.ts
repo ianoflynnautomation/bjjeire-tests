@@ -1,5 +1,5 @@
 import { test as core, expect } from '@ui/fixtures';
-import { pageFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 import { EventsPage } from '@ui/pages/events/events.page';
 import { goto } from '@ui/support';
 

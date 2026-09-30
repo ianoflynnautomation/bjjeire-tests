@@ -2,7 +2,8 @@ import { mockBjjEvents, EVENTS_ROUTE } from './mocks';
 import { EventsPage } from '@ui/pages/events/events.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';
-import { mockFixture, pageFixture } from '@ui/fixtures/mock-fixture';
+import { mockFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 
 export type EventsUiFixtures = FailureMocks & {
   eventsPage: EventsPage;

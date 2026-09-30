@@ -1,5 +1,6 @@
 import { test, expect } from '@api/fixtures';
-import { getCompetitions } from '@api/features/competitions/competitions.api';
+import { competitionsPageSchema } from '@api/features/competitions/competitions.schemas';
+import { getCompetitions } from '@api/features/competitions/competitions.service';
 import {
   expectConsecutivePagePagination,
   expectListingToInclude,
@@ -16,7 +17,10 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     'Given competitions are published, when a client opens the listing, then each published competition is returned with its details',
     { tag: ['@smoke', '@acceptance'] },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getCompetitions(request, competitionsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expectListingToInclude(data, 'slug', SEEDED_COMPETITIONS_BY_START_DATE);
     },
@@ -26,7 +30,10 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     'Given a competition has finished, when a client opens the listing, then it is not shown',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getCompetitions(request, competitionsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expect(data.map(competition => competition.slug)).not.toContain(SEEDED_COMPETITION_FINISHED_KERRY_COAST.slug);
     },
@@ -36,7 +43,10 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     'Given several competitions are published, when a client opens the listing, then they are ordered by start date',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getCompetitions(request, competitionsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expectRelativeOrder(
         data,
@@ -50,8 +60,14 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     'Given the listing spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const firstPage = await getCompetitions(request, { page: 1, pageSize: SMALL_PAGE_SIZE });
-      const secondPage = await getCompetitions(request, { page: 2, pageSize: SMALL_PAGE_SIZE });
+      const firstPage = await getCompetitions(request, competitionsPageSchema, {
+        page: 1,
+        pageSize: SMALL_PAGE_SIZE,
+      });
+      const secondPage = await getCompetitions(request, competitionsPageSchema, {
+        page: 2,
+        pageSize: SMALL_PAGE_SIZE,
+      });
 
       expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
       expectPagesAreDistinct(firstPage, secondPage, competition => competition.slug);

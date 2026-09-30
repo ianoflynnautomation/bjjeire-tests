@@ -26,8 +26,11 @@ Steps:
      `<feature>TestConfig`. The feature's specs import `./fixtures` and open with
      `test.use(<feature>TestConfig)`)
    - `src/api/features/stores/` (the simplest slice) → `src/api/features/$ARGUMENTS/`:
-     `.api.ts` (one `get` call per endpoint), `.types.ts` (DTOs) and `.schemas.ts`
-     (re-export the generated OpenAPI page schema — required by the mock drift guard).
+     `.service.ts`, `.types.ts` (DTOs and the pagination query), and `.schemas.ts`
+     (re-export the generated OpenAPI page schema). The service takes the schema and
+     the typed query, runs `expectSchema`, and returns `PaginatedResponse<Dto>`.
+     The API spec passes the schema into that function, then asserts the business
+     outcome. Route mocks parse bodies with the same schema.
      Regenerate `src/api/generated/zod.gen.ts` when the feature is in the served spec.
 3. Replace all `_template` references with `$ARGUMENTS`.
 4. Nothing central to register: `tests/features/$ARGUMENTS/fixtures.ts` exports its

@@ -16,12 +16,6 @@ export type AzureConfig = Readonly<{
   authority: string;
 }>;
 
-export type ApiAuthBasics = Readonly<{
-  tenantId: string;
-  apiScope: string;
-  authority: string;
-}>;
-
 export type ExecutionContext = 'arc-runner' | 'ci-hosted' | 'local';
 
 export type RuntimeContext = Readonly<{
@@ -89,8 +83,7 @@ if (isRemoteProfile(PROFILE)) {
 // Execution-context detection
 // =====================================================================
 // Used by tests to make environment-aware decisions like
-// `test.skip(env.context.isLocal, 'requires CI environment')`, and by
-// `src/api/support/auth.ts` to pick the right credential strategy. All signals are derived
+// `test.skip(env.context.isLocal, 'requires CI environment')`. All signals are derived
 // from environment variables that the runtime sets for us — no heuristics.
 
 const isCI = readEnv('CI') !== undefined;
@@ -136,10 +129,8 @@ export const env: Env = Object.freeze({
   apiAuth: Object.freeze({
     required: readEnvFlag('API_AUTH_REQUIRED', requireProtectedPipelineCredentials),
   }),
-  // In CI on ARC runner pods AZURE_TESTS_CLIENT_ID/_SECRET are typically
-  // UNSET; the workload identity webhook injects AZURE_CLIENT_ID +
-  // AZURE_FEDERATED_TOKEN_FILE and DefaultAzureCredential reads those.
-  // The client secret is the local-dev fallback.
+  // bjjeire-tests app registration (main.app-registrations.tf):
+  // AZURE_TESTS_CLIENT_ID, AZURE_TESTS_CLIENT_SECRET, AZURE_TENANT_ID, AZURE_API_SCOPE.
   azure: Object.freeze({
     tenantId: readEnv('AZURE_TENANT_ID'),
     clientId: readEnv('AZURE_TESTS_CLIENT_ID'),
@@ -160,31 +151,13 @@ export const env: Env = Object.freeze({
   }),
 });
 
-/**
- * Full client-credentials config. Only required when the credential chain
- * (WIF, az CLI, managed identity) isn't available — i.e. local dev without
- * `az login`. ARC runner pods normally don't have these set.
- */
+/** Client-credentials config for the bjjeire-tests app registration. */
 export function requireAzureConfig(): AzureConfig {
   const tenantId = readRequiredEnv('AZURE_TENANT_ID');
   return {
     tenantId,
     clientId: readRequiredEnv('AZURE_TESTS_CLIENT_ID'),
     clientSecret: readRequiredEnv('AZURE_TESTS_CLIENT_SECRET'),
-    apiScope: readRequiredEnv('AZURE_API_SCOPE'),
-    authority: env.azure.authority ?? `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
-  };
-}
-
-/**
- * Minimal config required for ANY auth strategy. The credential chain only
- * needs the tenant + scope; the client_secret path additionally needs the
- * full {@link requireAzureConfig}.
- */
-export function requireApiAuthBasics(): ApiAuthBasics {
-  const tenantId = readRequiredEnv('AZURE_TENANT_ID');
-  return {
-    tenantId,
     apiScope: readRequiredEnv('AZURE_API_SCOPE'),
     authority: env.azure.authority ?? `${DEFAULT_AZURE_AUTHORITY_PREFIX}/${tenantId}`,
   };

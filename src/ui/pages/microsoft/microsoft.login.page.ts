@@ -1,98 +1,92 @@
+import { existsSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { expect, type Locator, type Page } from '@playwright/test';
 import { env } from '@shared/config';
-import { ENTRA_LOGIN_HOSTS, UI_AUTH_TIMEOUTS } from './microsoft.login.constants';
-import { resolveCredentials, resolveUseEntra } from './microsoft.login.env';
-import {
-  acceptConsent,
-  accountTile,
-  emailInput,
-  entraError,
-  otherWaysToSignIn,
-  passwordInput,
-  permissionsPrompt,
-  primaryButton,
-  staySignedInNo,
-  staySignedInPrompt,
-  staySignedInYes,
-  useAnotherAccount,
-  useYourPassword,
-} from './microsoft.login.locators';
-import {
-  hasUsableAuthState,
-  isStorageStateFresh,
-  storageStatePathForWorker,
-  writeStorageStateAtomic,
-} from './microsoft.login.session';
-import { acquireUserTokens, applyMsalCacheInBrowser } from './microsoft.login.token';
-import { type AuthenticateOptions, type Credentials, type ResolvedAuth } from './microsoft.login.types';
 
-export type { AuthenticateOptions, Credentials } from './microsoft.login.types';
-export { isStorageStateFresh, storageStatePathForWorker } from './microsoft.login.session';
+export const UI_AUTH_TIMEOUTS = {
+  flow: 60_000,
+  /** Optional Entra screens (KMSI, consent) after a submit. */
+  prompt: 15_000,
+} as const;
 
-export async function authenticateUiTestUser(
-  page: Page,
-  storageStatePath: string,
-  options: AuthenticateOptions = {},
-): Promise<void> {
-  const resolved = resolveAuthContext(storageStatePath, options);
-  if (resolved.useEntra) {
-    if (await tryReuseStorageState(page, resolved)) return;
-    if (await tryTokenBypass(page, resolved)) return;
+const ENTRA_HOSTS = ['login.microsoftonline.com', 'login.microsoft.com', 'login.windows.net'] as const;
+
+const emailInput = (page: Page): Locator =>
+  page.getByRole('textbox', { name: /email|phone|skype/i }).or(page.locator('input[name="loginfmt"]'));
+
+const passwordInput = (page: Page): Locator => page.getByLabel(/password/i).or(page.locator('input[name="passwd"]'));
+
+const primaryButton = (page: Page): Locator =>
+  page.getByRole('button', { name: /^(next|sign in)$/i }).or(page.locator('#idSIButton9'));
+
+const otherWaysToSignIn = (page: Page): Locator => page.getByRole('button', { name: /other ways to sign in/i });
+
+const useYourPassword = (page: Page): Locator => page.getByRole('button', { name: /use (your )?password/i });
+
+const staySignedInPrompt = (page: Page): Locator => page.getByText(/stay signed in/i);
+
+const staySignedInNo = (page: Page): Locator =>
+  page.getByRole('button', { name: /^no$/i }).or(page.locator('#idBtn_Back'));
+
+const useAnotherAccount = (page: Page): Locator => page.getByRole('button', { name: /use another account/i });
+
+const accountTile = (page: Page, username: string): Locator => page.getByRole('button', { name: username });
+
+const permissionsPrompt = (page: Page): Locator => page.getByText(/permissions requested/i);
+
+const acceptConsent = (page: Page): Locator => page.getByRole('button', { name: /^accept$/i });
+
+const entraError = (page: Page): Locator => page.getByRole('alert');
+
+type Credentials = Readonly<{ username: string; password: string }>;
+
+export async function authenticateUiTestUser(page: Page, storageStatePath: string): Promise<void> {
+  const credentials = testUserCredentials();
+  if (await tryReuseStorageState(page, storageStatePath)) return;
+
+  await page.goto(env.baseUrl);
+  await expect(page).toHaveURL(entraUrlMatcher(), { timeout: UI_AUTH_TIMEOUTS.flow });
+  await signIn(page, credentials);
+  await expect(page).toHaveURL(backOnApp, { timeout: UI_AUTH_TIMEOUTS.flow });
+  await persistAuthenticatedState(page, storageStatePath);
+}
+
+function testUserCredentials(): Credentials {
+  const { username, password } = env.uiTestUser;
+  if (!username || !password) {
+    throw new Error('PW_TEST_USER and PW_TEST_PASSWORD must be set to run the auth setup project.');
   }
-  await authenticateViaUi(page, resolved);
+  return { username, password };
 }
 
-function resolveAuthContext(storageStatePath: string, options: AuthenticateOptions): ResolvedAuth {
-  const useEntra = resolveUseEntra(options.useEntra);
-  const workerIndex = options.workerIndex;
-  const path = workerIndex === undefined ? storageStatePath : storageStatePathForWorker(storageStatePath, workerIndex);
-  return {
-    credentials: resolveCredentials(workerIndex),
-    storageStatePath: path,
-    useEntra,
-    staySignedIn: useEntra,
-  };
-}
-
-async function authenticateViaUi(page: Page, resolved: ResolvedAuth): Promise<void> {
-  await page.goto(env.baseUrl);
-  await waitForEntraLogin(page);
-  await signIn(page, resolved.credentials, resolved.staySignedIn);
-  await waitForReturnToOrigin(page);
-  await persistAuthenticatedState(page, resolved.storageStatePath);
-}
-
-async function tryReuseStorageState(page: Page, resolved: ResolvedAuth): Promise<boolean> {
-  if (!isStorageStateFresh(resolved.storageStatePath)) return false;
-  await page.context().setStorageState(resolved.storageStatePath);
+async function tryReuseStorageState(page: Page, storageStatePath: string): Promise<boolean> {
+  if (!existsSync(storageStatePath)) return false;
+  try {
+    await page.context().setStorageState(storageStatePath);
+  } catch {
+    return false;
+  }
   await page.goto(env.baseUrl);
   if (await stillOnEntraLogin(page)) return false;
-  await persistAuthenticatedState(page, resolved.storageStatePath);
-  return true;
-}
-
-async function tryTokenBypass(page: Page, resolved: ResolvedAuth): Promise<boolean> {
-  const tokens = await acquireUserTokens(resolved.credentials);
-  if (!tokens) return false;
-  await page.addInitScript(applyMsalCacheInBrowser, tokens.cache);
-  await page.goto(env.baseUrl);
-  if (await stillOnEntraLogin(page)) return false;
-  await persistAuthenticatedState(page, resolved.storageStatePath);
+  await persistAuthenticatedState(page, storageStatePath);
   return true;
 }
 
 async function persistAuthenticatedState(page: Page, storageStatePath: string): Promise<void> {
   const storage = await page.context().storageState({ indexedDB: true });
-  expect(hasUsableAuthState(storage), 'storage state should contain auth cookies or an injected MSAL cache').toBe(true);
-  writeStorageStateAtomic(storageStatePath, storage);
+  expect(storage.cookies.length, 'signed-in storage state should contain cookies').toBeGreaterThan(0);
+  const tmpPath = `${storageStatePath}.${process.pid}.tmp`;
+  mkdirSync(dirname(storageStatePath), { recursive: true });
+  writeFileSync(tmpPath, JSON.stringify(storage, null, 2), { mode: 0o600 });
+  renameSync(tmpPath, storageStatePath);
 }
 
-async function signIn(page: Page, credentials: Credentials, staySignedIn: boolean): Promise<void> {
+async function signIn(page: Page, credentials: Credentials): Promise<void> {
   await dismissAccountPicker(page, credentials.username);
   await submitEmailIfNeeded(page, credentials.username);
   await choosePasswordIfNeeded(page);
   await submitPasswordIfNeeded(page, credentials.password);
-  await handleStaySignedIn(page, staySignedIn);
+  await dismissStaySignedIn(page);
   await acceptConsentIfNeeded(page);
 }
 
@@ -152,30 +146,16 @@ async function submitPasswordIfNeeded(page: Page, password: string): Promise<voi
   await assertNoEntraError(page);
 }
 
-async function handleStaySignedIn(page: Page, staySignedIn: boolean): Promise<void> {
+async function dismissStaySignedIn(page: Page): Promise<void> {
   if (!isEntraLoginUrl(page.url())) return;
-  const appeared = await raceVisibleOrLeftEntra(page, staySignedInPrompt(page));
-  if (!appeared) return;
-  const choice = staySignedIn ? staySignedInYes(page) : staySignedInNo(page);
-  await choice.click();
+  if (!(await raceVisibleOrLeftEntra(page, staySignedInPrompt(page)))) return;
+  await staySignedInNo(page).click();
 }
 
 async function acceptConsentIfNeeded(page: Page): Promise<void> {
   if (!isEntraLoginUrl(page.url())) return;
-  const appeared = await raceVisibleOrLeftEntra(page, permissionsPrompt(page));
-  if (!appeared) return;
+  if (!(await raceVisibleOrLeftEntra(page, permissionsPrompt(page)))) return;
   await acceptConsent(page).click();
-}
-
-async function waitForEntraLogin(page: Page): Promise<void> {
-  await expect(page).toHaveURL(entraUrlMatcher(), { timeout: UI_AUTH_TIMEOUTS.flow });
-}
-
-async function waitForReturnToOrigin(page: Page): Promise<void> {
-  const originHost = new URL(env.baseUrl).hostname;
-  await expect(page).toHaveURL(url => url.hostname === originHost && !isEntraLoginUrl(url.toString()), {
-    timeout: UI_AUTH_TIMEOUTS.flow,
-  });
 }
 
 async function stillOnEntraLogin(page: Page): Promise<boolean> {
@@ -221,17 +201,20 @@ function isVisible(locator: Locator): Promise<boolean> {
   return locator.first().isVisible();
 }
 
+function backOnApp(url: URL): boolean {
+  return url.hostname === new URL(env.baseUrl).hostname && !isEntraLoginUrl(url.toString());
+}
+
 function isEntraLoginUrl(url: string): boolean {
   let hostname: string;
   try {
     hostname = new URL(url).hostname.toLowerCase();
   } catch {
-    return ENTRA_LOGIN_HOSTS.some(host => url.includes(host));
+    return ENTRA_HOSTS.some(host => url.includes(host));
   }
-  return ENTRA_LOGIN_HOSTS.some(host => hostname === host || hostname.endsWith(`.${host}`));
+  return ENTRA_HOSTS.some(host => hostname === host || hostname.endsWith(`.${host}`));
 }
 
 function entraUrlMatcher(): RegExp {
-  const hosts = ENTRA_LOGIN_HOSTS.map(host => host.replace(/\./g, '\\.')).join('|');
-  return new RegExp(hosts);
+  return new RegExp(ENTRA_HOSTS.map(host => host.replace(/\./g, '\\.')).join('|'));
 }

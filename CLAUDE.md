@@ -160,7 +160,7 @@ follow the feature-slice rules below; snapshot refs are session-only.
 tests/features/<feature>/                 # Specs, `fixtures.ts`, `mocks.ts`, `seeded.ts`,
                                           # and the feature's static JSON bodies
 src/ui/pages/<feature>/                   # Page object class; list pages extend ListPage
-src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts
+src/api/features/<feature>/               # .service.ts + .types.ts + .schemas.ts
 ```
 
 See `tests/features/_template/README.md`; scaffold with `/add-feature`.
@@ -194,20 +194,25 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   route anchor on a `TIMEOUTS.appBoot` budget; assertions after that keep the tight
   `TIMEOUTS.expect` default. Exceptions: the SEO spec (asserts static `index.html`
   tags) and snapshot specs (keep `load` so images are settled).
-- API specs assert returned values and domain invariants, not `typeof` shape checks.
-  `get()` parses each body with the Zod schema generated from the served OpenAPI
-  document (`src/api/generated/zod.gen.ts`). Regenerate with `npm run gen:api-schemas`
+- API specs assert two things, both written in the test. The feature client
+  (`getGyms`, `getBjjEvents`, `getStores`, `getCompetitions`) is called with the
+  OpenAPI page schema and a typed query (`GetBjjEventsPaginationQuery` and the
+  siblings). The client runs `expectSchema` and returns `PaginatedResponse<Dto>`,
+  then the business assertions check the returned values. The page schema is the
+  Zod schema generated from the served OpenAPI document
+  (`src/api/generated/zod.gen.ts`). Regenerate with `npm run gen:api-schemas`
   after replacing `contracts/openapi-v1.json` (gitignored; `GET /v3/api-docs` on the
   API, or the `openapi-v1.json` artifact). The path must be `./contracts/openapi-v1.json`.
   Schema compatibility stays with `oasdiff` in the app repo. These specs do not assert
-  field types.
+  field types one by one.
 - Specs make API calls explicitly; assertion helpers receive responses, never fetch.
-- API specs take Playwright's built-in `request` fixture — there is no custom client.
-  `baseURL` / TLS / static headers are declared in `src/api/config/playwright.ts`;
+- API specs take Playwright's built-in `request` fixture and pass it to the feature
+  client. `baseURL` / TLS / static headers are declared in `src/api/config/playwright.ts`;
   the Entra bearer and per-test `traceparent` are layered by overriding the
   `extraHTTPHeaders` option in `src/api/fixtures/index.ts`. `get()` from
-  `@api/support` is the only helper: native `request.get` + a required Zod schema.
-  Specs asserting an error status call `request.get(...)` and read the `APIResponse`.
+  `@api/support` performs the request and returns the JSON body. The feature client
+  is what parses it. Specs asserting an error status call `request.get(...)` and read the
+  `APIResponse`.
 - **Calling the API unauthenticated** — `requestAuth` is an option on
   `@api/fixtures`: a file declares `test.use({ requestAuth: 'none' })` to withhold
   the Entra bearer (Cloudflare Access headers still apply — they clear the edge,
@@ -246,9 +251,10 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   exactly three directories — `tests/features/<f>/`, `src/ui/pages/<f>/` and
   `src/api/features/<f>/` — and `rm -rf` on all three removes it completely:
   typecheck, lint and the remaining suite stay green with no shared file edited.
-- Fixtures are declared with the factories in `src/ui/fixtures/mock-fixture.ts` —
-  `pageFixture(PageClass)` constructs a page object per test, `mockFixture(mock)`
-  binds a route mock to `page`. Specs never construct a page object.
+- Fixtures are declared with `pageFixture(PageClass)` from `src/ui/fixtures/page-fixture.ts`
+  and `mockFixture(mock)` from `src/ui/fixtures/mock-fixture.ts`. `pageFixture` constructs
+  a page object per test, including the header, footer, and support modal on the core
+  test. `mockFixture` binds a route mock to `page`. Specs never construct a page object.
 - **Feature flags are pinned on, never observed.** An auto fixture
   (`feature-flags.fixture.ts`) sets the app's `__BJJEIRE_TEST_FLAG_OVERRIDES__`
   global via `addInitScript`; the app layers flags as `DEFAULT_FLAGS → remote →
@@ -328,4 +334,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`AGENTS.md` points here). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-09-25.
+script, project, or workflow it documents. Last reviewed: 2026-09-30.

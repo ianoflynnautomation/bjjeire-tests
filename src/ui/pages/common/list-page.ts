@@ -124,8 +124,6 @@ export abstract class ListPage<TCard extends { name: string }> {
     expect(actual).toMatchObject(expected);
   }
 
-  // Delegations a class cannot express as a re-export — but written once, not
-  // once per feature as the module version had to.
   async expectNetworkErrorMessage(): Promise<void> {
     await expectNetworkError(this.page);
   }

@@ -70,14 +70,7 @@ API_AUTH_REQUIRED=true npm run test:dev:api
 
 Docker Compose in CI stays unauthenticated: `APP_ENV=docker` is not remote, so the setup project does not demand `AZURE_API_SCOPE`.
 
-When the flag is on, `src/api/support/auth.ts` picks one strategy:
-
-| Strategy               | Chosen when                                                  | Credential                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| Client credentials     | No workload identity, and `AZURE_TESTS_CLIENT_SECRET` is set | MSAL confidential client. Needs `AZURE_TENANT_ID`, `AZURE_TESTS_CLIENT_ID`, `AZURE_TESTS_CLIENT_SECRET`, `AZURE_API_SCOPE`. |
-| Azure credential chain | Workload identity is present, or no client secret is set     | `DefaultAzureCredential`. On an ARC runner pod that is the federated token. On a laptop with no secret it is `az login`.    |
-
-A laptop file from `refresh-env.sh` has a client secret and no workload identity, so `API_AUTH_REQUIRED=true` uses client credentials, not `az login`.
+When the flag is on, `src/api/support/auth.ts` mints the bearer with the OAuth 2.0 client-credentials grant. The confidential client is the `bjjeire-tests-<env>` app registration from `bjjeire-terraform-azurerm-aks` `main.app-registrations.tf` (`AZURE_TENANT_ID`, `AZURE_TESTS_CLIENT_ID`, `AZURE_TESTS_CLIENT_SECRET`, `AZURE_API_SCOPE`). MSAL `ConfidentialClientApplication.acquireTokenByClientCredential` is the only mint path. `scripts/refresh-env.sh` copies those outputs into `.env.dev.local`.
 
 The access token is cached in `playwright/.auth/api-token.json` (mode `0600`, write-then-rename). The cache entry stores the scope. A different scope, or a token inside 60 seconds of expiry, is minted again. `api-setup` warms the file once per run so workers do not each mint. Delete the file to force a new token. It is gitignored.
 
@@ -99,7 +92,7 @@ Terraform does not edit Conditional Access. The user has to be excluded from MFA
 
 On dev, `github_manage_actions_oidc` defaults to on. When that flag and `playwright_test_user_enabled` are both true, `main.github-actions.tf` writes `PW_TEST_USER` and `PW_TEST_PASSWORD` as GitHub Actions secrets on the app repo and on `bjjeire-tests`.
 
-`src/ui/config/playwright.ts` turns the `setup` project on only when `PW_UI_ENTRA_AUTH=true` **and** both `PW_TEST_USER` and `PW_TEST_PASSWORD` are set. That project runs `tests/auth.setup.ts`, which signs in through Entra and writes `playwright/.auth/ui-user.json`. Later projects reuse it as `storageState`. `PW_UI_STORAGE_STATE` points at an existing file and skips the setup project entirely, so CI shards do not each drive the login form. With the flag left at its default, populating the user and password does nothing at runtime.
+`src/ui/config/playwright.ts` turns the `setup` project on only when `PW_UI_ENTRA_AUTH=true` **and** both `PW_TEST_USER` and `PW_TEST_PASSWORD` are set. That project runs `tests/auth.setup.ts`, which signs in through the Microsoft login page (`src/ui/pages/microsoft`) as that user and writes `playwright/.auth/ui-user.json`. A still-fresh storage state is restored before the form is driven again. Later projects reuse the file as `storageState`. `PW_UI_STORAGE_STATE` points at an existing file and skips the setup project entirely, so CI shards do not each drive the login form. With the flag left at its default, populating the user and password does nothing at runtime.
 
 ## Other profiles
 

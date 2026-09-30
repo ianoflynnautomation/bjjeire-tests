@@ -8,9 +8,6 @@ function problemDetails(status: number): string {
   return JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status });
 }
 
-// Takes the route to break rather than a feature name: a shared helper that
-// imported every feature's route constant would have to be edited whenever a
-// feature is added or removed.
 export async function mockNetworkError(page: Page, route: MockRoute): Promise<void> {
   await page.route(route, handler => handler.abort('failed'));
 }

@@ -20,15 +20,9 @@ function shouldRunApiSetupProject(): boolean {
 export function createApiProjects(): Project[] {
   const apiSetupRequired = shouldRunApiSetupProject();
 
-  // Shared so the setup project talks to the API too — inheriting the base
-  // `use` would have pointed it at the UI origin.
   const use: NonNullable<Project['use']> = {
     baseURL: env.apiUrl,
     ignoreHTTPSErrors: env.acceptInvalidCerts,
-    // Project `use` REPLACES the base value for this key, so the Cloudflare
-    // Access headers from the base config have to be re-spread here.
-    // Per-test headers (Entra bearer, traceparent) are layered in
-    // `src/api/fixtures/index.ts`.
     extraHTTPHeaders: { accept: 'application/json', ...cfAccessHeaders() },
   };
 

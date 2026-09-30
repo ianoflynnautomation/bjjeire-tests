@@ -2,7 +2,8 @@ import { mockCompetitions, mockCompetitionsPages, COMPETITIONS_ROUTE } from './m
 import { CompetitionsPage } from '@ui/pages/competitions/competitions.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';
-import { mockFixture, pageFixture } from '@ui/fixtures/mock-fixture';
+import { mockFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 
 export type CompetitionsUiFixtures = FailureMocks & {
   competitionsPage: CompetitionsPage;

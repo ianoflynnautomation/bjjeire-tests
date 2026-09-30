@@ -1,6 +1,6 @@
 import { AboutPage } from '@ui/pages/about/about.page';
 import { test as core } from '@ui/fixtures';
-import { pageFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 
 export type AboutUiFixtures = {
   aboutPage: AboutPage;

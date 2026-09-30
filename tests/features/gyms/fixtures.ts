@@ -2,7 +2,8 @@ import { mockGyms, GYMS_ROUTE } from './mocks';
 import { GymsPage } from '@ui/pages/gyms/gyms.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';
-import { mockFixture, pageFixture } from '@ui/fixtures/mock-fixture';
+import { mockFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 
 export type GymsUiFixtures = FailureMocks & {
   gymsPage: GymsPage;

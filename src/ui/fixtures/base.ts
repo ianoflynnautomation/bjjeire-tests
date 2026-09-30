@@ -1,14 +1,10 @@
 import { test as base, expect } from '@playwright/test';
 import { buildTraceHeaders, testTraceContext, traceAnnotations } from '@shared/otel/trace-context';
+import { FooterSection } from '@ui/pages/sections/footer.section';
+import { HeaderSection } from '@ui/pages/sections/header.section';
+import { SupportModal } from '@ui/pages/support/bitcoin-support.modal';
 import { ALL_FEATURES_ENABLED, stubFeatureFlags, type FeatureFlagOverrides } from './feature-flags.fixture';
-import {
-  footerSectionFixture,
-  headerSectionFixture,
-  supportModalFixture,
-  type FooterSection,
-  type HeaderSection,
-  type SupportModal,
-} from './sections.fixture';
+import { pageFixture } from './page-fixture';
 
 /**
  * Cross-cutting fixtures only: app chrome and the feature-flag option.
@@ -51,9 +47,9 @@ export const test = base.extend<CoreUiFixtures>({
     { auto: true },
   ],
 
-  headerSection: headerSectionFixture,
-  footerSection: footerSectionFixture,
-  supportModal: supportModalFixture,
+  headerSection: pageFixture(HeaderSection),
+  footerSection: pageFixture(FooterSection),
+  supportModal: pageFixture(SupportModal),
 });
 
 export { expect };

@@ -1,13 +1,10 @@
 import type { APIRequestContext } from '@playwright/test';
-import type { ZodType } from 'zod';
-import { parseWithSchema } from './schemas';
 
 type QueryScalar = string | number | boolean;
 export type QueryParams = Readonly<Record<string, QueryScalar | readonly QueryScalar[] | undefined>>;
 
-export type GetOptions<T> = Readonly<{
+export type GetOptions = Readonly<{
   params?: QueryParams;
-  schema: ZodType<T>;
 }>;
 
 function valuesOf(value: QueryScalar | readonly QueryScalar[]): readonly QueryScalar[] {
@@ -23,13 +20,12 @@ function toSearchParams(params: QueryParams): URLSearchParams {
   return search;
 }
 
-export async function get<T>(context: APIRequestContext, path: string, options: GetOptions<T>): Promise<T> {
+export async function get(context: APIRequestContext, path: string, options: GetOptions = {}): Promise<unknown> {
   const response = await context.get(path, options.params ? { params: toSearchParams(options.params) } : {});
 
   if (!response.ok()) {
     throw new Error(`GET ${path} → ${response.status()} ${response.statusText()}\n${await response.text()}`);
   }
 
-  const body: unknown = await response.json();
-  return parseWithSchema(options.schema, body, `GET ${path}`);
+  return (await response.json()) as unknown;
 }

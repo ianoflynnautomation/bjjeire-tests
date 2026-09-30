@@ -1,11 +1,38 @@
+import { expect } from '@playwright/test';
 import { z, type ZodType } from 'zod';
 import { fromError } from 'zod-validation-error';
 import type { Pagination, PaginatedResponse } from './types';
 
-/**
- * Single parse gate for anything that crosses the wire (API responses, mocked
- * bodies). Zod already proves the shape, so specs assert values — never `typeof`.
- */
+/* eslint-disable @typescript-eslint/no-namespace, @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars -- Playwright merges custom matchers into PlaywrightTest.Matchers */
+declare global {
+  namespace PlaywrightTest {
+    interface Matchers<R, T = unknown> {
+      toMatchSchema<S>(schema: ZodType<S>): R;
+    }
+  }
+}
+/* eslint-enable @typescript-eslint/no-namespace, @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars */
+
+expect.extend({
+  toMatchSchema(received: unknown, schema: ZodType) {
+    const parsed = schema.safeParse(received);
+    const detail = parsed.success ? 'response matches the OpenAPI schema' : fromError(parsed.error).message;
+    return {
+      pass: parsed.success,
+      message: () => detail,
+    };
+  },
+});
+
+/** Contract assertion. Returns the parsed value for the business assertions that follow. */
+export function expectSchema<T>(schema: ZodType<T>, data: unknown): T {
+  expect(data).toMatchSchema(schema);
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) throw new Error(fromError(parsed.error).message);
+  return parsed.data;
+}
+
+/** Parse gate for mocked bodies. Specs use {@link expectSchema} so the contract check is an assertion. */
 export function parseWithSchema<T>(schema: ZodType<T>, data: unknown, subject: string): T {
   const parsed = schema.safeParse(data);
   if (parsed.success) return parsed.data;

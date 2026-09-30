@@ -1,6 +1,6 @@
 import { TemplatePage } from '@ui/pages/_template/_template.page';
 import { test as core } from '@ui/fixtures';
-import { pageFixture } from '@ui/fixtures/mock-fixture';
+import { pageFixture } from '@ui/fixtures/page-fixture';
 
 // A feature with route mocks also spreads `failureMockFixtures(<FEATURE>_ROUTE)`
 // here — see tests/features/gyms/fixtures.ts.

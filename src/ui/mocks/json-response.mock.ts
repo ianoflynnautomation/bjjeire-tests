@@ -2,9 +2,6 @@ import type { Page } from '@playwright/test';
 import type { ZodType } from 'zod';
 import { parseWithSchema } from '@api/support';
 
-// Drift guard: every mocked body must satisfy the feature's wire schema, so static
-// JSON fixtures cannot silently diverge from what the real API returns. Shares the
-// API layer's parse gate so mock failures read like response failures.
 export function parseMockBody<T>(schema: ZodType<T>, body: unknown, label: string): T {
   return parseWithSchema(schema, body, `Mock body for '${label}'`);
 }

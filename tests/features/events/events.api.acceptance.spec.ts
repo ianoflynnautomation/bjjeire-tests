@@ -1,5 +1,6 @@
 import { test, expect } from '@api/fixtures';
-import { getBjjEvents } from '@api/features/events/events.api';
+import { bjjEventsPageSchema } from '@api/features/events/events.schemas';
+import { getBjjEvents } from '@api/features/events/events.service';
 import { BjjEventType } from '@api/features/events/events.types';
 import {
   expectAllFromCounty,
@@ -22,7 +23,10 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     'Given events are published, when a client opens the listing, then each upcoming event is returned with its details',
     { tag: ['@smoke', '@acceptance'] },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expectListingToInclude(data, 'name', SEEDED_UPCOMING_EVENTS);
     },
@@ -32,7 +36,10 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     'Given an event has finished, when a client opens the listing, then it is not shown',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
     },
@@ -45,7 +52,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
       const county = 'Dublin';
       const dublinEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.county === county);
 
-      const { data } = await getBjjEvents(request, { county, page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        county,
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expectAllFromCounty(data, county);
       expectListingToInclude(data, 'name', dublinEvents);
@@ -57,7 +68,10 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     'Given several events are published, when a client opens the listing, then they are ordered by creation date',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, { page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expectRelativeOrder(
         data,
@@ -74,7 +88,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
       const type = BjjEventType.Seminar;
       const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.types.includes(type));
 
-      const { data } = await getBjjEvents(request, { types: [type], page: 1, pageSize: FULL_PAGE_SIZE });
+      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        types: [type],
+        page: 1,
+        pageSize: FULL_PAGE_SIZE,
+      });
 
       expect(data.filter(event => !event.types.includes(type))).toEqual([]);
       expectListingToInclude(data, 'name', seminarEvents);
@@ -88,7 +106,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
       const multiTypeEvent = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 
       for (const type of multiTypeEvent.types) {
-        const { data } = await getBjjEvents(request, { types: [type], page: 1, pageSize: FULL_PAGE_SIZE });
+        const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+          types: [type],
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        });
 
         expect(data.filter(event => !event.types.includes(type))).toEqual([]);
         expect(data.map(event => event.name)).toContain(multiTypeEvent.name);
@@ -100,8 +122,14 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     'Given the listing spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
     { tag: '@acceptance' },
     async ({ request }) => {
-      const firstPage = await getBjjEvents(request, { page: 1, pageSize: SMALL_PAGE_SIZE });
-      const secondPage = await getBjjEvents(request, { page: 2, pageSize: SMALL_PAGE_SIZE });
+      const firstPage = await getBjjEvents(request, bjjEventsPageSchema, {
+        page: 1,
+        pageSize: SMALL_PAGE_SIZE,
+      });
+      const secondPage = await getBjjEvents(request, bjjEventsPageSchema, {
+        page: 2,
+        pageSize: SMALL_PAGE_SIZE,
+      });
 
       expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
       expectPagesAreDistinct(firstPage, secondPage, event => event.id);

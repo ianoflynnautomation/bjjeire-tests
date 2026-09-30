@@ -5,16 +5,16 @@ Full narrative: `CLAUDE.md`.
 
 ## Layout
 
-| Kind        | Path                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| UI spec     | `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`                                    |
-| API spec    | `tests/features/<feature>/<feature>.api.acceptance.spec.ts`                                   |
-| Snapshot    | `tests/features/<feature>/<feature>.snapshot.acceptance.spec.ts`                              |
-| A11y        | `tests/accessibility/*.a11y.acceptance.spec.ts`                                               |
-| Page object | `src/ui/pages/<feature>/` — class, `page` via constructor; list pages extend `ListPage`       |
-| Fixture     | `tests/features/<feature>/fixtures.ts` — `test`, `<Feature>UiFixtures`, `<feature>TestConfig` |
-| API client  | `src/api/features/<feature>/`                                                                 |
-| Seeded data | `tests/features/<feature>/seeded.ts`; route mocks in `mocks.ts` beside it                     |
+| Kind        | Path                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| UI spec     | `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`                                                 |
+| API spec    | `tests/features/<feature>/<feature>.api.acceptance.spec.ts`                                                |
+| Snapshot    | `tests/features/<feature>/<feature>.snapshot.acceptance.spec.ts`                                           |
+| A11y        | `tests/accessibility/*.a11y.acceptance.spec.ts`                                                            |
+| Page object | `src/ui/pages/<feature>/` — class, `page` via constructor; list pages extend `ListPage`                    |
+| Fixture     | `tests/features/<feature>/fixtures.ts` — `test`, `<Feature>UiFixtures`, `<feature>TestConfig`              |
+| API client  | `src/api/features/<feature>/<feature>.service.ts` — typed query, schema argument, `PaginatedResponse<Dto>` |
+| Seeded data | `tests/features/<feature>/seeded.ts`; route mocks in `mocks.ts` beside it                                  |
 
 Titles: `Given <context>, when <action>, then <business outcome>`.
 
@@ -34,8 +34,9 @@ Titles: `Given <context>, when <action>, then <business outcome>`.
 - Import `expect` from the same module as `test` (`./fixtures`, `@ui/fixtures`, or `@api/fixtures`).
 - Navigate with `gotoRoute` / `gotoAppShell`, not bare `page.goto`
   (exceptions: SEO spec, snapshot `load`).
-- API specs assert values and domain invariants, not `typeof`. Zod already
-  validated the wire shape.
+- API specs call the feature client with the page schema and the typed query,
+  then assert the business outcome. The client runs `expectSchema` and returns
+  `PaginatedResponse<Dto>`. Both the schema and the outcome are written in the test.
 - Feature flags are pinned on (`feature-flags.fixture.ts`). Never assert the
   flag API.
 
