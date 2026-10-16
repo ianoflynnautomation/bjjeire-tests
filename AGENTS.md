@@ -7,8 +7,8 @@ live in the app repository (`~/Sources/BjjEire`). Against live AKS **dev**: [doc
 
 ## Stack
 
-- **Runtime**: Node 22, TypeScript 5.7, CommonJS (`"type": "commonjs"`)
-- **Test framework**: `@playwright/test` 1.63.0 (pinned; must match the CI runner image)
+- **Runtime**: Node 22, TypeScript 6.0, CommonJS (`"type": "commonjs"`)
+- **Test framework**: `@playwright/test` 1.64.1 (pinned; must match the CI runner image)
 - **Validation**: Zod v4 generated from the served OpenAPI document (`npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema.
 - **A11y**: `@axe-core/playwright`
 - **Lint**: ESLint v9 flat config + Prettier 3, Husky pre-commit runs lint-staged
@@ -53,7 +53,7 @@ kubectl rollout restart deploy/bjj-api -n bjjeire-app
 ## Dev container
 
 `.devcontainer/` builds on the **pinned CI image**
-(`mcr.microsoft.com/playwright:v1.63.0-noble`), not a generic Node image: browsers
+(`mcr.microsoft.com/playwright:v1.64.1-noble`), not a generic Node image: browsers
 come pre-installed, and `-linux.png` baselines regenerated inside it match what CI
 compares. The tag must track `@playwright/test` — Renovate's `playwright` group
 covers this Dockerfile too.

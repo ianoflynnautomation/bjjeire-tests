@@ -1,4 +1,4 @@
-import { devices, type Project } from '@playwright/test';
+import { devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from '@playwright/test';
 import { env } from '@shared/config/env';
 import { DESKTOP_VIEWPORT, QUARANTINE_TAG } from '@shared/config/playwright';
 
@@ -20,7 +20,7 @@ const CHROMIUM_LAUNCH_OPTIONS = { args: ['--disable-dev-shm-usage'] };
 const CHROMIUM_DESKTOP_DEVICE = { ...devices['Desktop Chrome'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
 const CHROMIUM_GALAXY_DEVICE = { ...devices['Galaxy S24'], launchOptions: CHROMIUM_LAUNCH_OPTIONS };
 
-type UiUse = NonNullable<Project['use']>;
+type UiUse = NonNullable<Project<PlaywrightTestOptions, PlaywrightWorkerOptions>['use']>;
 
 /**
  * A project's `grepInvert` REPLACES the config-level one rather than adding to

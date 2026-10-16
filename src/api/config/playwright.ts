@@ -1,4 +1,4 @@
-import type { Project } from '@playwright/test';
+import type { PlaywrightTestOptions, PlaywrightWorkerOptions, Project } from '@playwright/test';
 import { cfAccessHeaders, hasCfAccessCredentials } from '@shared/config/cf-access';
 import { env } from '@shared/config/env';
 
@@ -16,7 +16,7 @@ function shouldRunApiSetupProject(): boolean {
 export function createApiProjects(): Project[] {
   const apiSetupRequired = shouldRunApiSetupProject();
 
-  const use: NonNullable<Project['use']> = {
+  const use: NonNullable<Project<PlaywrightTestOptions, PlaywrightWorkerOptions>['use']> = {
     baseURL: env.apiUrl,
     ignoreHTTPSErrors: env.acceptInvalidCerts,
     extraHTTPHeaders: { accept: 'application/json', ...cfAccessHeaders() },

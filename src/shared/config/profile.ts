@@ -20,6 +20,6 @@ export function resolveProfile(): Profile {
 export function loadEnvForProfile(profile: Profile = resolveProfile(), cwd: string = process.cwd()): void {
   for (const file of [`.env.${profile}.local`, `.env.${profile}`, `.env.local`, `.env`]) {
     const fullPath = resolve(cwd, file);
-    if (existsSync(fullPath)) dotenv.config({ path: fullPath });
+    if (existsSync(fullPath)) dotenv.config({ path: fullPath, quiet: true });
   }
 }
