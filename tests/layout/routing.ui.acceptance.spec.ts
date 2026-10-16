@@ -1,7 +1,7 @@
 import { test as core, expect } from '@ui/fixtures';
 import { pageFixture } from '@ui/fixtures/page-fixture';
 import { EventsPage } from '@ui/pages/events/events.page';
-import { goto } from '@ui/support';
+import { gotoAppShell } from '@ui/support';
 
 // The app's default route is Events, so this layout spec builds that page object on the cross-cutting test.
 const test = core.extend<{ eventsPage: EventsPage }>({
@@ -15,7 +15,7 @@ test.describe('Routing UI acceptance', { tag: ['@layout', '@routing', '@ui', '@d
     'Given an unknown URL, when a visitor opens it, then they are redirected to the default page',
     { tag: '@acceptance' },
     async ({ page, eventsPage }) => {
-      await goto(page, '/this-page-does-not-exist');
+      await gotoAppShell(page, '/this-page-does-not-exist');
       await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
       await eventsPage.verifyIsLoaded();
     },
@@ -25,7 +25,7 @@ test.describe('Routing UI acceptance', { tag: ['@layout', '@routing', '@ui', '@d
     'Given the root URL, when a visitor opens it, then the default page is displayed',
     { tag: '@acceptance' },
     async ({ page, eventsPage }) => {
-      await goto(page, '/');
+      await gotoAppShell(page, '/');
       await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
       await eventsPage.verifyIsLoaded();
     },
