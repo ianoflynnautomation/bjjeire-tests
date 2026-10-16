@@ -37,6 +37,6 @@ export async function gotoRoute(page: Page, path: string, routeAnchor: Locator):
  * Open an app route and wait only for the shared shell (header/footer) to
  * mount. For specs that exercise chrome rather than a specific route's content.
  */
-export async function goto(page: Page, path: string): Promise<void> {
+export async function gotoAppShell(page: Page, path: string): Promise<void> {
   await gotoRoute(page, path, page.getByRole('navigation'));
 }

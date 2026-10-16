@@ -6,7 +6,7 @@ export class AboutPage {
   constructor(private readonly page: Page) {}
 
   private get main(): Locator {
-    return this.page.getByRole(TEST_IDS.main);
+    return this.page.getByRole('main');
   }
 
   private get headerTitle(): Locator {

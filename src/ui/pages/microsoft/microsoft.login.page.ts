@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync } from 'node:fs';
 import { expect, type Locator, type Page } from '@playwright/test';
 import { env } from '@shared/config';
+import { writePrivateJsonFile } from '@shared/private-file';
 
 export const UI_AUTH_TIMEOUTS = {
   flow: 60_000,
@@ -75,10 +75,7 @@ async function tryReuseStorageState(page: Page, storageStatePath: string): Promi
 async function persistAuthenticatedState(page: Page, storageStatePath: string): Promise<void> {
   const storage = await page.context().storageState({ indexedDB: true });
   expect(storage.cookies.length, 'signed-in storage state should contain cookies').toBeGreaterThan(0);
-  const tmpPath = `${storageStatePath}.${process.pid}.tmp`;
-  mkdirSync(dirname(storageStatePath), { recursive: true });
-  writeFileSync(tmpPath, JSON.stringify(storage, null, 2), { mode: 0o600 });
-  renameSync(tmpPath, storageStatePath);
+  writePrivateJsonFile(storageStatePath, storage);
 }
 
 async function signIn(page: Page, credentials: Credentials): Promise<void> {

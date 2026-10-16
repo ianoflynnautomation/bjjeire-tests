@@ -1,12 +1,11 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import { z } from 'zod';
-import { env, requireAzureConfig } from '@shared/config';
+import { env, hasCfAccessCredentials, requireAzureConfig } from '@shared/config';
+import { writePrivateJsonFile } from '@shared/private-file';
 
 const CACHE_FILE = 'playwright/.auth/api-token.json';
 const EXPIRY_BUFFER_MS = 60_000;
-const FILE_MODE = 0o600;
 
 export function shouldUseEntraAuthorization(): boolean {
   return env.apiAuth.required;
@@ -20,7 +19,7 @@ export async function apiAuthHeaders(): Promise<Record<string, string>> {
 export function assertApiAuthEnvironment(): void {
   if (env.apiAuth.required) requireAzureConfig();
 
-  if (env.cfAccess.required && !hasCfCreds()) {
+  if (env.cfAccess.required && !hasCfAccessCredentials()) {
     throw new Error('Cloudflare Access is required but CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET are missing.');
   }
 }
@@ -62,10 +61,6 @@ function isFresh(entry: CachedToken | undefined, scope: string): entry is Cached
   return !!entry && entry.scope === scope && entry.expiresAtMs - EXPIRY_BUFFER_MS > Date.now();
 }
 
-function hasCfCreds(): boolean {
-  return !!env.cfAccess.clientId && !!env.cfAccess.clientSecret;
-}
-
 function normaliseScope(scope: string): string {
   return scope.endsWith('/.default') ? scope : `${scope}/.default`;
 }
@@ -81,10 +76,7 @@ function readDiskCache(): CachedToken | undefined {
 
 function persistToken(entry: CachedToken): CachedToken {
   memoryToken = entry;
-  const tmpPath = `${CACHE_FILE}.${process.pid}.tmp`;
-  mkdirSync(dirname(CACHE_FILE), { recursive: true });
-  writeFileSync(tmpPath, JSON.stringify(entry, null, 2), { mode: FILE_MODE });
-  renameSync(tmpPath, CACHE_FILE);
+  writePrivateJsonFile(CACHE_FILE, entry);
   return entry;
 }
 

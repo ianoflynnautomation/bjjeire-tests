@@ -1,5 +1,4 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { waitForListOrEmpty } from '@ui/support';
 import { ListPage } from '../common/list-page';
 import { getGymCardData } from './gyms.card.page';
 import { GYM_CARD_TEST_IDS, NO_DATA_COPY, TEST_IDS } from './gyms.constants';
@@ -25,10 +24,7 @@ export class GymsPage extends ListPage<GymCard> {
   }
 
   async resetCountyFilter(): Promise<void> {
-    await waitForListOrEmpty(this.listItems, this.emptyState);
-    await this.countySelect.selectOption(ALL_COUNTIES_OPTION);
-    await expect(this.countySelect).toHaveValue(ALL_COUNTIES_OPTION);
-    await waitForListOrEmpty(this.listItems, this.emptyState);
+    await this.resetFilter(this.countySelect, ALL_COUNTIES_OPTION);
   }
 
   async expectCardLinks(name: string, links: { website: string; googleMaps: string }): Promise<void> {

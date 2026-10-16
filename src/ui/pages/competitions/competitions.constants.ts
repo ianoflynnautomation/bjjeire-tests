@@ -1,13 +1,8 @@
 export const TEST_IDS = {
   cardName: 'competition-card-name',
-  clearSearchButton: 'search-clear-button',
   emptyState: 'no-data-state',
-  emptyStateMessageLine1: 'no-data-state-message-line1',
-  emptyStateMessageLine2: 'no-data-state-message-line2',
-  emptyStateTitle: 'no-data-state-title',
   header: 'competitions-page-header',
   headerTitle: 'competitions-page-header-title',
-  list: 'competitions-list',
   listItem: 'competitions-list-item',
   search: 'competitions-page-search',
   searchInput: 'search-input',
@@ -22,10 +17,10 @@ export const COMPETITION_CARD_TEST_IDS = {
   tagItem: 'competition-card-tag-item',
 } as const;
 
-export const EMPTY_STATE = {
+export const NO_SEARCH_RESULTS_COPY = {
   title: 'No Results Found',
-  messageLine1: 'No competitions matched your search. Try different keywords.',
-  messageLine2: 'Try adjusting your filters or check back later.',
+  line1: 'No competitions matched your search. Try different keywords.',
+  line2: 'Try adjusting your filters or check back later.',
 } as const;
 
 export const NO_DATA_COPY = {

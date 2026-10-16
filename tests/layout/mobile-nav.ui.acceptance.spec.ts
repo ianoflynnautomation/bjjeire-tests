@@ -1,6 +1,6 @@
 import { test, expect } from '@ui/fixtures';
 import { HEADER_NAV_LINKS } from '@ui/pages/sections/header.constants';
-import { goto } from '@ui/support';
+import { gotoAppShell } from '@ui/support';
 
 const mobileToggle = 'navigation-mobile-toggle';
 const mobilePanel = 'navigation-mobile-panel';
@@ -10,7 +10,7 @@ test.describe('Mobile navigation UI acceptance', { tag: ['@layout', '@navigation
     'Given the mobile header, when the visitor opens the menu, then every section link is listed',
     { tag: '@acceptance' },
     async ({ page }) => {
-      await goto(page, '/about');
+      await gotoAppShell(page, '/about');
 
       await page.getByTestId(mobileToggle).click();
 
@@ -27,7 +27,7 @@ test.describe('Mobile navigation UI acceptance', { tag: ['@layout', '@navigation
       `Given the mobile menu is open, when the visitor selects "${name}", then ${path} is opened and the menu closes`,
       { tag: '@acceptance' },
       async ({ page }) => {
-        await goto(page, '/about');
+        await gotoAppShell(page, '/about');
         await page.getByTestId(mobileToggle).click();
 
         const panel = page.getByTestId(mobilePanel);

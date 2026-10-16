@@ -25,16 +25,10 @@ function classLabel(category: ClassCategory): string {
   return label;
 }
 
-function statusBadgeLabel(status: GymStatus): string {
-  const label = STATUS_BADGE_LABELS[status];
-  if (!label) throw new Error(`No UI badge label mapped for gym status '${status}' — add it to STATUS_BADGE_LABELS`);
-  return label;
-}
-
 export function gymCardFromDto(gym: GymDto): GymCard {
   return {
     name: gym.name,
-    status: statusBadgeLabel(gym.status),
+    status: STATUS_BADGE_LABELS[gym.status],
     county: `${gym.county} County`,
     classes: gym.offeredClasses.map(classLabel),
   };

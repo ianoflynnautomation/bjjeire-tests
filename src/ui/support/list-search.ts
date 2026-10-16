@@ -16,7 +16,7 @@ export async function waitForListOrEmpty(listItems: Locator, emptyState: Locator
   await expect(listItems.or(emptyState).first()).toBeVisible();
 }
 
-function containsExactly(text: string): RegExp {
+function containsLiteral(text: string): RegExp {
   return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 }
 
@@ -29,7 +29,7 @@ export async function expectAllCardsMatch(
   const matchingField = listItems
     .page()
     .getByTestId(fieldTestId)
-    .filter({ hasText: containsExactly(expectedText) });
+    .filter({ hasText: containsLiteral(expectedText) });
   const mismatched = listItems.filter({ hasNot: matchingField });
 
   await waitForListOrEmpty(listItems, emptyState);

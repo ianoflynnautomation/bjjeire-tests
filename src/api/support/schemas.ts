@@ -27,9 +27,7 @@ expect.extend({
 /** Contract assertion. Returns the parsed value for the business assertions that follow. */
 export function expectSchema<T>(schema: ZodType<T>, data: unknown): T {
   expect(data).toMatchSchema(schema);
-  const parsed = schema.safeParse(data);
-  if (!parsed.success) throw new Error(fromError(parsed.error).message);
-  return parsed.data;
+  return schema.parse(data);
 }
 
 /** Parse gate for mocked bodies. Specs use {@link expectSchema} so the contract check is an assertion. */

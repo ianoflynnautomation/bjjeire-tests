@@ -17,7 +17,6 @@ export async function getEventCardData(locator: Locator): Promise<BjjEventCard> 
     getJoinedText(locator.getByTestId(EVENT_CARD_TEST_IDS.type), ' '),
     getText(locator.getByTestId(EVENT_CARD_TEST_IDS.county)),
     getJoinedText(locator.getByTestId(EVENT_CARD_TEST_IDS.pricing), ' | '),
-
     getTextIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.schedule)),
   ]);
 

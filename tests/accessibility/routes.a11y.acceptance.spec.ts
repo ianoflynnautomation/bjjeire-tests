@@ -6,11 +6,11 @@ import { gotoRoute } from '@ui/support';
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 const ROUTES = [
-  { name: 'Events', path: '/events', readySelector: 'events-list-item' },
-  { name: 'Gyms', path: '/gyms', readySelector: 'gyms-list-item' },
-  { name: 'Competitions', path: '/competitions', readySelector: 'competitions-list-item' },
-  { name: 'Stores', path: '/stores', readySelector: 'stores-list-item' },
-  { name: 'About', path: '/about', readySelector: 'about-page' },
+  { name: 'Events', path: '/events', readyTestId: 'events-list-item' },
+  { name: 'Gyms', path: '/gyms', readyTestId: 'gyms-list-item' },
+  { name: 'Competitions', path: '/competitions', readyTestId: 'competitions-list-item' },
+  { name: 'Stores', path: '/stores', readyTestId: 'stores-list-item' },
+  { name: 'About', path: '/about', readyTestId: 'about-page' },
 ] as const;
 
 type AxeResults = Awaited<ReturnType<AxeBuilder['analyze']>>;
@@ -29,13 +29,13 @@ function diagnose(node: ViolatingNode): Record<string, unknown> {
 }
 
 test.describe('Accessibility acceptance', { tag: ['@a11y', '@desktop'] }, () => {
-  for (const { name, path, readySelector } of ROUTES) {
+  for (const { name, path, readyTestId } of ROUTES) {
     test(
       `Given the ${name} page, when it is scanned against WCAG 2.1 A/AA, then no violations are reported`,
       { tag: '@acceptance' },
       async ({ page }) => {
         test.setTimeout(TIMEOUTS.max);
-        const ready = page.getByTestId(readySelector).first();
+        const ready = page.getByTestId(readyTestId).first();
         await gotoRoute(page, path, ready);
         await expect(ready).toBeVisible();
 

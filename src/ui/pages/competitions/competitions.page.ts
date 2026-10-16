@@ -1,8 +1,9 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { expectPageIndicator, goToNextListPage, goToPreviousListPage } from '../common/pagination.page';
 import { getCompetitionCardData } from './competitions.card.page';
-import { EMPTY_STATE, NO_DATA_COPY, TEST_IDS } from './competitions.constants';
+import { NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, TEST_IDS } from './competitions.constants';
 import type { CompetitionCard } from './competitions.types';
 
 export class CompetitionsPage extends ListPage<CompetitionCard> {
@@ -16,9 +17,7 @@ export class CompetitionsPage extends ListPage<CompetitionCard> {
 
   override async expectNoResults(): Promise<void> {
     await super.expectNoResults();
-    await expect(this.page.getByTestId(TEST_IDS.emptyStateTitle)).toHaveText(EMPTY_STATE.title);
-    await expect(this.page.getByTestId(TEST_IDS.emptyStateMessageLine1)).toHaveText(EMPTY_STATE.messageLine1);
-    await expect(this.page.getByTestId(TEST_IDS.emptyStateMessageLine2)).toHaveText(EMPTY_STATE.messageLine2);
+    await expectNoDataState(this.page, NO_SEARCH_RESULTS_COPY);
   }
 
   async goToNextPage(): Promise<void> {

@@ -1,12 +1,12 @@
 import { test, expect } from '@ui/fixtures';
-import { goto } from '@ui/support';
+import { gotoAppShell } from '@ui/support';
 
 test.describe('Theme UI acceptance', { tag: ['@layout', '@theme', '@ui', '@desktop'] }, () => {
   test(
     'Given the theme control, when the visitor cycles through the themes, then each is applied and persists across reloads',
     { tag: '@acceptance' },
     async ({ page }) => {
-      await goto(page, '/about');
+      await gotoAppShell(page, '/about');
       const html = page.locator('html');
 
       await expect(html).toHaveClass(/dark/);

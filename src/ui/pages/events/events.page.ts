@@ -33,10 +33,7 @@ export class EventsPage extends ListPage<BjjEventCard> {
   }
 
   async resetCountyFilter(): Promise<void> {
-    await waitForListOrEmpty(this.listItems, this.emptyState);
-    await this.countySelect.selectOption(ALL_COUNTIES_OPTION);
-    await expect(this.countySelect).toHaveValue(ALL_COUNTIES_OPTION);
-    await waitForListOrEmpty(this.listItems, this.emptyState);
+    await this.resetFilter(this.countySelect, ALL_COUNTIES_OPTION);
   }
 
   async filterByType(typeLabel: string): Promise<void> {

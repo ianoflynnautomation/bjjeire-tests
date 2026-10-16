@@ -1,5 +1,5 @@
 import type { Project } from '@playwright/test';
-import { cfAccessHeaders } from '@shared/config/cf-access';
+import { cfAccessHeaders, hasCfAccessCredentials } from '@shared/config/cf-access';
 import { env } from '@shared/config/env';
 
 const API_SETUP_TEST_MATCH = /.*\/auth\.api\.setup\.ts$/;
@@ -9,12 +9,8 @@ function hasEntraAuthBasics(): boolean {
   return !!env.azure.tenantId && !!env.azure.apiScope;
 }
 
-function hasCloudflareAccessCredentials(): boolean {
-  return !!env.cfAccess.clientId && !!env.cfAccess.clientSecret;
-}
-
 function shouldRunApiSetupProject(): boolean {
-  return env.apiAuth.required || hasEntraAuthBasics() || env.cfAccess.required || hasCloudflareAccessCredentials();
+  return env.apiAuth.required || hasEntraAuthBasics() || env.cfAccess.required || hasCfAccessCredentials();
 }
 
 export function createApiProjects(): Project[] {

@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { defineConfig, type PlaywrightTestConfig, type ReporterDescription } from '@playwright/test';
 import { cfAccessHeaders } from './cf-access';
+import { InvalidEnvVarError } from './config-errors';
 import { env } from './env';
 import { readEnv } from './process-env';
 import { resolveRunId } from './run-id';
@@ -20,12 +21,11 @@ export const QUARANTINE_TAG = /@quarantine/;
 
 function resolveWorkers(): number | string {
   const override = readEnv('PLAYWRIGHT_WORKERS');
-  if (override) {
-    if (override.endsWith('%')) return override;
-    const parsed = Number(override);
-    if (Number.isInteger(parsed) && parsed > 0) return parsed;
-  }
-  return IS_CI ? WORKERS.ci : WORKERS.local;
+  if (!override) return IS_CI ? WORKERS.ci : WORKERS.local;
+  if (override.endsWith('%')) return override;
+  const parsed = Number(override);
+  if (Number.isInteger(parsed) && parsed > 0) return parsed;
+  throw new InvalidEnvVarError('PLAYWRIGHT_WORKERS', override, 'a positive integer or a percentage such as 50%');
 }
 
 const CI_REPORTERS: ReporterDescription[] = [['blob'], ['github'], ['junit', { outputFile: 'test-results/junit.xml' }]];

@@ -146,4 +146,11 @@ export abstract class ListPage<TCard extends { name: string }> {
     await expect(select).toHaveValue(value);
     await this.expectAllCardsMatchField(cardFieldTestId, value);
   }
+
+  protected async resetFilter(select: Locator, allValue: string): Promise<void> {
+    await waitForListOrEmpty(this.listItems, this.emptyState);
+    await select.selectOption(allValue);
+    await expect(select).toHaveValue(allValue);
+    await waitForListOrEmpty(this.listItems, this.emptyState);
+  }
 }

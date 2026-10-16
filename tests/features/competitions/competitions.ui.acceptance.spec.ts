@@ -1,5 +1,6 @@
 import { test, competitionsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
+import { API_ROUTES } from '@api/support';
 import { competitionCardFromDto } from '@ui/pages/competitions/competitions.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
@@ -13,15 +14,15 @@ const seededCompetitionCard = competitionCardFromDto(seededCompetition);
 const seededCompetitionPartialName = SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME;
 
 const PAGINATION_PAGE_SIZE = 10;
-const pagedCompetitions = paginatePages(competitionsFixture.data, PAGINATION_PAGE_SIZE, '/api/v1/competition');
+const pagedCompetitions = paginatePages(competitionsFixture.data, PAGINATION_PAGE_SIZE, API_ROUTES.competitions);
 const firstPageCompetition = competitionsFixture.data
   .slice(0, PAGINATION_PAGE_SIZE)
-  .find((competition: { name: string }) => competition.name === 'Grappling Series Cork Open Summer 2026');
+  .find(competition => competition.name === 'Grappling Series Cork Open Summer 2026');
 const secondPageCompetition = competitionsFixture.data
   .slice(PAGINATION_PAGE_SIZE)
   .find(competition => competition.name === 'Grappling Industries Dublin');
 if (!firstPageCompetition || !secondPageCompetition) {
-  throw new Error('competitions.page-1.json no longer contains the expected page-1 and page-2 competitions');
+  throw new Error('competitions-pagination-page-1.json no longer contains the expected page-1 and page-2 competitions');
 }
 
 test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {

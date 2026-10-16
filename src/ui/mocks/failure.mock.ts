@@ -1,11 +1,15 @@
-import type { Page } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
 
 export type MockRoute = string | RegExp;
 
 const SERVER_ERROR = 500;
 
-function problemDetails(status: number): string {
-  return JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status });
+function fulfillProblem(route: Route, status: number): Promise<void> {
+  return route.fulfill({
+    status,
+    contentType: 'application/json',
+    body: JSON.stringify({ type: 'about:blank', title: 'Internal Server Error', status }),
+  });
 }
 
 export async function mockNetworkError(page: Page, route: MockRoute): Promise<void> {
@@ -13,15 +17,9 @@ export async function mockNetworkError(page: Page, route: MockRoute): Promise<vo
 }
 
 export async function mockServerError(page: Page, route: MockRoute, status = SERVER_ERROR): Promise<void> {
-  await page.route(route, handler =>
-    handler.fulfill({ status, contentType: 'application/json', body: problemDetails(status) }),
-  );
+  await page.route(route, handler => fulfillProblem(handler, status));
 }
 
 export async function mockServerErrorOnce(page: Page, route: MockRoute, status = SERVER_ERROR): Promise<void> {
-  await page.route(
-    route,
-    handler => handler.fulfill({ status, contentType: 'application/json', body: problemDetails(status) }),
-    { times: 1 },
-  );
+  await page.route(route, handler => fulfillProblem(handler, status), { times: 1 });
 }
