@@ -67,6 +67,6 @@ gate delivery on an atest score.
 
 This constitution supersedes local convenience for tests. Agentic reviews
 (`spec-review`, `playwright-fix`) must check it. Amendments land in the same
-PR as the convention change, and `CLAUDE.md` is updated in that PR.
+PR as the convention change, and `AGENTS.md` is updated in that PR.
 
 **Version**: 1.0.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-09-18

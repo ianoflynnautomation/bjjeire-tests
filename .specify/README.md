@@ -9,7 +9,7 @@ constitution, Playwright rules, and templates were adopted in place.
 | Path                        | Role                        |
 | --------------------------- | --------------------------- |
 | `memory/constitution.md`    | Acceptance-suite principles |
-| `rules/playwright-rules.md` | Agent digest of `CLAUDE.md` |
+| `rules/playwright-rules.md` | Agent digest of `AGENTS.md` |
 | `templates/`                | Feature spec templates      |
 | `../specs/`                 | Living acceptance specs     |
 

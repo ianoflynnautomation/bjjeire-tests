@@ -5,7 +5,7 @@ description: Generate a Playwright acceptance spec from a scenario by driving th
 
 # Test generation
 
-Follow `.claude/skills/playwright-cli/SKILL.md` and `.specify/rules/playwright-rules.md`. CLI codegen, `--debug=cli` attach, and healing are in `.claude/skills/playwright-cli/references/test-generation.md`.
+Follow `.agents/skills/playwright-cli/SKILL.md` and `.specify/rules/playwright-rules.md`. CLI codegen, `--debug=cli` attach, and healing are in `.agents/skills/playwright-cli/references/test-generation.md`.
 
 1. If the user gives no scenario, ask for one. Do not write a spec from the scenario text alone.
 2. Drive every step with MCP or the CLI. Snapshot before each action.

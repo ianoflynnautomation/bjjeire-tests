@@ -5,7 +5,7 @@ description: Explore a website for acceptance testing with Playwright MCP or the
 
 # Website exploration for testing
 
-Follow `.claude/skills/playwright-cli/SKILL.md`.
+Follow `.agents/skills/playwright-cli/SKILL.md`.
 
 1. Open the URL the user gave. If they mean the app under test and give no URL, use `http://127.0.0.1:8080`. If neither is clear, ask for a URL.
 2. Walk 3–5 core flows. Snapshot before each interaction. Record the accessible name and role, plus the outcome you observed.

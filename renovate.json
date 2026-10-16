@@ -9,7 +9,7 @@
       "versioning": "regex:^v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-noble$"
     },
     {
-      "description": "One PR bumps @playwright/test + the runner image everywhere; CLAUDE.md requires these to match.",
+      "description": "One PR bumps @playwright/test + the runner image everywhere; AGENTS.md requires these to match.",
       "groupName": "playwright",
       "matchPackageNames": ["@playwright/test", "playwright", "mcr.microsoft.com/playwright"]
     }

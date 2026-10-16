@@ -5,7 +5,7 @@ description: Fill a web form with Playwright MCP or the pinned CLI and stop befo
 
 # Fill a form
 
-Follow `.claude/skills/playwright-cli/SKILL.md`.
+Follow `.agents/skills/playwright-cli/SKILL.md`.
 
 1. Open the URL the user gave and snapshot the form. If they give no URL or no field values, ask for them.
 2. Fill each field from the latest snapshot ref. On the CLI, file inputs use `upload` with an absolute path, or `drop <ref> --path=<absolute path>`. On MCP, use `browser_file_upload` or `browser_drop`.

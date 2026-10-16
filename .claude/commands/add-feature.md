@@ -10,7 +10,7 @@ When NOT to use: adding tests to an existing feature — extend its existing sli
 
 Steps:
 
-1. Read `tests/features/_template/README.md` and the CLAUDE.md "Feature slice layout"
+1. Read `tests/features/_template/README.md` and the AGENTS.md "Feature slice layout"
    section for the canonical structure and naming rules.
 2. Create the slice by copying and adapting the template files:
    - `tests/features/_template/_template.ui.acceptance.spec.ts`

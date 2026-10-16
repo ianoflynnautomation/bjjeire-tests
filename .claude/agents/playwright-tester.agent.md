@@ -24,7 +24,7 @@ model: Claude Sonnet 4
 
 ## Core Responsibilities
 
-Browser driving uses Playwright MCP or the pinned CLI, per `.claude/skills/playwright-cli/SKILL.md`. Specs follow `.specify/rules/playwright-rules.md` and `CLAUDE.md`.
+Browser driving uses Playwright MCP or the pinned CLI, per `.agents/skills/playwright-cli/SKILL.md`. Specs follow `.specify/rules/playwright-rules.md` and `AGENTS.md`.
 
 1. **Website exploration.** Open the page, snapshot, and walk the user flows before writing code.
 2. **Test improvements.** Snapshot the live page with MCP or the CLI and fix locators from that snapshot, then the feature page object. The app under test runs on the host; start it or the port-forward before exploring.

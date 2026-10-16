@@ -27,7 +27,7 @@ the phase-1 path that needs no reporter (see atest doc 14).
 
 ## Projects (system of record: Chromium desktop)
 
-See `CLAUDE.md`. Feature flags pinned on. Dark default; light projects are
+See `AGENTS.md`. Feature flags pinned on. Dark default; light projects are
 smoke + a11y only.
 
 ## Contracts this suite owns

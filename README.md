@@ -139,7 +139,7 @@ src/api/features/<feature>/          Typed API clients, Zod schemas, DTO types
 .github/workflows/                   Internal CI + reusable workflows
 ```
 
-Conventions, tag taxonomy, and data policy live in [`CLAUDE.md`](CLAUDE.md); the
+Conventions, tag taxonomy, and data policy live in [`AGENTS.md`](AGENTS.md); the
 coverage roadmap lives in [`TODO.md`](TODO.md).
 
 ## Contributing

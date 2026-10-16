@@ -1,7 +1,7 @@
 # Playwright rules (agents)
 
 Apply when editing specs, page objects, fixtures, mocks, or Zod wire schemas.
-Full narrative: `CLAUDE.md`.
+Full narrative: `AGENTS.md`.
 
 ## Layout
 
