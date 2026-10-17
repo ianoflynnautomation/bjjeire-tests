@@ -1,16 +1,19 @@
 import { ClassCategory, GymStatus, type GymDto } from '@api/features/gyms/gyms.types';
+import { County } from '@api/support';
 import type { GymId } from '@shared/types';
 import { seededCoordinates } from '../common/testdata/seeded/geo';
 import { partialNameOf } from '../common/testdata/seeded/partial-name';
 
 const gymId = (id: string): GymId => id as GymId;
 
+export const SEEDED_GYM_BLACKWATER_VALLEY_ID = gymId('acce77900000000000000001');
+
 export const SEEDED_GYM_BLACKWATER_VALLEY: GymDto = {
-  id: gymId('acce77900000000000000001'),
+  id: SEEDED_GYM_BLACKWATER_VALLEY_ID,
   name: 'Blackwater Valley BJJ',
   description: 'Acceptance-test fixture gym in Cork.',
   status: GymStatus.Active,
-  county: 'Cork',
+  county: County.Cork,
   trialOffer: { isAvailable: true, freeClasses: 1, notes: 'One free trial class.' },
   location: {
     address: '1 Riverside Walk, Fermoy, Co. Cork, Ireland',
@@ -29,7 +32,7 @@ export const SEEDED_GYM_HARBOUR_CITY: GymDto = {
   name: 'Harbour City Jiu-Jitsu',
   description: 'Acceptance-test fixture gym in Cork.',
   status: GymStatus.Active,
-  county: 'Cork',
+  county: County.Cork,
   trialOffer: { isAvailable: false },
   location: {
     address: '12 Quay Street, Cork, Co. Cork, Ireland',
@@ -46,7 +49,7 @@ export const SEEDED_GYM_LIFFEY_GRAPPLING: GymDto = {
   name: 'Liffey Grappling Club',
   description: 'Acceptance-test fixture gym in Dublin.',
   status: GymStatus.Active,
-  county: 'Dublin',
+  county: County.Dublin,
   trialOffer: { isAvailable: true, freeDays: 7, notes: 'One free trial week.' },
   location: {
     address: '34 Ormond Quay, Dublin 1, Ireland',
@@ -63,7 +66,7 @@ export const SEEDED_GYM_NORTHSIDE_MAT_ROOM: GymDto = {
   name: 'Northside Mat Room',
   description: 'Acceptance-test fixture gym in Dublin.',
   status: GymStatus.Active,
-  county: 'Dublin',
+  county: County.Dublin,
   trialOffer: { isAvailable: false },
   location: {
     address: '8 Swords Road, Santry, Dublin 9, Ireland',

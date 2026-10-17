@@ -1,8 +1,6 @@
-import { test, expect } from '@api/fixtures';
-import { API_ROUTES } from '@api/support';
+import { test } from '@api/fixtures';
+import { API_ROUTES, expectProblem, ProblemType } from '@api/support';
 import { env } from '@shared/config';
-
-const UNAUTHORIZED = 401;
 
 // This file is the one place that deliberately calls the API unauthenticated.
 test.use({ requestAuth: 'none' });
@@ -16,7 +14,7 @@ test.describe('API authorization acceptance', { tag: ['@auth', '@api'] }, () => 
 
       const response = await request.get(API_ROUTES.gyms, { params: { page: 1, pageSize: 1 } });
 
-      expect(response.status()).toBe(UNAUTHORIZED);
+      await expectProblem(response, 401, ProblemType.Unauthorized);
     },
   );
 });

@@ -13,7 +13,9 @@ reset county, type filter, empty/error states — titles in
 ## API scenarios
 
 Upcoming only; finished excluded; county filter; order by creation date;
-type filter including multi-type events; pagination — titles in
+type filter including multi-type events; pagination; event by id (found, not
+found, malformed id); malformed `county` / `types` / `includeInactive` / paging
+params rejected as bad requests; out-of-range paging fails validation — titles in
 `events.api.acceptance.spec.ts`.
 
 ## Constraints

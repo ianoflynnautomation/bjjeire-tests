@@ -1,3 +1,10 @@
+export const HEADER_TEST_IDS = {
+  logoLink: 'navigation-logo-link',
+  navigation: 'navigation',
+  supportButton: 'navigation-support-button',
+  supportModalContent: 'support-modal-content',
+} as const;
+
 export const HEADER_NAV_LINKS = [
   { name: 'Events', path: '/events' },
   { name: 'Gyms', path: '/gyms' },

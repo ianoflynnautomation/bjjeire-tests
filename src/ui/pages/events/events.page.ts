@@ -1,8 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { waitForListOrEmpty, type TextMatcher } from '@ui/support';
+import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { getEventCardData } from './events.card.page';
-import { EVENT_CARD_TEST_IDS, NO_DATA_COPY, TEST_IDS } from './events.constants';
+import { EVENT_CARD_TEST_IDS, NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, TEST_IDS } from './events.constants';
 import type { BjjEventCard } from './events.types';
 
 const ALL_COUNTIES_OPTION = 'all';
@@ -14,6 +15,11 @@ export class EventsPage extends ListPage<BjjEventCard> {
 
   protected readCardData(card: Locator): Promise<BjjEventCard> {
     return getEventCardData(card);
+  }
+
+  override async expectNoResults(): Promise<void> {
+    await super.expectNoResults();
+    await expectNoDataState(this.page, NO_SEARCH_RESULTS_COPY);
   }
 
   private get filters(): Locator {

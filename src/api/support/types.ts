@@ -3,7 +3,41 @@ export type PaginationQuery = Readonly<{
   pageSize?: number;
 }>;
 
-export type CountyFilter = 'all' | (string & {});
+/**
+ * Counties in the gyms and events select (`bjjeire-app` `constants/counties.ts`).
+ * The OpenAPI enum also lists `None` and the six NI counties. The select does not.
+ */
+export const County = {
+  Dublin: 'Dublin',
+  Cork: 'Cork',
+  Galway: 'Galway',
+  Limerick: 'Limerick',
+  Waterford: 'Waterford',
+  Kilkenny: 'Kilkenny',
+  Wexford: 'Wexford',
+  Kerry: 'Kerry',
+  Tipperary: 'Tipperary',
+  Clare: 'Clare',
+  Mayo: 'Mayo',
+  Donegal: 'Donegal',
+  Sligo: 'Sligo',
+  Louth: 'Louth',
+  Meath: 'Meath',
+  Kildare: 'Kildare',
+  Wicklow: 'Wicklow',
+  Laois: 'Laois',
+  Offaly: 'Offaly',
+  Westmeath: 'Westmeath',
+  Carlow: 'Carlow',
+  Leitrim: 'Leitrim',
+  Roscommon: 'Roscommon',
+  Longford: 'Longford',
+  Cavan: 'Cavan',
+  Monaghan: 'Monaghan',
+} as const;
+export type County = (typeof County)[keyof typeof County];
+
+export type CountyFilter = 'all' | County;
 
 export type Pagination = Readonly<{
   totalItems: number;

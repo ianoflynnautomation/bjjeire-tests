@@ -5,6 +5,7 @@ import {
   ScheduleKind,
   type BjjEventDto,
 } from '@api/features/events/events.types';
+import { County } from '@api/support';
 import type { EventId } from '@shared/types';
 import { seededCoordinates } from '../common/testdata/seeded/geo';
 import { partialNameOf } from '../common/testdata/seeded/partial-name';
@@ -13,15 +14,17 @@ const eventId = (id: string): EventId => id as EventId;
 
 const EMPTY_FIXED_SCHEDULE = { kind: ScheduleKind.FixedDates, sessions: [] } as const;
 
+export const SEEDED_EVENT_LEINSTER_OPEN_MAT_ID = eventId('acce77e00000000000000001');
+
 export const SEEDED_EVENT_LEINSTER_OPEN_MAT: BjjEventDto = {
-  id: eventId('acce77e00000000000000001'),
+  id: SEEDED_EVENT_LEINSTER_OPEN_MAT_ID,
   name: 'Leinster Community Open Mat',
   description: 'Acceptance-test fixture event in Dublin (upcoming).',
   types: [BjjEventType.OpenMat],
   organiser: { name: 'Leinster Grappling Collective', website: 'https://leinster-grappling.example.ie/' },
   status: EventStatus.Upcoming,
   socialMedia: {},
-  county: 'Dublin',
+  county: County.Dublin,
   location: {
     address: '2 Mat Lane, Dublin 8, Ireland',
     venue: 'Leinster Grappling HQ',
@@ -46,7 +49,7 @@ export const SEEDED_EVENT_REBEL_COUNTY_SEMINAR: BjjEventDto = {
   organiser: { name: 'Rebel County BJJ', website: 'https://rebel-county-bjj.example.ie/' },
   status: EventStatus.RegistrationOpen,
   socialMedia: {},
-  county: 'Cork',
+  county: County.Cork,
   location: {
     address: '5 Academy Street, Cork, Co. Cork, Ireland',
     venue: 'Rebel County BJJ Academy',
@@ -69,7 +72,7 @@ export const SEEDED_EVENT_TRIBES_NO_GI_CAMP: BjjEventDto = {
   organiser: { name: 'Tribes Grappling', website: 'https://tribes-grappling.example.ie/' },
   status: EventStatus.Upcoming,
   socialMedia: {},
-  county: 'Galway',
+  county: County.Galway,
   location: {
     address: '9 Salthill Road, Galway, Co. Galway, Ireland',
     venue: 'Tribes Grappling Centre',
@@ -90,7 +93,7 @@ export const SEEDED_EVENT_ATLANTIC_COAST_CAMP: BjjEventDto = {
   organiser: { name: 'Atlantic Coast Grappling', website: 'https://atlantic-grappling.example.ie/' },
   status: EventStatus.RegistrationOpen,
   socialMedia: {},
-  county: 'Mayo',
+  county: County.Mayo,
   location: {
     address: '4 Quay Road, Westport, Co. Mayo, Ireland',
     venue: 'Atlantic Coast Grappling Hall',
@@ -136,7 +139,7 @@ export const SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT: BjjEventDto = {
   organiser: { name: 'Shannonside Grappling Club', website: 'https://shannonside-grappling.example.ie/' },
   status: EventStatus.Upcoming,
   socialMedia: {},
-  county: 'Limerick',
+  county: County.Limerick,
   location: {
     address: '18 Dock Road, Limerick, Co. Limerick, Ireland',
     venue: 'Shannonside Grappling Club',
@@ -163,7 +166,7 @@ export const SEEDED_EVENT_FINISHED_WINTER_SOLSTICE: BjjEventDto = {
   organiser: { name: 'Leinster Grappling Collective', website: 'https://leinster-grappling.example.ie/' },
   status: EventStatus.Upcoming,
   socialMedia: {},
-  county: 'Dublin',
+  county: County.Dublin,
   location: {
     address: '2 Mat Lane, Dublin 8, Ireland',
     venue: 'Leinster Grappling HQ',

@@ -1,7 +1,8 @@
 import { type Locator, type Page } from '@playwright/test';
+import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { getStoreCardData } from './stores.card.page';
-import { NO_DATA_COPY, TEST_IDS } from './stores.constants';
+import { NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, TEST_IDS } from './stores.constants';
 import type { StoreCard } from './stores.types';
 
 export class StoresPage extends ListPage<StoreCard> {
@@ -11,5 +12,10 @@ export class StoresPage extends ListPage<StoreCard> {
 
   protected readCardData(card: Locator): Promise<StoreCard> {
     return getStoreCardData(card);
+  }
+
+  override async expectNoResults(): Promise<void> {
+    await super.expectNoResults();
+    await expectNoDataState(this.page, NO_SEARCH_RESULTS_COPY);
   }
 }

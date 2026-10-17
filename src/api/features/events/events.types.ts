@@ -1,4 +1,11 @@
-import type { BaseApiEntityModel, CountyFilter, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
+import type {
+  BaseApiEntityModel,
+  County,
+  CountyFilter,
+  LocationDto,
+  PaginationQuery,
+  SocialMediaDto,
+} from '@api/support';
 import type { EventId } from '@shared/types';
 
 export const BjjEventType = {
@@ -18,13 +25,13 @@ export const PricingType = {
 export type PricingType = (typeof PricingType)[keyof typeof PricingType];
 
 export const EventStatus = {
+  Postponed: 'Postponed',
   Upcoming: 'Upcoming',
   RegistrationOpen: 'RegistrationOpen',
   RegistrationClosed: 'RegistrationClosed',
   Ongoing: 'Ongoing',
   Completed: 'Completed',
   Canceled: 'Canceled',
-  Postponed: 'Postponed',
 } as const;
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
 
@@ -73,7 +80,7 @@ export type BjjEventDto = BaseApiEntityModel<EventId> &
     status: EventStatus;
     statusReason?: string | null;
     socialMedia: SocialMediaDto;
-    county: string;
+    county: County;
     location: LocationDto;
     schedule: BjjEventScheduleDto;
     pricingOptions: readonly BjjEventPricingModelDto[];

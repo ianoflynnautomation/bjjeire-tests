@@ -1,5 +1,6 @@
 import { test, expect } from '@ui/fixtures';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
+import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
 
 test.use({ featureFlagOverrides: { ...ALL_FEATURES_ENABLED, Stores: false } });
@@ -22,8 +23,9 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
       await gotoAppShell(page, '/');
       await headerSection.expectVisible();
 
-      await expect(page.getByRole('navigation').getByRole('link', { name: 'Stores' })).toHaveCount(0);
-      await expect(page.getByRole('navigation').getByRole('link', { name: 'Gyms' })).toBeVisible();
+      const navigation = page.getByTestId(HEADER_TEST_IDS.navigation);
+      await expect(navigation.getByRole('link', { name: 'Stores' })).toHaveCount(0);
+      await expect(navigation.getByRole('link', { name: 'Gyms' })).toBeVisible();
     },
   );
 });

@@ -1,8 +1,8 @@
 import { z, type ZodObject, type ZodRawShape, type ZodType } from 'zod';
-import type { PaginatedResponse } from '@api/support/types';
-import { zPaginationMetadata } from './zod.gen';
+import type { PaginatedResponse } from './types';
+import { zPaginationMetadata } from '@api/generated/zod.gen';
 
-// PaginationMetadata is an optional string in the served spec. Jackson still
+// PaginationMetadata is an optional string in the published contract. Jackson still
 // writes JSON null for an absent link because those two fields are
 // @JsonInclude(ALWAYS), which overrides the API's non_null default.
 const paginationSchema = zPaginationMetadata.extend({
@@ -19,4 +19,9 @@ export function openApiPageSchema<TDto>(schema: ZodObject<ZodRawShape>): ZodType
   return schema.extend({
     pagination: paginationSchema.optional(),
   }) as unknown as ZodType<PaginatedResponse<TDto>>;
+}
+
+/** The served item schema, typed as the hand-written DTO — asserted for the same reason as the page. */
+export function openApiSchema<TDto>(schema: ZodObject<ZodRawShape>): ZodType<TDto> {
+  return schema as unknown as ZodType<TDto>;
 }

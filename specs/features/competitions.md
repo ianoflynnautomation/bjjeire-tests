@@ -11,8 +11,9 @@ states — titles in `competitions.ui.acceptance.spec.ts`.
 
 ## API scenarios
 
-Published details; finished excluded; ordered by start date; pagination —
-titles in `competitions.api.acceptance.spec.ts`.
+Published details; finished excluded; ordered by start date; pagination;
+malformed `includeInactive` / paging params rejected as bad requests;
+out-of-range paging fails validation — titles in `competitions.api.acceptance.spec.ts`.
 
 ## Constraints
 

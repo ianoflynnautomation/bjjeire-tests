@@ -1,12 +1,25 @@
-import { GymStatus, type ClassCategory, type GymDto } from '@api/features/gyms/gyms.types';
+import { ClassCategory, GymStatus, type GymDto } from '@api/features/gyms/gyms.types';
 import type { GymCard } from './gyms.types';
 
-const CLASS_CATEGORY_LABELS: Partial<Record<ClassCategory, string>> = {
-  BJJGiAllLevels: 'BJJ Gi (All Levels)',
-  BJJNoGiAllLevels: 'BJJ No-Gi (All Levels)',
-  KidsBJJ: 'Kids BJJ',
-  WomensOnly: "Women's Only",
-  Wrestling: 'Wrestling',
+/** Visible chip text from `bjjeire-app` `uiContent.gyms.classCategoryLabels`. Chips are not uppercased. */
+const CLASS_CATEGORY_LABELS: Record<ClassCategory, string> = {
+  [ClassCategory.Uncategorized]: 'Uncategorized',
+  [ClassCategory.BJJGiAllLevels]: 'BJJ Gi (All Levels)',
+  [ClassCategory.BJJNoGiAllLevels]: 'BJJ No-Gi (All Levels)',
+  [ClassCategory.WomensOnly]: "Women's Only",
+  [ClassCategory.Wrestling]: 'Wrestling',
+  [ClassCategory.MuayThai]: 'Muay Thai',
+  [ClassCategory.Boxing]: 'Boxing',
+  [ClassCategory.StrengthTraining]: 'Strength Training',
+  [ClassCategory.YogaOrPilates]: 'Yoga/Pilates',
+  [ClassCategory.KidsBJJ]: 'Kids BJJ',
+  [ClassCategory.BJJGiFundamentals]: 'BJJ Gi (Fundamentals)',
+  [ClassCategory.BJJGiAdvanced]: 'BJJ Gi (Advanced)',
+  [ClassCategory.BJJNoGiFundamentals]: 'BJJ No-Gi (Fundamentals)',
+  [ClassCategory.BJJNoGiAdvanced]: 'BJJ No-Gi (Advanced)',
+  [ClassCategory.CompetitionTraining]: 'Competition Training',
+  [ClassCategory.ProTraining]: 'Pro Training',
+  [ClassCategory.Other]: 'Other',
 };
 
 const STATUS_BADGE_LABELS: Record<GymStatus, string> = {
@@ -19,17 +32,11 @@ const STATUS_BADGE_LABELS: Record<GymStatus, string> = {
   [GymStatus.Rejected]: 'REJECTED',
 };
 
-function classLabel(category: ClassCategory): string {
-  const label = CLASS_CATEGORY_LABELS[category];
-  if (!label) throw new Error(`No UI label mapped for class category '${category}' — add it to CLASS_CATEGORY_LABELS`);
-  return label;
-}
-
 export function gymCardFromDto(gym: GymDto): GymCard {
   return {
     name: gym.name,
     status: STATUS_BADGE_LABELS[gym.status],
     county: `${gym.county} County`,
-    classes: gym.offeredClasses.map(classLabel),
+    classes: gym.offeredClasses.map(category => CLASS_CATEGORY_LABELS[category]),
   };
 }

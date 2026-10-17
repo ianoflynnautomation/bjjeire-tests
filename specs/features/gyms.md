@@ -24,7 +24,16 @@
 2. Given gyms are published, when a client filters by county, then only gyms from that county are returned
 3. Given gyms are published, when a client opens the directory, then they are ordered by name
 4. Pagination slice + empty page-beyond-last
-5. Given an unknown county, when a client filters by it, then the request is rejected as a bad request
+5. Given an unknown county "<value>", when a client opens the directory, then the request is rejected as a bad request
+6. Given a non-numeric page / page size "<value>", when a client opens the directory, then the request is rejected as a bad request
+7. Given page / pageSize `<value>` is out of range, when a client opens the directory, then the request fails validation on that parameter
+8. Given a published gym, when a client opens it by id, then its details are returned
+9. Given no gym has the id, when a client opens it, then the gym is not found
+10. Given a gym id that is `<malformed>`, when a client opens it, then the request fails validation on the id
+
+Scenarios 5–7 and 10 are data-driven over `tests/features/common/testdata/invalid-values.ts`.
+Errors are asserted as RFC 9457 problem documents (`expectProblem`): status, `type`, and
+for validation failures the offending `field` + `errorCode`.
 
 ## Constraints
 

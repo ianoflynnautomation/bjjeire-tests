@@ -1,4 +1,4 @@
-import { openApiPageSchema } from '@api/generated/wire';
+import { openApiPageSchema } from '@api/support';
 import { zPagedResponseStoreDto } from '@api/generated/zod.gen';
 import type { StoreDto } from './stores.types';
 

@@ -1,4 +1,11 @@
-import type { BaseApiEntityModel, CountyFilter, LocationDto, PaginationQuery, SocialMediaDto } from '@api/support';
+import type {
+  BaseApiEntityModel,
+  County,
+  CountyFilter,
+  LocationDto,
+  PaginationQuery,
+  SocialMediaDto,
+} from '@api/support';
 import type { GymId } from '@shared/types';
 
 export const ClassCategory = {
@@ -50,7 +57,7 @@ export type GymDto = BaseApiEntityModel<GymId> &
     name: string;
     description?: string | null;
     status: GymStatus;
-    county: string;
+    county: County;
     affiliation?: AffiliationDto | null;
     trialOffer: TrialOfferDto;
     location: LocationDto;

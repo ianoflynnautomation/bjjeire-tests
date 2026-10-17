@@ -1,4 +1,5 @@
 import { expect, test } from '@ui/fixtures';
+import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 
 test.describe('Header snapshot acceptance', { tag: ['@layout', '@header', '@snapshot', '@desktop'] }, () => {
   test(
@@ -7,8 +8,8 @@ test.describe('Header snapshot acceptance', { tag: ['@layout', '@header', '@snap
     async ({ page }) => {
       await page.goto('/about');
 
-      await expect(page.getByRole('navigation')).toBeVisible();
-      await expect(page.getByTestId('navigation-logo-link')).toMatchAriaSnapshot({ name: 'logo-link.aria.yml' });
+      await expect(page.getByTestId(HEADER_TEST_IDS.navigation)).toBeVisible();
+      await expect(page.getByTestId(HEADER_TEST_IDS.logoLink)).toMatchAriaSnapshot({ name: 'logo-link.aria.yml' });
     },
   );
 });

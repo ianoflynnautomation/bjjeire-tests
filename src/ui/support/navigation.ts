@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { TIMEOUTS } from '@shared/config/timeouts';
+import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 
 /**
  * Block until a route is actually mounted in the DOM.
@@ -38,5 +39,5 @@ export async function gotoRoute(page: Page, path: string, routeAnchor: Locator):
  * mount. For specs that exercise chrome rather than a specific route's content.
  */
 export async function gotoAppShell(page: Page, path: string): Promise<void> {
-  await gotoRoute(page, path, page.getByRole('navigation'));
+  await gotoRoute(page, path, page.getByTestId(HEADER_TEST_IDS.navigation));
 }

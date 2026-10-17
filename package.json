@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "contract:pull": "scripts/pull-openapi-contract.sh",
     "gen:api-schemas": "openapi-ts -f openapi-ts.config.ts",
     "test": "playwright test -c playwright.ui.config.ts",
     "test:docker": "APP_ENV=docker playwright test -c playwright.ui.config.ts",
@@ -55,7 +56,7 @@
     "web-test-automation",
     "typescript"
   ],
-  "author": "",
+  "author": "Ian O Flynn",
   "license": "ISC",
   "dependencies": {
     "@azure/msal-node": "^7.1.0",

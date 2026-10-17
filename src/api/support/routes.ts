@@ -12,3 +12,8 @@ export const API_ROUTES = {
 
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 20;
+
+/** A single resource under a collection route; the id is encoded so fuzzed values stay one path segment. */
+export function resourcePath(collection: string, id: string): string {
+  return `${collection}/${encodeURIComponent(id)}`;
+}

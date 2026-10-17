@@ -1,3 +1,5 @@
+import { EMPTY_LINE2 } from '../common/empty.page';
+
 export const EVENT_CARD_TEST_IDS = {
   county: 'event-card-county',
   name: 'event-card-name',
@@ -10,6 +12,12 @@ export const NO_DATA_COPY = {
   title: 'No Events Found',
   line1: 'No events match your current filters.',
   line2: 'Try a different filter to find events.',
+} as const;
+
+export const NO_SEARCH_RESULTS_COPY = {
+  title: 'No events match your search',
+  line1: 'Try a different search term or clear the filter.',
+  line2: EMPTY_LINE2,
 } as const;
 
 export const TEST_IDS = {

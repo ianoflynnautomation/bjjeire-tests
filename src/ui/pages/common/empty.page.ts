@@ -6,6 +6,9 @@ export const NO_DATA = {
   messageLine2: 'no-data-state-message-line2',
 } as const;
 
+/** `NoDataState` default when a search-empty state omits line 2 (`uiContent.shared.emptyLine2`). */
+export const EMPTY_LINE2 = 'Try adjusting your filters or check back later.';
+
 export type NoDataCopy = {
   title: string;
   line1: string;

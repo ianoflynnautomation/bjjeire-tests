@@ -1,3 +1,5 @@
+import { EMPTY_LINE2 } from '../common/empty.page';
+
 export const TEST_IDS = {
   cardName: 'competition-card-name',
   emptyState: 'no-data-state',
@@ -20,7 +22,7 @@ export const COMPETITION_CARD_TEST_IDS = {
 export const NO_SEARCH_RESULTS_COPY = {
   title: 'No Results Found',
   line1: 'No competitions matched your search. Try different keywords.',
-  line2: 'Try adjusting your filters or check back later.',
+  line2: EMPTY_LINE2,
 } as const;
 
 export const NO_DATA_COPY = {

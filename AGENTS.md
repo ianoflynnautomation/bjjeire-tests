@@ -9,7 +9,7 @@ live in the app repository (`~/Sources/BjjEire`). Against live AKS **dev**: [doc
 
 - **Runtime**: Node 22, TypeScript 6.0, CommonJS (`"type": "commonjs"`)
 - **Test framework**: `@playwright/test` 1.64.1 (pinned; must match the CI runner image)
-- **Validation**: Zod v4 generated from the served OpenAPI document (`npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema.
+- **Validation**: Zod v4 generated from the published OpenAPI contract (`npm run contract:pull` → `npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema.
 - **A11y**: `@axe-core/playwright`
 - **Lint**: ESLint v9 flat config + Prettier 3, Husky pre-commit runs lint-staged
 
@@ -204,10 +204,13 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   OpenAPI page schema and a typed query (`GetBjjEventsPaginationQuery` and the
   siblings). The client runs `expectSchema` and returns `PaginatedResponse<Dto>`,
   then the business assertions check the returned values. The page schema is the
-  Zod schema generated from the served OpenAPI document
-  (`src/api/generated/zod.gen.ts`). Regenerate with `npm run gen:api-schemas`
-  after replacing `contracts/openapi-v1.json` (gitignored; `GET /v3/api-docs` on the
-  API, or the `openapi-v1.json` artifact). The path must be `./contracts/openapi-v1.json`.
+  Zod schema generated from the published OpenAPI contract
+  (`src/api/generated/zod.gen.ts`). The contract is the OCI artifact
+  `ghcr.io/ianoflynnautomation/bjjeire-openapi-contract` (published by `bjjeire-java` CI
+  on main). Run `npm run contract:pull [tag|sha]` to write it to
+  `./contracts/openapi-v1.json` (gitignored), then `npm run gen:api-schemas`. The generator
+  wipes `src/api/generated/`, so the DTO-typed adapters (`openApiPageSchema`,
+  `openApiSchema`) live in `src/api/support/openapi-schemas.ts`.
   Schema compatibility stays with `oasdiff` in the app repo. These specs do not assert
   field types one by one.
 - Specs make API calls explicitly; assertion helpers receive responses, never fetch.
@@ -216,8 +219,17 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   the Entra bearer and per-test `traceparent` are layered by overriding the
   `extraHTTPHeaders` option in `src/api/fixtures/index.ts`. `get()` from
   `@api/support` performs the request and returns the JSON body. The feature client
-  is what parses it. Specs asserting an error status call `request.get(...)` and read the
-  `APIResponse`.
+  is what parses it. Specs asserting an error status call `request.get(...)` and pass
+  the `APIResponse` to `expectProblem(response, status, ProblemType.X)`. That checks the
+  status, the RFC 9457 problem schema (hand-written in `src/api/support/problem.ts`,
+  because the published contract lists only 200s), and the problem `type`. It returns the body
+  so the spec can assert validation `errors` (`field` + `errorCode`). Get-by-id clients
+  (`getGymById`, `getBjjEventById`) take the item schema; ids go through `resourcePath`.
+- Negative inputs are data-driven. Shared invalid sets (malformed integer, boolean, enum
+  and ObjectId values, the paging bounds, and an unpublished id) live in
+  `tests/features/common/testdata/invalid-values.ts`. A set used by only one field stays
+  inline. A test making more than one call wraps each call in a named `test.step`.
+  The `api-testing` skill has the full workflow.
 - **Calling the API unauthenticated** — `requestAuth` is an option on
   `@api/fixtures`: a file declares `test.use({ requestAuth: 'none' })` to withhold
   the Entra bearer (Cloudflare Access headers still apply — they clear the edge,
@@ -325,7 +337,6 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   (and a Grafana link when `GRAFANA_URL` is set) into the HTML report. CI passes
   endpoint/headers as optional secrets. Locally: `npm run otel:forward` + the env
   var; `npm run otel:grafana` to explore (README "Tracing test runs").
-  Renaming `test.*` span attributes breaks the Grafana dashboard — see TODO.
 
 ## Guardrails
 
@@ -333,7 +344,6 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 - Never run tests against production targets; staging runs only as an explicit task.
 - Keep generated reports/test output (`playwright-report/`, `test-results/`,
   `allure-results/`) out of source changes.
-- `TODO.md` tracks the coverage roadmap and known app bugs — update it when closing items.
 
 ---
 

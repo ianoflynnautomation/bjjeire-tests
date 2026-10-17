@@ -1,3 +1,5 @@
+import { EMPTY_LINE2 } from '../common/empty.page';
+
 export const GYM_CARD_TEST_IDS = {
   classes: 'gym-card-classes',
   classesItem: 'gym-card-classes-item',
@@ -10,6 +12,12 @@ export const NO_DATA_COPY = {
   title: 'No Gyms Found',
   line1: 'No gyms match your current filters.',
   line2: 'Try a different county or check back later.',
+} as const;
+
+export const NO_SEARCH_RESULTS_COPY = {
+  title: 'No gyms match your search',
+  line1: 'Try a different search term or clear the filter.',
+  line2: EMPTY_LINE2,
 } as const;
 
 export const TEST_IDS = {

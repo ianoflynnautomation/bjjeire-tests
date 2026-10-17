@@ -11,7 +11,8 @@ List (`@smoke`), search (full and partial), empty/error states — titles in
 
 ## API scenarios
 
-Published details; ordered by name; pagination — titles in
+Published details; ordered by name; pagination; non-numeric paging params
+rejected as bad requests; out-of-range paging fails validation — titles in
 `stores.api.acceptance.spec.ts`.
 
 ## Constraints

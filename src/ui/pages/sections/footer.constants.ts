@@ -1,6 +1,4 @@
-export const FOOTER_QUICK_LINKS = [
-  { name: 'Gyms', path: '/gyms' },
-  { name: 'Competitions', path: '/competitions' },
-  { name: 'Stores', path: '/stores' },
-  { name: 'About', path: '/about' },
-] as const;
+import { HEADER_NAV_LINKS } from './header.constants';
+
+/** Same list as the header. Both render `useNavItems()` with every feature flag on. */
+export const FOOTER_QUICK_LINKS = HEADER_NAV_LINKS;

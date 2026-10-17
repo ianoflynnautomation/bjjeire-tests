@@ -1,4 +1,4 @@
-import { openApiPageSchema } from '@api/generated/wire';
+import { openApiPageSchema } from '@api/support';
 import { zPagedResponseCompetitionDto } from '@api/generated/zod.gen';
 import type { CompetitionDto } from './competitions.types';
 
