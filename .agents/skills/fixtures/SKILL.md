@@ -62,19 +62,19 @@ export function mockFixture<A extends unknown[]>(mock: (page: Page, ...args: A) 
 
 ### Phase 1: Classify what you're adding
 
-| Need | Home |
-| --- | --- |
-| Page object for one feature | `pageFixture(PageClass)` in `tests/features/<feature>/fixtures.ts` |
-| Route mock for that feature (empty list, error, multi-page, snapshot body) | `mockFixture` in the same file. The mock function stays in `tests/features/<feature>/mocks.ts` and parses the body with the feature Zod schema |
-| Network or HTTP failure for that feature's route | `...failureMockFixtures(ROUTE)` in the same file. The route is the only argument, so `failure.fixture.ts` stays feature-agnostic |
-| One page object for a layout spec that is not part of the feature | `core.extend` in that spec file, as `tests/layout/routing.ui.acceptance.spec.ts` does. Do not import the feature's mocks |
-| Flag, viewport, color scheme, or timezone for every spec in a feature | `<feature>TestConfig`, passed to `test.use` by each of that feature's UI specs |
-| Flag set for one spec file | `test.use({ featureFlagOverrides: { ...ALL_FEATURES_ENABLED, Stores: false } })` in that file. See `tests/layout/feature-flags.ui.acceptance.spec.ts` |
-| Cross-cutting UI precondition (chrome, flags, trace headers) | `CoreUiFixtures` in `src/ui/fixtures/base.ts` |
-| API auth or request headers | `src/api/fixtures/index.ts`. Playwright's `request` fixture is the caller. There is no `apiRequest` fixture |
-| One API call, or a list assertion | **No fixture.** Call `getGyms(request, schema, query)` or `request.get`, then pass the value to a helper. See the `api-testing` skill, Phase 8 |
-| Pure function with no `page`, `request`, or lifecycle | A function under `src/ui/support/` or `src/api/support/`. Not a fixture |
-| Timeouts, workers, projects, `grep` | `src/shared/config/playwright.ts` and the UI or API project config. Not a fixture |
+| Need                                                                       | Home                                                                                                                                                  |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page object for one feature                                                | `pageFixture(PageClass)` in `tests/features/<feature>/fixtures.ts`                                                                                    |
+| Route mock for that feature (empty list, error, multi-page, snapshot body) | `mockFixture` in the same file. The mock function stays in `tests/features/<feature>/mocks.ts` and parses the body with the feature Zod schema        |
+| Network or HTTP failure for that feature's route                           | `...failureMockFixtures(ROUTE)` in the same file. The route is the only argument, so `failure.fixture.ts` stays feature-agnostic                      |
+| One page object for a layout spec that is not part of the feature          | `core.extend` in that spec file, as `tests/layout/routing.ui.acceptance.spec.ts` does. Do not import the feature's mocks                              |
+| Flag, viewport, color scheme, or timezone for every spec in a feature      | `<feature>TestConfig`, passed to `test.use` by each of that feature's UI specs                                                                        |
+| Flag set for one spec file                                                 | `test.use({ featureFlagOverrides: { ...ALL_FEATURES_ENABLED, Stores: false } })` in that file. See `tests/layout/feature-flags.ui.acceptance.spec.ts` |
+| Cross-cutting UI precondition (chrome, flags, trace headers)               | `CoreUiFixtures` in `src/ui/fixtures/base.ts`                                                                                                         |
+| API auth or request headers                                                | `src/api/fixtures/index.ts`. Playwright's `request` fixture is the caller. There is no `apiRequest` fixture                                           |
+| One API call, or a list assertion                                          | **No fixture.** Call `getGyms(request, schema, query)` or `request.get`, then pass the value to a helper. See the `api-testing` skill, Phase 8        |
+| Pure function with no `page`, `request`, or lifecycle                      | A function under `src/ui/support/` or `src/api/support/`. Not a fixture                                                                               |
+| Timeouts, workers, projects, `grep`                                        | `src/shared/config/playwright.ts` and the UI or API project config. Not a fixture                                                                     |
 
 If the need fits none of these rows, stop and ask. Do not invent a second registry.
 
@@ -155,14 +155,10 @@ import { test, gymsTestConfig } from './fixtures';
 
 test.use(gymsTestConfig);
 
-test(
-  'visitor should see the gym list when opening Gyms',
-  { tag: ['@smoke', '@acceptance'] },
-  async ({ gymsPage }) => {
-    await gymsPage.goTo();
-    await gymsPage.verifyIsLoaded();
-  },
-);
+test('visitor should see the gym list when opening Gyms', { tag: ['@smoke', '@acceptance'] }, async ({ gymsPage }) => {
+  await gymsPage.goTo();
+  await gymsPage.verifyIsLoaded();
+});
 ```
 
 An option is overridable from `test.use`. A plain fixture is not. Flags are an option so one file can turn a feature off. The auto fixture reads that option and stubs the app before any navigation:
@@ -241,17 +237,17 @@ Do not seed or delete directory rows in a fixture, `beforeAll`, or `afterAll`. T
 
 ## Built-in Fixtures
 
-| Fixture | Source | Purpose |
-| --- | --- | --- |
-| `headerSection`, `footerSection`, `supportModal` | `src/ui/fixtures/base.ts` | Chrome page objects, via `pageFixture` |
-| `featureFlagOverrides` | `base.ts` option | Defaults to `ALL_FEATURES_ENABLED`. Override with `test.use` |
-| `featureFlags` | `base.ts`, `auto: true` | Writes `__BJJEIRE_TEST_FLAG_OVERRIDES__` before the app boots |
-| `extraHTTPHeaders` (UI) | `base.ts` | Adds `traceparent` on top of the project headers |
-| `gymsPage`, `eventsPage`, `competitionsPage`, `storesPage`, `aboutPage` | that feature's `fixtures.ts` | The feature page object |
-| `mockGyms`, `mockBjjEvents`, and the other list mocks | that feature's `fixtures.ts` | Opt-in `route.fulfill`, schema-checked |
-| `mockNetworkError`, `mockServerError`, `mockServerErrorOnce` | `failureMockFixtures(route)` | Opt-in failure for that feature's route |
-| `request` | Playwright, headers from `@api/fixtures` | Passed into `getGyms` and the other clients |
-| `requestAuth` | `@api/fixtures` option | `'default'` or `'none'` |
+| Fixture                                                                 | Source                                   | Purpose                                                       |
+| ----------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| `headerSection`, `footerSection`, `supportModal`                        | `src/ui/fixtures/base.ts`                | Chrome page objects, via `pageFixture`                        |
+| `featureFlagOverrides`                                                  | `base.ts` option                         | Defaults to `ALL_FEATURES_ENABLED`. Override with `test.use`  |
+| `featureFlags`                                                          | `base.ts`, `auto: true`                  | Writes `__BJJEIRE_TEST_FLAG_OVERRIDES__` before the app boots |
+| `extraHTTPHeaders` (UI)                                                 | `base.ts`                                | Adds `traceparent` on top of the project headers              |
+| `gymsPage`, `eventsPage`, `competitionsPage`, `storesPage`, `aboutPage` | that feature's `fixtures.ts`             | The feature page object                                       |
+| `mockGyms`, `mockBjjEvents`, and the other list mocks                   | that feature's `fixtures.ts`             | Opt-in `route.fulfill`, schema-checked                        |
+| `mockNetworkError`, `mockServerError`, `mockServerErrorOnce`            | `failureMockFixtures(route)`             | Opt-in failure for that feature's route                       |
+| `request`                                                               | Playwright, headers from `@api/fixtures` | Passed into `getGyms` and the other clients                   |
+| `requestAuth`                                                           | `@api/fixtures` option                   | `'default'` or `'none'`                                       |
 
 ### `request` vs a helper fixture
 
