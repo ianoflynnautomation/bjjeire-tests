@@ -116,22 +116,22 @@ Every source is validated on its own, so an error names its origin
 unknown `SQUASH_TM_*` variable is an error, not ignored, so a typo cannot fall
 back to a default. `SQUASH_TM_LOG_LEVEL=debug` logs which source set each key.
 
-| Key                                                   | Purpose                                                                                          |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `mode`                                                | `dry-run` (default; no writes), `publish`, or `auto` (`publish` when `CI` is set)                |
-| `url`, `projectId`                                    | Squash root including the context path, and the project. Needed to publish or select             |
-| `tag`                                                 | Only tests carrying it are Squash test cases (default `@squash`: tests opt in)                   |
-| `testCaseFolder`                                      | Folder for new test cases no rule matches (`Playwright`); project root when unset                |
-| `folderRules`                                         | File only: `[{ "path": "features/gyms/", "tag": "@api", "folder": "…" }]`, first match wins      |
-| `projects`                                            | File only: `{ "<projectId>": { "testCaseFolder": …, "folderRules": … } }`, per-project placement |
-| `campaign`                                            | Campaign path, folders included (`Releases/2.4`); each missing part is created                   |
-| `campaignId`                                          | An existing campaign, instead of `campaign`                                                      |
-| `iteration`                                           | Iteration name in the campaign, reused when it exists; unset means one per run                   |
-| `iterationId`                                         | Publish into exactly this iteration (no campaign or iteration settings with it)                  |
+| Key                                                   | Purpose                                                                                                                                                                                                    |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`                                                | `dry-run` (default; no writes), `publish`, or `auto` (`publish` when `CI` is set)                                                                                                                          |
+| `url`, `projectId`                                    | Squash root including the context path, and the project. Needed to publish or select                                                                                                                       |
+| `tag`                                                 | Only tests carrying it are Squash test cases (default `@squash`: tests opt in)                                                                                                                             |
+| `testCaseFolder`                                      | Folder for new test cases no rule matches (`Playwright`); project root when unset                                                                                                                          |
+| `folderRules`                                         | File only: `[{ "path": "features/gyms/", "tag": "@api", "folder": "…" }]`, first match wins                                                                                                                |
+| `projects`                                            | File only: `{ "<projectId>": { "testCaseFolder": …, "folderRules": … } }`, per-project placement                                                                                                           |
+| `campaign`                                            | Campaign path, folders included (`Releases/2.4`); each missing part is created                                                                                                                             |
+| `campaignId`                                          | An existing campaign, instead of `campaign`                                                                                                                                                                |
+| `iteration`                                           | Iteration name in the campaign, reused when it exists; unset means one per run                                                                                                                             |
+| `iterationId`                                         | Publish into exactly this iteration (no campaign or iteration settings with it)                                                                                                                            |
 | `release`                                             | `true` also creates a release execution (`false`). `SQUASH_TM_RELEASE` in the shell or `.env*.local`, or `--squash-release`. A set env value applies to every publish until cleared; the flag overrides it |
-| `testSuiteId`                                         | Run only the suite's tests and publish into its iteration (no other target with it)              |
-| `filterFolder`                                        | Run only tests whose Squash case is in this folder or below                                      |
-| `failOnError`, `maxAttempts`, `timeoutMs`, `logLevel` | `false`, `5`, `30000`, `info`                                                                    |
+| `testSuiteId`                                         | Run only the suite's tests and publish into its iteration (no other target with it)                                                                                                                        |
+| `filterFolder`                                        | Run only tests whose Squash case is in this folder or below                                                                                                                                                |
+| `failOnError`, `maxAttempts`, `timeoutMs`, `logLevel` | `false`, `5`, `30000`, `info`                                                                                                                                                                              |
 
 **Authentication is an API token only.** `SQUASH_TM_TOKEN` holds a Squash
 personal API token, sent as `Authorization: Bearer`. It is read from the

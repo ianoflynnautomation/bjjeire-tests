@@ -184,18 +184,18 @@ existing case (the API cannot); the sync lists misplaced cases for moving in the
 
 ## Troubleshooting
 
-| Symptom                                                 | Cause and fix                                                                                          |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Symptom                                                 | Cause and fix                                                                                                                                                         |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `needs SQUASH_TM_TOKEN` or `publish mode needs url`     | Set `SQUASH_TM_URL` and `SQUASH_TM_TOKEN` in the shell, `.env`, or `.env*.local`. A local run reads those keys from `.env.dev.local` without switching the app to dev |
-| `SQUASH_TM_USERNAME: username/password … not supported` | Unset it; use a personal API token                                                                     |
-| 401 from Squash                                         | Token expired, revoked or for another instance. Create one: My account › Personal API tokens           |
-| 500 creating a token (`WeakKeyException` in the log)    | `SQUASH_RESTAPI_JWT_SECRET` under 86 characters; regenerate it (128) and restart Squash                |
-| 412 on create/update                                    | Unknown nature/type code for that project                                                              |
-| A renamed test got a new case                           | It was unpinned; pin it, or retire the old one with `squash:prune` (with the user's confirmation)      |
-| `SquashAnnotationError … file:line`                     | Malformed pin tag or `squash:*` value at that location                                                 |
-| UI tests show "HTTP Status 404 – Not Found"             | `BASE_URL` points at 8080, which is Squash, not the app                                                |
-| `N synced test cases are not Gherkin`                   | Created before the Gherkin change; run the printed `squash:prune` command (user's go-ahead), then sync |
-| A test is missing from Squash                           | Its `describe` (or the test) lacks `@squash`, or it is excluded by `grepInvert` (`@quarantine`)        |
+| `SQUASH_TM_USERNAME: username/password … not supported` | Unset it; use a personal API token                                                                                                                                    |
+| 401 from Squash                                         | Token expired, revoked or for another instance. Create one: My account › Personal API tokens                                                                          |
+| 500 creating a token (`WeakKeyException` in the log)    | `SQUASH_RESTAPI_JWT_SECRET` under 86 characters; regenerate it (128) and restart Squash                                                                               |
+| 412 on create/update                                    | Unknown nature/type code for that project                                                                                                                             |
+| A renamed test got a new case                           | It was unpinned; pin it, or retire the old one with `squash:prune` (with the user's confirmation)                                                                     |
+| `SquashAnnotationError … file:line`                     | Malformed pin tag or `squash:*` value at that location                                                                                                                |
+| UI tests show "HTTP Status 404 – Not Found"             | `BASE_URL` points at 8080, which is Squash, not the app                                                                                                               |
+| `N synced test cases are not Gherkin`                   | Created before the Gherkin change; run the printed `squash:prune` command (user's go-ahead), then sync                                                                |
+| A test is missing from Squash                           | Its `describe` (or the test) lacks `@squash`, or it is excluded by `grepInvert` (`@quarantine`)                                                                       |
 
 ## Where the code lives
 
