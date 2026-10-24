@@ -4,13 +4,11 @@ import { createdSchema, parseWire } from './squash-wire';
 
 export const DEFAULT_PAGE_SIZE = 200;
 
-export type Page<T> = ListedPage<T>;
-
 /** Reads every page of a Squash list endpoint (0-based `page`, `size`). */
 export async function collectPages<T>(
   client: SquashClient,
   request: Readonly<{ path: string; query?: Readonly<Record<string, string>>; pageSize: number }>,
-  parse: (body: unknown) => Page<T>,
+  parse: (body: unknown) => ListedPage<T>,
 ): Promise<T[]> {
   return readEveryPage(async page => {
     const query = { ...request.query, page, size: request.pageSize };

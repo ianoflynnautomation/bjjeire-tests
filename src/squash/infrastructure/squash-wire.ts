@@ -27,8 +27,6 @@ export const TEST_CASE_TYPE_BY_FORMAT = {
   [TestCaseFormat.Exploratory]: 'exploratory-test-case',
 } as const satisfies Readonly<Record<TestCaseFormat, string>>;
 
-export type TestCaseType = (typeof TEST_CASE_TYPE_BY_FORMAT)[TestCaseFormat];
-
 const testCaseTypeSchema = z.enum(Object.values(TEST_CASE_TYPE_BY_FORMAT));
 
 const testCaseSchema = z.object({

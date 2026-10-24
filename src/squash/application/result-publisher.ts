@@ -3,6 +3,7 @@ import { ExecutionRole } from '../domain/execution-role';
 import { forEachConcurrent } from './concurrency';
 import type { ExecutionContextResolver } from './execution-context-resolver';
 import type {
+  ExecutionId,
   ExecutionRepository,
   ExecutionTargetSpec,
   IterationId,
@@ -94,24 +95,30 @@ export class ResultPublisher {
   private async writeResult(itemId: TestPlanItemId, result: TestExecutionResult, run: RunInfo): Promise<void> {
     const testCaseExecution = await this.repository.findTestCaseExecution(itemId);
     if (this.release) {
-      if (testCaseExecution) {
-        await this.repository.updateExecution(testCaseExecution.id, result, run);
-        this.logger.debug(
-          `Updated test case execution ${testCaseExecution.id}: ${result.outcome} "${result.testCase.name}"`,
-        );
-      }
-      const releaseId = await this.repository.recordExecution(itemId, result, run, ExecutionRole.Release);
-      this.logger.debug(`Release execution ${releaseId}: ${result.outcome} "${result.testCase.name}"`);
+      if (testCaseExecution) await this.updateTestCaseExecution(testCaseExecution.id, result, run);
+      await this.createExecution(itemId, result, run, ExecutionRole.Release);
       return;
     }
     if (testCaseExecution?.current) {
-      await this.repository.updateExecution(testCaseExecution.id, result, run);
-      this.logger.debug(
-        `Updated test case execution ${testCaseExecution.id}: ${result.outcome} "${result.testCase.name}"`,
-      );
+      await this.updateTestCaseExecution(testCaseExecution.id, result, run);
       return;
     }
-    const executionId = await this.repository.recordExecution(itemId, result, run, ExecutionRole.TestCase);
-    this.logger.debug(`Test case execution ${executionId}: ${result.outcome} "${result.testCase.name}"`);
+    await this.createExecution(itemId, result, run, ExecutionRole.TestCase);
+  }
+
+  private async updateTestCaseExecution(id: ExecutionId, result: TestExecutionResult, run: RunInfo): Promise<void> {
+    await this.repository.updateExecution(id, result, run);
+    this.logger.debug(`Updated test case execution ${id}: ${result.outcome} "${result.testCase.name}"`);
+  }
+
+  private async createExecution(
+    itemId: TestPlanItemId,
+    result: TestExecutionResult,
+    run: RunInfo,
+    role: ExecutionRole,
+  ): Promise<void> {
+    const executionId = await this.repository.recordExecution(itemId, result, run, role);
+    const kind = role === ExecutionRole.Release ? 'Release execution' : 'Test case execution';
+    this.logger.debug(`${kind} ${executionId}: ${result.outcome} "${result.testCase.name}"`);
   }
 }
