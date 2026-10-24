@@ -19,7 +19,7 @@ unless `SQUASH_TM_MODE` is set or `squash:run` is used, and only tests tagged
 - **ALWAYS** set the fields with the typed helper, one line per test:
   `annotation: squash({ weight, status, nature, type })`. Do not hand-write four
   `squash:*` objects; the helper autocompletes the values and keeps describes under
-  the 200-line lint limit.
+  the function-length lint limit.
 - **NEVER** put the API token in `squash-config.json`, a `--squash-*` flag or a
   committed `.env.*.example`. It lives in `SQUASH_TM_TOKEN`: a gitignored
   `.env*.local` / `.env` locally, a secret in CI. Username/password is not

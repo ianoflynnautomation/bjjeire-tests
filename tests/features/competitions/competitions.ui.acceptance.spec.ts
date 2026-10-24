@@ -34,8 +34,13 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ competitionsPage }) => {
-      await competitionsPage.goTo();
-      await competitionsPage.verifyIsLoaded();
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step('Then the competition list is displayed', async () => {
+        await competitionsPage.verifyIsLoaded();
+      });
     },
   );
 
@@ -46,9 +51,17 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ competitionsPage }) => {
-      await competitionsPage.goTo();
-      await competitionsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
-      await competitionsPage.expectNoResults();
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step('And the visitor searches for a name that matches nothing', async () => {
+        await competitionsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      });
+
+      await test.step('Then no competitions are listed', async () => {
+        await competitionsPage.expectNoResults();
+      });
     },
   );
 
@@ -59,10 +72,18 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ competitionsPage }) => {
-      await competitionsPage.goTo();
-      await competitionsPage.searchFor(seededCompetition.name);
-      await competitionsPage.expectResultCount(1);
-      await competitionsPage.expectCardData(seededCompetitionCard);
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededCompetition.name}"`, async () => {
+        await competitionsPage.searchFor(seededCompetition.name);
+      });
+
+      await test.step('Then only that competition is listed', async () => {
+        await competitionsPage.expectResultCount(1);
+        await competitionsPage.expectCardData(seededCompetitionCard);
+      });
     },
   );
 
@@ -73,10 +94,18 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ competitionsPage }) => {
-      await competitionsPage.goTo();
-      await competitionsPage.searchFor(seededCompetitionPartialName);
-      await competitionsPage.expectResultCount(1);
-      await competitionsPage.expectCardData(seededCompetitionCard);
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededCompetitionPartialName}"`, async () => {
+        await competitionsPage.searchFor(seededCompetitionPartialName);
+      });
+
+      await test.step('Then the competition matching that part of the name is listed', async () => {
+        await competitionsPage.expectResultCount(1);
+        await competitionsPage.expectCardData(seededCompetitionCard);
+      });
     },
   );
 
@@ -87,19 +116,37 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockCompetitionsPages, competitionsPage }) => {
-      await mockCompetitionsPages(pagedCompetitions);
-      await competitionsPage.goTo();
-      await competitionsPage.expectCardData({ name: firstPageCompetition.name });
-      await competitionsPage.expectPagination(1, 2);
+      await test.step('Given the competition list has two pages', async () => {
+        await mockCompetitionsPages(pagedCompetitions);
+      });
 
-      await competitionsPage.goToNextPage();
-      await competitionsPage.expectCardData({ name: secondPageCompetition.name });
-      await competitionsPage.expectCardAbsent(firstPageCompetition.name);
-      await competitionsPage.expectPagination(2, 2);
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
 
-      await competitionsPage.goToPreviousPage();
-      await competitionsPage.expectCardData({ name: firstPageCompetition.name });
-      await competitionsPage.expectPagination(1, 2);
+      await test.step(`Then page 1 of 2 lists "${firstPageCompetition.name}"`, async () => {
+        await competitionsPage.expectCardData({ name: firstPageCompetition.name });
+        await competitionsPage.expectPagination(1, 2);
+      });
+
+      await test.step('When the visitor opens the next page', async () => {
+        await competitionsPage.goToNextPage();
+      });
+
+      await test.step(`Then page 2 of 2 lists "${secondPageCompetition.name}"`, async () => {
+        await competitionsPage.expectCardData({ name: secondPageCompetition.name });
+        await competitionsPage.expectCardAbsent(firstPageCompetition.name);
+        await competitionsPage.expectPagination(2, 2);
+      });
+
+      await test.step('When the visitor opens the previous page', async () => {
+        await competitionsPage.goToPreviousPage();
+      });
+
+      await test.step(`Then page 1 of 2 lists "${firstPageCompetition.name}" again`, async () => {
+        await competitionsPage.expectCardData({ name: firstPageCompetition.name });
+        await competitionsPage.expectPagination(1, 2);
+      });
     },
   );
 
@@ -110,10 +157,18 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockCompetitions, competitionsPage }) => {
-      await mockCompetitions(emptyPage);
-      await competitionsPage.goTo();
-      await competitionsPage.verifyIsLoaded();
-      await competitionsPage.expectEmptyStateMessage();
+      await test.step('Given the competitions API returns no competitions', async () => {
+        await mockCompetitions(emptyPage);
+      });
+
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step('Then the no-data message is displayed', async () => {
+        await competitionsPage.verifyIsLoaded();
+        await competitionsPage.expectEmptyStateMessage();
+      });
     },
   );
 
@@ -124,9 +179,17 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, competitionsPage }) => {
-      await mockNetworkError();
-      await competitionsPage.goTo();
-      await competitionsPage.expectNetworkErrorMessage();
+      await test.step('Given the competitions request fails on the network', async () => {
+        await mockNetworkError();
+      });
+
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step('Then a network error message is displayed', async () => {
+        await competitionsPage.expectNetworkErrorMessage();
+      });
     },
   );
 
@@ -137,9 +200,17 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, competitionsPage }) => {
-      await mockServerError();
-      await competitionsPage.goTo();
-      await competitionsPage.expectServerErrorMessage();
+      await test.step('Given the competitions API returns a server error', async () => {
+        await mockServerError();
+      });
+
+      await test.step('When a visitor opens Competitions', async () => {
+        await competitionsPage.goTo();
+      });
+
+      await test.step('Then a server error message is displayed', async () => {
+        await competitionsPage.expectServerErrorMessage();
+      });
     },
   );
 });

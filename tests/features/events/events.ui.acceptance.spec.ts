@@ -26,8 +26,13 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.verifyIsLoaded();
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step('Then the event list is displayed', async () => {
+        await eventsPage.verifyIsLoaded();
+      });
     },
   );
 
@@ -38,9 +43,17 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
-      await eventsPage.expectNoResults();
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step('And the visitor searches for a name that matches nothing', async () => {
+        await eventsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      });
+
+      await test.step('Then no events are listed', async () => {
+        await eventsPage.expectNoResults();
+      });
     },
   );
 
@@ -51,10 +64,18 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectResultCount(1);
-      await eventsPage.expectCardData(seededEventCard);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededEvent.name}"`, async () => {
+        await eventsPage.searchFor(seededEvent.name);
+      });
+
+      await test.step('Then only that event is listed', async () => {
+        await eventsPage.expectResultCount(1);
+        await eventsPage.expectCardData(seededEventCard);
+      });
     },
   );
 
@@ -65,10 +86,18 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.searchFor(seededEventPartialName);
-      await eventsPage.expectResultCount(1);
-      await eventsPage.expectCardData(seededEventCard);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededEventPartialName}"`, async () => {
+        await eventsPage.searchFor(seededEventPartialName);
+      });
+
+      await test.step('Then the event matching that part of the name is listed', async () => {
+        await eventsPage.expectResultCount(1);
+        await eventsPage.expectCardData(seededEventCard);
+      });
     },
   );
 
@@ -79,13 +108,27 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectResultCount(1);
-      await eventsPage.expectCardAbsent(seededSeminar.name);
-      await eventsPage.clearSearch();
-      await eventsPage.expectSearchValue('');
-      await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededEvent.name}"`, async () => {
+        await eventsPage.searchFor(seededEvent.name);
+      });
+
+      await test.step('Then only that event is listed', async () => {
+        await eventsPage.expectResultCount(1);
+        await eventsPage.expectCardAbsent(seededSeminar.name);
+      });
+
+      await test.step('When the visitor clears the search', async () => {
+        await eventsPage.clearSearch();
+      });
+
+      await test.step('Then the full event listing is shown', async () => {
+        await eventsPage.expectSearchValue('');
+        await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+      });
     },
   );
 
@@ -96,12 +139,26 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectResultCount(1);
-      await eventsPage.expectHeaderTotal('Found 1 event.');
-      await eventsPage.clearSearch();
-      await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededEvent.name}"`, async () => {
+        await eventsPage.searchFor(seededEvent.name);
+      });
+
+      await test.step('Then the header count matches the one event found', async () => {
+        await eventsPage.expectResultCount(1);
+        await eventsPage.expectHeaderTotal('Found 1 event.');
+      });
+
+      await test.step('When the visitor clears the search', async () => {
+        await eventsPage.clearSearch();
+      });
+
+      await test.step('Then the header count matches the full listing', async () => {
+        await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+      });
     },
   );
 
@@ -112,10 +169,18 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.filterByCounty(seededSeminar.county);
-      await eventsPage.expectCardAbsent(seededEvent.name);
-      await eventsPage.expectCardData(seededSeminarCard);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor filters by ${seededSeminar.county}`, async () => {
+        await eventsPage.filterByCounty(seededSeminar.county);
+      });
+
+      await test.step(`Then only events from ${seededSeminar.county} are listed`, async () => {
+        await eventsPage.expectCardAbsent(seededEvent.name);
+        await eventsPage.expectCardData(seededSeminarCard);
+      });
     },
   );
 
@@ -126,14 +191,31 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.filterByCounty(seededSeminar.county);
-      await eventsPage.expectCardAbsent(seededEvent.name);
-      await eventsPage.expectCardData(seededSeminarCard);
-      await eventsPage.resetCountyFilter();
-      await eventsPage.searchFor(seededEvent.name);
-      await eventsPage.expectResultCount(1);
-      await eventsPage.expectCardData(seededEventCard);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor filters by ${seededSeminar.county}`, async () => {
+        await eventsPage.filterByCounty(seededSeminar.county);
+      });
+
+      await test.step(`Then only events from ${seededSeminar.county} are listed`, async () => {
+        await eventsPage.expectCardAbsent(seededEvent.name);
+        await eventsPage.expectCardData(seededSeminarCard);
+      });
+
+      await test.step('When the visitor resets the county filter', async () => {
+        await eventsPage.resetCountyFilter();
+      });
+
+      await test.step(`And the visitor searches for "${seededEvent.name}"`, async () => {
+        await eventsPage.searchFor(seededEvent.name);
+      });
+
+      await test.step('Then that event is listed', async () => {
+        await eventsPage.expectResultCount(1);
+        await eventsPage.expectCardData(seededEventCard);
+      });
     },
   );
 
@@ -144,10 +226,18 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsPage }) => {
-      await eventsPage.goTo();
-      await eventsPage.filterByType(SEMINAR_TYPE_LABEL);
-      await eventsPage.expectCardAbsent(seededEvent.name);
-      await eventsPage.expectCardData(seededSeminarCard);
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step(`And the visitor filters by ${SEMINAR_TYPE_LABEL}`, async () => {
+        await eventsPage.filterByType(SEMINAR_TYPE_LABEL);
+      });
+
+      await test.step(`Then only ${SEMINAR_TYPE_LABEL} events are listed`, async () => {
+        await eventsPage.expectCardAbsent(seededEvent.name);
+        await eventsPage.expectCardData(seededSeminarCard);
+      });
     },
   );
 
@@ -158,10 +248,18 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockBjjEvents, eventsPage }) => {
-      await mockBjjEvents(emptyPage);
-      await eventsPage.goTo();
-      await eventsPage.verifyIsLoaded();
-      await eventsPage.expectEmptyStateMessage();
+      await test.step('Given the events API returns no events', async () => {
+        await mockBjjEvents(emptyPage);
+      });
+
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step('Then the no-data message is displayed', async () => {
+        await eventsPage.verifyIsLoaded();
+        await eventsPage.expectEmptyStateMessage();
+      });
     },
   );
 
@@ -172,9 +270,17 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, eventsPage }) => {
-      await mockNetworkError();
-      await eventsPage.goTo();
-      await eventsPage.expectNetworkErrorMessage();
+      await test.step('Given the events request fails on the network', async () => {
+        await mockNetworkError();
+      });
+
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step('Then a network error message is displayed', async () => {
+        await eventsPage.expectNetworkErrorMessage();
+      });
     },
   );
 
@@ -185,9 +291,17 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, eventsPage }) => {
-      await mockServerError();
-      await eventsPage.goTo();
-      await eventsPage.expectServerErrorMessage();
+      await test.step('Given the events API returns a server error', async () => {
+        await mockServerError();
+      });
+
+      await test.step('When a visitor opens Events', async () => {
+        await eventsPage.goTo();
+      });
+
+      await test.step('Then a server error message is displayed', async () => {
+        await eventsPage.expectServerErrorMessage();
+      });
     },
   );
 });

@@ -31,8 +31,13 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.verifyIsLoaded();
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('Then the gym list is displayed', async () => {
+        await gymsPage.verifyIsLoaded();
+      });
     },
   );
 
@@ -43,9 +48,17 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
-      await gymsPage.expectNoResults();
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('And the visitor searches for a name that matches nothing', async () => {
+        await gymsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      });
+
+      await test.step('Then no gyms are listed', async () => {
+        await gymsPage.expectNoResults();
+      });
     },
   );
 
@@ -56,10 +69,18 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.searchFor(seededGym.name);
-      await gymsPage.expectResultCount(1);
-      await gymsPage.expectCardData(seededGymCard);
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededGym.name}"`, async () => {
+        await gymsPage.searchFor(seededGym.name);
+      });
+
+      await test.step('Then only that gym is listed', async () => {
+        await gymsPage.expectResultCount(1);
+        await gymsPage.expectCardData(seededGymCard);
+      });
     },
   );
 
@@ -70,10 +91,18 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.searchFor(seededGymPartialName);
-      await gymsPage.expectResultCount(1);
-      await gymsPage.expectCardData(seededGymCard);
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededGymPartialName}"`, async () => {
+        await gymsPage.searchFor(seededGymPartialName);
+      });
+
+      await test.step('Then the gym matching that part of the name is listed', async () => {
+        await gymsPage.expectResultCount(1);
+        await gymsPage.expectCardData(seededGymCard);
+      });
     },
   );
 
@@ -84,9 +113,17 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.searchFor(seededGym.name);
-      await gymsPage.expectCardLinks(seededGym.name, seededGymLinks);
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededGym.name}"`, async () => {
+        await gymsPage.searchFor(seededGym.name);
+      });
+
+      await test.step('Then the gym card links to its website and map', async () => {
+        await gymsPage.expectCardLinks(seededGym.name, seededGymLinks);
+      });
     },
   );
 
@@ -97,10 +134,18 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.filterByCounty(seededGym.county);
-      await gymsPage.expectCardAbsent(otherCountyGym.name);
-      await gymsPage.expectCardData(seededGymCard);
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step(`And the visitor filters by ${seededGym.county}`, async () => {
+        await gymsPage.filterByCounty(seededGym.county);
+      });
+
+      await test.step(`Then only gyms from ${seededGym.county} are listed`, async () => {
+        await gymsPage.expectCardAbsent(otherCountyGym.name);
+        await gymsPage.expectCardData(seededGymCard);
+      });
     },
   );
 
@@ -111,12 +156,29 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ gymsPage }) => {
-      await gymsPage.goTo();
-      await gymsPage.filterByCounty(seededGym.county);
-      await gymsPage.searchFor(otherCountyGym.name);
-      await gymsPage.expectNoResults();
-      await gymsPage.resetCountyFilter();
-      await gymsPage.expectCardData(otherCountyGymCard);
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step(`And the visitor filters by ${seededGym.county}`, async () => {
+        await gymsPage.filterByCounty(seededGym.county);
+      });
+
+      await test.step(`And the visitor searches for "${otherCountyGym.name}"`, async () => {
+        await gymsPage.searchFor(otherCountyGym.name);
+      });
+
+      await test.step('Then no gyms are listed', async () => {
+        await gymsPage.expectNoResults();
+      });
+
+      await test.step('When the visitor resets the county filter', async () => {
+        await gymsPage.resetCountyFilter();
+      });
+
+      await test.step(`Then "${otherCountyGym.name}" is listed`, async () => {
+        await gymsPage.expectCardData(otherCountyGymCard);
+      });
     },
   );
 
@@ -127,10 +189,18 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockGyms, gymsPage }) => {
-      await mockGyms(emptyPage);
-      await gymsPage.goTo();
-      await gymsPage.verifyIsLoaded();
-      await gymsPage.expectEmptyStateMessage();
+      await test.step('Given the gyms API returns no gyms', async () => {
+        await mockGyms(emptyPage);
+      });
+
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('Then the no-data message is displayed', async () => {
+        await gymsPage.verifyIsLoaded();
+        await gymsPage.expectEmptyStateMessage();
+      });
     },
   );
 
@@ -141,9 +211,17 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, gymsPage }) => {
-      await mockNetworkError();
-      await gymsPage.goTo();
-      await gymsPage.expectNetworkErrorMessage();
+      await test.step('Given the gyms request fails on the network', async () => {
+        await mockNetworkError();
+      });
+
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('Then a network error message is displayed', async () => {
+        await gymsPage.expectNetworkErrorMessage();
+      });
     },
   );
 
@@ -154,9 +232,17 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, gymsPage }) => {
-      await mockServerError();
-      await gymsPage.goTo();
-      await gymsPage.expectServerErrorMessage();
+      await test.step('Given the gyms API returns a server error', async () => {
+        await mockServerError();
+      });
+
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('Then a server error message is displayed', async () => {
+        await gymsPage.expectServerErrorMessage();
+      });
     },
   );
 
@@ -167,11 +253,25 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerErrorOnce, gymsPage }) => {
-      await mockServerErrorOnce();
-      await gymsPage.goTo();
-      await gymsPage.expectServerErrorMessage();
-      await gymsPage.retryAfterError();
-      await gymsPage.expectListNotEmpty();
+      await test.step('Given the gyms API fails once with a server error', async () => {
+        await mockServerErrorOnce();
+      });
+
+      await test.step('When a visitor opens Gyms', async () => {
+        await gymsPage.goTo();
+      });
+
+      await test.step('Then a server error message is displayed', async () => {
+        await gymsPage.expectServerErrorMessage();
+      });
+
+      await test.step('When the visitor retries the request', async () => {
+        await gymsPage.retryAfterError();
+      });
+
+      await test.step('Then the gym list is displayed', async () => {
+        await gymsPage.expectListNotEmpty();
+      });
     },
   );
 });

@@ -14,8 +14,13 @@ test.describe('Template UI acceptance', { tag: ['@template', '@ui', '@desktop', 
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ templatePage }) => {
-      await templatePage.navigate();
-      await templatePage.verifyIsLoaded();
+      await test.step('When a visitor opens the feature', async () => {
+        await templatePage.navigate();
+      });
+
+      await test.step('Then the feature screen is displayed', async () => {
+        await templatePage.verifyIsLoaded();
+      });
     },
   );
 });

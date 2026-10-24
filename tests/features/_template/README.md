@@ -42,6 +42,7 @@ Acceptance test naming:
 
 - name suites `<Feature> <UI|API|snapshot> acceptance`
 - name scenarios `<actor> should <outcome> [when <context>]`: `visitor should see the gym list when opening Gyms`
+- write the scenario as top-level `test.step`s titled `Given`, `When`, `Then`, `And`, or `But`
 - use domain vocabulary and user roles such as `visitor` or `client`
 - describe observable outcomes, not selectors, helpers, DTO types, or status codes
 - keep endpoint paths only when they distinguish otherwise similar API scenarios

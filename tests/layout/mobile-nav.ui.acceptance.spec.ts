@@ -17,15 +17,21 @@ test.describe(
         annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
       },
       async ({ page }) => {
-        await gotoAppShell(page, '/about');
+        await test.step('When a visitor opens the About page', async () => {
+          await gotoAppShell(page, '/about');
+        });
 
-        await page.getByTestId(mobileToggle).click();
+        await test.step('And the visitor opens the mobile menu', async () => {
+          await page.getByTestId(mobileToggle).click();
+        });
 
-        const panel = page.getByTestId(mobilePanel);
-        await expect(panel).toBeVisible();
-        for (const { name, path } of HEADER_NAV_LINKS) {
-          await expect(panel.getByRole('link', { name, exact: true })).toHaveAttribute('href', path);
-        }
+        await test.step('Then every section link is shown', async () => {
+          const panel = page.getByTestId(mobilePanel);
+          await expect(panel).toBeVisible();
+          for (const { name, path } of HEADER_NAV_LINKS) {
+            await expect(panel.getByRole('link', { name, exact: true })).toHaveAttribute('href', path);
+          }
+        });
       },
     );
 
@@ -37,14 +43,24 @@ test.describe(
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ page }) => {
-          await gotoAppShell(page, '/about');
-          await page.getByTestId(mobileToggle).click();
+          await test.step('When a visitor opens the About page', async () => {
+            await gotoAppShell(page, '/about');
+          });
+
+          await test.step('And the visitor opens the mobile menu', async () => {
+            await page.getByTestId(mobileToggle).click();
+          });
 
           const panel = page.getByTestId(mobilePanel);
-          await panel.getByRole('link', { name, exact: true }).click();
 
-          await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
-          await expect(panel).toBeHidden();
+          await test.step(`And the visitor selects "${name}"`, async () => {
+            await panel.getByRole('link', { name, exact: true }).click();
+          });
+
+          await test.step(`Then ${path} opens and the menu closes`, async () => {
+            await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
+            await expect(panel).toBeHidden();
+          });
         },
       );
     }

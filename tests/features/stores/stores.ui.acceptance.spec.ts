@@ -19,8 +19,13 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await storesPage.goTo();
-      await storesPage.verifyIsLoaded();
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step('Then the store list is displayed', async () => {
+        await storesPage.verifyIsLoaded();
+      });
     },
   );
 
@@ -31,9 +36,17 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await storesPage.goTo();
-      await storesPage.searchFor(faker.string.alphanumeric({ length: 12 }));
-      await storesPage.expectNoResults();
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step('And the visitor searches for a name that matches nothing', async () => {
+        await storesPage.searchFor(faker.string.alphanumeric({ length: 12 }));
+      });
+
+      await test.step('Then no stores are listed', async () => {
+        await storesPage.expectNoResults();
+      });
     },
   );
 
@@ -44,10 +57,18 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await storesPage.goTo();
-      await storesPage.searchFor(seededStore.name);
-      await storesPage.expectResultCount(1);
-      await storesPage.expectCardData(seededStoreCard);
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededStore.name}"`, async () => {
+        await storesPage.searchFor(seededStore.name);
+      });
+
+      await test.step('Then only that store is listed', async () => {
+        await storesPage.expectResultCount(1);
+        await storesPage.expectCardData(seededStoreCard);
+      });
     },
   );
 
@@ -58,10 +79,18 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await storesPage.goTo();
-      await storesPage.searchFor(seededStorePartialName);
-      await storesPage.expectResultCount(1);
-      await storesPage.expectCardData(seededStoreCard);
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${seededStorePartialName}"`, async () => {
+        await storesPage.searchFor(seededStorePartialName);
+      });
+
+      await test.step('Then the store matching that part of the name is listed', async () => {
+        await storesPage.expectResultCount(1);
+        await storesPage.expectCardData(seededStoreCard);
+      });
     },
   );
 
@@ -72,10 +101,18 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockStores, storesPage }) => {
-      await mockStores(emptyPage);
-      await storesPage.goTo();
-      await storesPage.verifyIsLoaded();
-      await storesPage.expectEmptyStateMessage();
+      await test.step('Given the stores API returns no stores', async () => {
+        await mockStores(emptyPage);
+      });
+
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step('Then the no-data message is displayed', async () => {
+        await storesPage.verifyIsLoaded();
+        await storesPage.expectEmptyStateMessage();
+      });
     },
   );
 
@@ -86,9 +123,17 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, storesPage }) => {
-      await mockNetworkError();
-      await storesPage.goTo();
-      await storesPage.expectNetworkErrorMessage();
+      await test.step('Given the stores request fails on the network', async () => {
+        await mockNetworkError();
+      });
+
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step('Then a network error message is displayed', async () => {
+        await storesPage.expectNetworkErrorMessage();
+      });
     },
   );
 
@@ -99,9 +144,17 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, storesPage }) => {
-      await mockServerError();
-      await storesPage.goTo();
-      await storesPage.expectServerErrorMessage();
+      await test.step('Given the stores API returns a server error', async () => {
+        await mockServerError();
+      });
+
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step('Then a server error message is displayed', async () => {
+        await storesPage.expectServerErrorMessage();
+      });
     },
   );
 });

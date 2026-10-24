@@ -14,9 +14,13 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ page }) => {
-      await gotoAppShell(page, '/stores');
+      await test.step('When a visitor opens the stores page while stores are disabled', async () => {
+        await gotoAppShell(page, '/stores');
+      });
 
-      await expect(page).toHaveURL(/\/events$/);
+      await test.step('Then the visitor lands on Events', async () => {
+        await expect(page).toHaveURL(/\/events$/);
+      });
     },
   );
 
@@ -27,12 +31,17 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ page, headerSection }) => {
-      await gotoAppShell(page, '/');
-      await headerSection.expectVisible();
+      await test.step('When a visitor opens the home page while stores are disabled', async () => {
+        await gotoAppShell(page, '/');
+      });
 
-      const navigation = page.getByTestId(HEADER_TEST_IDS.navigation);
-      await expect(navigation.getByRole('link', { name: 'Stores' })).toHaveCount(0);
-      await expect(navigation.getByRole('link', { name: 'Gyms' })).toBeVisible();
+      await test.step('Then the header offers Gyms and does not offer Stores', async () => {
+        await headerSection.expectVisible();
+
+        const navigation = page.getByTestId(HEADER_TEST_IDS.navigation);
+        await expect(navigation.getByRole('link', { name: 'Stores' })).toHaveCount(0);
+        await expect(navigation.getByRole('link', { name: 'Gyms' })).toBeVisible();
+      });
     },
   );
 });

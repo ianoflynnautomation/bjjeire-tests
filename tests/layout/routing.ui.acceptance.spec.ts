@@ -19,9 +19,14 @@ test.describe('Routing UI acceptance', { tag: ['@layout', '@routing', '@ui', '@d
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ page, eventsPage }) => {
-      await gotoAppShell(page, '/this-page-does-not-exist');
-      await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
-      await eventsPage.verifyIsLoaded();
+      await test.step('When a visitor opens an unknown address', async () => {
+        await gotoAppShell(page, '/this-page-does-not-exist');
+      });
+
+      await test.step('Then the visitor is taken to the default page', async () => {
+        await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
+        await eventsPage.verifyIsLoaded();
+      });
     },
   );
 
@@ -32,9 +37,14 @@ test.describe('Routing UI acceptance', { tag: ['@layout', '@routing', '@ui', '@d
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ page, eventsPage }) => {
-      await gotoAppShell(page, '/');
-      await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
-      await eventsPage.verifyIsLoaded();
+      await test.step('When a visitor opens the home page', async () => {
+        await gotoAppShell(page, '/');
+      });
+
+      await test.step('Then the default page is displayed', async () => {
+        await expect(page).toHaveURL(DEFAULT_PATH_PATTERN);
+        await eventsPage.verifyIsLoaded();
+      });
     },
   );
 });

@@ -16,10 +16,14 @@ test.describe('SEO UI acceptance', { tag: ['@layout', '@seo', '@ui', '@desktop',
         annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
       },
       async ({ page }) => {
-        await page.goto(path);
+        await test.step(`When a visitor opens ${path}`, async () => {
+          await page.goto(path);
+        });
 
-        await expect(page).toHaveTitle(SITE_TITLE);
-        await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', SITE_DESCRIPTION);
+        await test.step('Then the page has the site title and description', async () => {
+          await expect(page).toHaveTitle(SITE_TITLE);
+          await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', SITE_DESCRIPTION);
+        });
       },
     );
   }

@@ -12,16 +12,25 @@ test.describe('Header UI acceptance', { tag: ['@layout', '@header', '@ui', '@des
         annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
       },
       async ({ page }) => {
-        await gotoAppShell(page, '/about');
+        await test.step('When a visitor opens the About page', async () => {
+          await gotoAppShell(page, '/about');
+        });
 
         const navigation = page.getByTestId(HEADER_TEST_IDS.navigation);
         const navLink = navigation.getByRole('link', { name, exact: true });
 
-        await expect(navigation).toBeVisible();
-        await expect(navLink).toHaveAttribute('href', path);
+        await test.step(`Then the header offers "${name}" linking to ${path}`, async () => {
+          await expect(navigation).toBeVisible();
+          await expect(navLink).toHaveAttribute('href', path);
+        });
 
-        await navLink.click();
-        await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
+        await test.step(`When the visitor selects "${name}"`, async () => {
+          await navLink.click();
+        });
+
+        await test.step(`Then ${path} opens`, async () => {
+          await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
+        });
       },
     );
   }

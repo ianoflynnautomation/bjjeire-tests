@@ -149,7 +149,9 @@ export default [
       ],
       'no-console': 'off',
       'max-nested-callbacks': ['error', 5],
-      'max-lines-per-function': ['error', { max: 200, skipBlankLines: true, skipComments: true, IIFEs: true }],
+      // Given/When/Then `test.step`s live in the describe callback, so a full
+      // visitor suite is longer than the old annotation-only describes.
+      'max-lines-per-function': ['error', { max: 280, skipBlankLines: true, skipComments: true, IIFEs: true }],
       complexity: ['error', 15],
     },
   },

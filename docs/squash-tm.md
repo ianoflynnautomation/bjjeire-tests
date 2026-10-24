@@ -278,7 +278,6 @@ the CI blueprint serialises runs per target with `concurrency`.
 
     @gyms @ui @desktop @squash @smoke @acceptance
     Scenario: visitor should see the gym list when opening Gyms
-      Given gyms are published
       When a visitor opens Gyms
       Then the gym list is displayed
   ```
