@@ -11,6 +11,7 @@ import { TIMEOUTS } from './timeouts';
 resolveRunId();
 
 const OTEL_REPORTER = join(__dirname, '..', 'otel', 'otel-reporter.ts');
+const SQUASH_REPORTER = join(__dirname, '..', '..', 'squash', 'reporters', 'squash-results.reporter.ts');
 const IS_CI = env.isCI;
 const WORKERS = { local: '50%', ci: 4 } as const;
 const MAX_FAILURES = IS_CI ? 0 : 1;
@@ -44,6 +45,10 @@ function activeReporters(): ReporterDescription[] {
   }
   if (readEnv('OTEL_EXPORTER_OTLP_ENDPOINT')) {
     reporters.push([OTEL_REPORTER]);
+  }
+  // Opt-in: an explicit mode, or a run started through `npm run squash:run`.
+  if (readEnv('SQUASH_TM_MODE') ?? readEnv('SQUASH_TM_RUNNER')) {
+    reporters.push([SQUASH_REPORTER]);
   }
   return reporters;
 }

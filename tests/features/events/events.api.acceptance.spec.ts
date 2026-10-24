@@ -30,14 +30,18 @@ import {
   SEEDED_EVENT_FINISHED_WINTER_SOLSTICE,
   SEEDED_UPCOMING_EVENTS,
 } from './seeded';
+import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;
 
-test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api'] }, () => {
+test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api', '@squash'] }, () => {
   test(
-    'Given events are published, when a client opens the listing, then each upcoming event is returned with its details',
-    { tag: ['@smoke', '@acceptance'] },
+    'client should receive each upcoming event with its details',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
         page: 1,
@@ -49,8 +53,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given an event has finished, when a client opens the listing, then it is not shown',
-    { tag: '@acceptance' },
+    'client should not receive finished events',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
         page: 1,
@@ -62,8 +69,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given events are published, when a client filters by county, then only upcoming events from that county are returned',
-    { tag: '@acceptance' },
+    'client should receive only upcoming events from the county filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const county = County.Dublin;
       const dublinEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.county === county);
@@ -81,8 +91,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given several events are published, when a client opens the listing, then they are ordered by creation date',
-    { tag: '@acceptance' },
+    'client should receive events ordered by creation date',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
         page: 1,
@@ -98,8 +111,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given events are published, when a client filters by type, then only upcoming events of that type are returned',
-    { tag: '@acceptance' },
+    'client should receive only upcoming events of the type filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const type = BjjEventType.Seminar;
       const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.types.includes(type));
@@ -116,8 +132,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given an event has several types, when a client filters by any one of them, then the event is returned',
-    { tag: '@acceptance' },
+    'client should receive an event with several types when filtering by any one of them',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const multiTypeEvent = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 
@@ -137,8 +156,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
   );
 
   test(
-    'Given the listing spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
-    { tag: '@acceptance' },
+    'client should page through the listing in distinct slices with correct links',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const firstPage = await test.step('Request page 1 of the listing', () =>
         getBjjEvents(request, bjjEventsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
@@ -161,8 +183,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     ];
     for (const { param, label, value } of malformed) {
       test(
-        `Given ${label} "${value}", when a client opens the listing, then the request is rejected as a bad request`,
-        { tag: '@acceptance' },
+        `client should get a bad request for ${label} "${value}"`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.bjjEvents, { params: { [param]: value } });
 
@@ -173,8 +198,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
 
     for (const { param, field, value } of OUT_OF_RANGE_PAGING_VALUES) {
       test(
-        `Given ${param} ${value} is out of range, when a client opens the listing, then the request fails validation on ${param}`,
-        { tag: '@acceptance' },
+        `client should get a validation error on ${param} when ${param} ${value} is out of range`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.bjjEvents, { params: { [param]: value } });
 
@@ -189,8 +217,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
 
   test.describe('Event details', () => {
     test(
-      'Given an upcoming event, when a client opens it by id, then its details are returned',
-      { tag: '@acceptance' },
+      'client should receive the details of an upcoming event by id',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ request }) => {
         const event = await getBjjEventById(request, bjjEventSchema, SEEDED_EVENT_LEINSTER_OPEN_MAT_ID);
 
@@ -199,8 +230,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
     );
 
     test(
-      'Given no event has the id, when a client opens it, then the event is not found',
-      { tag: '@acceptance' },
+      'client should get not found for an event id that does not exist',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ request }) => {
         const response = await request.get(resourcePath(API_ROUTES.bjjEvents, UNPUBLISHED_OBJECT_ID));
 
@@ -210,8 +244,11 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api']
 
     for (const { description, value } of INVALID_OBJECT_ID_VALUES) {
       test(
-        `Given an event id that is ${description}, when a client opens it, then the request fails validation on the id`,
-        { tag: '@acceptance' },
+        `client should get a validation error on the id for an event id that is ${description}`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(resourcePath(API_ROUTES.bjjEvents, value));
 

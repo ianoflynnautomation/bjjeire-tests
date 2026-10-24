@@ -1,0 +1,18 @@
+{
+  "tag": "@squash",
+  "testCaseFolder": "BjjEire",
+  "folderRules": [
+    { "path": "api/", "folder": "BjjEire/API" },
+    { "path": "accessibility/", "folder": "BjjEire/Accessibility" },
+    { "path": "layout/", "folder": "BjjEire/Layout" },
+    { "path": "features/about/", "folder": "BjjEire/Features/About" },
+    { "path": "features/competitions/", "folder": "BjjEire/Features/Competitions" },
+    { "path": "features/events/", "folder": "BjjEire/Features/Events" },
+    { "path": "features/gyms/", "folder": "BjjEire/Features/Gyms" },
+    { "path": "features/stores/", "folder": "BjjEire/Features/Stores" },
+    { "path": "features/support/", "folder": "BjjEire/Features/Support" }
+  ],
+  "projects": {
+    "1": { "testCaseFolder": "BjjEire" }
+  }
+}

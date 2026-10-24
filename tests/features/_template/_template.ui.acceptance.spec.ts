@@ -1,14 +1,18 @@
 import { test, templateTestConfig } from './fixtures';
+import { squash } from '@squash/annotations';
 
 test.use(templateTestConfig);
 
 // Seeded DTOs live in `./seeded.ts`. Route mocks live in `./mocks.ts` and are
 // exposed through `./fixtures`. Static JSON bodies stay in `./testdata/`.
 
-test.describe('Template UI acceptance', { tag: ['@template', '@ui', '@desktop'] }, () => {
+test.describe('Template UI acceptance', { tag: ['@template', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given available feature data, when a visitor opens the feature, then the feature screen is displayed',
-    { tag: ['@smoke', '@acceptance'] },
+    'visitor should see the feature screen when opening the feature',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ templatePage }) => {
       await templatePage.navigate();
       await templatePage.verifyIsLoaded();

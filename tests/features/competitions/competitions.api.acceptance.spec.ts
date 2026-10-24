@@ -17,14 +17,18 @@ import {
   OUT_OF_RANGE_PAGING_VALUES,
 } from '../common/testdata/invalid-values';
 import { SEEDED_COMPETITION_FINISHED_KERRY_COAST, SEEDED_COMPETITIONS_BY_START_DATE } from './seeded';
+import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;
 
-test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] }, () => {
+test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@squash'] }, () => {
   test(
-    'Given competitions are published, when a client opens the listing, then each published competition is returned with its details',
-    { tag: ['@smoke', '@acceptance'] },
+    'client should receive each published competition with its details',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getCompetitions(request, competitionsPageSchema, {
         page: 1,
@@ -36,8 +40,11 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
   );
 
   test(
-    'Given a competition has finished, when a client opens the listing, then it is not shown',
-    { tag: '@acceptance' },
+    'client should not receive finished competitions',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getCompetitions(request, competitionsPageSchema, {
         page: 1,
@@ -49,8 +56,11 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
   );
 
   test(
-    'Given several competitions are published, when a client opens the listing, then they are ordered by start date',
-    { tag: '@acceptance' },
+    'client should receive competitions ordered by start date',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getCompetitions(request, competitionsPageSchema, {
         page: 1,
@@ -66,8 +76,11 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
   );
 
   test(
-    'Given the listing spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
-    { tag: '@acceptance' },
+    'client should page through the listing in distinct slices with correct links',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const firstPage = await test.step('Request page 1 of the listing', () =>
         getCompetitions(request, competitionsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
@@ -88,8 +101,11 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
     ];
     for (const { param, label, value } of malformed) {
       test(
-        `Given ${label} "${value}", when a client opens the listing, then the request is rejected as a bad request`,
-        { tag: '@acceptance' },
+        `client should get a bad request for ${label} "${value}"`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.competitions, { params: { [param]: value } });
 
@@ -100,8 +116,11 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api'] },
 
     for (const { param, field, value } of OUT_OF_RANGE_PAGING_VALUES) {
       test(
-        `Given ${param} ${value} is out of range, when a client opens the listing, then the request fails validation on ${param}`,
-        { tag: '@acceptance' },
+        `client should get a validation error on ${param} when ${param} ${value} is out of range`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.competitions, { params: { [param]: value } });
 

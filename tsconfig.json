@@ -15,7 +15,8 @@
     "paths": {
       "@shared/*": ["./src/shared/*"],
       "@api/*": ["./src/api/*"],
-      "@ui/*": ["./src/ui/*"]
+      "@ui/*": ["./src/ui/*"],
+      "@squash/*": ["./src/squash/*"]
     },
     "strict": true,
     "strictNullChecks": true,
@@ -39,11 +40,13 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.mts",
     "tests/**/*.ts",
     "playwright.config.ts",
     "playwright.ui.config.ts",
     "playwright.api.config.ts",
     "playwright.acceptance.config.ts",
+    "playwright.squash.config.ts",
     "openapi-ts.config.ts"
   ],
   "exclude": ["node_modules", "dist"]

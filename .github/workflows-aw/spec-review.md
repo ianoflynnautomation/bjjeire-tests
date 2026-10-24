@@ -49,7 +49,7 @@ Use `gh` to read the PR diff.
 
 Comment when:
 
-- A test title does not use `Given …, when …, then …` domain language
+- A test title does not use `<actor> should <outcome> [when <context>]` domain language
 - A new scenario is added in code but not listed in `specs/features/`
 - A spec scenario is listed but has no matching test
 - Search assertions omit `expectResultCount(1)` after a unique `searchFor`

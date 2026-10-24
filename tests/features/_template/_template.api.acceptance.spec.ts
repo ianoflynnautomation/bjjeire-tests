@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { test, expect } from '@api/fixtures';
 import { API_BASE_PATH, expectSchema, get, paginatedResponseSchema, schemaFor } from '@api/support';
 import expectedTemplatePage1 from './_template.page-1.json';
+import { squash } from '@squash/annotations';
 
 const TEMPLATE_ROUTE = `${API_BASE_PATH}/template`;
 
@@ -14,10 +15,13 @@ const templatePageSchema = paginatedResponseSchema(
   schemaFor<TemplateDto>(z.object({ id: z.string(), name: z.string() })),
 );
 
-test.describe('Template API acceptance', { tag: ['@template', '@api'] }, () => {
+test.describe('Template API acceptance', { tag: ['@template', '@api', '@squash'] }, () => {
   test(
-    'Given the feature catalogue is published, when a client opens the listing, then they see the published items',
-    { tag: ['@smoke', '@acceptance'] },
+    'client should receive the published items when opening the listing',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { pagination: expectedPagination, data: expectedData } = expectedTemplatePage1;
 

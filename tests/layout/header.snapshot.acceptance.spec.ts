@@ -1,10 +1,14 @@
 import { expect, test } from '@ui/fixtures';
 import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
+import { squash } from '@squash/annotations';
 
-test.describe('Header snapshot acceptance', { tag: ['@layout', '@header', '@snapshot', '@desktop'] }, () => {
+test.describe('Header snapshot acceptance', { tag: ['@layout', '@header', '@snapshot', '@desktop', '@squash'] }, () => {
   test(
-    'Given the site header, when the logo link is displayed, then its accessible structure is preserved',
-    { tag: ['@smoke', '@acceptance'] },
+    'header logo link should keep its accessible structure',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page }) => {
       await page.goto('/about');
 

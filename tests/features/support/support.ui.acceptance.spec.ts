@@ -1,10 +1,14 @@
 import { test } from '@ui/fixtures';
 import { gotoAppShell } from '@ui/support';
+import { squash } from '@squash/annotations';
 
-test.describe('Support UI acceptance', { tag: ['@support', '@ui', '@desktop'] }, () => {
+test.describe('Support UI acceptance', { tag: ['@support', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given a visitor, when they select the support option, then the bitcoin support modal is displayed',
-    { tag: '@acceptance' },
+    'visitor should see the bitcoin support modal after selecting the support option',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ page, headerSection, supportModal }) => {
       await gotoAppShell(page, '/');
       await headerSection.clickSupportButton();
@@ -13,8 +17,11 @@ test.describe('Support UI acceptance', { tag: ['@support', '@ui', '@desktop'] },
   );
 
   test(
-    'Given the support modal is open, when the visitor closes it, then the modal is dismissed',
-    { tag: '@acceptance' },
+    'visitor should be able to close the support modal',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ page, headerSection, supportModal }) => {
       await gotoAppShell(page, '/');
       await headerSection.clickSupportButton();
@@ -24,8 +31,11 @@ test.describe('Support UI acceptance', { tag: ['@support', '@ui', '@desktop'] },
   );
 
   test(
-    'Given the support modal is open, when the visitor presses Escape, then the modal is dismissed',
-    { tag: '@acceptance' },
+    'visitor should be able to dismiss the support modal with Escape',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ page, headerSection, supportModal }) => {
       await gotoAppShell(page, '/');
       await headerSection.clickSupportButton();

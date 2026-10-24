@@ -23,7 +23,7 @@ export default [
   },
 
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.mts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

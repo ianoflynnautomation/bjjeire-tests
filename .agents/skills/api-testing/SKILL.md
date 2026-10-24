@@ -110,7 +110,7 @@ const FULL_PAGE_SIZE = 100;
 
 test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   test(
-    'Given gyms are published, when a client opens the directory, then each published gym is returned with its details',
+    'client should receive each published gym with its details',
     { tag: ['@smoke', '@acceptance'] },
     async ({ request }) => {
       const { data } = await getGyms(request, gymsPageSchema, {
@@ -140,7 +140,7 @@ Use the same client for every successful call, including another page. `get()` r
 
 `requestAuth` defaults to `'default'` (bearer on when `env.apiAuth.required`). The only file that withholds it is `tests/api/authorization.api.acceptance.spec.ts`, via `test.use({ requestAuth: 'none' })`.
 
-Titles are `Given <context>, when <action>, then <business outcome>`. Every test is `@acceptance`. The critical read is also `@smoke`. The `describe` carries the feature tag and `@api`.
+Titles are `<actor> should <outcome> [when <context>]`, with `client` as the actor. Every test is `@acceptance`. The critical read is also `@smoke`. The `describe` carries the feature tag and `@api`.
 
 A filter the contract accepts needs a success call through the typed query, not only a rejection test. Gyms pass `county`. Events pass `county` and `types`.
 
@@ -150,7 +150,7 @@ When a test makes more than one API call, each call is its own `test.step`, name
 
 ```typescript
 test(
-  'Given the directory spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
+  'client should page through the directory in distinct slices with correct links',
   { tag: '@acceptance' },
   async ({ request }) => {
     const firstPage = await test.step('Request page 1 of the directory', () =>
@@ -165,7 +165,7 @@ test(
 );
 ```
 
-Each step still passes `gymsPageSchema`, so each page is parsed. The events spec uses the same rule inside `Given an event has several types`: one step per `getBjjEvents` call, named `Filter the listing by ${type}`. Two fetches in one step-less body are forbidden. That shape is in `references/test-step-patterns.md`.
+Each step still passes `gymsPageSchema`, so each page is parsed. The events spec uses the same rule inside `client should receive an event with several types when filtering by any one of them`: one step per `getBjjEvents` call, named `Filter the listing by ${type}`. Two fetches in one step-less body are forbidden. That shape is in `references/test-step-patterns.md`.
 
 ### Phase 5: Cover the full status-code matrix
 
@@ -218,15 +218,11 @@ const malformed = [
   ...INVALID_INTEGER_QUERY_VALUES.map(value => ({ param: 'pageSize', label: 'a non-numeric page size', value })),
 ];
 for (const { param, label, value } of malformed) {
-  test(
-    `Given ${label} "${value}", when a client opens the directory, then the request is rejected as a bad request`,
-    { tag: '@acceptance' },
-    async ({ request }) => {
-      const response = await request.get(API_ROUTES.gyms, { params: { [param]: value } });
+  test(`client should get a bad request for ${label} "${value}"`, { tag: '@acceptance' }, async ({ request }) => {
+    const response = await request.get(API_ROUTES.gyms, { params: { [param]: value } });
 
-      await expectProblem(response, 400, ProblemType.BadRequest);
-    },
-  );
+    await expectProblem(response, 400, ProblemType.BadRequest);
+  });
 }
 ```
 
@@ -252,7 +248,7 @@ The only skip in the API suite is an environment gate. Local and docker targets 
 test.use({ requestAuth: 'none' });
 
 test(
-  'Given a protected environment, when a client calls without a bearer token, then the request is rejected',
+  'client should be rejected when calling a protected environment without a bearer token',
   { tag: '@acceptance' },
   async ({ request }) => {
     test.skip(!env.apiAuth.required, 'this environment does not enforce API authorization');

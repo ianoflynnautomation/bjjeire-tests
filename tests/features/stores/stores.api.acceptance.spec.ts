@@ -13,14 +13,18 @@ import {
 } from '@api/support';
 import { INVALID_INTEGER_QUERY_VALUES, OUT_OF_RANGE_PAGING_VALUES } from '../common/testdata/invalid-values';
 import { SEEDED_STORES_BY_NAME } from './seeded';
+import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 100;
 const SMALL_PAGE_SIZE = 2;
 
-test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
+test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, () => {
   test(
-    'Given stores are published, when a client opens the directory, then each published store is returned with its details',
-    { tag: ['@smoke', '@acceptance'] },
+    'client should receive each published store with its details',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getStores(request, storesPageSchema, {
         page: 1,
@@ -32,8 +36,11 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
   );
 
   test(
-    'Given stores are published, when a client opens the directory, then they are ordered by name',
-    { tag: '@acceptance' },
+    'client should receive stores ordered by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getStores(request, storesPageSchema, {
         page: 1,
@@ -49,8 +56,11 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
   );
 
   test(
-    'Given the directory spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
-    { tag: '@acceptance' },
+    'client should page through the directory in distinct slices with correct links',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const firstPage = await test.step('Request page 1 of the directory', () =>
         getStores(request, storesPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
@@ -70,8 +80,11 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
     ];
     for (const { param, label, value } of malformed) {
       test(
-        `Given ${label} "${value}", when a client opens the directory, then the request is rejected as a bad request`,
-        { tag: '@acceptance' },
+        `client should get a bad request for ${label} "${value}"`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.stores, { params: { [param]: value } });
 
@@ -82,8 +95,11 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api'] }, () => {
 
     for (const { param, field, value } of OUT_OF_RANGE_PAGING_VALUES) {
       test(
-        `Given ${param} ${value} is out of range, when a client opens the directory, then the request fails validation on ${param}`,
-        { tag: '@acceptance' },
+        `client should get a validation error on ${param} when ${param} ${value} is out of range`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.stores, { params: { [param]: value } });
 

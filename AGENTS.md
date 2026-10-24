@@ -25,6 +25,10 @@ npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentic
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
+npm run test:squash       # Unit tests for the Squash TM integration (no browser)
+npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
+npm run squash:run        # Run with --squash-* flags: select by Squash folder/suite, publish to a campaign iteration
+npm run squash:prune      # Preview (or --yes: delete) sync-created Squash cases in a folder, e.g. after renames
 ```
 
 Local runs need the app reachable: minikube via
@@ -112,6 +116,9 @@ Two-tier taxonomy:
 - Suite-level tags on `describe`: feature tag, `@ui`/`@api`/`@snapshot`/`@a11y`, and
   `@desktop` or `@mobile`. `@mobile` suites run only on the mobile projects.
   `@layout` / `@wide` select the `chromium-wide` project.
+- `@squash` opts a test (or a whole `describe`) into the Squash TM sync and result
+  publishing. It is independent of `@smoke`/`@acceptance`: an untagged test never
+  reaches Squash.
 - `@quarantine` marks known-flaky tests: excluded from every run via config
   `grepInvert` (`QUARANTINE_TAG` in `src/shared/config/playwright.ts`) but kept in
   the repo so they stay greppable. Fix or delete promptly — never let the list grow.
@@ -156,8 +163,12 @@ The CLI skill is the official one bundled with this Playwright pin. Its canonica
 
 - UI: `<feature>.ui.acceptance.spec.ts` · API: `<feature>.api.acceptance.spec.ts`
 - Snapshots: `<feature>.snapshot.acceptance.spec.ts` · A11y: `<name>.a11y.acceptance.spec.ts`
-- Titles: `Given <context>, when <action>, then <business outcome>` — domain vocabulary,
-  observable outcomes, no selectors or DTO talk.
+- Titles: `<actor> should <outcome> [when <context>]` — the actor is `visitor` (UI) or
+  `client` (API); snapshot and a11y tests name the component instead
+  (`About page should match the approved image`). Domain vocabulary,
+  observable outcomes, no selectors or DTO talk. Given/When/Then belong in
+  top-level `test.step` titles (`Given …`, `When …`, `Then …`); a publishing
+  Squash run copies them into the case's Gherkin script.
 
 ### Feature slice layout
 
@@ -303,7 +314,7 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 - Strict mode: `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`,
   `noImplicitReturns`. No `any`; no floating promises (both lint errors).
 - `import type { Foo }` / `import { type Foo }` (enforced by `consistent-type-imports`).
-- Path aliases: `@shared/*`, `@api/*`, `@ui/*`.
+- Path aliases: `@shared/*`, `@api/*`, `@ui/*`, `@squash/*`.
 - With `exactOptionalPropertyTypes`, use conditional objects
   (`input.x ? { x: input.x } : {}`) instead of spreading `undefined`.
 - DTO types mirror the app repo; deviate only when the wire truth differs.
@@ -327,6 +338,19 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   (policy in `.github/zizmor.yml`: `actions/*` may float on tags, everything else
   SHA-pinned). Renovate (`renovate.json`) bumps `@playwright/test`, the Dockerfile
   base image, and the workflow default image in one grouped PR — they must match.
+- Squash TM is an opt-in plugin too ([docs/squash-tm.md](docs/squash-tm.md); agent skill `squash-tm`): `src/squash/`
+  (domain / application / infrastructure, wired only in `composition.ts`). The results
+  reporter loads only when `SQUASH_TM_MODE` is set; CI publishes once from
+  `merge-reports`, never per shard ([examples/squash-tm-publish.yml](examples/squash-tm-publish.yml)).
+  Only tests tagged `@squash` sync. A test's Squash identity is a `@Squash_<id>` pin tag, or else its `spec#title path` in the
+  case's automated test reference; the visible reference is a label such as `EVENTS-012`, and synced cases are Gherkin (manual ones stay Classic),
+  assigned once from the feature folder. Every test sets its fields with
+  `annotation: squash({ weight, status, nature, type })` from `@squash/annotations`
+  (typed; values in docs/squash-tm.md). Settings cascade defaults < `squash-config.json` (and its `projects.<id>` section)
+  < `SQUASH_TM_*` env < `--squash-*` CLI flags (one schema, `config-schema.ts`). Auth is a
+  personal API token in `SQUASH_TM_TOKEN` (env only; no username/password). Its unit tests
+  (`src/squash/tests/*.unit.spec.ts`, `playwright.squash.config.ts`) are the one exception
+  to acceptance-only. The local Squash stack lives in `squash-tm/`.
 - Observability is an opt-in plugin: `src/shared/otel/otel-reporter.ts` (a custom
   Playwright reporter) activates only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
   Every test is the root span of its own **distributed trace**: fixtures inject a
@@ -349,4 +373,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-10-16.
+script, project, or workflow it documents. Last reviewed: 2026-10-24.

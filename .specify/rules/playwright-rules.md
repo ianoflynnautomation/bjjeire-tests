@@ -16,7 +16,7 @@ Full narrative: `AGENTS.md`.
 | API client  | `src/api/features/<feature>/<feature>.service.ts` — typed query, schema argument, `PaginatedResponse<Dto>` |
 | Seeded data | `tests/features/<feature>/seeded.ts`; route mocks in `mocks.ts` beside it                                  |
 
-Titles: `Given <context>, when <action>, then <business outcome>`.
+Titles: `<actor> should <outcome> [when <context>]`. The actor is `visitor` (UI) or `client` (API); snapshot and a11y tests name the component.
 
 ## Data
 

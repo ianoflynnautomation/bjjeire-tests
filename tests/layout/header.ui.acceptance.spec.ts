@@ -1,12 +1,16 @@
 import { test, expect } from '@ui/fixtures';
 import { HEADER_NAV_LINKS, HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
+import { squash } from '@squash/annotations';
 
-test.describe('Header UI acceptance', { tag: ['@layout', '@header', '@ui', '@desktop'] }, () => {
+test.describe('Header UI acceptance', { tag: ['@layout', '@header', '@ui', '@desktop', '@squash'] }, () => {
   for (const { name, path } of HEADER_NAV_LINKS) {
     test(
-      `Given the header, when a visitor selects "${name}", then ${path} is opened`,
-      { tag: '@acceptance' },
+      `visitor should open ${path} by selecting "${name}" in the header`,
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ page }) => {
         await gotoAppShell(page, '/about');
 

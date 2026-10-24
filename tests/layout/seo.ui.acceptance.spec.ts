@@ -1,4 +1,5 @@
 import { test, expect } from '@ui/fixtures';
+import { squash } from '@squash/annotations';
 
 const SITE_TITLE = 'BJJ Éire — Find BJJ Events & Gyms Across Ireland';
 const SITE_DESCRIPTION =
@@ -6,11 +7,14 @@ const SITE_DESCRIPTION =
 
 const ROUTES = ['/events', '/gyms', '/competitions', '/stores', '/about'] as const;
 
-test.describe('SEO UI acceptance', { tag: ['@layout', '@seo', '@ui', '@desktop'] }, () => {
+test.describe('SEO UI acceptance', { tag: ['@layout', '@seo', '@ui', '@desktop', '@squash'] }, () => {
   for (const path of ROUTES) {
     test(
-      `Given the ${path} page, when it is opened, then the document title and description are present`,
-      { tag: '@acceptance' },
+      `${path} page should have a document title and description`,
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
+      },
       async ({ page }) => {
         await page.goto(path);
 

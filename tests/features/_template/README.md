@@ -41,7 +41,7 @@ For this template specifically:
 Acceptance test naming:
 
 - name suites `<Feature> <UI|API|snapshot> acceptance`
-- name scenarios `Given <context>, when <action>, then <business outcome>`
+- name scenarios `<actor> should <outcome> [when <context>]`: `visitor should see the gym list when opening Gyms`
 - use domain vocabulary and user roles such as `visitor` or `client`
 - describe observable outcomes, not selectors, helpers, DTO types, or status codes
 - keep endpoint paths only when they distinguish otherwise similar API scenarios

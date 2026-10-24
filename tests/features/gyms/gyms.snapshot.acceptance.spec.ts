@@ -1,16 +1,20 @@
 import { expect, test, gymsTestConfig } from './fixtures';
 import gymsFixture from './testdata/gyms.page-1.json';
+import { squash } from '@squash/annotations';
 
 test.use(gymsTestConfig);
 
-test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@desktop'] }, () => {
+test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@desktop', '@squash'] }, () => {
   test.beforeEach(async ({ mockGyms }) => {
     await mockGyms(gymsFixture);
   });
 
   test.skip(
-    'Given the Gyms page, when the header is displayed, then it matches the approved image',
-    { tag: ['@acceptance'] },
+    'Gyms page header should match the approved image',
+    {
+      tag: ['@acceptance'],
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page, gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
@@ -19,8 +23,11 @@ test.describe('Gyms snapshot acceptance', { tag: ['@gyms', '@snapshot', '@deskto
   );
 
   test.skip(
-    'Given no matching gym, when the empty state is displayed, then its accessible structure is preserved',
-    { tag: ['@acceptance'] },
+    'Gyms empty state should keep its accessible structure',
+    {
+      tag: ['@acceptance'],
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page, gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor('zzz-no-match-xyz');

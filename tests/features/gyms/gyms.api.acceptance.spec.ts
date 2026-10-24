@@ -22,14 +22,18 @@ import {
   UNPUBLISHED_OBJECT_ID,
 } from '../common/testdata/invalid-values';
 import { SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_BLACKWATER_VALLEY_ID, SEEDED_GYMS_BY_NAME } from './seeded';
+import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 100;
 const SMALL_PAGE_SIZE = 10;
 
-test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
+test.describe('Gyms API acceptance', { tag: ['@gyms', '@api', '@squash'] }, () => {
   test(
-    'Given gyms are published, when a client opens the directory, then each published gym is returned with its details',
-    { tag: ['@smoke', '@acceptance'] },
+    'client should receive each published gym with its details',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getGyms(request, gymsPageSchema, {
         page: 1,
@@ -41,8 +45,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   );
 
   test(
-    'Given gyms are published, when a client filters by county, then only gyms from that county are returned',
-    { tag: '@acceptance' },
+    'client should receive only gyms from the county filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const county = County.Cork;
       const corkGyms = SEEDED_GYMS_BY_NAME.filter(gym => gym.county === county);
@@ -59,8 +66,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   );
 
   test(
-    'Given gyms are published, when a client opens the directory, then they are ordered by name',
-    { tag: '@acceptance' },
+    'client should receive gyms ordered by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const { data } = await getGyms(request, gymsPageSchema, {
         page: 1,
@@ -76,8 +86,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   );
 
   test(
-    'Given the directory spans more than one page, when a client pages through it, then each page is a distinct slice with correct links',
-    { tag: '@acceptance' },
+    'client should page through the directory in distinct slices with correct links',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const firstPage = await test.step('Request page 1 of the directory', () =>
         getGyms(request, gymsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
@@ -91,8 +104,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
   );
 
   test(
-    'Given a page beyond the last, when a client requests it, then an empty page with valid pagination is returned',
-    { tag: '@acceptance' },
+    'client should receive an empty page with valid pagination for a page beyond the last',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ request }) => {
       const beyondLastPage = 999;
 
@@ -120,8 +136,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
     ];
     for (const { param, label, value } of malformed) {
       test(
-        `Given ${label} "${value}", when a client opens the directory, then the request is rejected as a bad request`,
-        { tag: '@acceptance' },
+        `client should get a bad request for ${label} "${value}"`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.gyms, { params: { [param]: value } });
 
@@ -132,8 +151,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
 
     for (const { param, field, value } of OUT_OF_RANGE_PAGING_VALUES) {
       test(
-        `Given ${param} ${value} is out of range, when a client opens the directory, then the request fails validation on ${param}`,
-        { tag: '@acceptance' },
+        `client should get a validation error on ${param} when ${param} ${value} is out of range`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(API_ROUTES.gyms, { params: { [param]: value } });
 
@@ -148,8 +170,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
 
   test.describe('Gym details', () => {
     test(
-      'Given a published gym, when a client opens it by id, then its details are returned',
-      { tag: '@acceptance' },
+      'client should receive the details of a published gym by id',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ request }) => {
         const gym = await getGymById(request, gymSchema, SEEDED_GYM_BLACKWATER_VALLEY_ID);
 
@@ -158,8 +183,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
     );
 
     test(
-      'Given no gym has the id, when a client opens it, then the gym is not found',
-      { tag: '@acceptance' },
+      'client should get not found for a gym id that does not exist',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ request }) => {
         const response = await request.get(resourcePath(API_ROUTES.gyms, UNPUBLISHED_OBJECT_ID));
 
@@ -169,8 +197,11 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api'] }, () => {
 
     for (const { description, value } of INVALID_OBJECT_ID_VALUES) {
       test(
-        `Given a gym id that is ${description}, when a client opens it, then the request fails validation on the id`,
-        { tag: '@acceptance' },
+        `client should get a validation error on the id for a gym id that is ${description}`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
         async ({ request }) => {
           const response = await request.get(resourcePath(API_ROUTES.gyms, value));
 

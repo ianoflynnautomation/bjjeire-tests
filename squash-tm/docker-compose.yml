@@ -1,0 +1,56 @@
+name: squash
+
+services:
+  squash-db:
+    image: postgres:15-alpine
+    container_name: squash-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB not set - run ./init-squash.sh}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER not set - run ./init-squash.sh}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set - run ./init-squash.sh}
+      POSTGRES_INITDB_ARGS: '--auth-host=scram-sha-256'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      squash-network:
+        aliases:
+          - squash-tm-pg
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  squash-tm:
+    image: squashtest/squash-tm:${SQUASH_TM_TAG:-latest}
+    container_name: squash-tm
+    restart: unless-stopped
+    depends_on:
+      squash-db:
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+    environment:
+      SQTM_DB_TYPE: postgresql
+      SQTM_DB_HOST: squash-db
+      SQTM_DB_PORT: '5432'
+      SQTM_DB_NAME: ${POSTGRES_DB}
+      SQTM_DB_USERNAME: ${POSTGRES_USER}
+      SQTM_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SQUASH_RESTAPI_JWT_SECRET: ${SQUASH_RESTAPI_JWT_SECRET:?run ./init-squash.sh}
+      SQUASH_CRYPTO_SECRET: ${SQUASH_CRYPTO_SECRET:?run ./init-squash.sh}
+      TZ: Europe/Dublin
+    volumes:
+      - squash_data:/opt/squash-tm/logs
+    networks:
+      - squash-network
+
+volumes:
+  postgres_data:
+  squash_data:
+
+networks:
+  squash-network:
+    driver: bridge

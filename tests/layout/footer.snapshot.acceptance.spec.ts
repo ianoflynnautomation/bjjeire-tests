@@ -1,9 +1,13 @@
 import { expect, test } from '@ui/fixtures';
+import { squash } from '@squash/annotations';
 
-test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snapshot', '@desktop'] }, () => {
+test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snapshot', '@desktop', '@squash'] }, () => {
   test(
-    'Given the site footer, when quick links are displayed, then their accessible structure is preserved',
-    { tag: ['@smoke', '@acceptance'] },
+    'footer quick links should keep their accessible structure',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page }) => {
       await page.goto('/about');
 
@@ -13,8 +17,11 @@ test.describe('Footer snapshot acceptance', { tag: ['@layout', '@footer', '@snap
   );
 
   test(
-    'Given the site footer, when copyright is displayed, then its accessible structure is preserved',
-    { tag: ['@acceptance'] },
+    'footer copyright should keep its accessible structure',
+    {
+      tag: ['@acceptance'],
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page }) => {
       await page.goto('/about');
 

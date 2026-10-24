@@ -43,6 +43,7 @@ Steps:
 6. Verify: `npm run lint` and `npm run typecheck` must both pass.
 
 Success criteria: lint + typecheck clean, specs import `./fixtures`, spec titles
-follow `Given/when/then`, tags follow the two-tier taxonomy (`@acceptance` on every
+follow `<actor> should <outcome> [when <context>]`, tags (`@squash` on the describe and
+`annotation: squash({...})` on each test, as in the template), follow the two-tier taxonomy (`@acceptance` on every
 test, `@smoke` only on the critical happy path). Report the created files and any
 template gaps you had to fill manually.

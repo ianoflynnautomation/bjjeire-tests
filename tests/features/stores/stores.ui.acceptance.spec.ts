@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './seeded';
+import { squash } from '@squash/annotations';
 
 test.use(storesTestConfig);
 
@@ -10,10 +11,13 @@ const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;
 const seededStoreCard = storeCardFromDto(seededStore);
 const seededStorePartialName = SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME;
 
-test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, () => {
+test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given available stores, when a visitor opens Stores, then the store list is displayed',
-    { tag: ['@smoke', '@acceptance'] },
+    'visitor should see the store list when opening Stores',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.verifyIsLoaded();
@@ -21,8 +25,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given no matching store, when a visitor searches, then an empty state is displayed',
-    { tag: '@acceptance' },
+    'visitor should see an empty state when no store matches the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.searchFor(faker.string.alphanumeric({ length: 12 }));
@@ -31,8 +38,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given a store name, when a visitor searches, then only that store is displayed',
-    { tag: '@acceptance' },
+    'visitor should find only the store searched for by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.searchFor(seededStore.name);
@@ -42,8 +52,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given part of a store name, when a visitor searches, then the matching store is displayed',
-    { tag: '@acceptance' },
+    'visitor should find a store by part of its name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ storesPage }) => {
       await storesPage.goTo();
       await storesPage.searchFor(seededStorePartialName);
@@ -53,8 +66,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given the API returns no stores, when a visitor opens Stores, then the no-data message is shown',
-    { tag: '@acceptance' },
+    'visitor should see the no-data message when the API returns no stores',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockStores, storesPage }) => {
       await mockStores(emptyPage);
       await storesPage.goTo();
@@ -64,8 +80,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given the API request fails, when a visitor opens Stores, then a network error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a network error message when the stores request fails',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockNetworkError, storesPage }) => {
       await mockNetworkError();
       await storesPage.goTo();
@@ -74,8 +93,11 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop'] }, (
   );
 
   test(
-    'Given the API returns a server error, when a visitor opens Stores, then a server error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a server error message when the stores API returns a server error',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockServerError, storesPage }) => {
       await mockServerError();
       await storesPage.goTo();

@@ -7,6 +7,7 @@ import {
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
 } from './seeded';
+import { squash } from '@squash/annotations';
 
 test.use(eventsTestConfig);
 
@@ -17,10 +18,13 @@ const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const seededSeminarCard = eventCardFromDto(seededSeminar);
 const SEMINAR_TYPE_LABEL = 'Seminar';
 
-test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop'] }, () => {
+test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given available events, when a visitor opens Events, then the event list is displayed',
-    { tag: ['@smoke', '@acceptance'] },
+    'visitor should see the event list when opening Events',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.verifyIsLoaded();
@@ -28,8 +32,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given no matching event, when a visitor searches, then an empty state is displayed',
-    { tag: '@acceptance' },
+    'visitor should see an empty state when no event matches the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
@@ -38,8 +45,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given an event name, when a visitor searches, then only that event is displayed',
-    { tag: '@acceptance' },
+    'visitor should find only the event searched for by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
@@ -49,8 +59,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given part of an event name, when a visitor searches, then the matching event is displayed',
-    { tag: '@acceptance' },
+    'visitor should find an event by part of its name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEventPartialName);
@@ -60,8 +73,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given an active search, when the visitor clears it, then events from the full listing are displayed again',
-    { tag: '@acceptance' },
+    'visitor should see the full event listing again after clearing the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
@@ -74,8 +90,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given a visitor searches, when results narrow, then the header count reflects the matching events',
-    { tag: '@acceptance' },
+    'visitor should see the header count match the events a search finds',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.searchFor(seededEvent.name);
@@ -87,8 +106,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given events in several counties, when a visitor filters by county, then only events from that county are displayed',
-    { tag: '@acceptance' },
+    'visitor should see only events from the county filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.filterByCounty(seededSeminar.county);
@@ -98,8 +120,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given a county filter is applied, when the visitor resets it to all counties, then events from every county are displayed',
-    { tag: '@acceptance' },
+    'visitor should see events from every county after resetting the county filter',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.filterByCounty(seededSeminar.county);
@@ -113,8 +138,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given events of several types, when a visitor filters by type, then only events of that type are displayed',
-    { tag: '@acceptance' },
+    'visitor should see only events of the type filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ eventsPage }) => {
       await eventsPage.goTo();
       await eventsPage.filterByType(SEMINAR_TYPE_LABEL);
@@ -124,8 +152,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given the API returns no events, when a visitor opens Events, then the no-data message is shown',
-    { tag: '@acceptance' },
+    'visitor should see the no-data message when the API returns no events',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockBjjEvents, eventsPage }) => {
       await mockBjjEvents(emptyPage);
       await eventsPage.goTo();
@@ -135,8 +166,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given the API request fails, when a visitor opens Events, then a network error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a network error message when the events request fails',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockNetworkError, eventsPage }) => {
       await mockNetworkError();
       await eventsPage.goTo();
@@ -145,8 +179,11 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'Given the API returns a server error, when a visitor opens Events, then a server error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a server error message when the events API returns a server error',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockServerError, eventsPage }) => {
       await mockServerError();
       await eventsPage.goTo();

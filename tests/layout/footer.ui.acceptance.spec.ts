@@ -1,12 +1,16 @@
 import { test, expect } from '@ui/fixtures';
 import { FOOTER_QUICK_LINKS } from '@ui/pages/sections/footer.constants';
 import { gotoAppShell } from '@ui/support';
+import { squash } from '@squash/annotations';
 
-test.describe('Footer UI acceptance', { tag: ['@layout', '@footer', '@ui', '@desktop'] }, () => {
+test.describe('Footer UI acceptance', { tag: ['@layout', '@footer', '@ui', '@desktop', '@squash'] }, () => {
   for (const { name, path } of FOOTER_QUICK_LINKS) {
     test(
-      `Given the footer, when a visitor selects "${name}", then ${path} is opened`,
-      { tag: '@acceptance' },
+      `visitor should open ${path} by selecting "${name}" in the footer`,
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ page, footerSection }) => {
         await gotoAppShell(page, '/about');
 

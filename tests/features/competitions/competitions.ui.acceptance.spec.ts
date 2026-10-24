@@ -6,6 +6,7 @@ import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { paginatePages } from '@ui/mocks/paginate.mock';
 import { SEEDED_COMPETITION_DONEGAL_GI_CLASSIC, SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME } from './seeded';
 import competitionsFixture from './testdata/competitions-pagination-page-1.json';
+import { squash } from '@squash/annotations';
 
 test.use(competitionsTestConfig);
 
@@ -25,10 +26,13 @@ if (!firstPageCompetition || !secondPageCompetition) {
   throw new Error('competitions-pagination-page-1.json no longer contains the expected page-1 and page-2 competitions');
 }
 
-test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop'] }, () => {
+test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given available competitions, when a visitor opens Competitions, then the competition list is displayed',
-    { tag: ['@smoke', '@acceptance'] },
+    'visitor should see the competition list when opening Competitions',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.verifyIsLoaded();
@@ -36,8 +40,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given no matching competition, when a visitor searches, then an empty state is displayed',
-    { tag: '@acceptance' },
+    'visitor should see an empty state when no competition matches the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
@@ -46,8 +53,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given a competition name, when a visitor searches, then only that competition is displayed',
-    { tag: '@acceptance' },
+    'visitor should find only the competition searched for by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.searchFor(seededCompetition.name);
@@ -57,8 +67,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given part of a competition name, when a visitor searches, then the matching competition is displayed',
-    { tag: '@acceptance' },
+    'visitor should find a competition by part of its name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ competitionsPage }) => {
       await competitionsPage.goTo();
       await competitionsPage.searchFor(seededCompetitionPartialName);
@@ -68,8 +81,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given the listing spans more than one page, when a visitor moves between pages, then each page shows its own competitions',
-    { tag: '@acceptance' },
+    'visitor should see different competitions on each page',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockCompetitionsPages, competitionsPage }) => {
       await mockCompetitionsPages(pagedCompetitions);
       await competitionsPage.goTo();
@@ -88,8 +104,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given the API returns no competitions, when a visitor opens Competitions, then the no-data message is shown',
-    { tag: '@acceptance' },
+    'visitor should see the no-data message when the API returns no competitions',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockCompetitions, competitionsPage }) => {
       await mockCompetitions(emptyPage);
       await competitionsPage.goTo();
@@ -99,8 +118,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given the API request fails, when a visitor opens Competitions, then a network error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a network error message when the competitions request fails',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockNetworkError, competitionsPage }) => {
       await mockNetworkError();
       await competitionsPage.goTo();
@@ -109,8 +131,11 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'Given the API returns a server error, when a visitor opens Competitions, then a server error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a server error message when the competitions API returns a server error',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockServerError, competitionsPage }) => {
       await mockServerError();
       await competitionsPage.goTo();

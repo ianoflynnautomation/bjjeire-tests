@@ -40,7 +40,7 @@ Same describe. The `field` on the problem is `Page` or `PageSize`, from the cons
 ```typescript
 for (const { param, field, value } of OUT_OF_RANGE_PAGING_VALUES) {
   test(
-    `Given ${param} ${value} is out of range, when a client opens the directory, then the request fails validation on ${param}`,
+    `client should get a validation error on ${param} when ${param} ${value} is out of range`,
     { tag: '@acceptance' },
     async ({ request }) => {
       const response = await request.get(API_ROUTES.gyms, { params: { [param]: value } });
@@ -60,19 +60,15 @@ Gyms and events only. `resourcePath` encodes the id so a fuzzed value stays one 
 
 ```typescript
 test.describe('Gym details', () => {
-  test(
-    'Given no gym has the id, when a client opens it, then the gym is not found',
-    { tag: '@acceptance' },
-    async ({ request }) => {
-      const response = await request.get(resourcePath(API_ROUTES.gyms, UNPUBLISHED_OBJECT_ID));
+  test('client should get not found for a gym id that does not exist', { tag: '@acceptance' }, async ({ request }) => {
+    const response = await request.get(resourcePath(API_ROUTES.gyms, UNPUBLISHED_OBJECT_ID));
 
-      await expectProblem(response, 404, ProblemType.NotFound);
-    },
-  );
+    await expectProblem(response, 404, ProblemType.NotFound);
+  });
 
   for (const { description, value } of INVALID_OBJECT_ID_VALUES) {
     test(
-      `Given a gym id that is ${description}, when a client opens it, then the request fails validation on the id`,
+      `client should get a validation error on the id for a gym id that is ${description}`,
       { tag: '@acceptance' },
       async ({ request }) => {
         const response = await request.get(resourcePath(API_ROUTES.gyms, value));

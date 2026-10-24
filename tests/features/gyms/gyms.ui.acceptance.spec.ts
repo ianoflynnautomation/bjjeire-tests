@@ -7,6 +7,7 @@ import {
   SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME,
   SEEDED_GYM_LIFFEY_GRAPPLING,
 } from './seeded';
+import { squash } from '@squash/annotations';
 
 test.use(gymsTestConfig);
 
@@ -22,10 +23,13 @@ const seededGymLinks = {
   googleMaps: `https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`,
 };
 
-test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () => {
+test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given available gyms, when a visitor opens Gyms, then the gym list is displayed',
-    { tag: ['@smoke', '@acceptance'] },
+    'visitor should see the gym list when opening Gyms',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.verifyIsLoaded();
@@ -33,8 +37,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given no matching gym, when a visitor searches, then an empty state is displayed',
-    { tag: '@acceptance' },
+    'visitor should see an empty state when no gym matches the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(faker.string.alphanumeric({ length: 12 }));
@@ -43,8 +50,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given a gym name, when a visitor searches, then only that gym is displayed',
-    { tag: '@acceptance' },
+    'visitor should find only the gym searched for by name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(seededGym.name);
@@ -54,8 +64,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given part of a gym name, when a visitor searches, then the matching gym is displayed',
-    { tag: '@acceptance' },
+    'visitor should find a gym by part of its name',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(seededGymPartialName);
@@ -65,8 +78,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given a gym card, when a visitor views it, then its website and map links point to the right destinations',
-    { tag: '@acceptance' },
+    'visitor should see website and map links pointing to the right destinations on a gym card',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.searchFor(seededGym.name);
@@ -75,8 +91,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given gyms in several counties, when a visitor filters by county, then only gyms from that county are displayed',
-    { tag: '@acceptance' },
+    'visitor should see only gyms from the county filtered by',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.filterByCounty(seededGym.county);
@@ -86,8 +105,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given a county filter is applied, when the visitor resets it to all counties, then gyms from other counties can be found again',
-    { tag: '@acceptance' },
+    'visitor should find gyms from other counties again after resetting the county filter',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ gymsPage }) => {
       await gymsPage.goTo();
       await gymsPage.filterByCounty(seededGym.county);
@@ -99,8 +121,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given the API returns no gyms, when a visitor opens Gyms, then the no-data message is shown',
-    { tag: '@acceptance' },
+    'visitor should see the no-data message when the API returns no gyms',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockGyms, gymsPage }) => {
       await mockGyms(emptyPage);
       await gymsPage.goTo();
@@ -110,8 +135,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given the API request fails, when a visitor opens Gyms, then a network error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a network error message when the gyms request fails',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockNetworkError, gymsPage }) => {
       await mockNetworkError();
       await gymsPage.goTo();
@@ -120,8 +148,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given the API returns a server error, when a visitor opens Gyms, then a server error message is shown',
-    { tag: '@acceptance' },
+    'visitor should see a server error message when the gyms API returns a server error',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockServerError, gymsPage }) => {
       await mockServerError();
       await gymsPage.goTo();
@@ -130,8 +161,11 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop'] }, () =>
   );
 
   test(
-    'Given the API failed once, when the visitor retries, then the gym list is displayed',
-    { tag: '@acceptance' },
+    'visitor should see the gym list after retrying a failed request',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ mockServerErrorOnce, gymsPage }) => {
       await mockServerErrorOnce();
       await gymsPage.goTo();

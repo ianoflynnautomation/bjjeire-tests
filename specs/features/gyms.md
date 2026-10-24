@@ -9,27 +9,27 @@
 
 ### UI
 
-1. Given available gyms, when a visitor opens Gyms, then the gym list is displayed (`@smoke`)
-2. Given no matching gym, when a visitor searches, then an empty state is displayed
-3. Given a gym name, when a visitor searches, then only that gym is displayed
-4. Given part of a gym name, when a visitor searches, then the matching gym is displayed
-5. Given a gym card, when a visitor views it, then its website and map links point to the right destinations
-6. Given gyms in several counties, when a visitor filters by county, then only gyms from that county are displayed
-7. Given a county filter is applied, when the visitor resets it to all counties, then gyms from other counties can be found again
-8. Given the API returns no gyms / request fails / server error / retry — matching empty and error states
+1. visitor should see the gym list when opening Gyms (`@smoke`)
+2. visitor should see an empty state when no gym matches the search
+3. visitor should find only the gym searched for by name
+4. visitor should find a gym by part of its name
+5. visitor should see website and map links pointing to the right destinations on a gym card
+6. visitor should see only gyms from the county filtered by
+7. visitor should find gyms from other counties again after resetting the county filter
+8. visitor should see the no-data, network error and server error messages, and the gym list after retrying
 
 ### API
 
-1. Given gyms are published, when a client opens the directory, then each published gym is returned with its details
-2. Given gyms are published, when a client filters by county, then only gyms from that county are returned
-3. Given gyms are published, when a client opens the directory, then they are ordered by name
-4. Pagination slice + empty page-beyond-last
-5. Given an unknown county "<value>", when a client opens the directory, then the request is rejected as a bad request
-6. Given a non-numeric page / page size "<value>", when a client opens the directory, then the request is rejected as a bad request
-7. Given page / pageSize `<value>` is out of range, when a client opens the directory, then the request fails validation on that parameter
-8. Given a published gym, when a client opens it by id, then its details are returned
-9. Given no gym has the id, when a client opens it, then the gym is not found
-10. Given a gym id that is `<malformed>`, when a client opens it, then the request fails validation on the id
+1. client should receive each published gym with its details
+2. client should receive only gyms from the county filtered by
+3. client should receive gyms ordered by name
+4. client should page through the directory in distinct slices with correct links; client should receive an empty page with valid pagination for a page beyond the last
+5. client should get a bad request for an unknown county "<value>"
+6. client should get a bad request for a non-numeric page / page size "<value>"
+7. client should get a validation error on page / pageSize when `<value>` is out of range
+8. client should receive the details of a published gym by id
+9. client should get not found for a gym id that does not exist
+10. client should get a validation error on the id for a gym id that is `<malformed>`
 
 Scenarios 5–7 and 10 are data-driven over `tests/features/common/testdata/invalid-values.ts`.
 Errors are asserted as RFC 9457 problem documents (`expectProblem`): status, `type`, and

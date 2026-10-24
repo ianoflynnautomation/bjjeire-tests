@@ -1,11 +1,15 @@
 import { expect, test, aboutTestConfig } from './fixtures';
+import { squash } from '@squash/annotations';
 
 test.use(aboutTestConfig);
 
-test.describe('About snapshot acceptance', { tag: ['@about', '@snapshot', '@desktop'] }, () => {
+test.describe('About snapshot acceptance', { tag: ['@about', '@snapshot', '@desktop', '@squash'] }, () => {
   test.skip(
-    'Given the About page, when it is displayed, then it matches the approved image',
-    { tag: ['@smoke', '@acceptance'] },
+    'About page should match the approved image',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page, aboutPage }) => {
       await aboutPage.navigate();
       await aboutPage.verifyIsLoaded();
@@ -14,8 +18,11 @@ test.describe('About snapshot acceptance', { tag: ['@about', '@snapshot', '@desk
   );
 
   test.skip(
-    'Given the About page, when its sections are displayed, then their accessible structure is preserved',
-    { tag: ['@smoke', '@acceptance'] },
+    'About page sections should keep their accessible structure',
+    {
+      tag: ['@smoke', '@acceptance'],
+      annotation: squash({ weight: 'high', status: 'approved', nature: 'non functional', type: 'regression' }),
+    },
     async ({ page, aboutPage }) => {
       await aboutPage.navigate();
       await aboutPage.verifyIsLoaded();

@@ -2,6 +2,7 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { TIMEOUTS } from '@shared/config/timeouts';
 import { test, expect } from '@ui/fixtures';
 import { gotoRoute } from '@ui/support';
+import { squash } from '@squash/annotations';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
@@ -28,11 +29,14 @@ function diagnose(node: ViolatingNode): Record<string, unknown> {
   };
 }
 
-test.describe('Accessibility acceptance', { tag: ['@a11y', '@desktop'] }, () => {
+test.describe('Accessibility acceptance', { tag: ['@a11y', '@desktop', '@squash'] }, () => {
   for (const { name, path, readyTestId } of ROUTES) {
     test(
-      `Given the ${name} page, when it is scanned against WCAG 2.1 A/AA, then no violations are reported`,
-      { tag: '@acceptance' },
+      `${name} page should have no WCAG 2.1 A/AA violations`,
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'non functional', type: 'regression' }),
+      },
       async ({ page }) => {
         test.setTimeout(TIMEOUTS.max);
         const ready = page.getByTestId(readyTestId).first();

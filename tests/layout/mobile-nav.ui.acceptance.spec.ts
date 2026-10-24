@@ -1,41 +1,52 @@
 import { test, expect } from '@ui/fixtures';
 import { HEADER_NAV_LINKS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
+import { squash } from '@squash/annotations';
 
 const mobileToggle = 'navigation-mobile-toggle';
 const mobilePanel = 'navigation-mobile-panel';
 
-test.describe('Mobile navigation UI acceptance', { tag: ['@layout', '@navigation', '@ui', '@mobile'] }, () => {
-  test(
-    'Given the mobile header, when the visitor opens the menu, then every section link is listed',
-    { tag: '@acceptance' },
-    async ({ page }) => {
-      await gotoAppShell(page, '/about');
-
-      await page.getByTestId(mobileToggle).click();
-
-      const panel = page.getByTestId(mobilePanel);
-      await expect(panel).toBeVisible();
-      for (const { name, path } of HEADER_NAV_LINKS) {
-        await expect(panel.getByRole('link', { name, exact: true })).toHaveAttribute('href', path);
-      }
-    },
-  );
-
-  for (const { name, path } of HEADER_NAV_LINKS) {
+test.describe(
+  'Mobile navigation UI acceptance',
+  { tag: ['@layout', '@navigation', '@ui', '@mobile', '@squash'] },
+  () => {
     test(
-      `Given the mobile menu is open, when the visitor selects "${name}", then ${path} is opened and the menu closes`,
-      { tag: '@acceptance' },
+      'visitor should see every section link after opening the mobile menu',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+      },
       async ({ page }) => {
         await gotoAppShell(page, '/about');
+
         await page.getByTestId(mobileToggle).click();
 
         const panel = page.getByTestId(mobilePanel);
-        await panel.getByRole('link', { name, exact: true }).click();
-
-        await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
-        await expect(panel).toBeHidden();
+        await expect(panel).toBeVisible();
+        for (const { name, path } of HEADER_NAV_LINKS) {
+          await expect(panel.getByRole('link', { name, exact: true })).toHaveAttribute('href', path);
+        }
       },
     );
-  }
-});
+
+    for (const { name, path } of HEADER_NAV_LINKS) {
+      test(
+        `visitor should open ${path} and close the menu by selecting "${name}" in the mobile menu`,
+        {
+          tag: '@acceptance',
+          annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+        },
+        async ({ page }) => {
+          await gotoAppShell(page, '/about');
+          await page.getByTestId(mobileToggle).click();
+
+          const panel = page.getByTestId(mobilePanel);
+          await panel.getByRole('link', { name, exact: true }).click();
+
+          await expect(page).toHaveURL(new RegExp(`${path}(?:[/?#]|$)`));
+          await expect(panel).toBeHidden();
+        },
+      );
+    }
+  },
+);

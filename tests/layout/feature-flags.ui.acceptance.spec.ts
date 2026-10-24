@@ -2,13 +2,17 @@ import { test, expect } from '@ui/fixtures';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
 import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
+import { squash } from '@squash/annotations';
 
 test.use({ featureFlagOverrides: { ...ALL_FEATURES_ENABLED, Stores: false } });
 
-test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '@ui', '@desktop'] }, () => {
+test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'Given the stores feature is disabled, when a visitor opens the stores page, then they land on an enabled feature instead',
-    { tag: '@acceptance' },
+    'visitor should land on an enabled feature when opening the disabled stores page',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ page }) => {
       await gotoAppShell(page, '/stores');
 
@@ -17,8 +21,11 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
   );
 
   test(
-    'Given the stores feature is disabled, when a visitor views the header, then stores is not offered',
-    { tag: '@acceptance' },
+    'visitor should not be offered stores in the header when the feature is disabled',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
     async ({ page, headerSection }) => {
       await gotoAppShell(page, '/');
       await headerSection.expectVisible();

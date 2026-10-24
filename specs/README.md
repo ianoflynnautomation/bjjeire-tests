@@ -8,7 +8,7 @@ visitor-observable contract and the mapping onto Playwright.
 specs/
 ├── README.md
 ├── system-architecture.md    # how this suite attaches to the app
-└── features/                 # Given/When/Then owned by this repo
+└── features/                 # scenarios owned by this repo (= test titles)
     ├── gyms.md
     ├── events.md
     ├── competitions.md
