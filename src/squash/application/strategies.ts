@@ -8,7 +8,10 @@ import type { TestCaseSynchronizer } from './test-case-synchronizer';
 export class DryRunStrategy implements SquashStrategy {
   readonly name = 'dry-run';
 
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly logger: Logger,
+    private readonly release = false,
+  ) {}
 
   syncTestCases(definitions: readonly TestCaseDefinition[]): Promise<SyncSummary> {
     for (const definition of definitions) {
@@ -25,13 +28,14 @@ export class DryRunStrategy implements SquashStrategy {
     for (const result of results) {
       this.logger.debug(`[dry-run] ${result.outcome}: ${result.testCase.name}`);
     }
-    this.logger.info(`[dry-run] Would publish ${results.length} results as "${run.name}": ${tally}.`);
+    const releaseNote = this.release ? ' A release execution is created for each result.' : '';
+    this.logger.info(`[dry-run] Would publish ${results.length} results as "${run.name}": ${tally}.${releaseNote}`);
     return Promise.resolve({ iterationId: undefined, recorded: 0, failed: 0 });
   }
 }
 
 /**
- * CI behaviour: syncs test cases, then records executions. Results always sync
+ * CI behaviour: syncs test cases, then writes results. Results always sync
  * their own test cases first, so a run never depends on `squash:sync` having
  * been run beforehand.
  */

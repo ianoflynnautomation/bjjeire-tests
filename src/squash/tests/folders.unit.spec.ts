@@ -107,7 +107,8 @@ test.describe('TestCaseSynchronizer placement', { tag: ['@unit'] }, () => {
     expect(warnings).toEqual([
       "warn 1 synced test cases are not Gherkin, and Squash cannot change a case's format. " +
         'To recreate them as Gherkin (their execution history goes with them): ' +
-        'npm run squash:prune -- --folder "Playwright/Features/Gyms" --yes, then sync again.',
+        'npm run squash:prune -- --folder "Playwright/Features/Gyms". ' +
+        'Re-run that command with --yes, then sync again.',
     ]);
   });
 });

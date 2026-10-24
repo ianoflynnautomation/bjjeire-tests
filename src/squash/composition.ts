@@ -50,11 +50,10 @@ function requireServices(config: SquashConfig, logger: Logger): SquashServices {
   return connect(config.connection, logger);
 }
 
-/** Strategy factory: the execution context picks dry-run (local) or remote (CI) behaviour. */
 function createSquashStrategy(config: SquashConfig, logger: Logger): SquashStrategy {
   switch (config.mode) {
     case SquashMode.DryRun:
-      return new DryRunStrategy(logger);
+      return new DryRunStrategy(logger, config.release);
     case SquashMode.Publish: {
       const services = requireServices(config, logger);
       const synchronizer = new TestCaseSynchronizer(
@@ -65,7 +64,7 @@ function createSquashStrategy(config: SquashConfig, logger: Logger): SquashStrat
       );
       const context = new ExecutionContextResolver(services.executions, services.campaignFolders, logger);
       const publisher = config.target
-        ? new ResultPublisher(services.executions, context, config.target, logger)
+        ? new ResultPublisher(services.executions, context, config.target, { logger, release: config.release })
         : undefined;
       return new RemoteStrategy(synchronizer, publisher);
     }
@@ -97,7 +96,6 @@ export type SelectReporterDependencies = Readonly<{
   selection: TestSelection;
   parser: PlaywrightTestParser;
   logger: Logger;
-  /** Where the `--test-list` file is written. */
   outputPath: string;
 }>;
 

@@ -18,6 +18,7 @@ import {
   type SquashSettings,
 } from './config-schema';
 import { LogLevel } from './logger';
+import { applySquashEnv, readSquashEnvFiles } from './squash-env.mts';
 
 export type RetryPolicy = Readonly<{
   maxAttempts: number;
@@ -34,7 +35,6 @@ export type SquashConnection = Readonly<{
   retry: RetryPolicy;
 }>;
 
-/** The resolved configuration every component is built from. */
 export type SquashConfig = Readonly<{
   mode: typeof SquashMode.DryRun | typeof SquashMode.Publish;
   tag: string;
@@ -44,6 +44,8 @@ export type SquashConfig = Readonly<{
   connection: SquashConnection | undefined;
   placement: FolderPlacement;
   target: ExecutionTargetSpec | undefined;
+  /** A release creates a new execution. An ordinary publish updates the test case execution. */
+  release: boolean;
   selection: TestSelection | undefined;
   /** Which source set each setting, for `SQUASH_TM_LOG_LEVEL=debug`. */
   provenance: ReadonlyMap<SettingKey, string>;
@@ -68,6 +70,7 @@ const DEFAULTS = {
   logLevel: LogLevel.Info,
   timeoutMs: 30_000,
   maxAttempts: 5,
+  release: false,
   folderRules: [],
 } as const satisfies SquashSettings;
 
@@ -163,6 +166,7 @@ export class SquashConfigLoader {
       connection: needsConnection ? this.connectionOf(settings, mode) : undefined,
       placement: { defaultFolder: settings.testCaseFolder, rules: settings.folderRules },
       target,
+      release: settings.release,
       selection,
       provenance,
     };
@@ -201,8 +205,13 @@ export class SquashConfigLoader {
   }
 }
 
-/** Reads the real process environment and the working directory. */
+/**
+ * Reads the real process environment and the working directory. `SQUASH_TM_*`
+ * missing from the shell are filled from `.env` and `.env*.local` first.
+ */
 export function loadSquashConfig(): SquashConfig {
+  const profile = (process.env['APP_ENV'] ?? 'local').toLowerCase();
+  applySquashEnv(process.env, readSquashEnvFiles(process.cwd(), profile));
   return new SquashConfigLoader({ env: process.env, readFile: readFileIfPresent }).load();
 }
 

@@ -1,23 +1,7 @@
 /**
- * npm run squash:run -- [--squash-<setting>=<value> ...] [playwright test arguments ...]
- *
- * Runs Playwright with Squash TM settings given on the command line, the
- * highest-precedence layer of the cascade (defaults < squash-config.json <
- * environment < CLI). Every `--squash-*` flag is a setting in kebab
- * case (`--squash-campaign-id 7` sets `campaignId`); `--squash-config <path>`
- * picks the config file. Everything else is passed to `playwright test`.
- *
- *   npm run squash:run -- --squash-mode=publish --squash-campaign="Releases/2.4" \
- *     --squash-iteration="Nightly #128" --squash-filter-folder=Playwright/Features/Gyms -g @smoke
- *
- * Two phases: `playwright test --list` with the select reporter turns a folder
- * or test suite selection into a test-list file, then `playwright test` runs
- * it (unfiltered when no selection is configured). Settings reach the
- * reporters through SQUASH_TM_CLI; validation happens there, against the one
- * schema, so this script only splits arguments.
- *
- * Plain Node (type stripping, no imports from src): it must run before
- * Playwright's TypeScript loader is involved.
+ * Splits `--squash-*` flags into `SQUASH_TM_CLI` and passes everything else to
+ * `playwright test`. Lists tests first, then runs them. Plain Node, with no
+ * imports from `src`: it starts before Playwright's TypeScript loader.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, rmSync } from 'node:fs';

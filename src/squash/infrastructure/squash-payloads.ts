@@ -1,4 +1,5 @@
 import type { RunInfo, TestCaseId, TestCaseState } from '../application/ports';
+import { executionMarker, type ExecutionRole } from '../domain/execution-role';
 import type { ProjectRun, TestExecutionResult } from '../domain/execution-result';
 import { isSyncOwned, OWNERSHIP_MARKER } from '../domain/reference-label';
 import { gherkinScript, stepsOf, TestCaseFormat } from '../domain/gherkin';
@@ -23,7 +24,6 @@ const MAX_ERROR_LENGTH = 4000;
 const MS_PER_SECOND = 1000;
 /** Squash's built-in automation technology for Playwright (Administration › Automation). */
 const AUTOMATION_TECHNOLOGY = 'Playwright';
-/** First paragraph of every description the sync writes; marks the name and description as sync-owned. */
 
 const ANSI_ESCAPE = /\u001b\[[0-9;]*m/g;
 const HTML_ENTITIES: Readonly<Record<string, string>> = {
@@ -106,11 +106,11 @@ export class SquashPayloadBuilder {
     return { _type: 'iteration-test-plan-item', test_case: { _type: 'test-case', id: testCaseId } };
   }
 
-  updateExecution(result: TestExecutionResult, run: RunInfo): UpdateExecutionBody {
+  updateExecution(result: TestExecutionResult, run: RunInfo, role: ExecutionRole): UpdateExecutionBody {
     return {
       _type: 'execution',
       execution_status: STATUS_BY_OUTCOME[result.outcome],
-      comment: this.comment(result, run),
+      comment: this.comment(result, run, role),
     };
   }
 
@@ -123,7 +123,7 @@ export class SquashPayloadBuilder {
     ].join('');
   }
 
-  private comment(result: TestExecutionResult, run: RunInfo): string {
+  private comment(result: TestExecutionResult, run: RunInfo, role: ExecutionRole): string {
     const runs = result.runs.map(projectRun => `<li>${describeRun(projectRun)}</li>`).join('');
     const errors = result.runs.flatMap(projectRun =>
       projectRun.errors.map(
@@ -133,6 +133,7 @@ export class SquashPayloadBuilder {
       ),
     );
     return [
+      `<p>${executionMarker(role)}</p>`,
       `<p>Playwright run <strong>${escapeHtml(run.name)}</strong>: ${result.outcome}</p>`,
       `<ul>${runs}</ul>`,
       `<p>Spec: <code>${escapeHtml(result.testCase.file)}:${result.testCase.line}</code></p>`,

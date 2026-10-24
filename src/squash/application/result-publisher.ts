@@ -1,4 +1,5 @@
 import type { TestExecutionResult } from '../domain/execution-result';
+import { ExecutionRole } from '../domain/execution-role';
 import { forEachConcurrent } from './concurrency';
 import type { ExecutionContextResolver } from './execution-context-resolver';
 import type {
@@ -16,17 +17,21 @@ const CONCURRENCY = 4;
 
 type PlannedResult = Readonly<{ result: TestExecutionResult; itemId: TestPlanItemId }>;
 
-/**
- * Records one Squash execution per test case in the iteration the execution
- * context resolves to, adding test plan items for cases it does not yet plan.
- */
+type PublishOptions = Readonly<{ logger: Logger; release: boolean }>;
+
 export class ResultPublisher {
+  private readonly logger: Logger;
+  private readonly release: boolean;
+
   constructor(
     private readonly repository: ExecutionRepository,
     private readonly context: ExecutionContextResolver,
     private readonly target: ExecutionTargetSpec,
-    private readonly logger: Logger,
-  ) {}
+    options: PublishOptions,
+  ) {
+    this.logger = options.logger;
+    this.release = options.release;
+  }
 
   async publish(
     results: readonly TestExecutionResult[],
@@ -40,8 +45,7 @@ export class ResultPublisher {
 
     await forEachConcurrent(planned, CONCURRENCY, async ({ result, itemId }) => {
       try {
-        const executionId = await this.repository.recordExecution(itemId, result, run);
-        this.logger.debug(`Execution ${executionId}: ${result.outcome} "${result.testCase.name}"`);
+        await this.writeResult(itemId, result, run);
         recorded += 1;
       } catch (error) {
         this.logger.error(`Could not record the result of "${result.testCase.name}"`, error);
@@ -49,7 +53,8 @@ export class ResultPublisher {
     });
 
     const failed = results.length - recorded;
-    this.logger.info(`Iteration ${iterationId}: ${recorded} executions recorded, ${failed} failed.`);
+    const releases = this.release ? `, ${recorded} release executions created` : '';
+    this.logger.info(`Iteration ${iterationId}: ${recorded} results published${releases}, ${failed} failed.`);
     return { iterationId, recorded, failed };
   }
 
@@ -77,5 +82,36 @@ export class ResultPublisher {
       }
     }
     return planned;
+  }
+
+  /**
+   * Squash shows the latest execution as the test case's status. An ordinary
+   * publish patches that execution when it is the test case's own row, and
+   * creates one when the latest row is a release execution so the release
+   * record stays as it was written. A release patches the test case execution
+   * when one exists, then creates the release execution.
+   */
+  private async writeResult(itemId: TestPlanItemId, result: TestExecutionResult, run: RunInfo): Promise<void> {
+    const testCaseExecution = await this.repository.findTestCaseExecution(itemId);
+    if (this.release) {
+      if (testCaseExecution) {
+        await this.repository.updateExecution(testCaseExecution.id, result, run);
+        this.logger.debug(
+          `Updated test case execution ${testCaseExecution.id}: ${result.outcome} "${result.testCase.name}"`,
+        );
+      }
+      const releaseId = await this.repository.recordExecution(itemId, result, run, ExecutionRole.Release);
+      this.logger.debug(`Release execution ${releaseId}: ${result.outcome} "${result.testCase.name}"`);
+      return;
+    }
+    if (testCaseExecution?.current) {
+      await this.repository.updateExecution(testCaseExecution.id, result, run);
+      this.logger.debug(
+        `Updated test case execution ${testCaseExecution.id}: ${result.outcome} "${result.testCase.name}"`,
+      );
+      return;
+    }
+    const executionId = await this.repository.recordExecution(itemId, result, run, ExecutionRole.TestCase);
+    this.logger.debug(`Test case execution ${executionId}: ${result.outcome} "${result.testCase.name}"`);
   }
 }

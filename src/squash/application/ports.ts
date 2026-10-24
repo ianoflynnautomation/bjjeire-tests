@@ -1,5 +1,6 @@
-import type { TestCaseFormat } from '../domain/gherkin';
+import type { ExecutionRole } from '../domain/execution-role';
 import type { TestExecutionResult } from '../domain/execution-result';
+import type { TestCaseFormat } from '../domain/gherkin';
 import type { TestCaseDefinition, TestCaseStatus, Weight } from '../domain/test-case';
 
 /**
@@ -26,14 +27,12 @@ export type IterationId = SquashId<'IterationId'>;
 export type TestPlanItemId = SquashId<'TestPlanItemId'>;
 export type ExecutionId = SquashId<'ExecutionId'>;
 
-/** The suite run that results are published under (one Squash iteration). */
 export type RunInfo = Readonly<{
   id: string;
   name: string;
   description: string;
 }>;
 
-/** What a Squash test case currently holds, for every field the sync can manage. */
 export type TestCaseState = Readonly<{
   name: string;
   description: string;
@@ -63,10 +62,6 @@ export type SquashTestCase = Readonly<{
 export type TestSuiteId = SquashId<'TestSuiteId'>;
 export type FolderId = SquashId<'FolderId'>;
 
-/**
- * Which run instance receives the results, as configured. The execution
- * context resolver turns it into an iteration id before anything is published.
- */
 export type ExecutionTargetSpec =
   /** Publish into the suite's iteration; the suite also decides which tests run. */
   | Readonly<{ kind: 'test-suite'; testSuiteId: TestSuiteId }>
@@ -80,17 +75,13 @@ export type ExecutionTargetSpec =
 
 export type CampaignRef = Readonly<{ id: CampaignId }> | Readonly<{ path: string }>;
 
-/** The resolved run instance results are published into. */
 export type ExecutionContext = Readonly<{
   iterationId: IterationId;
-  /** Human-readable, for logs: `Releases/2.4 › Nightly #128`. */
   label: string;
 }>;
 
-/** Which tests run, decided by where their Squash test cases live. */
 export type TestSelection = Readonly<{ folder: string }> | Readonly<{ testSuiteId: TestSuiteId }>;
 
-/** A node in a Squash library tree (test cases or campaigns). */
 export type LibraryNode = Readonly<{ kind: 'folder' | 'leaf'; id: number; name: string }>;
 
 /**
@@ -103,7 +94,6 @@ export type FolderTree = Readonly<{
   createFolder: (parentId: FolderId | undefined, name: string) => Promise<FolderId>;
 }>;
 
-/** Test case data access, used by synchronisation and selection. */
 export type TestCaseRepository = Readonly<{
   /** Every test case in the project, including manual ones no test claims. */
   listTestCases: () => Promise<readonly SquashTestCase[]>;
@@ -132,7 +122,13 @@ export type TestSuite = Readonly<{
   testCaseIds: readonly TestCaseId[];
 }>;
 
-/** Campaign, iteration and execution data access, used by publishing. */
+/**
+ * The newest execution of an item that carries the test case's result.
+ * `current` is false when a release execution is newer: Squash shows that
+ * newer execution, so patching this one leaves the shown status as the release.
+ */
+export type TestCaseExecution = Readonly<{ id: ExecutionId; current: boolean }>;
+
 export type ExecutionRepository = Readonly<{
   /** The campaign called `name` directly in the folder (`undefined`: the library root). */
   findCampaign: (folderId: FolderId | undefined, name: string) => Promise<CampaignId | undefined>;
@@ -143,8 +139,19 @@ export type ExecutionRepository = Readonly<{
   /** The iteration's existing test plan, keyed by the test case each item plans. */
   listTestPlan: (iterationId: IterationId) => Promise<ReadonlyMap<TestCaseId, TestPlanItemId>>;
   addToTestPlan: (iterationId: IterationId, testCaseId: TestCaseId) => Promise<TestPlanItemId>;
-  /** Creates an execution of the item and sets its status and comment from the result. */
-  recordExecution: (itemId: TestPlanItemId, result: TestExecutionResult, run: RunInfo) => Promise<ExecutionId>;
+  /** The newest execution that is not a release execution, when the item has one. */
+  findTestCaseExecution: (itemId: TestPlanItemId) => Promise<TestCaseExecution | undefined>;
+  updateExecution: (executionId: ExecutionId, result: TestExecutionResult, run: RunInfo) => Promise<void>;
+  /**
+   * Creates an execution of the item and sets its status and comment.
+   * Squash creates the row as READY; a failed status update names that row.
+   */
+  recordExecution: (
+    itemId: TestPlanItemId,
+    result: TestExecutionResult,
+    run: RunInfo,
+    role: ExecutionRole,
+  ) => Promise<ExecutionId>;
 }>;
 
 export type SyncSummary = Readonly<{
@@ -166,7 +173,6 @@ export type PublishSummary = Readonly<{
   failed: number;
 }>;
 
-/** How a run talks to Squash TM: `dry-run` locally, `publish` in CI. */
 export type SquashStrategy = Readonly<{
   name: string;
   syncTestCases: (definitions: readonly TestCaseDefinition[]) => Promise<SyncSummary>;

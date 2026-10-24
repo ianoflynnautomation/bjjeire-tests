@@ -9,15 +9,7 @@ import type {
   RunInfo,
 } from './ports';
 
-/**
- * Resolves the configured target into the iteration results are published to,
- * once per run, before any result is written:
- *
- * - a test suite publishes into the suite's own iteration;
- * - an iteration id (a central pipeline's run instance) is used exactly as given;
- * - a campaign (by id, or by a path that is created when missing) gets the named
- *   iteration, found or created, or a new iteration per run when unnamed.
- */
+/** Resolved once per run. A missing campaign path, and its iteration, are created. */
 export class ExecutionContextResolver {
   private context: Promise<ExecutionContext> | undefined;
 

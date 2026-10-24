@@ -1,4 +1,5 @@
 import type { FolderId, SquashTestCase, TestCaseId, TestCaseRepository, TestCaseState } from '../application/ports';
+import { folderPathOf } from '../domain/squash-library.mts';
 import type { TestCaseDefinition } from '../domain/test-case';
 import type { SquashClient } from './squash-client';
 import { SquashPayloadBuilder } from './squash-payloads';
@@ -69,16 +70,6 @@ export class HttpTestCaseRepository implements TestCaseRepository {
     await this.client.send({ method: 'PATCH', path: `/test-cases/${current.id}`, body });
     return true;
   }
-}
-
-/**
- * `/PW Probe/Acceptance/Gyms/Search finds a gym` → `Acceptance/Gyms`. Squash
- * escapes a `/` inside a name as `\/` (`…WCAG 2.1 A\/AA`), so only unescaped
- * slashes separate segments.
- */
-function folderPathOf(path: string): string {
-  const segments = path.split(/(?<!\\)\//).map(segment => segment.replaceAll('\\/', '/'));
-  return segments.slice(2, -1).join('/');
 }
 
 function stateOf(testCase: WireTestCase): TestCaseState {

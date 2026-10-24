@@ -1,16 +1,9 @@
 import type { TestDetailsAnnotation } from '@playwright/test';
 
 /**
- * Typed `squash:*` annotations for a test, so the editor lists every value:
- *
- *   test('…', {
- *     tag: '@acceptance',
- *     annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
- *   }, …)
- *
- * A field left out stays as Squash has it. Nature and type cover Squash's
- * default info lists; a project with custom lists passes its own code
- * (`'NAT_CONTRACT_TESTING'`), which Squash validates at sync time.
+ * A field left out stays as Squash has it. Nature and type accept Squash's
+ * default info-list names, or a project-specific code such as
+ * `'NAT_CONTRACT_TESTING'`, which Squash validates at sync time.
  */
 export type SquashFields = Readonly<{
   weight?: 'low' | 'medium' | 'high' | 'very high';

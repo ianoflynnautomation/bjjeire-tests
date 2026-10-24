@@ -71,13 +71,9 @@ export type TestCaseDefinition = Readonly<{
 }>;
 
 /**
- * What identifies an unpinned test in Squash: its spec path and title path, as
- * Squash's own "Automated test reference" field
- * (`features/gyms/gyms.ui.acceptance.spec.ts#Gyms UI acceptance › Search …`).
- * It reads like what it is and is identical on every machine and project, but
- * renaming or moving the test changes it (and so creates a new Squash case).
- * Pin the test with `@Squash_<id>` when its history must survive renames.
- * Past Squash's length limit, the end is replaced by a hash so it stays unique.
+ * `file#describe › title`. Renaming or moving the test changes it, so Squash
+ * gets a new case unless the test is pinned. Past Squash's length limit the
+ * end is replaced by a hash so two long references stay distinct.
  */
 export function automationReference(file: string, titles: readonly string[]): string {
   const full = `${file}#${titles.join(TITLE_SEPARATOR)}`;
@@ -90,12 +86,10 @@ export function testCaseName(titles: readonly string[]): string {
   return titles.join(TITLE_SEPARATOR).slice(0, MAX_TEST_CASE_NAME_LENGTH);
 }
 
-/** The tag that pins a test to Squash test case `id`: `@Squash_151`. */
 export function pinTag(id: number): string {
   return `${PIN_TAG_PREFIX}${id}`;
 }
 
-/** Reads the `@Squash_<id>` pin from a test's tags (case-insensitive). */
 export function pinnedIdFrom(tags: readonly string[]): number | undefined {
   const ids = [...new Set(tags.flatMap(tag => PIN_TAG.exec(tag)?.slice(1) ?? []))].map(Number);
   if (ids.length > 1)

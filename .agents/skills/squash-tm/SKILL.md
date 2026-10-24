@@ -36,6 +36,11 @@ unless `SQUASH_TM_MODE` is set or `squash:run` is used, and only tests tagged
 - **NEVER** publish from a shard. CI publishes once, from `merge-reports`
   (`examples/squash-tm-publish.yml`).
 - **NEVER** point a run at production. Staging only as an explicit task.
+- A publish updates the test case's execution. A new Squash execution is
+  created only when the run is a release (`--squash-release=true` or
+  `SQUASH_TM_RELEASE=true` in the shell or `.env*.local`), and that run updates
+  the test case execution too. Point the release at its own iteration. A flag
+  overrides the env value.
 
 ## Opting a test in
 
@@ -133,9 +138,17 @@ SQUASH_TM_MODE=dry-run npm run squash:sync
 # Sync test cases (create missing, update changed)
 SQUASH_TM_MODE=publish SQUASH_TM_PROJECT_ID=1 npm run squash:sync
 
-# Run tests and publish results into a campaign iteration (created when missing)
+# Nightly: updates the test case execution. Playwright args (--project, -g) pass through.
 npm run squash:run -- --squash-mode=publish --squash-project-id=1 \
   --squash-campaign="Releases/2.4" --squash-iteration="Nightly" --project=chromium-desktop
+
+# Release: also creates one Squash execution per test. Flag for one run, or
+# SQUASH_TM_RELEASE=true in the shell or .env*.local (the flag overrides the file).
+# Other flags and the combinations that are rejected: docs/squash-tm.md § Commands.
+npm run squash:run -- --squash-mode=publish --squash-release=true --squash-project-id=1 \
+  --squash-campaign="Releases/2.4" --squash-iteration="2.4.0"
+SQUASH_TM_RELEASE=true npm run squash:run -- --squash-mode=publish --squash-project-id=1 \
+  --squash-campaign="Releases/2.4" --squash-iteration="2.4.0"
 
 # Run only a Squash folder's tests, or a QA-curated test suite
 npm run squash:run -- --squash-mode=publish --squash-filter-folder=BjjEire/Features/Gyms …
@@ -173,7 +186,7 @@ existing case (the API cannot); the sync lists misplaced cases for moving in the
 
 | Symptom                                                 | Cause and fix                                                                                          |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `needs SQUASH_TM_TOKEN`                                 | Set the token in `.env*.local` or the CI secret                                                        |
+| `needs SQUASH_TM_TOKEN` or `publish mode needs url`     | Set `SQUASH_TM_URL` and `SQUASH_TM_TOKEN` in the shell, `.env`, or `.env*.local`. A local run reads those keys from `.env.dev.local` without switching the app to dev |
 | `SQUASH_TM_USERNAME: username/password … not supported` | Unset it; use a personal API token                                                                     |
 | 401 from Squash                                         | Token expired, revoked or for another instance. Create one: My account › Personal API tokens           |
 | 500 creating a token (`WeakKeyException` in the log)    | `SQUASH_RESTAPI_JWT_SECRET` under 86 characters; regenerate it (128) and restart Squash                |

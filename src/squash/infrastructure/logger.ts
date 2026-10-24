@@ -13,6 +13,15 @@ export function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/**
+ * API errors already name the status and a body snippet. Anything else keeps
+ * its stack: reporters catch failures, so the stack would otherwise be lost.
+ */
+function errorText(error: unknown): string {
+  if (error instanceof Error && error.name !== 'SquashApiError' && error.stack) return error.stack;
+  return describeError(error);
+}
+
 const ORDER: readonly LogLevel[] = [LogLevel.Debug, LogLevel.Info, LogLevel.Warn, LogLevel.Error];
 const PREFIX = '[squash-tm]';
 
@@ -36,7 +45,7 @@ export class ConsoleLogger implements Logger {
   }
 
   error(message: string, error?: unknown): void {
-    this.log(LogLevel.Error, error === undefined ? message : `${message}: ${describeError(error)}`);
+    this.log(LogLevel.Error, error === undefined ? message : `${message}: ${errorText(error)}`);
   }
 
   private log(level: LogLevel, message: string): void {

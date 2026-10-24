@@ -3,32 +3,25 @@ import { dirname } from 'node:path';
 import type { FullConfig, FullResult, Reporter, Suite } from '@playwright/test/reporter';
 import type { TestCaseDefinition } from '../domain/test-case';
 import { createSelectReporterDependencies, type SelectReporterDependencies } from '../composition';
+import type { SquashAnnotationError } from '../infrastructure/playwright-test-parser';
 
-/**
- * Selection phase of `npm run squash:run` (or `npm run squash:select` in CI).
- * Rides on `playwright test --list`: Playwright discovers the tests, Squash
- * says which of them are in the configured folder or test suite, and the
- * result is written as a Playwright `--test-list` file for the run to use.
- *
- * With no selection configured it writes nothing, so the run is unfiltered. A
- * selection matching no test fails, rather than silently running everything.
- */
+/** With no selection configured, writes nothing. A selection that matches no test fails instead of running everything. */
 export class SquashSelectReporter implements Reporter {
   private definitions: readonly TestCaseDefinition[] = [];
+  private problems: readonly SquashAnnotationError[] = [];
 
   constructor(private readonly deps: SelectReporterDependencies | undefined) {}
 
   onBegin(_config: FullConfig, suite: Suite): void {
     if (!this.deps) return;
-    const { definitions, problems } = this.deps.parser.definitionsOf(suite);
-    for (const problem of problems)
-      this.deps.logger.error('Skipping a test with an invalid Squash annotation', problem);
-    this.definitions = definitions;
+    ({ definitions: this.definitions, problems: this.problems } = this.deps.parser.definitionsOf(suite));
   }
 
   async onEnd(): Promise<{ status?: FullResult['status'] } | undefined> {
     if (!this.deps) return undefined;
     const { selector, selection, logger, outputPath } = this.deps;
+    for (const problem of this.problems) logger.error('Not selecting a test Squash cannot identify', problem);
+    if (this.problems.length > 0) return { status: 'failed' };
     try {
       const selected = await selector.select(this.definitions, selection);
       if (selected.definitions.length === 0) {

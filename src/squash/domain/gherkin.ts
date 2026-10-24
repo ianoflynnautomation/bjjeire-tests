@@ -17,25 +17,10 @@ export type TestCaseFormat = (typeof TestCaseFormat)[keyof typeof TestCaseFormat
 
 const INDENT = '  ';
 const STEP_INDENT = INDENT.repeat(2);
-/** A `test.step` title that is a Gherkin step. */
 const GHERKIN_STEP = /^(Given|When|Then|And|But) \S/;
 const TITLE_SEPARATOR = ' › ';
 
-/**
- * The Gherkin script of an automated test: the top `describe` is the Feature,
- * the rest of the title path is the Scenario, and the test's tags (less its
- * project-specific pin) tag the scenario.
- *
- *   # Automated by Playwright: features/gyms/gyms.ui.acceptance.spec.ts
- *   Feature: Gyms UI acceptance
- *
- *     @smoke @acceptance
- *     Scenario: visitor should see the gym list when opening Gyms
- *       Given …
- *
- * The steps are the test's Given/When/Then `test.step` titles (see
- * `TestCaseDefinition.steps`).
- */
+/** Top `describe` is the Feature; the pin tag is left off the scenario. */
 export function gherkinScript(definition: TestCaseDefinition, steps: readonly string[]): string {
   const [feature, ...scenario] =
     definition.titles.length > 1 ? definition.titles : [definition.file, ...definition.titles];

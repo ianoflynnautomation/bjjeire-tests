@@ -2,6 +2,8 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2022",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "outDir": "dist",
     "declaration": false,
     "sourceMap": true,

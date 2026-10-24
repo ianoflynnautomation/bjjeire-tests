@@ -29,7 +29,6 @@ export type TestFailure = Readonly<{
   stack?: string;
 }>;
 
-/** The final attempt of one test in one Playwright project. */
 export type ProjectRun = Readonly<{
   project: string;
   outcome: TestOutcome;
@@ -38,7 +37,6 @@ export type ProjectRun = Readonly<{
   errors: readonly TestFailure[];
 }>;
 
-/** One test case's result across every project it ran in. */
 export type TestExecutionResult = Readonly<{
   testCase: TestCaseDefinition;
   outcome: TestOutcome;

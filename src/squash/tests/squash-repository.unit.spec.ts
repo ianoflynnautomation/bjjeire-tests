@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
-import type { IterationId, TestCaseId } from '../application/ports';
-import type { SquashClient, SquashRequest } from '../infrastructure/squash-client';
+import type { ExecutionId, IterationId, TestCaseId, TestPlanItemId } from '../application/ports';
+import { ExecutionRole } from '../domain/execution-role';
+import { SquashApiError, type SquashClient, type SquashRequest } from '../infrastructure/squash-client';
 import { HttpExecutionRepository } from '../infrastructure/squash-execution-repository';
 import { HttpFolderTree } from '../infrastructure/squash-folder-tree';
 import { HttpTestCaseRepository } from '../infrastructure/squash-test-case-repository';
 import { TEST_CASE_FIELDS } from '../infrastructure/squash-wire';
-import { stateNamed } from './fakes';
+import { definition, result, RUN, stateNamed } from './fakes';
 
 const PROJECT_ID = 2;
 const PAGE_SIZE = 2;
@@ -24,7 +25,9 @@ class ScriptedClient implements SquashClient {
 
   send(request: SquashRequest): Promise<unknown> {
     this.requests.push(request);
-    return Promise.resolve(this.bodies.shift());
+    const next = this.bodies.shift();
+    if (next instanceof Error) return Promise.reject(next);
+    return Promise.resolve(next);
   }
 }
 
@@ -53,6 +56,11 @@ function wireTestCase(
     // Squash escapes a slash inside a name.
     path: `/PW Probe/Acceptance/Gyms/${name.replaceAll('/', '\\/')}`,
   };
+}
+
+function withPath(body: unknown, path: string): unknown {
+  if (typeof body !== 'object' || body === null) throw new Error('expected a test case body');
+  return { ...(body as Record<string, unknown>), path };
 }
 
 function testCasesOver(client: SquashClient): HttpTestCaseRepository {
@@ -86,6 +94,18 @@ test.describe('Squash repositories', { tag: ['@unit'] }, () => {
     ]);
   });
 
+  test('unescapes a slash inside a folder name', async () => {
+    const body = wireTestCase(1, 'name', null, 'test-case');
+    const client = new ScriptedClient([
+      testCasePage(0, 1, [withPath(body, '/PW Probe/Acceptance/WCAG 2.1 A\\/AA/name')]),
+    ]);
+
+    const [testCase] = await testCasesOver(client).listTestCases();
+
+    expect(testCase?.folderPath).toBe('Acceptance/WCAG 2.1 A/AA');
+    expect(testCase?.state.name).toBe('name');
+  });
+
   test('treats an empty project page (no _embedded) as no test cases', async () => {
     const client = new ScriptedClient([{ page: { number: 0, totalPages: 0 } }]);
 
@@ -109,6 +129,95 @@ test.describe('Squash repositories', { tag: ['@unit'] }, () => {
 
     expect([...plan]).toEqual([[1, PLANNED_ITEM_ID]]);
     expect(client.requests[0]?.path).toBe(`/iterations/${ITERATION_ID}/test-plan`);
+  });
+
+  test('names the READY execution when setting its status fails', async () => {
+    const executionId = 42;
+    const failure = new SquashApiError({ method: 'PATCH', path: `/executions/${executionId}` }, 500, 'boom', undefined);
+    const client = new ScriptedClient([{ id: executionId }, failure]);
+
+    const error: unknown = await executionsOver(client)
+      .recordExecution(PLANNED_ITEM_ID as TestPlanItemId, result(definition('search')), RUN, ExecutionRole.Release)
+      .then(
+        () => undefined,
+        (caught: unknown) => caught,
+      );
+
+    expect(error).toBeInstanceOf(Error);
+    if (!(error instanceof Error)) return;
+    expect(error.message).toContain(`Execution ${executionId} was created and left READY`);
+    expect(error.message).toContain('500');
+    expect(error.message).toContain('boom');
+    expect(error.cause).toBe(failure);
+    expect(client.requests.map(request => request.method)).toEqual(['POST', 'PATCH']);
+    expect(client.requests[1]?.body).toMatchObject({ comment: expect.stringContaining('Release execution') });
+  });
+
+  test('patches the test case execution without creating a row', async () => {
+    const executionId = 42;
+    const client = new ScriptedClient([{}]);
+
+    await executionsOver(client).updateExecution(executionId as ExecutionId, result(definition('search')), RUN);
+
+    expect(client.requests).toEqual([
+      expect.objectContaining({
+        method: 'PATCH',
+        path: `/executions/${executionId}`,
+        body: expect.objectContaining({ comment: expect.stringContaining('Test case execution') }),
+      }),
+    ]);
+  });
+
+  test('finds the newest test case execution and stops before older rows', async () => {
+    const olderId = 7;
+    const newerId = 8;
+    const client = new ScriptedClient([
+      {
+        _embedded: {
+          executions: [
+            { id: newerId, execution_order: 2 },
+            { id: olderId, execution_order: 0 },
+          ],
+        },
+        page: { number: 0, totalPages: 1 },
+      },
+      { comment: '<p><strong>Test case execution</strong></p>' },
+    ]);
+
+    const found = await executionsOver(client).findTestCaseExecution(PLANNED_ITEM_ID as TestPlanItemId);
+
+    expect(found).toEqual({ id: newerId, current: true });
+    expect(client.requests.map(request => request.path)).toEqual([
+      `/iteration-test-plan-items/${PLANNED_ITEM_ID}/executions`,
+      `/executions/${newerId}`,
+    ]);
+  });
+
+  test('reports a test case execution as not current when a release execution is newer', async () => {
+    const testCaseId = 7;
+    const releaseId = 8;
+    const client = new ScriptedClient([
+      {
+        _embedded: {
+          executions: [
+            { id: testCaseId, execution_order: 0 },
+            { id: releaseId, execution_order: 1 },
+          ],
+        },
+        page: { number: 0, totalPages: 1 },
+      },
+      { comment: '<p><strong>Release execution</strong></p>' },
+      { comment: '<p>Playwright run</p>' },
+    ]);
+
+    const found = await executionsOver(client).findTestCaseExecution(PLANNED_ITEM_ID as TestPlanItemId);
+
+    expect(found).toEqual({ id: testCaseId, current: false });
+    expect(client.requests.map(request => request.path)).toEqual([
+      `/iteration-test-plan-items/${PLANNED_ITEM_ID}/executions`,
+      `/executions/${releaseId}`,
+      `/executions/${testCaseId}`,
+    ]);
   });
 
   test('fails loudly when Squash answers with an unexpected shape', async () => {

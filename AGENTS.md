@@ -27,7 +27,7 @@ npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
 npm run test:squash       # Unit tests for the Squash TM integration (no browser)
 npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
-npm run squash:run        # Run with --squash-* flags: select by Squash folder/suite, publish to a campaign iteration
+npm run squash:run        # Publish with --squash-* flags (a release is SQUASH_TM_RELEASE or --squash-release; see docs/squash-tm.md)
 npm run squash:prune      # Preview (or --yes: delete) sync-created Squash cases in a folder, e.g. after renames
 ```
 

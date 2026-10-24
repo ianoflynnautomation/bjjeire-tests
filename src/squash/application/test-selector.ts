@@ -1,18 +1,15 @@
 import type { TestCaseDefinition } from '../domain/test-case';
 import type { ExecutionRepository, Logger, SquashTestCase, TestCaseRepository, TestSelection } from './ports';
+import { duplicateReferenceMessage, groupCasesByKey } from './test-case-identity';
 
 export type Selected = Readonly<{
   definitions: readonly TestCaseDefinition[];
-  /** For logs: `folder "Acceptance/Gyms"`. */
   label: string;
 }>;
 
 /**
- * Picks the tests to run from where their Squash test cases live: a folder
- * (as Squash holds it now, so moves made in the UI count) or a test suite.
- * A test matches its case by its `@Squash_<id>` pin, or else by the case's
- * automated test reference. Cases in the selection that no test covers are
- * reported, since they will not run.
+ * Matches tests to cases by pin, then by automated reference. The folder is
+ * where Squash has the case now, so a move in the UI counts.
  */
 export class TestSelector {
   constructor(
@@ -24,6 +21,7 @@ export class TestSelector {
   async select(definitions: readonly TestCaseDefinition[], selection: TestSelection): Promise<Selected> {
     const all = await this.testCases.listTestCases();
     const { cases, label } = await this.casesIn(all, selection);
+    this.assertUniqueReferences(cases);
     const idByKey = new Map(
       cases.flatMap(testCase => (testCase.key === undefined ? [] : [[testCase.key, testCase.id]])),
     );
@@ -43,6 +41,14 @@ export class TestSelector {
     }
     this.logger.info(`Selected ${selected.length} tests from ${label}.`);
     return { definitions: selected, label };
+  }
+
+  /** Last-write-wins would hide one of the cases, so the selection stops instead. */
+  private assertUniqueReferences(cases: readonly SquashTestCase[]): void {
+    const duplicates = [...groupCasesByKey(cases).values()].filter(group => group.length > 1);
+    if (duplicates.length === 0) return;
+    const listed = duplicates.map(group => duplicateReferenceMessage(group)).join('; ');
+    throw new Error(`Not selecting a test Squash cannot identify: ${listed}`);
   }
 
   private async casesIn(

@@ -16,6 +16,7 @@ import type {
   TestSuite,
   TestSuiteId,
 } from '../application/ports';
+import { ExecutionRole } from '../domain/execution-role';
 import { TestOutcome, type ProjectRun, type TestExecutionResult } from '../domain/execution-result';
 import { automationReference, type TestCaseDefinition } from '../domain/test-case';
 
@@ -65,7 +66,12 @@ export class RecordingLogger implements Logger {
   }
 }
 
-type Execution = Readonly<{ id: ExecutionId; itemId: TestPlanItemId; outcome: TestOutcome }>;
+type Execution = Readonly<{
+  id: ExecutionId;
+  itemId: TestPlanItemId;
+  outcome: TestOutcome;
+  role: ExecutionRole;
+}>;
 
 /** One Squash project in memory, behind both repository ports. */
 export class InMemorySquash implements TestCaseRepository, ExecutionRepository {
@@ -178,9 +184,30 @@ export class InMemorySquash implements TestCaseRepository, ExecutionRepository {
     return id;
   }
 
-  recordExecution(itemId: TestPlanItemId, executionResult: TestExecutionResult): Promise<ExecutionId> {
+  findTestCaseExecution(itemId: TestPlanItemId): Promise<{ id: ExecutionId; current: boolean } | undefined> {
+    const onItem = this.executions.filter(execution => execution.itemId === itemId);
+    const latest = onItem.at(-1);
+    const testCaseExecution = onItem.filter(execution => execution.role === ExecutionRole.TestCase).at(-1);
+    if (testCaseExecution === undefined || latest === undefined) return Promise.resolve(undefined);
+    return Promise.resolve({ id: testCaseExecution.id, current: testCaseExecution.id === latest.id });
+  }
+
+  updateExecution(executionId: ExecutionId, executionResult: TestExecutionResult, _run: RunInfo): Promise<void> {
+    const index = this.executions.findIndex(execution => execution.id === executionId);
+    const current = this.executions[index];
+    if (current === undefined) return Promise.reject(new Error(`no execution ${executionId}`));
+    this.executions[index] = { ...current, outcome: executionResult.outcome };
+    return Promise.resolve();
+  }
+
+  recordExecution(
+    itemId: TestPlanItemId,
+    executionResult: TestExecutionResult,
+    _run: RunInfo,
+    role: ExecutionRole,
+  ): Promise<ExecutionId> {
     const id = this.sequence++ as ExecutionId;
-    this.executions.push({ id, itemId, outcome: executionResult.outcome });
+    this.executions.push({ id, itemId, outcome: executionResult.outcome, role });
     return Promise.resolve(id);
   }
 }

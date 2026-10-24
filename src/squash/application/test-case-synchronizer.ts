@@ -1,10 +1,12 @@
 import { folderFor, type FolderPlacement } from '../domain/folder-placement';
 import { TestCaseFormat } from '../domain/gherkin';
 import { isSyncOwned, labelPrefix, needsLabel, ReferenceLabeller } from '../domain/reference-label';
+import { duplicateIdentityMessage, groupDefinitions } from '../domain/test-identity';
 import { pinTag, type TestCaseDefinition } from '../domain/test-case';
 import { forEachConcurrent } from './concurrency';
 import type { FolderPathResolver } from './folder-path-resolver';
 import type { Logger, PinSuggestion, SquashTestCase, SyncSummary, TestCaseId, TestCaseRepository } from './ports';
+import { duplicateReferenceMessage, groupCasesByKey } from './test-case-identity';
 
 const CONCURRENCY = 4;
 
@@ -16,15 +18,7 @@ type SyncStep =
   | Readonly<{ kind: 'update'; definition: TestCaseDefinition; current: SquashTestCase; label: string | undefined }>
   | Readonly<{ kind: 'invalid'; definition: TestCaseDefinition; error: unknown }>;
 
-/**
- * Makes Squash TM hold one test case per definition. A pinned test
- * (`@Squash_<id>`) maps to that test case; an unpinned one is matched by its
- * automated test reference, and created when missing, in the folder the
- * placement rules give it, with a readable reference such as `EVENTS-012`.
- * Existing cases are updated only where a managed field differs. Nothing is
- * ever deleted or moved, so execution history is never lost. One failing case
- * is logged and counted, and the rest still sync.
- */
+/** Never deletes or moves a case. A shared identity is not written: the sync fails instead of keeping one of them. */
 export class TestCaseSynchronizer {
   constructor(
     private readonly repository: TestCaseRepository,
@@ -34,7 +28,9 @@ export class TestCaseSynchronizer {
   ) {}
 
   async sync(definitions: readonly TestCaseDefinition[]): Promise<SyncSummary> {
-    const steps = this.plan(definitions, await this.repository.listTestCases());
+    const grouped = groupDefinitions(definitions);
+    const existing = await this.repository.listTestCases();
+    const steps = this.plan(grouped.definitions, existing);
     const ids = new Map<string, TestCaseId>();
     const pinSuggestions: PinSuggestion[] = [];
     const counts = { created: 0, updated: 0, unchanged: 0, failed: 0 };
@@ -65,6 +61,8 @@ export class TestCaseSynchronizer {
       }
     });
 
+    counts.failed += this.reportCollisions(grouped.collisions);
+    counts.failed += this.reportDuplicateReferences(existing, grouped.definitions);
     this.logger.info(
       `Test cases: ${counts.created} created, ${counts.updated} updated, ` +
         `${counts.unchanged} unchanged, ${counts.failed} failed.`,
@@ -81,28 +79,81 @@ export class TestCaseSynchronizer {
    */
   private plan(definitions: readonly TestCaseDefinition[], existing: readonly SquashTestCase[]): SyncStep[] {
     const byId = new Map<number, SquashTestCase>(existing.map(testCase => [testCase.id, testCase]));
-    const byKey = new Map(existing.flatMap(testCase => (testCase.key ? [[testCase.key, testCase] as const] : [])));
+    const byKey = groupCasesByKey(existing);
     const labeller = new ReferenceLabeller(existing.map(testCase => testCase.state.reference));
-    const nextLabel = (definition: TestCaseDefinition, folderPath: string | undefined): string =>
-      labeller.next(labelPrefix(folderFor(definition, this.placement) ?? folderPath));
+    return [...definitions].sort(byLocation).map(definition => this.stepFor(definition, byId, byKey, labeller));
+  }
 
-    return [...definitions].sort(byLocation).map((definition): SyncStep => {
-      const { pinnedId } = definition;
-      if (pinnedId !== undefined && !byId.has(pinnedId)) {
+  private stepFor(
+    definition: TestCaseDefinition,
+    byId: ReadonlyMap<number, SquashTestCase>,
+    byKey: ReadonlyMap<string, readonly SquashTestCase[]>,
+    labeller: ReferenceLabeller,
+  ): SyncStep {
+    const { pinnedId } = definition;
+    if (pinnedId !== undefined) {
+      const current = byId.get(pinnedId);
+      if (!current) {
         const error = new Error(`${pinTag(pinnedId)} does not match a test case in this Squash project`);
         return { kind: 'invalid', definition, error };
       }
-      const current = pinnedId === undefined ? byKey.get(definition.key) : byId.get(pinnedId);
-      if (!current) return { kind: 'create', definition, label: nextLabel(definition, undefined) };
-      const { description, reference } = current.state;
-      const relabel = isSyncOwned(description) && needsLabel(reference);
-      return {
-        kind: 'update',
-        definition,
-        current,
-        label: relabel ? nextLabel(definition, current.folderPath) : undefined,
-      };
-    });
+      return this.updateOf(definition, current, labeller);
+    }
+    const matches = byKey.get(definition.key) ?? [];
+    if (matches.length > 1)
+      return { kind: 'invalid', definition, error: new Error(duplicateReferenceMessage(matches)) };
+    const current = matches[0];
+    if (!current) return { kind: 'create', definition, label: this.labelFor(definition, undefined, labeller) };
+    return this.updateOf(definition, current, labeller);
+  }
+
+  private updateOf(definition: TestCaseDefinition, current: SquashTestCase, labeller: ReferenceLabeller): SyncStep {
+    const { description, reference } = current.state;
+    const relabel = isSyncOwned(description) && needsLabel(reference);
+    return {
+      kind: 'update',
+      definition,
+      current,
+      label: relabel ? this.labelFor(definition, current.folderPath, labeller) : undefined,
+    };
+  }
+
+  private labelFor(
+    definition: TestCaseDefinition,
+    folderPath: string | undefined,
+    labeller: ReferenceLabeller,
+  ): string {
+    return labeller.next(labelPrefix(folderFor(definition, this.placement) ?? folderPath));
+  }
+
+  /** Test-side collisions were removed before planning, so each group fails the sync once. */
+  private reportCollisions(collisions: readonly (readonly TestCaseDefinition[])[]): number {
+    for (const collision of collisions) {
+      this.logger.error('Not syncing a test Squash cannot identify', new Error(duplicateIdentityMessage(collision)));
+    }
+    return collisions.length;
+  }
+
+  /**
+   * A duplicate automated reference with no unpinned test aimed at it still
+   * fails the sync. A pin may update its own id, but the duplicate stays a failure.
+   */
+  private reportDuplicateReferences(
+    existing: readonly SquashTestCase[],
+    definitions: readonly TestCaseDefinition[],
+  ): number {
+    const targeted = new Set(
+      definitions.filter(definition => definition.pinnedId === undefined).map(definition => definition.key),
+    );
+    let failed = 0;
+    for (const cases of groupCasesByKey(existing).values()) {
+      if (cases.length < 2) continue;
+      const key = cases[0]?.key;
+      if (key !== undefined && targeted.has(key)) continue;
+      failed += 1;
+      this.logger.error('Not syncing a test Squash cannot identify', new Error(duplicateReferenceMessage(cases)));
+    }
+    return failed;
   }
 
   private async apply(step: Exclude<SyncStep, { kind: 'invalid' }>): Promise<SyncAction> {
@@ -129,14 +180,14 @@ export class TestCaseSynchronizer {
     this.logger.warn(
       `${cases.length} synced test cases are not Gherkin, and Squash cannot change a case's format. ` +
         `To recreate them as Gherkin (their execution history goes with them): ` +
-        `npm run squash:prune -- ${folders.map(folder => `--folder "${folder}"`).join(' ')} --yes, then sync again.`,
+        `npm run squash:prune -- ${folders.map(folder => `--folder "${folder}"`).join(' ')}. ` +
+        'Re-run that command with --yes, then sync again.',
     );
     for (const testCase of cases) {
       this.logger.debug(`  ${testCase.state.format}: ${testCase.id} ${testCase.state.name}`);
     }
   }
 
-  /** Squash's REST API cannot move a test case, so a rule change only places new cases. */
   private reportMisplaced(misplaced: readonly string[]): void {
     if (misplaced.length === 0) return;
     this.logger.warn(

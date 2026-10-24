@@ -15,8 +15,6 @@ import { TestCaseStatus, Weight } from '../domain/test-case';
  * contract is in one place; the payload builder's types are inferred from them.
  */
 
-// ---- Responses -------------------------------------------------------------
-
 const pageSchema = z.object({ number: z.number(), totalPages: z.number() });
 
 const infoListItemSchema = z.object({ code: z.string() });
@@ -89,6 +87,20 @@ export const testSuiteSchema = z.object({
   parent: z.object({ _type: z.literal('iteration'), id: z.number() }),
 });
 
+export const executionPageSchema = z.object({
+  _embedded: z
+    .object({
+      executions: z.array(z.object({ id: z.number(), execution_order: z.number() })),
+    })
+    .optional(),
+  page: pageSchema,
+});
+
+/** `GET /executions/{id}` returns the comment the execution list leaves out. */
+export const executionCommentSchema = z.object({
+  comment: z.string().nullish(),
+});
+
 export const testPlanPageSchema = z.object({
   _embedded: z
     .object({
@@ -104,8 +116,6 @@ export const testPlanPageSchema = z.object({
 });
 
 export const createdSchema = z.object({ id: z.number() });
-
-// ---- Requests --------------------------------------------------------------
 
 const SquashExecutionStatus = {
   Success: 'SUCCESS',
@@ -123,7 +133,6 @@ export const STATUS_BY_OUTCOME = {
 
 const testCaseParentSchema = z.object({ _type: z.enum(['project', 'test-case-folder']), id: z.number() });
 
-/** Every field the sync can manage; a PATCH carries only the ones that changed. */
 const managedFieldsSchema = z.object({
   name: z.string(),
   reference: z.string(),
@@ -134,7 +143,6 @@ const managedFieldsSchema = z.object({
   type: infoListItemSchema,
   automated_test_technology: z.string(),
   automated_test_reference: z.string(),
-  /** Gherkin cases only. */
   script: z.string(),
 });
 
@@ -191,8 +199,6 @@ export type CreateFolderBody = z.infer<typeof createFolderBodySchema>;
 export type CreateCampaignBody = z.infer<typeof createCampaignBodySchema>;
 export type AddToTestPlanBody = z.infer<typeof addToTestPlanBodySchema>;
 export type UpdateExecutionBody = z.infer<typeof updateExecutionBodySchema>;
-
-// ---- Parsing ---------------------------------------------------------------
 
 class SquashContractError extends Error {
   constructor(what: string, detail: string) {

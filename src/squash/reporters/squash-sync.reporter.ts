@@ -4,15 +4,7 @@ import type { TestCaseDefinition } from '../domain/test-case';
 import { createSyncReporterDependencies, type SyncReporterDependencies } from '../composition';
 import type { SquashAnnotationError } from '../infrastructure/playwright-test-parser';
 
-/**
- * Test case synchronizer, run as `npm run squash:sync`. It rides on
- * `playwright test --list`, so Playwright's own loader discovers the tests —
- * titles, tags, annotations and grep filters all resolve exactly as they do
- * in a real run, and nothing is executed.
- *
- * In publish mode it ends by suggesting the `@Squash_<id>` tag for every test
- * that is not pinned yet. An invalid `squash:*` annotation fails the sync.
- */
+/** Runs on `playwright test --list`, so nothing is executed. An annotation problem or a shared identity fails the sync. */
 export class SquashSyncReporter implements Reporter {
   private definitions: readonly TestCaseDefinition[] = [];
   private problems: readonly SquashAnnotationError[] = [];
@@ -25,7 +17,7 @@ export class SquashSyncReporter implements Reporter {
 
   async onEnd(): Promise<{ status?: FullResult['status'] } | undefined> {
     const { strategy, logger } = this.deps;
-    for (const problem of this.problems) logger.error('Skipping a test with an invalid Squash annotation', problem);
+    for (const problem of this.problems) logger.error('Not syncing a test Squash cannot identify', problem);
     try {
       logger.info(`Syncing ${this.definitions.length} test cases (${strategy.name}).`);
       const summary = await strategy.syncTestCases(this.definitions);

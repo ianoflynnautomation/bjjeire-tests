@@ -110,6 +110,34 @@ test.describe('TestSelector', { tag: ['@unit'] }, () => {
     expect(selected.definitions).toEqual([inSuite]);
   });
 
+  test('refuses a selection whose cases share an automated reference', async () => {
+    const squash = new InMemorySquash();
+    const search = definition('search');
+    const left = squash.seedTestCase(search.key, 'left', 'Acceptance/Gyms');
+    const right = squash.seedTestCase(search.key, 'right', 'Acceptance/Gyms');
+
+    const selecting = new TestSelector(squash, squash, new RecordingLogger()).select([search], {
+      folder: 'Acceptance/Gyms',
+    });
+
+    await expect(selecting).rejects.toThrow('Not selecting a test Squash cannot identify');
+    await expect(selecting).rejects.toThrow(`${left} "left"`);
+    await expect(selecting).rejects.toThrow(`${right} "right"`);
+  });
+
+  test('selects a case when the other copy of its reference sits outside the folder', async () => {
+    const squash = new InMemorySquash();
+    const search = definition('search');
+    squash.seedTestCase(search.key, 'inside', 'Acceptance/Gyms');
+    squash.seedTestCase(search.key, 'outside', 'Archive');
+
+    const selected = await new TestSelector(squash, squash, new RecordingLogger()).select([search], {
+      folder: 'Acceptance/Gyms',
+    });
+
+    expect(selected.definitions).toEqual([search]);
+  });
+
   test('writes the selection in the format Playwright --test-list reads', () => {
     expect(testListOf([definition('search finds a gym')], 'folder "Acceptance/Gyms"')).toBe(
       '# Selected from Squash TM folder "Acceptance/Gyms"\n' +

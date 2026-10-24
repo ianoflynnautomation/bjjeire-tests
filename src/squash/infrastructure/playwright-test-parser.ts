@@ -11,22 +11,9 @@ import {
   type TestCaseFields,
 } from '../domain/test-case';
 import { isGherkinStep } from '../domain/gherkin';
+import { duplicateIdentityMessage, groupDefinitions } from '../domain/test-identity';
 
-/**
- * Per-test Squash fields, as annotations. Values are case- and
- * separator-insensitive (`very high` = `VERY_HIGH`); nature and type accept the
- * code with or without its `NAT_` / `TYP_` prefix:
- *
- *   test('…', {
- *     tag: ['@acceptance', '@squash', '@Squash_151'],
- *     annotation: [
- *       { type: 'squash:weight', description: 'high' },
- *       { type: 'squash:status', description: 'approved' },
- *       { type: 'squash:nature', description: 'security testing' },
- *       { type: 'squash:type', description: 'regression testing' },
- *     ],
- *   }, …)
- */
+/** Values are case- and separator-insensitive. Nature and type accept a code with or without its `NAT_` / `TYP_` prefix. */
 const FIELD_ANNOTATION_PREFIX = 'squash:';
 const FIELD_NAMES = ['weight', 'status', 'nature', 'type'] as const satisfies readonly (keyof TestCaseFields)[];
 type FieldName = (typeof FIELD_NAMES)[number];
@@ -35,7 +22,6 @@ const UNKNOWN_ERROR = 'Unknown error';
 
 type TestStatus = TestResult['status'];
 
-/** The parts of a Playwright test that decide its Squash identity. */
 export type TestIdentity = Readonly<{
   /** `TestCase.titlePath()`: ['', project, file, ...describe titles, test title]. */
   titlePath: readonly string[];
@@ -44,12 +30,9 @@ export type TestIdentity = Readonly<{
   tags: readonly string[];
 }>;
 
-/** Maps Playwright's reporter model onto the domain. */
 export class PlaywrightTestParser {
-  /** @param tag Only tests carrying this tag are Squash test cases (see `inScope`). */
   constructor(private readonly tag: string) {}
 
-  /** Setup/teardown projects and untagged helpers stay out of Squash. */
   inScope(tags: readonly string[]): boolean {
     return tags.includes(this.tag);
   }
@@ -65,21 +48,25 @@ export class PlaywrightTestParser {
     return result === undefined ? definition : { ...definition, steps: gherkinStepsOf(result) };
   }
 
-  /** One definition per in-scope test, however many projects run it, plus every annotation problem found. */
+  /** Two different tests that share an identity are reported and left out. */
   definitionsOf(suite: Suite): { definitions: TestCaseDefinition[]; problems: SquashAnnotationError[] } {
-    const byKey = new Map<string, TestCaseDefinition>();
+    const parsed: TestCaseDefinition[] = [];
     const problems = new Map<string, SquashAnnotationError>();
     for (const test of suite.allTests()) {
       if (!this.inScope(test.tags)) continue;
       try {
-        const definition = this.toDefinition(test);
-        byKey.set(definition.key, definition);
+        parsed.push(this.toDefinition(test));
       } catch (error) {
         if (!(error instanceof SquashAnnotationError)) throw error;
         problems.set(error.message, error);
       }
     }
-    const definitions = [...byKey.values()].sort((x, y) => x.name.localeCompare(y.name));
+    const grouped = groupDefinitions(parsed);
+    for (const collision of grouped.collisions) {
+      const message = duplicateIdentityMessage(collision);
+      problems.set(message, new SquashAnnotationError(message, ''));
+    }
+    const definitions = [...grouped.definitions].sort((x, y) => x.name.localeCompare(y.name));
     return { definitions, problems: [...problems.values()] };
   }
 
@@ -99,8 +86,9 @@ export class PlaywrightTestParser {
 
 /** A `@Squash_<id>` tag or `squash:*` annotation the sync cannot use. Names the spec location. */
 export class SquashAnnotationError extends Error {
+  /** An empty `problem` means `location` is already the whole message. */
   constructor(location: string, problem: string) {
-    super(`${location}: ${problem}`);
+    super(problem === '' ? location : `${location}: ${problem}`);
     this.name = 'SquashAnnotationError';
   }
 }

@@ -92,7 +92,6 @@ export const squashSettingsSchema = z
     timeoutMs: positiveInt,
     maxAttempts: positiveInt,
 
-    // ---- Synchronisation: where new test cases go ----
     /** Folder for new test cases no rule matches; the project root when unset. */
     testCaseFolder: folderPath,
     folderRules: z.array(folderRuleSchema),
@@ -108,17 +107,20 @@ export const squashSettingsSchema = z
         message: 'project keys are Squash project ids, such as "12"',
       }),
 
-    // ---- Publishing: which run instance receives the results ----
     /** Campaign path, folders included: `Releases/2.4/Regression`. Created when missing. */
     campaign: folderPath,
     campaignId: positiveInt,
     /** Iteration name inside the campaign. Created when missing; a new one per run when unset. */
     iteration: z.string().trim().min(1),
     iterationId: positiveInt,
+    /**
+     * Creates a release execution as well as updating the test case execution.
+     * Ordinary publishes update the test case execution only.
+     */
+    release: booleanish,
     /** Run only this Squash test suite's test cases, and publish into its iteration. */
     testSuiteId: positiveInt,
 
-    // ---- Selection: which tests run ----
     /** Run only tests whose Squash test case sits in this folder (or below it). */
     filterFolder: folderPath,
   })

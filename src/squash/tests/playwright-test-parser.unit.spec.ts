@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
+import type { Suite, TestCase } from '@playwright/test/reporter';
 import { squash } from '../annotations';
 import { TestOutcome } from '../domain/execution-result';
+import { groupDefinitions } from '../domain/test-identity';
 import {
   definitionOf,
   outcomeOf,
@@ -115,6 +117,76 @@ test.describe('definitionOf', { tag: ['@unit'] }, () => {
       expect(() => definitionOf(identity({ annotations: [annotation] }))).toThrow(problem);
     });
   }
+});
+
+function listedTest(
+  name: string,
+  line: number,
+  overrides: { file?: string; project?: string; tags?: readonly string[] } = {},
+): TestCase {
+  const file = overrides.file ?? FILE;
+  return {
+    tags: overrides.tags ?? ['@acceptance'],
+    annotations: [],
+    titlePath: () => ['', overrides.project ?? 'chromium-desktop', file, 'Gyms UI acceptance', name],
+    location: { file, line, column: 1 },
+  } as unknown as TestCase;
+}
+
+function suiteOf(tests: readonly TestCase[]): Suite {
+  return { allTests: () => [...tests] } as unknown as Suite;
+}
+
+test.describe('definitionsOf', { tag: ['@unit'] }, () => {
+  const parser = new PlaywrightTestParser('@acceptance');
+
+  test('keeps one definition when the same test is listed in two projects', () => {
+    const { definitions, problems } = parser.definitionsOf(
+      suiteOf([listedTest('search', LINE), listedTest('search', LINE, { project: 'firefox-desktop' })]),
+    );
+
+    expect(problems).toEqual([]);
+    expect(definitions).toHaveLength(1);
+  });
+
+  test('drops two tests that share a title path and names both locations', () => {
+    const firstLine = 10;
+    const secondLine = 30;
+    const { definitions, problems } = parser.definitionsOf(
+      suiteOf([listedTest('search', firstLine), listedTest('search', secondLine), listedTest('other', LINE)]),
+    );
+
+    expect(definitions.map(definition => definition.name)).toEqual(['Gyms UI acceptance › other']);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.message).toContain(`${FILE}:${firstLine} ("Gyms UI acceptance › search")`);
+    expect(problems[0]?.message).toContain(`${FILE}:${secondLine} ("Gyms UI acceptance › search")`);
+  });
+
+  test('drops two tests pinned to the same Squash case and names both locations', () => {
+    const otherFile = 'features/events/events.ui.acceptance.spec.ts';
+    const firstLine = 4;
+    const secondLine = 8;
+    const { definitions, problems } = parser.definitionsOf(
+      suiteOf([
+        listedTest('one', firstLine, { tags: ['@acceptance', '@Squash_10'] }),
+        listedTest('two', secondLine, { file: otherFile, tags: ['@acceptance', '@Squash_10'] }),
+      ]),
+    );
+
+    expect(definitions).toEqual([]);
+    expect(problems[0]?.message).toContain(`${FILE}:${firstLine}`);
+    expect(problems[0]?.message).toContain(`${otherFile}:${secondLine}`);
+    expect(problems[0]?.message).toContain('@Squash_10');
+  });
+
+  test('treats the same location with different steps as one test', () => {
+    const listed = definitionOf(identity());
+    const withSteps = { ...listed, steps: ['Given a gym'] };
+    const grouped = groupDefinitions([listed, withSteps]);
+
+    expect(grouped.collisions).toEqual([]);
+    expect(grouped.definitions).toEqual([withSteps]);
+  });
 });
 
 test.describe('PlaywrightTestParser scope', { tag: ['@unit'] }, () => {

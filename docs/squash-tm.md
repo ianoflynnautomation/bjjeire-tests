@@ -14,38 +14,82 @@ and [ADR-0002](decisions/0002-squash-tm-execution-engine.md).
 
 ## Commands
 
+`npm run squash:run` runs the suite and publishes. Each `--squash-*` flag sets one
+key for that run. The same key can live in the shell or in `.env` / `.env*.local`
+as `SQUASH_TM_` plus the name in upper snake case (`release` → `SQUASH_TM_RELEASE`).
+A flag overrides the env file, which overrides `squash-config.json`. A blank line
+in an env file stays unset. Booleans accept `true`, `false`, `1`, `0`, `yes`, and `no`.
+
+`SQUASH_TM_URL`, `SQUASH_TM_TOKEN`, and `SQUASH_TM_PROJECT_ID` are read from the
+shell or from those env files. Only `SQUASH_TM_*` keys are copied, so a token in
+`.env.dev.local` does not change `APP_ENV` or `BASE_URL`. The token has no flag.
+Anything that is not a `--squash-*` flag is passed to `playwright test`
+(`--project=chromium-desktop`, `-g @smoke`). If you pass `--reporter`, the Squash
+reporter is appended to your list; a bare `npx playwright test --reporter=…`
+replaces the configured reporters and drops it.
+
 ```sh
-# Run tests aimed at a campaign iteration, optionally only a Squash folder's tests.
-# The API token comes from the environment; everything else can be a --squash-* flag.
-export SQUASH_TM_URL=http://localhost:8080/squash SQUASH_TM_TOKEN=<personal API token>
+# Nightly: update each test case's execution in one reused iteration.
 npm run squash:run -- --squash-mode=publish --squash-project-id=1 \
-  --squash-campaign="Releases/2.4" --squash-iteration="Nightly #128" \
-  --squash-filter-folder=BjjEire/Features/Gyms --project=chromium-desktop
+  --squash-campaign="Releases/2.4" --squash-iteration="Nightly" \
+  --project=chromium-desktop
 
-# Run a QA-curated Squash test suite: it picks the tests and receives the results
-npm run squash:run -- --squash-mode=publish --squash-project-id=1 --squash-test-suite-id=3
+# Release, for this run only. Also updates the test case execution, then creates
+# one Squash execution per test. Name the iteration after the version.
+npm run squash:run -- --squash-mode=publish --squash-release=true \
+  --squash-project-id=1 --squash-campaign="Releases/2.4" --squash-iteration="2.4.0"
 
-# Sync test cases only (create missing, update changed; never deletes or moves)
+# The same release from the environment. In .env*.local it applies to every
+# publish until the line is cleared; the shell is one run. A flag still wins:
+# --squash-release=false
+SQUASH_TM_RELEASE=true npm run squash:run -- --squash-mode=publish \
+  --squash-project-id=1 --squash-campaign="Releases/2.4" --squash-iteration="2.4.0"
+
+# An existing campaign, or one exact iteration. An iteration id stands alone.
+npm run squash:run -- --squash-mode=publish --squash-campaign-id=7 --squash-iteration="Nightly"
+npm run squash:run -- --squash-mode=publish --squash-iteration-id=15
+
+# Only the tests whose Squash cases sit in a folder (and below it).
+npm run squash:run -- --squash-mode=publish --squash-project-id=1 \
+  --squash-campaign="Releases/2.4" --squash-iteration="Nightly" \
+  --squash-filter-folder=BjjEire/Features/Gyms
+
+# A QA test suite picks the tests and receives the results. No campaign, iteration, or folder with it.
+npm run squash:run -- --squash-mode=publish --squash-test-suite-id=3
+
+# Preview the publish, or fail the Playwright run when a Squash write fails.
+npm run squash:run -- --squash-mode=dry-run --squash-campaign="Releases/2.4" --squash-iteration="Nightly"
+npm run squash:run -- --squash-mode=publish --squash-fail-on-error=true \
+  --squash-project-id=1 --squash-campaign="Releases/2.4" --squash-iteration="Nightly"
+
+# Which source set each key: --squash-log-level=debug
+# Another config file: --squash-config=teams/gyms.json
+
+# Sync test cases only (create missing, update changed; never deletes or moves).
 SQUASH_TM_MODE=publish SQUASH_TM_PROJECT_ID=1 npm run squash:sync
 
-# Retire sync-created cases in a folder (after renames or a testCaseFolder change).
-# Preview by default; --yes deletes. Hand-written cases are never touched.
+# Retire sync-created cases in a folder. Preview first; --yes deletes. Hand-written cases stay.
 npm run squash:prune -- --folder Playwright --folder /
 npm run squash:prune -- --folder Playwright --folder / --yes
 
-# CI pieces: select once, run shards with the list, publish from the merge
-npm run squash:select            # writes playwright/.cache/squash-test-list.txt
+# CI: select once, shard the list, publish once from the merged report.
+npm run squash:select
 npx playwright test --test-list=playwright/.cache/squash-test-list.txt --shard=1/4
 SQUASH_TM_MODE=publish npx playwright merge-reports \
   --reporter=html,./src/squash/reporters/squash-results.reporter.ts all-blob-reports
 
-npm run test:squash              # unit tests for the integration (no browser, no app)
+npm run test:squash
 ```
 
-`squash:run` passes every argument that is not a `--squash-*` flag to
-`playwright test`. If you pass `--reporter`, it appends the Squash reporter to
-your list; a bare `npx playwright test --reporter=…` replaces the configured
-reporters and so drops it. CI blueprint, with central-pipeline inputs:
+These combinations are rejected before any test runs:
+
+- `--squash-test-suite-id` together with a campaign, an iteration, or `--squash-filter-folder`
+- `--squash-iteration-id` together with a campaign or `--squash-iteration`
+- `--squash-campaign` and `--squash-campaign-id` together
+- `--squash-iteration` without a campaign
+- `folderRules` or `projects` from the environment or a flag (those two are config-file only)
+
+CI blueprint, with central-pipeline inputs:
 [`examples/squash-tm-publish.yml`](../examples/squash-tm-publish.yml).
 
 ## Configuration
@@ -60,6 +104,12 @@ from three sources. Each later source overrides the earlier ones key by key
 2. **Environment**: `SQUASH_TM_` plus the key in upper snake case (`campaignId` → `SQUASH_TM_CAMPAIGN_ID`).
    A pipeline or deployment adjusts the defaults here.
 3. **CLI** through `npm run squash:run`: `--squash-` plus the key in kebab case (`--squash-campaign-id=7`).
+
+`SQUASH_TM_*` values missing from the shell are filled from `.env`, `.env.local`, and
+`.env*.local` before that cascade runs. The active profile's files come first
+(`.env.local` before `.env.dev.local` on a local run), the first value wins, and a
+blank line stays unset. Only those keys are copied: a token stored in
+`.env.dev.local` does not change `APP_ENV` or `BASE_URL`.
 
 Every source is validated on its own, so an error names its origin
 (`testSuiteId (from environment) and campaign (from CLI) cannot be combined`). An
@@ -78,6 +128,7 @@ back to a default. `SQUASH_TM_LOG_LEVEL=debug` logs which source set each key.
 | `campaignId`                                          | An existing campaign, instead of `campaign`                                                      |
 | `iteration`                                           | Iteration name in the campaign, reused when it exists; unset means one per run                   |
 | `iterationId`                                         | Publish into exactly this iteration (no campaign or iteration settings with it)                  |
+| `release`                                             | `true` also creates a release execution (`false`). `SQUASH_TM_RELEASE` in the shell or `.env*.local`, or `--squash-release`. A set env value applies to every publish until cleared; the flag overrides it |
 | `testSuiteId`                                         | Run only the suite's tests and publish into its iteration (no other target with it)              |
 | `filterFolder`                                        | Run only tests whose Squash case is in this folder or below                                      |
 | `failOnError`, `maxAttempts`, `timeoutMs`, `logLevel` | `false`, `5`, `30000`, `info`                                                                    |
@@ -258,12 +309,25 @@ the CI blueprint serialises runs per target with `concurrency`.
   stays Classic. **Weight "Auto"** (weight derived from linked requirements) has
   no REST field.
 
-- **One execution per test case per run.** Within a project the last attempt
-  counts, so a test that passed on retry is `SUCCESS` and the comment notes
-  the attempts. Across projects the worst outcome wins:
+- **Every publish updates the test case's execution.** Squash stores that
+  status on an execution and shows the latest execution, so the first publish
+  creates the row and later publishes patch it. Within a project the last
+  attempt counts, so a test that passed on retry is `SUCCESS` and the comment
+  notes the attempts. Across projects the worst outcome wins:
   failed → `FAILURE`, interrupted → `BLOCKED`, skipped → `SKIPPED`.
+- **A new execution is created only for a release** (`SQUASH_TM_RELEASE=true`
+  in the shell or `.env*.local`, or `--squash-release=true`). That run patches the test case
+  execution when the iteration already has one, then adds the release
+  execution. Squash shows the latest execution as the current status, so the
+  release row becomes the result the test case shows, and a later ordinary
+  publish leaves that row as it was written. When the latest row is a release
+  execution, the ordinary publish starts a new test case execution so the
+  shown status can move. Point a release at its own iteration
+  (`--squash-iteration=2.4.0 --squash-release=true`) so the iteration that
+  tracks the current result keeps a single execution between releases.
 - The execution comment lists each project's outcome, its duration, and the
-  error output, with ANSI codes stripped and the text HTML-escaped.
+  error output, with ANSI codes stripped and the text HTML-escaped. It starts
+  with **Test case execution** or **Release execution**.
 - **Name and description are owned by the sync only on cases it owns:** cases it
   created, recognisable by their "Managed by the Playwright sync" first line, and
   cases whose description is empty. Pinning a hand-written test case never

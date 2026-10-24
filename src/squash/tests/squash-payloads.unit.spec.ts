@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { TestCaseState } from '../application/ports';
+import { ExecutionRole } from '../domain/execution-role';
 import { TestOutcome } from '../domain/execution-result';
 import { SquashPayloadBuilder } from '../infrastructure/squash-payloads';
 import type { CreateTestCaseBody } from '../infrastructure/squash-wire';
@@ -15,10 +16,12 @@ test.describe('SquashPayloadBuilder', { tag: ['@unit'] }, () => {
     const payload = new SquashPayloadBuilder().updateExecution(
       { testCase, outcome: TestOutcome.Failed, runs: [failed] },
       RUN,
+      ExecutionRole.TestCase,
     );
 
     expect(payload).toMatchObject({ _type: 'execution', execution_status: 'FAILURE' });
     const { comment } = payload as { comment: string };
+    expect(comment).toContain('<strong>Test case execution</strong>');
     expect(comment).toContain('<pre>Error: expected &lt;div&gt; &amp; got nothing</pre>');
     expect(comment).not.toContain('\u001b');
   });

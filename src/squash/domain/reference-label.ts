@@ -7,15 +7,15 @@
  * on it.
  */
 
+import { OWNERSHIP_MARKER } from './squash-library.mts';
+
 const LABEL_DIGITS = 3;
 const ROOT_PREFIX = 'PLAYWRIGHT';
 /** The hash keys earlier versions of the sync wrote; such cases are relabelled. */
 const LEGACY_KEY = /^PW-[0-9a-f]{12}$/;
 const LABEL = /^([A-Z0-9]+(?:-[A-Z0-9]+)*)-(\d+)$/;
 
-/** First paragraph of every description the sync writes: marks a case as sync-owned. */
-export const OWNERSHIP_MARKER =
-  '<p>Managed by the Playwright sync. Edits to the name or description are overwritten.</p>';
+export { OWNERSHIP_MARKER };
 
 /** A case the sync created (or an empty one); a hand-written case is never relabelled or rewritten. */
 export function isSyncOwned(description: string): boolean {

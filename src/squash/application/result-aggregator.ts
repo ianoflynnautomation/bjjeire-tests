@@ -23,6 +23,11 @@ export class ResultAggregator {
     this.entries.set(testCase.key, entry);
   }
 
+  /** Drops a key so neither of two tests that share it is published. */
+  drop(key: string): void {
+    this.entries.delete(key);
+  }
+
   results(): TestExecutionResult[] {
     return [...this.entries.values()]
       .map(({ testCase, runs }) => {

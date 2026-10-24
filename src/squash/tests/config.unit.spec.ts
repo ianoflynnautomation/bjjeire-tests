@@ -29,10 +29,18 @@ test.describe('SquashConfigLoader', { tag: ['@unit'] }, () => {
       mode: 'dry-run',
       tag: '@squash',
       failOnError: false,
+      release: false,
       connection: undefined,
       target: undefined,
       selection: undefined,
     });
+  });
+
+  test('a release is opt-in and a CLI flag overrides the environment', () => {
+    const config = load({ env: { SQUASH_TM_RELEASE: 'true' }, cli: { release: 'false' } });
+
+    expect(config.release).toBe(false);
+    expect(config.provenance.get('release')).toBe('CLI');
   });
 
   test('layers sources: config file < environment < CLI, and records which source won', () => {
@@ -47,7 +55,6 @@ test.describe('SquashConfigLoader', { tag: ['@unit'] }, () => {
       cli: { campaign: 'From CLI' },
     });
 
-    // The environment beats the committed file; a CLI flag beats both.
     expect(config.target).toEqual({ kind: 'campaign', campaign: { path: 'From CLI' }, iteration: 'Env run' });
     expect(config.tag).toBe('@smoke');
     expect(Object.fromEntries(config.provenance)).toMatchObject({
