@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import type { FullConfig, Suite, TestCase } from '@playwright/test/reporter';
-import type { SquashStrategy } from '../application/ports';
+import type { SquashStrategy } from '../application/contracts';
 import type { TestCaseDefinition } from '../domain/test-case';
 import { PlaywrightTestParser } from '../infrastructure/playwright-test-parser';
-import { SquashSyncReporter, formatPinSuggestions } from '../reporters/squash-sync.reporter';
+import { SquashSyncReporter, formatPinSuggestions } from '../reporters/sync.reporter';
 import { RecordingLogger } from './fakes';
 
 const A11Y_SPEC = 'accessibility/routes.a11y.acceptance.spec.ts';

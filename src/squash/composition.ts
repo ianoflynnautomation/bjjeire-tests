@@ -1,17 +1,18 @@
 import { ConfigError } from '@shared/config/config-errors';
 import { readEnv } from '@shared/config/process-env';
-import { resolveRunId } from '@shared/config/run-id';
+import type { Logger, RunInfo, SquashStrategy, TestSelection } from './application/contracts';
+import { DryRunStrategy } from './application/dry-run-strategy';
 import { ExecutionContextResolver } from './application/execution-context-resolver';
 import { FolderPathResolver } from './application/folder-path-resolver';
-import type { Logger, RunInfo, SquashStrategy, TestSelection } from './application/ports';
+import { RemoteStrategy } from './application/remote-strategy';
 import { ResultAggregator } from './application/result-aggregator';
 import { ResultPublisher } from './application/result-publisher';
-import { DryRunStrategy, RemoteStrategy } from './application/strategies';
 import { TestCaseSynchronizer } from './application/test-case-synchronizer';
 import { TestSelector } from './application/test-selector';
 import { loadSquashConfig, type SquashConfig, type SquashConnection } from './infrastructure/config';
 import { SquashMode } from './infrastructure/config-schema';
 import { ConsoleLogger } from './infrastructure/logger';
+import { runEnvironment, sharedCiRunId, squashRunId } from './infrastructure/run-identity';
 import { PlaywrightTestParser } from './infrastructure/playwright-test-parser';
 import { RetryingSquashClient } from './infrastructure/retrying-squash-client';
 import { FetchSquashClient } from './infrastructure/squash-client';
@@ -75,6 +76,12 @@ function createLogger(config: SquashConfig): Logger {
   const logger = new ConsoleLogger(config.logLevel);
   const sources = [...config.provenance].filter(([, source]) => source !== 'default');
   if (sources.length > 0) logger.debug(`Settings: ${sources.map(([key, source]) => `${key} (${source})`).join(', ')}`);
+  const { autoMode } = config;
+  if (autoMode) {
+    const message = `Mode auto resolved to ${autoMode.resolved} (${autoMode.reason}).`;
+    if (autoMode.resolved === SquashMode.DryRun) logger.warn(`${message} Set SQUASH_TM_MODE=publish to write results.`);
+    else logger.info(message);
+  }
   return logger;
 }
 
@@ -117,7 +124,16 @@ export function createResultsReporterDependencies(config = loadSquashConfig()): 
         '(config file, SQUASH_TM_* env var, or --squash-* flag).',
     );
   }
-  return { ...createSyncReporterDependencies(config), aggregator: new ResultAggregator(), run: currentRun() };
+  const run = currentRun();
+  const deps = { ...createSyncReporterDependencies(config), aggregator: new ResultAggregator(), run };
+  const environment = runEnvironment();
+  if (environment.assumedLocal && sharedCiRunId() !== undefined) {
+    deps.logger.warn(
+      'Iteration name uses environment "local" because APP_ENV and SQUASH_TM_ENVIRONMENT are unset. ' +
+        'Set SQUASH_TM_ENVIRONMENT to the system under test.',
+    );
+  }
+  return deps;
 }
 
 /** `undefined` when no selection is configured: the run is not filtered. */
@@ -136,8 +152,8 @@ export function createSelectReporterDependencies(config = loadSquashConfig()): S
 }
 
 function currentRun(): RunInfo {
-  const id = resolveRunId();
-  const environment = readEnv('APP_ENV') ?? 'local';
+  const id = squashRunId();
+  const { name: environment } = runEnvironment();
   const ciRun = ciRunUrl();
   return {
     id,

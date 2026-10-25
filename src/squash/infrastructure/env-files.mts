@@ -9,8 +9,47 @@ import { join } from 'node:path';
 
 const SQUASH_PREFIX = 'SQUASH_TM_';
 const EXPORT_PREFIX = 'export ';
+/** Shell-only. It chooses the file order, so a value inside an env file cannot select that file. */
+export const SQUASH_PROFILE_ENV = 'SQUASH_TM_PROFILE';
 
 type EnvFile = readonly [name: string, text: string];
+
+export type SquashEnvProfile = Readonly<{
+  /** `.env.<profile>.local` is read before `.env.local`, `.env`, and any other `.env*.local`. */
+  profile: string;
+  source: 'SQUASH_TM_PROFILE' | 'APP_ENV' | 'default';
+}>;
+
+const PROFILE_REASON: Readonly<Record<SquashEnvProfile['source'], string>> = {
+  SQUASH_TM_PROFILE: 'from SQUASH_TM_PROFILE',
+  APP_ENV: 'from APP_ENV; set SQUASH_TM_PROFILE to choose the env file independently',
+  default: 'neither SQUASH_TM_PROFILE nor APP_ENV is set',
+};
+
+/**
+ * Which env file wins. `SQUASH_TM_PROFILE` is explicit. Otherwise this suite's
+ * `APP_ENV` is used, so `npm run test:dev` reads `.env.dev.local` first. With
+ * neither set, the profile is `local`.
+ */
+export function resolveSquashEnvProfile(env: NodeJS.ProcessEnv): SquashEnvProfile {
+  const explicit = env[SQUASH_PROFILE_ENV]?.trim();
+  if (explicit) return { profile: explicit.toLowerCase(), source: 'SQUASH_TM_PROFILE' };
+  const app = env['APP_ENV']?.trim();
+  if (app) return { profile: app.toLowerCase(), source: 'APP_ENV' };
+  return { profile: 'local', source: 'default' };
+}
+
+/** Names the profile and the file each filled key came from. Values are never included. */
+export function formatSquashEnvLoad(resolved: SquashEnvProfile, applied: ReadonlyMap<string, string>): string {
+  const files =
+    applied.size === 0
+      ? 'no SQUASH_TM_* key was filled from an env file'
+      : [...applied.entries()]
+          .sort(([left], [right]) => left.localeCompare(right))
+          .map(([key, file]) => `${key} from ${file}`)
+          .join(', ');
+  return `Env profile "${resolved.profile}" (${PROFILE_REASON[resolved.source]}). ${files}.`;
+}
 
 export function orderedSquashEnvFiles(names: readonly string[], profile: string): string[] {
   const present = names.filter(isEnvFile);
@@ -22,13 +61,17 @@ export function orderedSquashEnvFiles(names: readonly string[], profile: string)
   );
 }
 
-export function applySquashEnv(env: NodeJS.ProcessEnv, files: readonly EnvFile[]): void {
-  for (const [, text] of files) {
+/** Copies unset `SQUASH_TM_*` keys. Returns the file that supplied each key it set. */
+export function applySquashEnv(env: NodeJS.ProcessEnv, files: readonly EnvFile[]): Map<string, string> {
+  const applied = new Map<string, string>();
+  for (const [name, text] of files) {
     for (const [key, value] of parseSquashEnv(text)) {
       if (env[key]?.trim()) continue;
       env[key] = value;
+      applied.set(key, name);
     }
   }
+  return applied;
 }
 
 export function parseSquashEnv(text: string): [string, string][] {

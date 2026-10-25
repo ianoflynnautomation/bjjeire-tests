@@ -7,8 +7,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, rmSync } from 'node:fs';
 
 const FLAG_PREFIX = '--squash-';
-const SELECT_REPORTER = './src/squash/reporters/squash-select.reporter.ts';
-const RESULTS_REPORTER = './src/squash/reporters/squash-results.reporter.ts';
+const SELECT_REPORTER = './src/squash/reporters/select.reporter.ts';
+const RESULTS_REPORTER = './src/squash/reporters/results.reporter.ts';
 /** Not under test-results/: Playwright empties that folder when a run starts, before it reads the list. */
 const TEST_LIST = 'playwright/.cache/squash-test-list.txt';
 

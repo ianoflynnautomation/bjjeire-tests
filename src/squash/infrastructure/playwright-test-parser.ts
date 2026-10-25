@@ -11,7 +11,7 @@ import {
   type TestCaseFields,
 } from '../domain/test-case';
 import { isGherkinStep } from '../domain/gherkin';
-import { duplicateIdentityMessage, groupDefinitions } from '../domain/test-identity';
+import { duplicateIdentityMessage, groupDefinitions } from '../domain/logical-test';
 
 /** Values are case- and separator-insensitive. Nature and type accept a code with or without its `NAT_` / `TYP_` prefix. */
 const FIELD_ANNOTATION_PREFIX = 'squash:';

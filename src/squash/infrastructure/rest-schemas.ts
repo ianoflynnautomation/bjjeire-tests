@@ -11,7 +11,7 @@ import { TestCaseStatus, Weight } from '../domain/test-case';
  *
  * Responses declare only the fields we read: unrelated upstream additions never
  * break parsing, while a renamed field we depend on fails loudly instead of
- * yielding `undefined`. Request bodies are declared here too, so the whole wire
+ * yielding `undefined`. Request bodies are declared here too, so the REST
  * contract is in one place; the payload builder's types are inferred from them.
  */
 

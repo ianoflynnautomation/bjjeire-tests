@@ -1,12 +1,12 @@
 import { folderFor, type FolderPlacement } from '../domain/folder-placement';
 import { TestCaseFormat } from '../domain/gherkin';
 import { isSyncOwned, labelPrefix, needsLabel, ReferenceLabeller } from '../domain/reference-label';
-import { duplicateIdentityMessage, groupDefinitions } from '../domain/test-identity';
+import { duplicateIdentityMessage, groupDefinitions } from '../domain/logical-test';
 import { pinTag, type TestCaseDefinition } from '../domain/test-case';
-import { forEachConcurrent } from './concurrency';
+import { forEachConcurrent } from './for-each-concurrent';
 import type { FolderPathResolver } from './folder-path-resolver';
-import type { Logger, PinSuggestion, SquashTestCase, SyncSummary, TestCaseId, TestCaseRepository } from './ports';
-import { duplicateReferenceMessage, groupCasesByKey } from './test-case-identity';
+import type { Logger, PinSuggestion, SquashTestCase, SyncSummary, TestCaseId, TestCaseRepository } from './contracts';
+import { duplicateReferenceMessage, groupCasesByKey } from './automated-reference';
 
 const CONCURRENCY = 4;
 

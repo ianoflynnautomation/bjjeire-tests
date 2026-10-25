@@ -7,7 +7,7 @@ import type {
   ExecutionTargetSpec,
   Logger,
   RunInfo,
-} from './ports';
+} from './contracts';
 
 /** Resolved once per run. A missing campaign path, and its iteration, are created. */
 export class ExecutionContextResolver {

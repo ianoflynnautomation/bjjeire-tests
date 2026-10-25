@@ -174,9 +174,17 @@ Precedence, lowest to highest: defaults < `squash-config.json` < its
 
 - `squash-config.json` (committed): `tag`, `testCaseFolder`, `folderRules`
   (`{ path, tag?, folder }`, first match wins) and per-project `projects`.
+  Add a `projects.<id>` section only when that project differs from the top
+  level. A `"1"` section that repeats the top-level folder hides a later edit,
+  because project id 1 is the usual first Squash project. This repo's file has
+  no `projects` section.
 - Env / CI: `SQUASH_TM_URL`, `SQUASH_TM_TOKEN`, `SQUASH_TM_PROJECT_ID`, and the
   run target (`SQUASH_TM_CAMPAIGN`, `_ITERATION`, `_ITERATION_ID`, `_TEST_SUITE_ID`,
   `_FILTER_FOLDER`). A misspelt `SQUASH_TM_*` variable is an error.
+- `SQUASH_TM_PROFILE` chooses which `.env.<profile>.local` is read first for
+  missing `SQUASH_TM_*` keys. Unset, the profile is `APP_ENV`, then `local`.
+  Startup logs the profile and the file each key came from. Set
+  `SQUASH_TM_ENVIRONMENT` when the iteration name should not use `APP_ENV`.
 - `SQUASH_TM_LOG_LEVEL=debug` prints which source set each setting.
 
 Folder rules decide where a case is **created**. Changing a rule never moves an
@@ -202,13 +210,14 @@ existing case (the API cannot); the sync lists misplaced cases for moving in the
 ```
 src/squash/annotations.ts      squash() helper (what specs import)
 src/squash/domain/             identity, fields, labels, folder placement
-src/squash/application/        ports, synchronizer, selector, publisher
+src/squash/application/        contracts, synchronizer, selector, publisher
 src/squash/infrastructure/     config cascade, HTTP client + retry, repositories, parser
 src/squash/reporters/          sync, select and results reporters
-src/squash/cli/squash-run.mts  --squash-* flags → selection pass → playwright test
+src/squash/cli/run.mts         --squash-* flags → selection pass → playwright test
+src/squash/cli/prune.mts       retire sync-owned cases in named folders
 src/squash/composition.ts      the only place components are wired
 ```
 
-Add behaviour behind a port in `application/ports.ts`, implement it in
+Add behaviour behind a port in `application/contracts.ts`, implement it in
 `infrastructure/`, wire it in `composition.ts`, and cover it with a
 `src/squash/tests/*.unit.spec.ts` using the in-memory fakes in `fakes.ts`.

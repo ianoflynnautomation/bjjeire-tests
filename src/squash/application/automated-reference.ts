@@ -1,4 +1,4 @@
-import type { SquashTestCase } from './ports';
+import type { SquashTestCase } from './contracts';
 
 export function groupCasesByKey(cases: readonly SquashTestCase[]): Map<string, SquashTestCase[]> {
   const byKey = new Map<string, SquashTestCase[]>();

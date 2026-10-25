@@ -1,4 +1,4 @@
-import type { FolderId, FolderTree } from './ports';
+import type { FolderId, FolderTree } from './contracts';
 
 /**
  * Turns a folder path such as `Acceptance/Gyms` into a Squash folder id,

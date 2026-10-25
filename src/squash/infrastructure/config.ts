@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { ConfigError } from '@shared/config/config-errors';
 import { z } from 'zod';
-import type { CampaignId, ExecutionTargetSpec, IterationId, TestSelection, TestSuiteId } from '../application/ports';
+import type {
+  CampaignId,
+  ExecutionTargetSpec,
+  IterationId,
+  TestSelection,
+  TestSuiteId,
+} from '../application/contracts';
 import type { FolderPlacement } from '../domain/folder-placement';
 import {
   CLI_PREFIX,
@@ -17,8 +23,8 @@ import {
   type SettingKey,
   type SquashSettings,
 } from './config-schema';
-import { LogLevel } from './logger';
-import { applySquashEnv, readSquashEnvFiles } from './squash-env.mts';
+import { ConsoleLogger, LogLevel } from './logger';
+import { applySquashEnv, formatSquashEnvLoad, readSquashEnvFiles, resolveSquashEnvProfile } from './env-files.mts';
 
 export type RetryPolicy = Readonly<{
   maxAttempts: number;
@@ -49,6 +55,14 @@ export type SquashConfig = Readonly<{
   selection: TestSelection | undefined;
   /** Which source set each setting, for `SQUASH_TM_LOG_LEVEL=debug`. */
   provenance: ReadonlyMap<SettingKey, string>;
+  /** Set when `mode` was `auto`, so a dry-run is not mistaken for a publish. */
+  autoMode: AutoModeResolution | undefined;
+}>;
+
+export type AutoModeResolution = Readonly<{
+  resolved: SquashConfig['mode'];
+  /** The CI variable that selected publish, or why the run stayed a dry-run. */
+  reason: string;
 }>;
 
 /** Where configuration comes from; injected so the cascade is testable without touching `process.env`. */
@@ -153,7 +167,7 @@ export class SquashConfigLoader {
   }
 
   private resolve(settings: Defaulted, provenance: ReadonlyMap<SettingKey, string>): SquashConfig {
-    const mode = settings.mode === SquashMode.Auto ? this.ciMode() : settings.mode;
+    const { mode, autoMode } = autoModeOf(settings.mode, this.sources.env);
     // Conflicting settings are the root mistake; report them before what they would need.
     const target = targetOf(settings, provenance);
     const selection = selectionOf(settings, provenance);
@@ -169,12 +183,8 @@ export class SquashConfigLoader {
       release: settings.release,
       selection,
       provenance,
+      autoMode,
     };
-  }
-
-  private ciMode(): SquashConfig['mode'] {
-    const ci = nonBlank(this.sources.env['CI'])?.toLowerCase();
-    return ci === 'true' || ci === '1' ? SquashMode.Publish : SquashMode.DryRun;
   }
 
   private connectionOf(settings: Defaulted, mode: SquashConfig['mode']): SquashConnection {
@@ -210,9 +220,53 @@ export class SquashConfigLoader {
  * missing from the shell are filled from `.env` and `.env*.local` first.
  */
 export function loadSquashConfig(): SquashConfig {
-  const profile = (process.env['APP_ENV'] ?? 'local').toLowerCase();
-  applySquashEnv(process.env, readSquashEnvFiles(process.cwd(), profile));
-  return new SquashConfigLoader({ env: process.env, readFile: readFileIfPresent }).load();
+  const profile = resolveSquashEnvProfile(process.env);
+  const applied = applySquashEnv(process.env, readSquashEnvFiles(process.cwd(), profile.profile));
+  const message = formatSquashEnvLoad(profile, applied);
+  try {
+    const config = new SquashConfigLoader({ env: process.env, readFile: readFileIfPresent }).load();
+    const logger = new ConsoleLogger(config.logLevel);
+    // A CI run that never named a profile would read `.env.local` and look successful.
+    if (profile.source === 'default' && ciPublishSignal(process.env) !== undefined) logger.warn(message);
+    else logger.info(message);
+    return config;
+  } catch (error) {
+    process.stderr.write(`[squash-tm] ERROR ${message}\n`);
+    throw error;
+  }
+}
+
+const CI_FLAG_VARS = ['CI', 'TF_BUILD', 'GITLAB_CI', 'GITHUB_ACTIONS', 'BUILDKITE', 'CIRCLECI', 'TRAVIS'] as const;
+const CI_PRESENT_VARS = ['JENKINS_URL', 'TEAMCITY_VERSION'] as const;
+const CI_SIGNAL_NAMES = [...CI_FLAG_VARS, ...CI_PRESENT_VARS].join(', ');
+
+/**
+ * Why `mode: auto` publishes. `CI=true` covers GitHub Actions, GitLab, CircleCI,
+ * Buildkite and Travis. Azure DevOps sets `TF_BUILD` and not `CI`. Jenkins and
+ * TeamCity set neither, so their presence variables count. Anything else dry-runs.
+ */
+export function ciPublishSignal(env: Readonly<Record<string, string | undefined>>): string | undefined {
+  for (const name of CI_FLAG_VARS) {
+    const value = nonBlank(env[name])?.toLowerCase();
+    if (value === 'true' || value === '1') return `${name}=${value}`;
+  }
+  for (const name of CI_PRESENT_VARS) {
+    if (nonBlank(env[name]) !== undefined) return name;
+  }
+  return undefined;
+}
+
+function autoModeOf(
+  requested: Defaulted['mode'],
+  env: Readonly<Record<string, string | undefined>>,
+): Readonly<{ mode: SquashConfig['mode']; autoMode: AutoModeResolution | undefined }> {
+  if (requested !== SquashMode.Auto) return { mode: requested, autoMode: undefined };
+  const signal = ciPublishSignal(env);
+  const mode = signal === undefined ? SquashMode.DryRun : SquashMode.Publish;
+  return {
+    mode,
+    autoMode: { resolved: mode, reason: signal ?? `no CI signal among ${CI_SIGNAL_NAMES}` },
+  };
 }
 
 /** The file's `projects.<id>` section as a layer of its own, so provenance can name it. */

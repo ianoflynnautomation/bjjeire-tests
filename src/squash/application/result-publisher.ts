@@ -1,6 +1,6 @@
 import type { TestExecutionResult } from '../domain/execution-result';
 import { ExecutionRole } from '../domain/execution-role';
-import { forEachConcurrent } from './concurrency';
+import { forEachConcurrent } from './for-each-concurrent';
 import type { ExecutionContextResolver } from './execution-context-resolver';
 import type {
   ExecutionId,
@@ -12,7 +12,7 @@ import type {
   RunInfo,
   TestCaseId,
   TestPlanItemId,
-} from './ports';
+} from './contracts';
 
 const CONCURRENCY = 4;
 

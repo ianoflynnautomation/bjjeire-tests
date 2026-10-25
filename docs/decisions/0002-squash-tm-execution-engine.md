@@ -95,7 +95,7 @@ both write, and that rule stops them overwriting each other.
 
 ### 5. `squash:run` is a small CLI in front of Playwright
 
-`src/squash/cli/squash-run.mts` turns `--squash-*` flags into the top layer
+`src/squash/cli/run.mts` turns `--squash-*` flags into the top layer
 (`SQUASH_TM_CLI`, JSON) and passes everything else to `playwright test`. It is plain
 Node (type stripping, Node ≥ 22.18): it imports nothing from `src`, and leaves
 validation to the loader. It keeps the Squash reporter in any `--reporter` list the

@@ -1,6 +1,6 @@
 import type { TestCaseDefinition } from '../domain/test-case';
-import type { ExecutionRepository, Logger, SquashTestCase, TestCaseRepository, TestSelection } from './ports';
-import { duplicateReferenceMessage, groupCasesByKey } from './test-case-identity';
+import type { ExecutionRepository, Logger, SquashTestCase, TestCaseRepository, TestSelection } from './contracts';
+import { duplicateReferenceMessage, groupCasesByKey } from './automated-reference';
 
 export type Selected = Readonly<{
   definitions: readonly TestCaseDefinition[];

@@ -7,7 +7,7 @@
  * on it.
  */
 
-import { OWNERSHIP_MARKER } from './squash-library.mts';
+import { OWNERSHIP_MARKER } from './ownership-marker.mts';
 
 const LABEL_DIGITS = 3;
 const ROOT_PREFIX = 'PLAYWRIGHT';
@@ -27,14 +27,26 @@ export function needsLabel(reference: string): boolean {
   return reference === '' || LEGACY_KEY.test(reference);
 }
 
-/** `Playwright/Features/Competitions` → `COMPETITIONS`; the project root → `PLAYWRIGHT`. */
+/**
+ * `Playwright/Features/Competitions` → `COMPETITIONS`; the project root → `PLAYWRIGHT`.
+ * A leaf with no ASCII letters or digits is refused: labelling it `PLAYWRIGHT`
+ * would share the root's number sequence and look like a successful label.
+ */
 export function labelPrefix(folder: string | undefined): string {
-  const leaf = folder?.split('/').at(-1) ?? '';
+  const leaf = folder?.split('/').at(-1)?.trim() ?? '';
+  if (leaf === '') return ROOT_PREFIX;
   const prefix = leaf
     .toUpperCase()
     .replace(/[^A-Z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  return prefix === '' ? ROOT_PREFIX : prefix;
+  if (prefix === '') {
+    throw new Error(
+      `Squash reference prefix cannot be derived from folder "${leaf}": ` +
+        'it has no ASCII letters or digits. Rename the folder leaf to ASCII, ' +
+        `or every such case is labelled ${ROOT_PREFIX} and shares that number sequence.`,
+    );
+  }
+  return prefix;
 }
 
 /**

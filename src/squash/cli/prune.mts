@@ -2,16 +2,16 @@
  * Deletes sync-owned cases in the named folders. An empty description is not
  * the ownership marker, so it is kept, and a folder that still holds a
  * hand-written case is kept. Without `--yes` nothing is deleted. `/` is the
- * project root. Plain Node; it imports only the shared ESM library module.
+ * project root. Plain Node; it imports only dependency-free ESM modules.
  */
+import { parseListedPage, readEveryPage } from '../domain/paged-list.mts';
+import { casesInFolders, inFolder, readListedCases } from '../domain/prune-cases.mts';
 import {
-  casesInFolders,
-  inFolder,
-  parseListedPage,
-  readEveryPage,
-  readListedCases,
-} from '../domain/squash-library.mts';
-import { applySquashEnv, readSquashEnvFiles } from '../infrastructure/squash-env.mts';
+  applySquashEnv,
+  formatSquashEnvLoad,
+  readSquashEnvFiles,
+  resolveSquashEnvProfile,
+} from '../infrastructure/env-files.mts';
 
 const API_ROOT = '/api/rest/latest';
 const PAGE_SIZE = 200;
@@ -27,8 +27,9 @@ function log(line: string): void {
 }
 
 function loadEnvFiles(): void {
-  const profile = (process.env['APP_ENV'] ?? 'local').toLowerCase();
-  applySquashEnv(process.env, readSquashEnvFiles(process.cwd(), profile));
+  const profile = resolveSquashEnvProfile(process.env);
+  const applied = applySquashEnv(process.env, readSquashEnvFiles(process.cwd(), profile.profile));
+  log(formatSquashEnvLoad(profile, applied));
 }
 
 function parseArgs(argv: readonly string[]): Options {

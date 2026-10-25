@@ -76,7 +76,7 @@ npm run squash:prune -- --folder Playwright --folder / --yes
 npm run squash:select
 npx playwright test --test-list=playwright/.cache/squash-test-list.txt --shard=1/4
 SQUASH_TM_MODE=publish npx playwright merge-reports \
-  --reporter=html,./src/squash/reporters/squash-results.reporter.ts all-blob-reports
+  --reporter=html,./src/squash/reporters/results.reporter.ts all-blob-reports
 
 npm run test:squash
 ```
@@ -106,10 +106,18 @@ from three sources. Each later source overrides the earlier ones key by key
 3. **CLI** through `npm run squash:run`: `--squash-` plus the key in kebab case (`--squash-campaign-id=7`).
 
 `SQUASH_TM_*` values missing from the shell are filled from `.env`, `.env.local`, and
-`.env*.local` before that cascade runs. The active profile's files come first
-(`.env.local` before `.env.dev.local` on a local run), the first value wins, and a
-blank line stays unset. Only those keys are copied: a token stored in
-`.env.dev.local` does not change `APP_ENV` or `BASE_URL`.
+`.env*.local` before that cascade runs. The profile's file comes first
+(`.env.<profile>.local`, then `.env.local`, `.env`, then any other `.env*.local`).
+The profile is `SQUASH_TM_PROFILE`, otherwise `APP_ENV`, otherwise `local`, so
+`npm run test:dev` still reads `.env.dev.local` first. Set `SQUASH_TM_PROFILE`
+when `APP_ENV` is not the Squash profile: an unrelated `APP_ENV` would otherwise
+select the file. `SQUASH_TM_PROFILE` is read from the shell (or from whatever
+already loaded dotenv); a value that exists only inside the file it would select
+cannot change the order. The first value wins, a blank line stays unset, and
+only `SQUASH_TM_*` keys are copied, so a token in `.env.dev.local` does not
+change `APP_ENV` or `BASE_URL`. Startup logs the profile and the file each key
+came from, never the values. A CI run that named neither profile logs a warning,
+because it would quietly read `.env.local`.
 
 Every source is validated on its own, so an error names its origin
 (`testSuiteId (from environment) and campaign (from CLI) cannot be combined`). An
@@ -118,7 +126,7 @@ back to a default. `SQUASH_TM_LOG_LEVEL=debug` logs which source set each key.
 
 | Key                                                   | Purpose                                                                                                                                                                                                    |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mode`                                                | `dry-run` (default; no writes), `publish`, or `auto` (`publish` when `CI` is set)                                                                                                                          |
+| `mode`                                                | `dry-run` (default; no writes), `publish`, or `auto` (publish when a CI signal is set; otherwise dry-run, with a warning)                                                                                  |
 | `url`, `projectId`                                    | Squash root including the context path, and the project. Needed to publish or select                                                                                                                       |
 | `tag`                                                 | Only tests carrying it are Squash test cases (default `@squash`: tests opt in)                                                                                                                             |
 | `testCaseFolder`                                      | Folder for new test cases no rule matches (`Playwright`); project root when unset                                                                                                                          |
@@ -131,7 +139,7 @@ back to a default. `SQUASH_TM_LOG_LEVEL=debug` logs which source set each key.
 | `release`                                             | `true` also creates a release execution (`false`). `SQUASH_TM_RELEASE` in the shell or `.env*.local`, or `--squash-release`. A set env value applies to every publish until cleared; the flag overrides it |
 | `testSuiteId`                                         | Run only the suite's tests and publish into its iteration (no other target with it)                                                                                                                        |
 | `filterFolder`                                        | Run only tests whose Squash case is in this folder or below                                                                                                                                                |
-| `failOnError`, `maxAttempts`, `timeoutMs`, `logLevel` | `false`, `5`, `30000`, `info`                                                                                                                                                                              |
+| `failOnError`, `maxAttempts`, `timeoutMs`, `logLevel` | `false`, `5`, `30000`, `info`. CI should set `failOnError` true, or a Squash outage leaves the suite green                                                                                                 |
 
 **Authentication is an API token only.** `SQUASH_TM_TOKEN` holds a Squash
 personal API token, sent as `Authorization: Bearer`. It is read from the
@@ -181,6 +189,54 @@ both: `SQUASH_TM_TEST_CASE_FOLDER=Hotfix`. Teams in separate repositories, or
 with very different setups, can keep one file each and pick it with
 `SQUASH_TM_CONFIG`.
 
+Add a `projects` section only when that project's folder or rules differ from
+the top level. Project id `1` is the usual first Squash project. A `"1"` section
+that only repeats the top-level folder hides a later edit of that folder: cases
+keep going to the old path and the sync does not say why. This repository's
+file has no `projects` section. Its folder and rules apply to whichever project
+id the pipeline passes.
+
+### Sharing the integration
+
+Share `src/squash/` as an internal package, with this repository's
+`squash-config.json` left behind. That file is BjjEire's folder layout. A copy
+of it places another team's cases in `BjjEire/...` and the sync reports success.
+The package's composition root (`composition.ts`) is the adapter. It depends on
+`ConfigError` and `readEnv` from `@shared/config`, and on `resolveRunId` when no
+CI build id is available. A consumer provides those or replaces them. Connection
+settings stay in the
+environment (`SQUASH_TM_URL`, `SQUASH_TM_TOKEN`, `SQUASH_TM_PROJECT_ID`). The
+token is never in the package, the config file, or a flag.
+
+Each consumer commits their own config file (`tag`, `testCaseFolder`,
+`folderRules`) and points at it with `SQUASH_TM_CONFIG` when it is not
+`squash-config.json`. Pin the Squash TM version this client was checked against
+(8.1.1, `/api/rest/latest`). On that instance the project needs the built-in
+automation technology `Playwright` and the nature and type info-list codes the
+tests send. An unknown code fails the sync with HTTP 412.
+
+In CI set `SQUASH_TM_MODE=publish` and `SQUASH_TM_FAIL_ON_ERROR=true`. The
+default `failOnError` is false, so a Squash outage does not turn a green suite
+red; the failure is logged and the run stays green unless CI opts in. Publish
+once, from the merged report, never from a shard
+([`examples/squash-tm-publish.yml`](../examples/squash-tm-publish.yml)). Set
+`SQUASH_TM_ITERATION` to a name the jobs share, or leave it unset: the iteration
+is then `Playwright <environment> <run id>`. The environment is
+`SQUASH_TM_ENVIRONMENT`, then `APP_ENV`, then `local`. A CI run with neither
+set logs a warning, because the name would claim the run was local. The run id
+is shared across shards on GitHub Actions, Azure Pipelines (`BUILD_BUILDID`),
+GitLab (`CI_PIPELINE_ID`), Jenkins (`BUILD_TAG`), Buildkite, and CircleCI. The
+execution comment links to a GitHub Actions run when `GITHUB_SERVER_URL`,
+`GITHUB_REPOSITORY`, and `GITHUB_RUN_ID` are set.
+
+`mode: auto` publishes when `CI`, `TF_BUILD`, `GITLAB_CI`, `GITHUB_ACTIONS`,
+`BUILDKITE`, `CIRCLECI`, or `TRAVIS` is `true` or `1`, or when `JENKINS_URL` or
+`TEAMCITY_VERSION` is set. Otherwise it dry-runs and logs a warning. A pipeline
+that must write results sets `publish`.
+
+A folder leaf with no ASCII letters or digits fails the sync. It is not labelled
+`PLAYWRIGHT`, which would share the project root's `PLAYWRIGHT-###` sequence.
+
 ### Selecting tests
 
 `filterFolder` or `testSuiteId` asks Squash which test cases are in scope. Each
@@ -194,17 +250,21 @@ the run instead of running everything.
 
 Before the first result is written, the execution context resolves the target
 once: a test suite publishes into its own iteration, an `iterationId` is used as
-given, and a campaign path or id gets the named iteration, found or created. Two
-pipelines creating the same campaign at the same moment could both create it, so
-the CI blueprint serialises runs per target with `concurrency`.
+given, and a campaign path or id gets the named iteration, found or created.
+With no iteration name, the name is `Playwright <environment> <run id>` (see
+[Sharing the integration](#sharing-the-integration)). Two pipelines creating the
+same campaign at the same moment could both create it, so the CI blueprint
+serialises runs per target with `concurrency`.
 
 ## How tests map to Squash
 
 - **Each synced case gets a readable reference** from its feature folder:
   `COMPETITIONS-001`, `EVENTS-012`, `API-001`. The number continues after the
   highest existing one for that prefix, and is assigned once and never changed,
-  even if the test is renamed or moved. Cases from earlier versions that still
-  show a `PW-…` hash are relabelled on the next sync. A reference someone typed
+  even if the test is renamed or moved. A folder leaf with no ASCII letters or
+  digits fails the sync instead of being labelled `PLAYWRIGHT`. Cases from
+  earlier versions that still show a `PW-…` hash are relabelled on the next
+  sync. A reference someone typed
   in Squash, and any hand-written case, is never touched.
 - **Unpinned tests are matched by their automated test reference**,
   `<spec>#<describe › title>` (Automation panel), identical across machines and
@@ -343,24 +403,26 @@ the CI blueprint serialises runs per target with `concurrency`.
 src/squash/
   domain/              Pure model: test cases, results, pins, keys, folder placement rules
   application/         Use cases against ports (no HTTP, no Playwright, no config parsing)
-    ports.ts             TestCaseRepository, ExecutionRepository, FolderTree, SquashStrategy, Logger
+    contracts.ts         TestCaseRepository, ExecutionRepository, FolderTree, SquashStrategy, Logger
     test-case-synchronizer.ts    Creates/updates cases; places new ones by folder rule
     test-selector.ts             Folder or test suite → the tests to run
     execution-context-resolver.ts  Target → the iteration results go to (find or create)
     folder-path-resolver.ts      Folder path → id, creating each missing folder once
     result-publisher.ts, result-aggregator.ts
-    strategies.ts        DryRunStrategy (local) / RemoteStrategy (CI)
+    dry-run-strategy.ts  DryRunStrategy: local preview, no network calls
+    remote-strategy.ts   RemoteStrategy: sync cases, then record results
   infrastructure/      Adapters
     config-schema.ts     The one settings schema, and env / CLI names derived from it
     config.ts            SquashConfigLoader: file < project section < env < CLI, credentials, conflicts
     squash-client.ts, retrying-squash-client.ts  Transport contract, fetch, backoff decorator
     squash-test-case-repository.ts, squash-execution-repository.ts, squash-folder-tree.ts
-    squash-wire.ts       The wire contract: Zod schemas for responses and request bodies
-    squash-payloads.ts   Builds request bodies; HTML-escapes everything a test supplies
+    rest-schemas.ts      Zod schemas for Squash REST responses and request bodies
+    payload-builder.ts   Builds request bodies; HTML-escapes everything a test supplies
     playwright-test-parser.ts  Playwright reporter model → domain
   composition.ts       Composition root + strategy factory: wires the concrete classes
   reporters/           Playwright entry points: select, results and sync reporters
-  cli/squash-run.mts   `npm run squash:run`: --squash-* flags, then select, then run
+  cli/run.mts          `npm run squash:run`: --squash-* flags, then select, then run
+  cli/prune.mts        `npm run squash:prune`: preview or delete sync-owned cases
   tests/               Unit tests with in-memory fakes (`npm run test:squash`)
 ```
 

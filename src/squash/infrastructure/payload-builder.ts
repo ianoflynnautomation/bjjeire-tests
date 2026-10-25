@@ -1,4 +1,4 @@
-import type { RunInfo, TestCaseId, TestCaseState } from '../application/ports';
+import type { RunInfo, TestCaseId, TestCaseState } from '../application/contracts';
 import { executionMarker, type ExecutionRole } from '../domain/execution-role';
 import type { ProjectRun, TestExecutionResult } from '../domain/execution-result';
 import { isSyncOwned, OWNERSHIP_MARKER } from '../domain/reference-label';
@@ -17,7 +17,7 @@ import {
   type TestCaseParent,
   type UpdateExecutionBody,
   type UpdateTestCaseBody,
-} from './squash-wire';
+} from './rest-schemas';
 
 /** Caps one error block so a huge stack cannot bloat the execution comment. */
 const MAX_ERROR_LENGTH = 4000;

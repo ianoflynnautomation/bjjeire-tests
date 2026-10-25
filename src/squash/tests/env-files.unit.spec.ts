@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { applySquashEnv, orderedSquashEnvFiles, parseSquashEnv } from '../infrastructure/squash-env.mts';
+import {
+  applySquashEnv,
+  formatSquashEnvLoad,
+  orderedSquashEnvFiles,
+  parseSquashEnv,
+  resolveSquashEnvProfile,
+} from '../infrastructure/env-files.mts';
 
 test.describe('squash env files', { tag: ['@unit'] }, () => {
   test('profile files come before other .env*.local files', () => {
@@ -33,6 +39,28 @@ test.describe('squash env files', { tag: ['@unit'] }, () => {
     ]);
     expect(env['SQUASH_TM_URL']).toBe('http://local/squash');
     expect(env['SQUASH_TM_TOKEN']).toBe('secret');
+  });
+
+  test('SQUASH_TM_PROFILE selects the env file, ahead of APP_ENV', () => {
+    expect(resolveSquashEnvProfile({ SQUASH_TM_PROFILE: 'Acme', APP_ENV: 'staging' })).toEqual({
+      profile: 'acme',
+      source: 'SQUASH_TM_PROFILE',
+    });
+    expect(resolveSquashEnvProfile({ APP_ENV: 'dev' })).toEqual({ profile: 'dev', source: 'APP_ENV' });
+    expect(resolveSquashEnvProfile({})).toEqual({ profile: 'local', source: 'default' });
+  });
+
+  test('the env-load line names files and never values', () => {
+    const applied = new Map([
+      ['SQUASH_TM_TOKEN', '.env.dev.local'],
+      ['SQUASH_TM_URL', '.env.local'],
+    ]);
+
+    expect(formatSquashEnvLoad({ profile: 'dev', source: 'APP_ENV' }, applied)).toBe(
+      'Env profile "dev" (from APP_ENV; set SQUASH_TM_PROFILE to choose the env file independently). ' +
+        'SQUASH_TM_TOKEN from .env.dev.local, SQUASH_TM_URL from .env.local.',
+    );
+    expect(formatSquashEnvLoad({ profile: 'dev', source: 'APP_ENV' }, applied)).not.toContain('secret');
   });
 
   test('parseSquashEnv keeps a quoted value and skips comments and other keys', () => {

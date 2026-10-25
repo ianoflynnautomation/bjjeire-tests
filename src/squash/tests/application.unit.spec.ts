@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { ResultAggregator } from '../application/result-aggregator';
 import { ResultPublisher } from '../application/result-publisher';
-import { DryRunStrategy, RemoteStrategy } from '../application/strategies';
+import { DryRunStrategy } from '../application/dry-run-strategy';
+import { RemoteStrategy } from '../application/remote-strategy';
 import { TestCaseSynchronizer } from '../application/test-case-synchronizer';
 import { TestOutcome } from '../domain/execution-result';
 import { ExecutionContextResolver } from '../application/execution-context-resolver';
 import { FolderPathResolver } from '../application/folder-path-resolver';
-import type { CampaignId, ExecutionTargetSpec, Logger, TestCaseId } from '../application/ports';
+import type { CampaignId, ExecutionTargetSpec, Logger, TestCaseId } from '../application/contracts';
 import { ExecutionRole } from '../domain/execution-role';
 import type { FolderPlacement } from '../domain/folder-placement';
 import { pinTag } from '../domain/test-case';

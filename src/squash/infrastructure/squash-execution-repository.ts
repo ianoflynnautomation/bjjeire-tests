@@ -10,14 +10,15 @@ import type {
   TestCaseExecution,
   TestSuite,
   TestSuiteId,
-} from '../application/ports';
+} from '../application/contracts';
 import { ExecutionRole, executionRoleOf } from '../domain/execution-role';
 import type { TestExecutionResult } from '../domain/execution-result';
 import { describeError } from './logger';
 import type { SquashClient } from './squash-client';
 import type { HttpFolderTree } from './squash-folder-tree';
-import { SquashPayloadBuilder } from './squash-payloads';
-import { collectPages, createResource, DEFAULT_PAGE_SIZE } from './squash-requests';
+import { collectPages, DEFAULT_PAGE_SIZE } from './collect-pages';
+import { createResource } from './create-resource';
+import { SquashPayloadBuilder } from './payload-builder';
 import {
   executionCommentSchema,
   executionPageSchema,
@@ -25,7 +26,7 @@ import {
   parseWire,
   testPlanPageSchema,
   testSuiteSchema,
-} from './squash-wire';
+} from './rest-schemas';
 
 export class HttpExecutionRepository implements ExecutionRepository {
   constructor(

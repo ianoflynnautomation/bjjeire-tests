@@ -347,8 +347,9 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   assigned once from the feature folder. Every test sets its fields with
   `annotation: squash({ weight, status, nature, type })` from `@squash/annotations`
   (typed; values in docs/squash-tm.md). Settings cascade defaults < `squash-config.json` (and its `projects.<id>` section)
-  < `SQUASH_TM_*` env < `--squash-*` CLI flags (one schema, `config-schema.ts`). Auth is a
-  personal API token in `SQUASH_TM_TOKEN` (env only; no username/password). Its unit tests
+  < `SQUASH_TM_*` env < `--squash-*` CLI flags (one schema, `config-schema.ts`). Missing
+  `SQUASH_TM_*` keys are filled from `.env` files for `SQUASH_TM_PROFILE`, otherwise `APP_ENV`.
+  Auth is a personal API token in `SQUASH_TM_TOKEN` (env only; no username/password). Its unit tests
   (`src/squash/tests/*.unit.spec.ts`, `playwright.squash.config.ts`) are the one exception
   to acceptance-only. The local Squash stack lives in `squash-tm/`.
 - Observability is an opt-in plugin: `src/shared/otel/otel-reporter.ts` (a custom
@@ -373,4 +374,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-10-24.
+script, project, or workflow it documents. Last reviewed: 2026-10-25.

@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import type { TestCase, TestResult } from '@playwright/test/reporter';
-import type { PublishSummary, SquashStrategy } from '../application/ports';
+import type { PublishSummary, SquashStrategy } from '../application/contracts';
 import { ResultAggregator } from '../application/result-aggregator';
 import { TestOutcome, type TestExecutionResult } from '../domain/execution-result';
 import { PlaywrightTestParser, SquashAnnotationError } from '../infrastructure/playwright-test-parser';
-import { SquashResultsReporter } from '../reporters/squash-results.reporter';
+import { SquashResultsReporter } from '../reporters/results.reporter';
 import { definition, projectRun, RecordingLogger, RUN } from './fakes';
 
 /** A strategy whose publish returns, or throws, what the test says. */

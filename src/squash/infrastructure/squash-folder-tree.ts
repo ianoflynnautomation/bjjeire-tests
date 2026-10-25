@@ -1,8 +1,9 @@
-import type { FolderId, FolderTree, LibraryNode } from '../application/ports';
+import type { FolderId, FolderTree, LibraryNode } from '../application/contracts';
+import { collectPages, DEFAULT_PAGE_SIZE } from './collect-pages';
+import { createResource } from './create-resource';
+import { SquashPayloadBuilder } from './payload-builder';
 import type { SquashClient } from './squash-client';
-import { collectPages, createResource, DEFAULT_PAGE_SIZE } from './squash-requests';
-import { SquashPayloadBuilder } from './squash-payloads';
-import { LIBRARY_CONTENT_KEYS, libraryPageSchema, parseWire, type LibraryParent } from './squash-wire';
+import { LIBRARY_CONTENT_KEYS, libraryPageSchema, parseWire, type LibraryParent } from './rest-schemas';
 
 export type Library = 'test-case' | 'campaign';
 

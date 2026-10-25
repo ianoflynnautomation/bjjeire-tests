@@ -1,6 +1,5 @@
-import { readEveryPage, type ListedPage } from '../domain/squash-library.mts';
+import { readEveryPage, type ListedPage } from '../domain/paged-list.mts';
 import type { SquashClient } from './squash-client';
-import { createdSchema, parseWire } from './squash-wire';
 
 export const DEFAULT_PAGE_SIZE = 200;
 
@@ -14,9 +13,4 @@ export async function collectPages<T>(
     const query = { ...request.query, page, size: request.pageSize };
     return parse(await client.send({ method: 'GET', path: request.path, query }));
   });
-}
-
-export async function createResource(client: SquashClient, path: string, body?: object): Promise<number> {
-  const response = await client.send({ method: 'POST', path, ...(body === undefined ? {} : { body }) });
-  return parseWire(createdSchema, response, `POST ${path}`).id;
 }

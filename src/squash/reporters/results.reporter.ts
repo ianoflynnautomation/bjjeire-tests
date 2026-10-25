@@ -1,7 +1,7 @@
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { createResultsReporterDependencies, type ResultsReporterDependencies } from '../composition';
 import type { ProjectRun } from '../domain/execution-result';
-import { duplicateIdentityMessage, sameLogicalTest } from '../domain/test-identity';
+import { duplicateIdentityMessage, sameLogicalTest } from '../domain/logical-test';
 import type { TestCaseDefinition } from '../domain/test-case';
 import { SquashAnnotationError } from '../infrastructure/playwright-test-parser';
 

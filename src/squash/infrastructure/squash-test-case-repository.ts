@@ -1,9 +1,11 @@
-import type { FolderId, SquashTestCase, TestCaseId, TestCaseRepository, TestCaseState } from '../application/ports';
-import { folderPathOf } from '../domain/squash-library.mts';
+import type { FolderId, SquashTestCase, TestCaseId, TestCaseRepository, TestCaseState } from '../application/contracts';
+import { folderPathOf } from '../domain/case-path.mts';
+import type { TestCaseFormat } from '../domain/gherkin';
 import type { TestCaseDefinition } from '../domain/test-case';
+import { collectPages, DEFAULT_PAGE_SIZE } from './collect-pages';
+import { createResource } from './create-resource';
+import { SquashPayloadBuilder } from './payload-builder';
 import type { SquashClient } from './squash-client';
-import { SquashPayloadBuilder } from './squash-payloads';
-import { collectPages, createResource, DEFAULT_PAGE_SIZE } from './squash-requests';
 import {
   parseWire,
   TEST_CASE_FIELDS,
@@ -11,8 +13,7 @@ import {
   testCasePageSchema,
   type TestCaseParent,
   type WireTestCase,
-} from './squash-wire';
-import type { TestCaseFormat } from '../domain/gherkin';
+} from './rest-schemas';
 
 const FORMAT_BY_TEST_CASE_TYPE = Object.fromEntries(
   Object.entries(TEST_CASE_TYPE_BY_FORMAT).map(([format, type]) => [type, format as TestCaseFormat]),

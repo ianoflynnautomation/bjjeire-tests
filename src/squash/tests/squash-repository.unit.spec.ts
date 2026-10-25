@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import type { ExecutionId, IterationId, TestCaseId, TestPlanItemId } from '../application/ports';
+import type { ExecutionId, IterationId, TestCaseId, TestPlanItemId } from '../application/contracts';
 import { ExecutionRole } from '../domain/execution-role';
 import { SquashApiError, type SquashClient, type SquashRequest } from '../infrastructure/squash-client';
 import { HttpExecutionRepository } from '../infrastructure/squash-execution-repository';
 import { HttpFolderTree } from '../infrastructure/squash-folder-tree';
 import { HttpTestCaseRepository } from '../infrastructure/squash-test-case-repository';
-import { TEST_CASE_FIELDS } from '../infrastructure/squash-wire';
+import { TEST_CASE_FIELDS } from '../infrastructure/rest-schemas';
 import { definition, result, RUN, stateNamed } from './fakes';
 
 const PROJECT_ID = 2;

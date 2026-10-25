@@ -20,7 +20,7 @@ import { LogLevel } from './logger';
 export const SquashMode = {
   DryRun: 'dry-run',
   Publish: 'publish',
-  /** `publish` when `CI` is set, `dry-run` otherwise. */
+  /** `publish` when a known CI signal is set, `dry-run` otherwise. See `ciPublishSignal`. */
   Auto: 'auto',
 } as const;
 
@@ -146,6 +146,10 @@ export const RUNNER_ENV_VARS = [
   'SQUASH_TM_CLI',
   'SQUASH_TM_RUNNER',
   'SQUASH_TM_TEST_LIST',
+  /** Which `.env.<profile>.local` is read first. Not a Squash setting. */
+  'SQUASH_TM_PROFILE',
+  /** Environment name in the iteration (`Playwright <environment> <run id>`). Not a Squash setting. */
+  'SQUASH_TM_ENVIRONMENT',
 ] as const;
 
 /** `campaignId` → `SQUASH_TM_CAMPAIGN_ID`. */

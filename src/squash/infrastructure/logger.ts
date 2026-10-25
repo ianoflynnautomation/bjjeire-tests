@@ -1,4 +1,4 @@
-import type { Logger } from '../application/ports';
+import type { Logger } from '../application/contracts';
 
 export const LogLevel = {
   Debug: 'debug',

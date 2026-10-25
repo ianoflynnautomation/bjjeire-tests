@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Suite, TestCase } from '@playwright/test/reporter';
 import { squash } from '../annotations';
 import { TestOutcome } from '../domain/execution-result';
-import { groupDefinitions } from '../domain/test-identity';
+import { groupDefinitions } from '../domain/logical-test';
 import {
   definitionOf,
   outcomeOf,

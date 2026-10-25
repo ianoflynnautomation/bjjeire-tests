@@ -4,7 +4,7 @@ import { ResultAggregator } from '../application/result-aggregator';
 import { TestOutcome } from '../domain/execution-result';
 import { stepsOf } from '../domain/gherkin';
 import { gherkinStepsOf } from '../infrastructure/playwright-test-parser';
-import { SquashPayloadBuilder } from '../infrastructure/squash-payloads';
+import { SquashPayloadBuilder } from '../infrastructure/payload-builder';
 import { definition, projectRun, stateNamed } from './fakes';
 
 const GIVEN = 'Given an environment that enforces API authorization';

@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 import type { FullConfig, Suite, TestCase } from '@playwright/test/reporter';
 import type { TestSelector } from '../application/test-selector';
 import { PlaywrightTestParser } from '../infrastructure/playwright-test-parser';
-import { SquashSelectReporter } from '../reporters/squash-select.reporter';
+import { SquashSelectReporter } from '../reporters/select.reporter';
 import { definition, RecordingLogger } from './fakes';
 
 const SPEC = 'features/gyms/gyms.ui.acceptance.spec.ts';

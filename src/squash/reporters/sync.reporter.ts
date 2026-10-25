@@ -1,5 +1,5 @@
 import type { FullConfig, FullResult, Reporter, Suite } from '@playwright/test/reporter';
-import type { PinSuggestion } from '../application/ports';
+import type { PinSuggestion } from '../application/contracts';
 import type { TestCaseDefinition } from '../domain/test-case';
 import { createSyncReporterDependencies, type SyncReporterDependencies } from '../composition';
 import type { SquashAnnotationError } from '../infrastructure/playwright-test-parser';

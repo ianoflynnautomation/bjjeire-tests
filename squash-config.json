@@ -11,8 +11,5 @@
     { "path": "features/gyms/", "folder": "BjjEire/Features/Gyms" },
     { "path": "features/stores/", "folder": "BjjEire/Features/Stores" },
     { "path": "features/support/", "folder": "BjjEire/Features/Support" }
-  ],
-  "projects": {
-    "1": { "testCaseFolder": "BjjEire" }
-  }
+  ]
 }

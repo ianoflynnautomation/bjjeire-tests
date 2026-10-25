@@ -20,6 +20,11 @@ test.describe('Reference labels', { tag: ['@unit'] }, () => {
     ).toEqual(['COMPETITIONS', 'API', 'MOBILE-NAV', 'PLAYWRIGHT']);
   });
 
+  test('refuses a folder leaf that would silently share the PLAYWRIGHT sequence', () => {
+    expect(() => labelPrefix('Bibliothèque/機能')).toThrow(/no ASCII letters or digits/);
+    expect(labelPrefix('Playwright/')).toBe('PLAYWRIGHT');
+  });
+
   test('continue after the highest existing number per prefix, three digits wide', () => {
     const labeller = new ReferenceLabeller(['EVENTS-009', 'EVENTS-002', 'GYMS-001', 'REQ-7a', '']);
 

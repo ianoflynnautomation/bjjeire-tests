@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { ExecutionContextResolver } from '../application/execution-context-resolver';
 import { FolderPathResolver } from '../application/folder-path-resolver';
-import type { CampaignId, IterationId } from '../application/ports';
+import type { CampaignId, IterationId } from '../application/contracts';
 import { TestSelector } from '../application/test-selector';
-import { testListOf } from '../reporters/squash-select.reporter';
+import { testListOf } from '../reporters/select.reporter';
 import { definition, InMemoryFolderTree, InMemorySquash, RecordingLogger, RUN } from './fakes';
 
 const CAMPAIGN_NUMBER = 7;

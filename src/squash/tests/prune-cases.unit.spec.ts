@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { folderPathOf, OWNERSHIP_MARKER, pruneCaseOf, readListedCases } from '../domain/squash-library.mts';
+import { folderPathOf } from '../domain/case-path.mts';
+import { OWNERSHIP_MARKER } from '../domain/ownership-marker.mts';
+import { pruneCaseOf, readListedCases } from '../domain/prune-cases.mts';
 
-test.describe('squash library', { tag: ['@unit'] }, () => {
+test.describe('prune cases', { tag: ['@unit'] }, () => {
   test('reads every page, unescapes a slash inside a folder, and refuses a page with no totalPages', async () => {
     const pages = [
       {

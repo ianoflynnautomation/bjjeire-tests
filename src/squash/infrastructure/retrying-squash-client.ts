@@ -1,4 +1,4 @@
-import type { Logger } from '../application/ports';
+import type { Logger } from '../application/contracts';
 import type { RetryPolicy } from './config';
 import { describeError } from './logger';
 import {

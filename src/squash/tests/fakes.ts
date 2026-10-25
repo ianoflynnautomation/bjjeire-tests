@@ -15,7 +15,7 @@ import type {
   TestPlanItemId,
   TestSuite,
   TestSuiteId,
-} from '../application/ports';
+} from '../application/contracts';
 import { ExecutionRole } from '../domain/execution-role';
 import { TestOutcome, type ProjectRun, type TestExecutionResult } from '../domain/execution-result';
 import { automationReference, type TestCaseDefinition } from '../domain/test-case';

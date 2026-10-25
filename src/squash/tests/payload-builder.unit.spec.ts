@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import type { TestCaseState } from '../application/ports';
+import type { TestCaseState } from '../application/contracts';
 import { ExecutionRole } from '../domain/execution-role';
 import { TestOutcome } from '../domain/execution-result';
-import { SquashPayloadBuilder } from '../infrastructure/squash-payloads';
-import type { CreateTestCaseBody } from '../infrastructure/squash-wire';
+import { SquashPayloadBuilder } from '../infrastructure/payload-builder';
+import type { CreateTestCaseBody } from '../infrastructure/rest-schemas';
 import { definition, projectRun, RUN, stateNamed } from './fakes';
 
 test.describe('SquashPayloadBuilder', { tag: ['@unit'] }, () => {

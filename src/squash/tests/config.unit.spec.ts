@@ -133,9 +133,23 @@ test.describe('SquashConfigLoader', { tag: ['@unit'] }, () => {
     expect(config.target).toEqual({ kind: 'test-suite', testSuiteId: SUITE_ID });
   });
 
-  test('auto mode publishes in CI and dry-runs locally', () => {
-    expect(load({ env: { ...CONNECTION_ENV, SQUASH_TM_MODE: 'auto', CI: 'true' } }).mode).toBe('publish');
-    expect(load({ env: { SQUASH_TM_MODE: 'auto' } }).mode).toBe('dry-run');
+  test('auto mode publishes on common CI signals and dry-runs otherwise', () => {
+    const github = load({ env: { ...CONNECTION_ENV, SQUASH_TM_MODE: 'auto', CI: 'true' } });
+    expect(github.mode).toBe('publish');
+    expect(github.autoMode).toEqual({ resolved: 'publish', reason: 'CI=true' });
+
+    const azure = load({ env: { ...CONNECTION_ENV, SQUASH_TM_MODE: 'auto', TF_BUILD: 'True' } });
+    expect(azure.mode).toBe('publish');
+    expect(azure.autoMode?.reason).toBe('TF_BUILD=true');
+
+    expect(load({ env: { ...CONNECTION_ENV, SQUASH_TM_MODE: 'auto', JENKINS_URL: 'http://jenkins' } }).mode).toBe(
+      'publish',
+    );
+
+    const local = load({ env: { SQUASH_TM_MODE: 'auto', CI: 'false' } });
+    expect(local.mode).toBe('dry-run');
+    expect(local.autoMode?.reason).toContain('no CI signal');
+    expect(load({ env: { ...CONNECTION_ENV, SQUASH_TM_MODE: 'publish' } }).autoMode).toBeUndefined();
   });
 
   test('fails on an explicit config file that is missing, but not on a missing default one', () => {
