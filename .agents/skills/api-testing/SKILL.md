@@ -13,7 +13,7 @@ Acceptance specs for the read-only directory API (gyms, events, competitions, st
 - **NEVER** hardcode a base URL, bearer token, or endpoint path. `baseURL` is the api project's `env.apiUrl` (`src/api/config/playwright.ts`). Paths come from `API_ROUTES` and `resourcePath` (`src/api/support/routes.ts`). The bearer is attached by `@api/fixtures` through `apiAuthHeaders()`.
 - **ALWAYS** validate a successful JSON body by passing the feature schema into the client (`getGyms(request, gymsPageSchema, query)`). The client runs `expectSchema`. A TypeScript type on its own is not a check.
 - **ALWAYS** assert an error status in a feature spec with `request.get` and `expectProblem(response, status, ProblemType.X)`. `get()` throws unless `response.ok()`, so it cannot assert an error.
-- **ALWAYS** wrap each API call in `test.step()` when a test makes more than one call. A single call stays in the test body.
+- **ALWAYS** write the test as top-level Given/When/Then `test.step`s, even for a single call. Each API call is its own `When` / `And` step, and the assertions sit in a `Then` step. A publishing Squash run copies these titles into the case's Gherkin script (see the `squash-tm` skill).
 - **NEVER** change the expected status, problem type, or schema to match a bug. **NEVER** hide a contract mismatch with unconditional `test.skip`, `test.fixme`, or `@quarantine`. Conditional `test.skip(condition, reason)` is only an environment gate.
 - **NEVER** stop at one invalid value. Every query parameter and every path id uses the shared invalid set for its type.
 - **ALWAYS** fuzz a path id with `INVALID_OBJECT_ID_VALUES` when the route has an `{id}`. A malformed id is `400` and `ProblemType.Validation` (`INVALID_FORMAT` on `Id`). `404` is only `UNPUBLISHED_OBJECT_ID`.
@@ -144,28 +144,30 @@ Titles are `<actor> should <outcome> [when <context>]`, with `client` as the act
 
 A filter the contract accepts needs a success call through the typed query, not only a rejection test. Gyms pass `county`. Events pass `county` and `types`.
 
-### Phase 4: Wrap multi-call tests in `test.step`
+### Phase 4: Write the scenario as Given/When/Then `test.step`s
 
-When a test makes more than one API call, each call is its own `test.step`, named for the operation.
+Every test is a Gherkin scenario. Each API call is a `When` (or `And`) step named for what the client asks for, and the assertions are one `Then` step that says what the client receives. Step titles use domain words, not status codes or field names.
 
 ```typescript
 test(
   'client should page through the directory in distinct slices with correct links',
   { tag: '@acceptance' },
   async ({ request }) => {
-    const firstPage = await test.step('Request page 1 of the directory', () =>
+    const firstPage = await test.step('When a client requests page 1 of the directory', () =>
       getGyms(request, gymsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
 
-    const secondPage = await test.step('Request page 2 of the directory', () =>
+    const secondPage = await test.step('And the client requests page 2 of the directory', () =>
       getGyms(request, gymsPageSchema, { page: 2, pageSize: SMALL_PAGE_SIZE }));
 
-    expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
-    expectPagesAreDistinct(firstPage, secondPage, gym => gym.id);
+    await test.step('Then the two pages hold different entries and link to each other', () => {
+      expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
+      expectPagesAreDistinct(firstPage, secondPage, gym => gym.id);
+    });
   },
 );
 ```
 
-Each step still passes `gymsPageSchema`, so each page is parsed. The events spec uses the same rule inside `client should receive an event with several types when filtering by any one of them`: one step per `getBjjEvents` call, named `Filter the listing by ${type}`. Two fetches in one step-less body are forbidden. That shape is in `references/test-step-patterns.md`.
+Each step still passes `gymsPageSchema`, so each page is parsed. The events spec uses the same rule inside `client should receive an event with several types when filtering by any one of them`: each loop iteration is a `When a client requests the event listing filtered by ${type}` step followed by its `Then` step. A call or assertion outside a Given/When/Then step is forbidden. That shape is in `references/test-step-patterns.md`.
 
 ### Phase 5: Cover the full status-code matrix
 

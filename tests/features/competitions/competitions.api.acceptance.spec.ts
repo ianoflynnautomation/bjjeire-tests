@@ -30,12 +30,15 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, competitionsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the competition listing', () =>
+        getCompetitions(request, competitionsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectListingToInclude(data, 'slug', SEEDED_COMPETITIONS_BY_START_DATE);
+      await test.step('Then every seeded competition is listed with its details', () => {
+        expectListingToInclude(data, 'slug', SEEDED_COMPETITIONS_BY_START_DATE);
+      });
     },
   );
 
@@ -46,12 +49,15 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, competitionsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the competition listing', () =>
+        getCompetitions(request, competitionsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expect(data.map(competition => competition.slug)).not.toContain(SEEDED_COMPETITION_FINISHED_KERRY_COAST.slug);
+      await test.step(`Then the finished competition "${SEEDED_COMPETITION_FINISHED_KERRY_COAST.name}" is not listed`, () => {
+        expect(data.map(competition => competition.slug)).not.toContain(SEEDED_COMPETITION_FINISHED_KERRY_COAST.slug);
+      });
     },
   );
 
@@ -62,16 +68,19 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getCompetitions(request, competitionsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the competition listing', () =>
+        getCompetitions(request, competitionsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectRelativeOrder(
-        data,
-        competition => competition.slug,
-        SEEDED_COMPETITIONS_BY_START_DATE.map(competition => competition.slug),
-      );
+      await test.step('Then the seeded competitions appear in start-date order', () => {
+        expectRelativeOrder(
+          data,
+          competition => competition.slug,
+          SEEDED_COMPETITIONS_BY_START_DATE.map(competition => competition.slug),
+        );
+      });
     },
   );
 
@@ -82,14 +91,16 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const firstPage = await test.step('Request page 1 of the listing', () =>
+      const firstPage = await test.step('When a client requests page 1 of the listing', () =>
         getCompetitions(request, competitionsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
 
-      const secondPage = await test.step('Request page 2 of the listing', () =>
+      const secondPage = await test.step('And the client requests page 2 of the listing', () =>
         getCompetitions(request, competitionsPageSchema, { page: 2, pageSize: SMALL_PAGE_SIZE }));
 
-      expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
-      expectPagesAreDistinct(firstPage, secondPage, competition => competition.slug);
+      await test.step('Then the two pages hold different entries and link to each other', () => {
+        expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
+        expectPagesAreDistinct(firstPage, secondPage, competition => competition.slug);
+      });
     },
   );
 
@@ -107,9 +118,13 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.competitions, { params: { [param]: value } });
+          const response =
+            await test.step(`When a client requests the competition listing with ${label} "${value}"`, () =>
+              request.get(API_ROUTES.competitions, { params: { [param]: value } }));
 
-          await expectProblem(response, 400, ProblemType.BadRequest);
+          await test.step('Then the request is rejected as a bad request', async () => {
+            await expectProblem(response, 400, ProblemType.BadRequest);
+          });
         },
       );
     }
@@ -122,12 +137,16 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.competitions, { params: { [param]: value } });
+          const response =
+            await test.step(`When a client requests the competition listing with ${param} ${value}`, () =>
+              request.get(API_ROUTES.competitions, { params: { [param]: value } }));
 
-          const problem = await expectProblem(response, 400, ProblemType.Validation);
-          expect(problem.errors).toContainEqual(
-            expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
-          );
+          await test.step(`Then the request is rejected because ${param} is out of range`, async () => {
+            const problem = await expectProblem(response, 400, ProblemType.Validation);
+            expect(problem.errors).toContainEqual(
+              expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
+            );
+          });
         },
       );
     }

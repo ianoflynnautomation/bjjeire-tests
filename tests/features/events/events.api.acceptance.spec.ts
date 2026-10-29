@@ -43,12 +43,15 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the event listing', () =>
+        getBjjEvents(request, bjjEventsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectListingToInclude(data, 'name', SEEDED_UPCOMING_EVENTS);
+      await test.step('Then every seeded upcoming event is listed with its details', () => {
+        expectListingToInclude(data, 'name', SEEDED_UPCOMING_EVENTS);
+      });
     },
   );
 
@@ -59,12 +62,15 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the event listing', () =>
+        getBjjEvents(request, bjjEventsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+      await test.step(`Then the finished event "${SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name}" is not listed`, () => {
+        expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+      });
     },
   );
 
@@ -78,15 +84,18 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       const county = County.Dublin;
       const dublinEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.county === county);
 
-      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
-        county,
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the event listing filtered by Dublin', () =>
+        getBjjEvents(request, bjjEventsPageSchema, {
+          county,
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectAllFromCounty(data, county);
-      expectListingToInclude(data, 'name', dublinEvents);
-      expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+      await test.step('Then only upcoming Dublin events are listed, including every seeded one', () => {
+        expectAllFromCounty(data, county);
+        expectListingToInclude(data, 'name', dublinEvents);
+        expect(data.map(event => event.name)).not.toContain(SEEDED_EVENT_FINISHED_WINTER_SOLSTICE.name);
+      });
     },
   );
 
@@ -97,16 +106,19 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the event listing', () =>
+        getBjjEvents(request, bjjEventsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectRelativeOrder(
-        data,
-        event => event.name,
-        SEEDED_UPCOMING_EVENTS.map(event => event.name),
-      );
+      await test.step('Then the seeded events appear in creation-date order', () => {
+        expectRelativeOrder(
+          data,
+          event => event.name,
+          SEEDED_UPCOMING_EVENTS.map(event => event.name),
+        );
+      });
     },
   );
 
@@ -120,14 +132,17 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       const type = BjjEventType.Seminar;
       const seminarEvents = SEEDED_UPCOMING_EVENTS.filter(event => event.types.includes(type));
 
-      const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
-        types: [type],
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the event listing filtered by Seminar', () =>
+        getBjjEvents(request, bjjEventsPageSchema, {
+          types: [type],
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expect(data.filter(event => !event.types.includes(type))).toEqual([]);
-      expectListingToInclude(data, 'name', seminarEvents);
+      await test.step('Then only upcoming seminars are listed, including every seeded one', () => {
+        expect(data.filter(event => !event.types.includes(type))).toEqual([]);
+        expectListingToInclude(data, 'name', seminarEvents);
+      });
     },
   );
 
@@ -141,13 +156,14 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       const multiTypeEvent = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 
       for (const type of multiTypeEvent.types) {
-        await test.step(`Filter the listing by ${type}`, async () => {
-          const { data } = await getBjjEvents(request, bjjEventsPageSchema, {
+        const { data } = await test.step(`When a client requests the event listing filtered by ${type}`, () =>
+          getBjjEvents(request, bjjEventsPageSchema, {
             types: [type],
             page: 1,
             pageSize: FULL_PAGE_SIZE,
-          });
+          }));
 
+        await test.step(`Then only ${type} events are listed, including "${multiTypeEvent.name}"`, () => {
           expect(data.filter(event => !event.types.includes(type))).toEqual([]);
           expect(data.map(event => event.name)).toContain(multiTypeEvent.name);
         });
@@ -162,14 +178,16 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const firstPage = await test.step('Request page 1 of the listing', () =>
+      const firstPage = await test.step('When a client requests page 1 of the listing', () =>
         getBjjEvents(request, bjjEventsPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
 
-      const secondPage = await test.step('Request page 2 of the listing', () =>
+      const secondPage = await test.step('And the client requests page 2 of the listing', () =>
         getBjjEvents(request, bjjEventsPageSchema, { page: 2, pageSize: SMALL_PAGE_SIZE }));
 
-      expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
-      expectPagesAreDistinct(firstPage, secondPage, event => event.id);
+      await test.step('Then the two pages hold different entries and link to each other', () => {
+        expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
+        expectPagesAreDistinct(firstPage, secondPage, event => event.id);
+      });
     },
   );
 
@@ -189,9 +207,12 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.bjjEvents, { params: { [param]: value } });
+          const response = await test.step(`When a client requests the event listing with ${label} "${value}"`, () =>
+            request.get(API_ROUTES.bjjEvents, { params: { [param]: value } }));
 
-          await expectProblem(response, 400, ProblemType.BadRequest);
+          await test.step('Then the request is rejected as a bad request', async () => {
+            await expectProblem(response, 400, ProblemType.BadRequest);
+          });
         },
       );
     }
@@ -204,12 +225,15 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.bjjEvents, { params: { [param]: value } });
+          const response = await test.step(`When a client requests the event listing with ${param} ${value}`, () =>
+            request.get(API_ROUTES.bjjEvents, { params: { [param]: value } }));
 
-          const problem = await expectProblem(response, 400, ProblemType.Validation);
-          expect(problem.errors).toContainEqual(
-            expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
-          );
+          await test.step(`Then the request is rejected because ${param} is out of range`, async () => {
+            const problem = await expectProblem(response, 400, ProblemType.Validation);
+            expect(problem.errors).toContainEqual(
+              expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
+            );
+          });
         },
       );
     }
@@ -223,9 +247,13 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
         annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
       },
       async ({ request }) => {
-        const event = await getBjjEventById(request, bjjEventSchema, SEEDED_EVENT_LEINSTER_OPEN_MAT_ID);
+        const event =
+          await test.step(`When a client requests the event "${SEEDED_EVENT_LEINSTER_OPEN_MAT.name}" by id`, () =>
+            getBjjEventById(request, bjjEventSchema, SEEDED_EVENT_LEINSTER_OPEN_MAT_ID));
 
-        expect(event).toMatchObject(SEEDED_EVENT_LEINSTER_OPEN_MAT);
+        await test.step('Then the client receives its published details', () => {
+          expect(event).toMatchObject(SEEDED_EVENT_LEINSTER_OPEN_MAT);
+        });
       },
     );
 
@@ -236,9 +264,12 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
         annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
       },
       async ({ request }) => {
-        const response = await request.get(resourcePath(API_ROUTES.bjjEvents, UNPUBLISHED_OBJECT_ID));
+        const response = await test.step('When a client requests an event id that does not exist', () =>
+          request.get(resourcePath(API_ROUTES.bjjEvents, UNPUBLISHED_OBJECT_ID)));
 
-        await expectProblem(response, 404, ProblemType.NotFound);
+        await test.step('Then the request is rejected as not found', async () => {
+          await expectProblem(response, 404, ProblemType.NotFound);
+        });
       },
     );
 
@@ -250,12 +281,15 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(resourcePath(API_ROUTES.bjjEvents, value));
+          const response = await test.step(`When a client requests an event id that is ${description}`, () =>
+            request.get(resourcePath(API_ROUTES.bjjEvents, value)));
 
-          const problem = await expectProblem(response, 400, ProblemType.Validation);
-          expect(problem.errors).toContainEqual(
-            expect.objectContaining({ field: 'Id', errorCode: ValidationErrorCode.InvalidFormat }),
-          );
+          await test.step('Then the request is rejected because the id is malformed', async () => {
+            const problem = await expectProblem(response, 400, ProblemType.Validation);
+            expect(problem.errors).toContainEqual(
+              expect.objectContaining({ field: 'Id', errorCode: ValidationErrorCode.InvalidFormat }),
+            );
+          });
         },
       );
     }

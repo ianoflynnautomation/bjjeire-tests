@@ -238,7 +238,8 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
 - Negative inputs are data-driven. Shared invalid sets (malformed integer, boolean, enum
   and ObjectId values, the paging bounds, and an unpublished id) live in
   `tests/features/common/testdata/invalid-values.ts`. A set used by only one field stays
-  inline. A test making more than one call wraps each call in a named `test.step`.
+  inline. Every API test is top-level Given/When/Then `test.step`s (its Squash Gherkin
+  scenario): each call is a `When`/`And` step, the assertions a `Then` step.
   The `api-testing` skill has the full workflow.
 - **Calling the API unauthenticated** — `requestAuth` is an option on
   `@api/fixtures`: a file declares `test.use({ requestAuth: 'none' })` to withhold

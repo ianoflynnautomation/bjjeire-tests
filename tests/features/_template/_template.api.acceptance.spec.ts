@@ -25,19 +25,23 @@ test.describe('Template API acceptance', { tag: ['@template', '@api', '@squash']
     async ({ request }) => {
       const { pagination: expectedPagination, data: expectedData } = expectedTemplatePage1;
 
-      const body = await get(request, TEMPLATE_ROUTE, {
-        params: { page: expectedPagination.currentPage, pageSize: expectedPagination.pageSize },
+      const response = await test.step('When a client requests the first page of the listing', async () => {
+        const body = await get(request, TEMPLATE_ROUTE, {
+          params: { page: expectedPagination.currentPage, pageSize: expectedPagination.pageSize },
+        });
+        return expectSchema(templatePageSchema, body);
       });
-      const response = expectSchema(templatePageSchema, body);
 
-      expect(response.data).toEqual(expectedData);
-      expect(response.pagination).toMatchObject({
-        totalItems: expectedPagination.totalItems,
-        currentPage: expectedPagination.currentPage,
-        pageSize: expectedPagination.pageSize,
-        totalPages: expectedPagination.totalPages,
-        hasNextPage: expectedPagination.hasNextPage,
-        hasPreviousPage: expectedPagination.hasPreviousPage,
+      await test.step('Then the client receives the published items with their pagination', () => {
+        expect(response.data).toEqual(expectedData);
+        expect(response.pagination).toMatchObject({
+          totalItems: expectedPagination.totalItems,
+          currentPage: expectedPagination.currentPage,
+          pageSize: expectedPagination.pageSize,
+          totalPages: expectedPagination.totalPages,
+          hasNextPage: expectedPagination.hasNextPage,
+          hasPreviousPage: expectedPagination.hasPreviousPage,
+        });
       });
     },
   );

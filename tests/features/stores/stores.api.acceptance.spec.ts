@@ -26,12 +26,15 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getStores(request, storesPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the store directory', () =>
+        getStores(request, storesPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectListingToInclude(data, 'name', SEEDED_STORES_BY_NAME);
+      await test.step('Then every seeded store is listed with its details', () => {
+        expectListingToInclude(data, 'name', SEEDED_STORES_BY_NAME);
+      });
     },
   );
 
@@ -42,16 +45,19 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const { data } = await getStores(request, storesPageSchema, {
-        page: 1,
-        pageSize: FULL_PAGE_SIZE,
-      });
+      const { data } = await test.step('When a client requests the store directory', () =>
+        getStores(request, storesPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+        }));
 
-      expectRelativeOrder(
-        data,
-        store => store.name,
-        SEEDED_STORES_BY_NAME.map(store => store.name),
-      );
+      await test.step('Then the seeded stores appear in name order', () => {
+        expectRelativeOrder(
+          data,
+          store => store.name,
+          SEEDED_STORES_BY_NAME.map(store => store.name),
+        );
+      });
     },
   );
 
@@ -62,14 +68,16 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ request }) => {
-      const firstPage = await test.step('Request page 1 of the directory', () =>
+      const firstPage = await test.step('When a client requests page 1 of the directory', () =>
         getStores(request, storesPageSchema, { page: 1, pageSize: SMALL_PAGE_SIZE }));
 
-      const secondPage = await test.step('Request page 2 of the directory', () =>
+      const secondPage = await test.step('And the client requests page 2 of the directory', () =>
         getStores(request, storesPageSchema, { page: 2, pageSize: SMALL_PAGE_SIZE }));
 
-      expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
-      expectPagesAreDistinct(firstPage, secondPage, store => store.id);
+      await test.step('Then the two pages hold different entries and link to each other', () => {
+        expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
+        expectPagesAreDistinct(firstPage, secondPage, store => store.id);
+      });
     },
   );
 
@@ -86,9 +94,12 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.stores, { params: { [param]: value } });
+          const response = await test.step(`When a client requests the store directory with ${label} "${value}"`, () =>
+            request.get(API_ROUTES.stores, { params: { [param]: value } }));
 
-          await expectProblem(response, 400, ProblemType.BadRequest);
+          await test.step('Then the request is rejected as a bad request', async () => {
+            await expectProblem(response, 400, ProblemType.BadRequest);
+          });
         },
       );
     }
@@ -101,12 +112,15 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
           annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
         },
         async ({ request }) => {
-          const response = await request.get(API_ROUTES.stores, { params: { [param]: value } });
+          const response = await test.step(`When a client requests the store directory with ${param} ${value}`, () =>
+            request.get(API_ROUTES.stores, { params: { [param]: value } }));
 
-          const problem = await expectProblem(response, 400, ProblemType.Validation);
-          expect(problem.errors).toContainEqual(
-            expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
-          );
+          await test.step(`Then the request is rejected because ${param} is out of range`, async () => {
+            const problem = await expectProblem(response, 400, ProblemType.Validation);
+            expect(problem.errors).toContainEqual(
+              expect.objectContaining({ field, errorCode: ValidationErrorCode.ValueOutOfRange }),
+            );
+          });
         },
       );
     }

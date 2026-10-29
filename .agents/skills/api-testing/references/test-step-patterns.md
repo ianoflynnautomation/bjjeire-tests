@@ -2,7 +2,7 @@
 
 Forbidden shapes for `api-testing/SKILL.md` Phase 4 and Phase 6. The required pagination test is in Phase 4 of `SKILL.md`. The required loops are in `references/negative-testing.md`.
 
-## Phase 4 — more than one call, no step
+## Phase 4 — calls and assertions outside Given/When/Then steps
 
 ```typescript
 // Forbidden: two directory reads in one body. The report shows one step, so a failure on page 2 looks like a failure of the whole test.
@@ -19,9 +19,9 @@ test(
 );
 ```
 
-Wrap each `getGyms` call in `test.step('Request page N of the directory', ...)`. The events type filter does the same: the `for` loop over `SEEDED_EVENT_ATLANTIC_COAST_CAMP.types` puts each `getBjjEvents` inside `test.step(\`Filter the listing by ${type}\`, ...)`.
+Wrap the first `getGyms` call in `test.step('When a client requests page 1 of the directory', ...)`, the second in an `And` step, and the two assertions in one `Then` step. The events type filter does the same per loop iteration: a `When a client requests the event listing filtered by ${type}` step, then its `Then` step.
 
-A test that calls the API once, such as the gyms smoke read, leaves the call in the test body.
+A test that calls the API once, such as the gyms smoke read, still has a `When` step for the call and a `Then` step for the assertions, so its Squash case gets a full scenario.
 
 ## Phase 6 — one invalid value standing in for the parameter
 
