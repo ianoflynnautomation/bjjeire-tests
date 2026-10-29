@@ -69,7 +69,7 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
   );
 
   test(
-    'client should receive only upcoming events from the county filtered by',
+    'client should receive only upcoming events from the chosen county when filtering by county',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
@@ -111,7 +111,7 @@ test.describe('Events API acceptance', { tag: ['@bjj-events', '@events', '@api',
   );
 
   test(
-    'client should receive only upcoming events of the type filtered by',
+    'client should receive only upcoming events of the chosen type when filtering by type',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),

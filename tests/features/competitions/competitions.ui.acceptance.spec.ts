@@ -151,13 +151,13 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'visitor should see the no-data message when the API returns no competitions',
+    'visitor should see the no-data message when there are no competitions to show',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockCompetitions, competitionsPage }) => {
-      await test.step('Given the competitions API returns no competitions', async () => {
+      await test.step('Given there are no competitions to show', async () => {
         await mockCompetitions(emptyPage);
       });
 
@@ -173,13 +173,13 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'visitor should see a network error message when the competitions request fails',
+    'visitor should see a network error message when competitions cannot be loaded because the connection fails',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, competitionsPage }) => {
-      await test.step('Given the competitions request fails on the network', async () => {
+      await test.step("Given the visitor's connection fails while competitions load", async () => {
         await mockNetworkError();
       });
 
@@ -194,13 +194,13 @@ test.describe('Competitions UI acceptance', { tag: ['@competitions', '@ui', '@de
   );
 
   test(
-    'visitor should see a server error message when the competitions API returns a server error',
+    'visitor should see a server error message when competitions cannot be loaded because of a server problem',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, competitionsPage }) => {
-      await test.step('Given the competitions API returns a server error', async () => {
+      await test.step('Given the competition service is unavailable', async () => {
         await mockServerError();
       });
 

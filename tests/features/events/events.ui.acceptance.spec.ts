@@ -163,7 +163,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'visitor should see only events from the county filtered by',
+    'visitor should see only events from the chosen county when filtering by county',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
@@ -220,7 +220,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'visitor should see only events of the type filtered by',
+    'visitor should see only events of the chosen type when filtering by type',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
@@ -242,13 +242,13 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'visitor should see the no-data message when the API returns no events',
+    'visitor should see the no-data message when there are no events to show',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockBjjEvents, eventsPage }) => {
-      await test.step('Given the events API returns no events', async () => {
+      await test.step('Given there are no events to show', async () => {
         await mockBjjEvents(emptyPage);
       });
 
@@ -264,13 +264,13 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'visitor should see a network error message when the events request fails',
+    'visitor should see a network error message when events cannot be loaded because the connection fails',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, eventsPage }) => {
-      await test.step('Given the events request fails on the network', async () => {
+      await test.step("Given the visitor's connection fails while events load", async () => {
         await mockNetworkError();
       });
 
@@ -285,13 +285,13 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
   );
 
   test(
-    'visitor should see a server error message when the events API returns a server error',
+    'visitor should see a server error message when events cannot be loaded because of a server problem',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, eventsPage }) => {
-      await test.step('Given the events API returns a server error', async () => {
+      await test.step('Given the event service is unavailable', async () => {
         await mockServerError();
       });
 

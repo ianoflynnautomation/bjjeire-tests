@@ -45,7 +45,7 @@ test.describe('Gyms API acceptance', { tag: ['@gyms', '@api', '@squash'] }, () =
   );
 
   test(
-    'client should receive only gyms from the county filtered by',
+    'client should receive only gyms from the chosen county when filtering by county',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),

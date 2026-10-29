@@ -95,11 +95,11 @@ both write, and that rule stops them overwriting each other.
 
 ### 5. `squash:run` is a small CLI in front of Playwright
 
-`src/squash/cli/run.mts` turns `--squash-*` flags into the top layer
-(`SQUASH_TM_CLI`, JSON) and passes everything else to `playwright test`. It is plain
-Node (type stripping, Node ≥ 22.18): it imports nothing from `src`, and leaves
-validation to the loader. It keeps the Squash reporter in any `--reporter` list the
-user passes.
+The `playwright-squash` bin (`src/cli/run.ts` in `@playwright-squash/playwright-squash`)
+turns `--squash-*` flags into the top layer (`SQUASH_TM_CLI`, JSON) and passes everything
+else to `playwright test`. It is compiled JavaScript and imports nothing from this
+repository. It leaves validation to the loader. It keeps the Squash reporter in any
+`--reporter` list the user passes.
 
 ### 6. Selection is a Squash query turned into a Playwright `--test-list`
 

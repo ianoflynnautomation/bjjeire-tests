@@ -11,7 +11,7 @@ import { TIMEOUTS } from './timeouts';
 resolveRunId();
 
 const OTEL_REPORTER = join(__dirname, '..', 'otel', 'otel-reporter.ts');
-const SQUASH_REPORTER = join(__dirname, '..', '..', 'squash', 'reporters', 'results.reporter.ts');
+const SQUASH_REPORTER = '@playwright-squash/playwright-squash/results';
 const IS_CI = env.isCI;
 const WORKERS = { local: '50%', ci: 4 } as const;
 const MAX_FAILURES = IS_CI ? 0 : 1;

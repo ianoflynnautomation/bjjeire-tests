@@ -95,13 +95,13 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
   );
 
   test(
-    'visitor should see the no-data message when the API returns no stores',
+    'visitor should see the no-data message when there are no stores to show',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockStores, storesPage }) => {
-      await test.step('Given the stores API returns no stores', async () => {
+      await test.step('Given there are no stores to show', async () => {
         await mockStores(emptyPage);
       });
 
@@ -117,13 +117,13 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
   );
 
   test(
-    'visitor should see a network error message when the stores request fails',
+    'visitor should see a network error message when stores cannot be loaded because the connection fails',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, storesPage }) => {
-      await test.step('Given the stores request fails on the network', async () => {
+      await test.step("Given the visitor's connection fails while stores load", async () => {
         await mockNetworkError();
       });
 
@@ -138,13 +138,13 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
   );
 
   test(
-    'visitor should see a server error message when the stores API returns a server error',
+    'visitor should see a server error message when stores cannot be loaded because of a server problem',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, storesPage }) => {
-      await test.step('Given the stores API returns a server error', async () => {
+      await test.step('Given the store service is unavailable', async () => {
         await mockServerError();
       });
 

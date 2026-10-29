@@ -134,8 +134,10 @@ calls.
   left as a stray `READY` execution.
 - Squash's name and description fields are owned by the sync. Steps, requirement
   links and custom fields are not touched.
-- The integration is ~1,400 lines in `src/squash/` with its own unit tests
-  (`npm run test:squash`), the one exception to this repository being acceptance-only.
+- The integration shipped as about 1,400 lines under `src/squash/`, with unit
+  tests that were the one exception to this repository being acceptance-only.
+  That client now lives in `@playwright-squash/playwright-squash`; the unit tests
+  moved with it.
 
 ## References
 

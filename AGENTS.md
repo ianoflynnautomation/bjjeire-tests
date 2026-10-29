@@ -25,7 +25,6 @@ npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentic
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
-npm run test:squash       # Unit tests for the Squash TM integration (no browser)
 npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
 npm run squash:run        # Publish with --squash-* flags (a release is SQUASH_TM_RELEASE or --squash-release; see docs/squash-tm.md)
 npm run squash:prune      # Preview (or --yes: delete) sync-created Squash cases in a folder, e.g. after renames
@@ -314,7 +313,7 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 - Strict mode: `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`,
   `noImplicitReturns`. No `any`; no floating promises (both lint errors).
 - `import type { Foo }` / `import { type Foo }` (enforced by `consistent-type-imports`).
-- Path aliases: `@shared/*`, `@api/*`, `@ui/*`, `@squash/*`.
+- Path aliases: `@shared/*`, `@api/*`, `@ui/*`. `@squash/annotations` resolves through `src/squash-package/annotations.ts` to `@playwright-squash/playwright-squash`.
 - With `exactOptionalPropertyTypes`, use conditional objects
   (`input.x ? { x: input.x } : {}`) instead of spreading `undefined`.
 - DTO types mirror the app repo; deviate only when the wire truth differs.
@@ -338,9 +337,11 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   (policy in `.github/zizmor.yml`: `actions/*` may float on tags, everything else
   SHA-pinned). Renovate (`renovate.json`) bumps `@playwright/test`, the Dockerfile
   base image, and the workflow default image in one grouped PR — they must match.
-- Squash TM is an opt-in plugin too ([docs/squash-tm.md](docs/squash-tm.md); agent skill `squash-tm`): `src/squash/`
-  (domain / application / infrastructure, wired only in `composition.ts`). The results
-  reporter loads only when `SQUASH_TM_MODE` is set; CI publishes once from
+- Squash TM is an opt-in plugin ([docs/squash-tm.md](docs/squash-tm.md); agent skill `squash-tm`).
+  The running client is the npm package `@playwright-squash/playwright-squash`: `squash:sync`,
+  `squash:run`, `squash:prune`, `squash:select`, and the results reporter load that package.
+  Specs import `squash()` from `@squash/annotations`, which re-exports the package through
+  `src/squash-package/annotations.ts`. The results reporter loads only when `SQUASH_TM_MODE` is set; CI publishes once from
   `merge-reports`, never per shard ([examples/squash-tm-publish.yml](examples/squash-tm-publish.yml)).
   Only tests tagged `@squash` sync. A test's Squash identity is a `@Squash_<id>` pin tag, or else its `spec#title path` in the
   case's automated test reference; the visible reference is a label such as `EVENTS-012`, and synced cases are Gherkin (manual ones stay Classic),
@@ -349,9 +350,8 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   (typed; values in docs/squash-tm.md). Settings cascade defaults < `squash-config.json` (and its `projects.<id>` section)
   < `SQUASH_TM_*` env < `--squash-*` CLI flags (one schema, `config-schema.ts`). Missing
   `SQUASH_TM_*` keys are filled from `.env` files for `SQUASH_TM_PROFILE`, otherwise `APP_ENV`.
-  Auth is a personal API token in `SQUASH_TM_TOKEN` (env only; no username/password). Its unit tests
-  (`src/squash/tests/*.unit.spec.ts`, `playwright.squash.config.ts`) are the one exception
-  to acceptance-only. The local Squash stack lives in `squash-tm/`.
+  Auth is a personal API token in `SQUASH_TM_TOKEN` (env only; no username/password).
+  The client's unit tests live in that package. The local Squash stack lives in `squash-tm/`.
 - Observability is an opt-in plugin: `src/shared/otel/otel-reporter.ts` (a custom
   Playwright reporter) activates only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set.
   Every test is the root span of its own **distributed trace**: fixtures inject a
@@ -374,4 +374,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-10-25.
+script, project, or workflow it documents. Last reviewed: 2026-10-26.

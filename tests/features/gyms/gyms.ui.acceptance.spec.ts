@@ -107,7 +107,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see website and map links pointing to the right destinations on a gym card',
+    "visitor should reach a gym's website and map location from its card",
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
@@ -128,7 +128,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see only gyms from the county filtered by',
+    'visitor should see only gyms from the chosen county when filtering by county',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
@@ -183,13 +183,13 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see the no-data message when the API returns no gyms',
+    'visitor should see the no-data message when there are no gyms to show',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockGyms, gymsPage }) => {
-      await test.step('Given the gyms API returns no gyms', async () => {
+      await test.step('Given there are no gyms to show', async () => {
         await mockGyms(emptyPage);
       });
 
@@ -205,13 +205,13 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see a network error message when the gyms request fails',
+    'visitor should see a network error message when gyms cannot be loaded because the connection fails',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockNetworkError, gymsPage }) => {
-      await test.step('Given the gyms request fails on the network', async () => {
+      await test.step("Given the visitor's connection fails while gyms load", async () => {
         await mockNetworkError();
       });
 
@@ -226,13 +226,13 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see a server error message when the gyms API returns a server error',
+    'visitor should see a server error message when gyms cannot be loaded because of a server problem',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerError, gymsPage }) => {
-      await test.step('Given the gyms API returns a server error', async () => {
+      await test.step('Given the gym service is unavailable', async () => {
         await mockServerError();
       });
 
@@ -247,13 +247,13 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
   );
 
   test(
-    'visitor should see the gym list after retrying a failed request',
+    'visitor should see the gym list after retrying when gyms failed to load',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ mockServerErrorOnce, gymsPage }) => {
-      await test.step('Given the gyms API fails once with a server error', async () => {
+      await test.step('Given the gym service is briefly unavailable', async () => {
         await mockServerErrorOnce();
       });
 

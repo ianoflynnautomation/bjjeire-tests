@@ -76,9 +76,7 @@ npm run squash:prune -- --folder Playwright --folder / --yes
 npm run squash:select
 npx playwright test --test-list=playwright/.cache/squash-test-list.txt --shard=1/4
 SQUASH_TM_MODE=publish npx playwright merge-reports \
-  --reporter=html,./src/squash/reporters/results.reporter.ts all-blob-reports
-
-npm run test:squash
+  --reporter=html,@playwright-squash/playwright-squash/results all-blob-reports
 ```
 
 These combinations are rejected before any test runs:
@@ -94,7 +92,7 @@ CI blueprint, with central-pipeline inputs:
 
 ## Configuration
 
-One schema (`src/squash/infrastructure/config-schema.ts`) with flat keys, read
+One schema in `@playwright-squash/playwright-squash` (`src/infrastructure/config-schema.ts`) with flat keys, read
 from three sources. Each later source overrides the earlier ones key by key
 (the usual twelve-factor order):
 
@@ -198,14 +196,12 @@ id the pipeline passes.
 
 ### Sharing the integration
 
-Share `src/squash/` as an internal package, with this repository's
-`squash-config.json` left behind. That file is BjjEire's folder layout. A copy
-of it places another team's cases in `BjjEire/...` and the sync reports success.
-The package's composition root (`composition.ts`) is the adapter. It depends on
-`ConfigError` and `readEnv` from `@shared/config`, and on `resolveRunId` when no
-CI build id is available. A consumer provides those or replaces them. Connection
-settings stay in the
-environment (`SQUASH_TM_URL`, `SQUASH_TM_TOKEN`, `SQUASH_TM_PROJECT_ID`). The
+The client is the published package
+[`@playwright-squash/playwright-squash`](https://github.com/ianoflynnautomation/playwright-squash).
+This repository keeps `squash-config.json`, which is BjjEire's folder layout. A copy
+of that file places another team's cases in `BjjEire/...` and the sync reports success.
+The package owns its config errors, env reading, and run id. Connection
+settings stay in the environment (`SQUASH_TM_URL`, `SQUASH_TM_TOKEN`, `SQUASH_TM_PROJECT_ID`). The
 token is never in the package, the config file, or a flag.
 
 Each consumer commits their own config file (`tag`, `testCaseFolder`,
@@ -399,34 +395,12 @@ serialises runs per target with `concurrency`.
 
 ## Architecture
 
-```
-src/squash/
-  domain/              Pure model: test cases, results, pins, keys, folder placement rules
-  application/         Use cases against ports (no HTTP, no Playwright, no config parsing)
-    contracts.ts         TestCaseRepository, ExecutionRepository, FolderTree, SquashStrategy, Logger
-    test-case-synchronizer.ts    Creates/updates cases; places new ones by folder rule
-    test-selector.ts             Folder or test suite → the tests to run
-    execution-context-resolver.ts  Target → the iteration results go to (find or create)
-    folder-path-resolver.ts      Folder path → id, creating each missing folder once
-    result-publisher.ts, result-aggregator.ts
-    dry-run-strategy.ts  DryRunStrategy: local preview, no network calls
-    remote-strategy.ts   RemoteStrategy: sync cases, then record results
-  infrastructure/      Adapters
-    config-schema.ts     The one settings schema, and env / CLI names derived from it
-    config.ts            SquashConfigLoader: file < project section < env < CLI, credentials, conflicts
-    squash-client.ts, retrying-squash-client.ts  Transport contract, fetch, backoff decorator
-    squash-test-case-repository.ts, squash-execution-repository.ts, squash-folder-tree.ts
-    rest-schemas.ts      Zod schemas for Squash REST responses and request bodies
-    payload-builder.ts   Builds request bodies; HTML-escapes everything a test supplies
-    playwright-test-parser.ts  Playwright reporter model → domain
-  composition.ts       Composition root + strategy factory: wires the concrete classes
-  reporters/           Playwright entry points: select, results and sync reporters
-  cli/run.mts          `npm run squash:run`: --squash-* flags, then select, then run
-  cli/prune.mts        `npm run squash:prune`: preview or delete sync-owned cases
-  tests/               Unit tests with in-memory fakes (`npm run test:squash`)
-```
+The client is [`@playwright-squash/playwright-squash`](https://github.com/ianoflynnautomation/playwright-squash).
+This repository keeps `squash-config.json` and `src/squash-package/annotations.ts`,
+which re-exports `squash()` so specs can keep `import { squash } from '@squash/annotations'`.
+The package's unit tests live in that repository.
 
-Dependencies point inwards: reporters → composition → infrastructure → application → domain.
+Dependencies inside the package point inwards: reporters → composition → infrastructure → application → domain.
 Squash ids are branded types (`TestCaseId`, `IterationId`, …), so passing one kind
 where another is expected fails to compile; they are minted only in the repositories and config.
 The two repositories follow their two consumers: synchronisation and selection need test

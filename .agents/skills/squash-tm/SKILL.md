@@ -6,9 +6,10 @@ author: Ian O Flynn
 
 # Squash TM
 
-`src/squash/` mirrors Playwright tests into Squash TM as test cases and records
-run results into a campaign iteration. It is opt-in twice over: nothing loads
-unless `SQUASH_TM_MODE` is set or `squash:run` is used, and only tests tagged
+The running client is the npm package `@playwright-squash/playwright-squash`.
+Specs import `@squash/annotations`, which resolves through
+`src/squash-package/annotations.ts` to the package. Nothing loads unless
+`SQUASH_TM_MODE` is set or `squash:run` is used, and only tests tagged
 `@squash` take part. Full reference: `docs/squash-tm.md`. Design:
 `docs/decisions/0001-squash-tm-integration.md`, `0002-squash-tm-execution-engine.md`.
 
@@ -156,9 +157,6 @@ npm run squash:run -- --squash-mode=publish --squash-test-suite-id=3
 
 # Retire sync-created cases in old folders (preview; add --yes to delete, only with the user's go-ahead)
 npm run squash:prune -- --folder Playwright --folder /
-
-# Unit tests for the integration
-npm run test:squash
 ```
 
 Local Squash: `squash-tm/` (`./init-squash.sh`, `docker compose up -d`),
@@ -170,7 +168,8 @@ the documented minikube port-forward. When both are needed, pass the app's
 
 Precedence, lowest to highest: defaults < `squash-config.json` < its
 `projects.<id>` section < `SQUASH_TM_*` env < `--squash-*` flags. One schema in
-`src/squash/infrastructure/config-schema.ts` derives every env name and flag.
+`@playwright-squash/playwright-squash` (`src/infrastructure/config-schema.ts`)
+derives every env name and flag.
 
 - `squash-config.json` (committed): `tag`, `testCaseFolder`, `folderRules`
   (`{ path, tag?, folder }`, first match wins) and per-project `projects`.
@@ -207,17 +206,8 @@ existing case (the API cannot); the sync lists misplaced cases for moving in the
 
 ## Where the code lives
 
-```
-src/squash/annotations.ts      squash() helper (what specs import)
-src/squash/domain/             identity, fields, labels, folder placement
-src/squash/application/        contracts, synchronizer, selector, publisher
-src/squash/infrastructure/     config cascade, HTTP client + retry, repositories, parser
-src/squash/reporters/          sync, select and results reporters
-src/squash/cli/run.mts         --squash-* flags → selection pass → playwright test
-src/squash/cli/prune.mts       retire sync-owned cases in named folders
-src/squash/composition.ts      the only place components are wired
-```
-
-Add behaviour behind a port in `application/contracts.ts`, implement it in
-`infrastructure/`, wire it in `composition.ts`, and cover it with a
-`src/squash/tests/*.unit.spec.ts` using the in-memory fakes in `fakes.ts`.
+`src/squash-package/annotations.ts` re-exports the package so specs can import
+`@squash/annotations`. `squash-config.json` is this suite's folder layout.
+The client, including its unit tests, is
+[playwright-squash](https://github.com/ianoflynnautomation/playwright-squash).
+Change the client in that repository.

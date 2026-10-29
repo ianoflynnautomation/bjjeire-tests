@@ -13,15 +13,18 @@
 2. visitor should see an empty state when no gym matches the search
 3. visitor should find only the gym searched for by name
 4. visitor should find a gym by part of its name
-5. visitor should see website and map links pointing to the right destinations on a gym card
-6. visitor should see only gyms from the county filtered by
+5. visitor should reach a gym's website and map location from its card
+6. visitor should see only gyms from the chosen county when filtering by county
 7. visitor should find gyms from other counties again after resetting the county filter
-8. visitor should see the no-data, network error and server error messages, and the gym list after retrying
+8. visitor should see the no-data message when there are no gyms to show
+9. visitor should see a network error message when gyms cannot be loaded because the connection fails
+10. visitor should see a server error message when gyms cannot be loaded because of a server problem
+11. visitor should see the gym list after retrying when gyms failed to load
 
 ### API
 
 1. client should receive each published gym with its details
-2. client should receive only gyms from the county filtered by
+2. client should receive only gyms from the chosen county when filtering by county
 3. client should receive gyms ordered by name
 4. client should page through the directory in distinct slices with correct links; client should receive an empty page with valid pagination for a page beyond the last
 5. client should get a bad request for an unknown county "<value>"
