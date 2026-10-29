@@ -22,7 +22,7 @@ export const NO_SEARCH_RESULTS_COPY = {
 
 export const TEST_IDS = {
   cardAddressLink: 'gym-card-address-link',
-  cardName: 'gym-card-name',
+  cardName: GYM_CARD_TEST_IDS.name,
   cardWebsiteLink: 'gym-card-website-link',
   countySelect: 'select-filter-select',
   emptyState: 'no-data-state',

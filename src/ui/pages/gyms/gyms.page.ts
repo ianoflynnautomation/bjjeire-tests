@@ -1,9 +1,10 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import type { County } from '@api/support';
 import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { getGymCardData } from './gyms.card.page';
 import { GYM_CARD_TEST_IDS, NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, TEST_IDS } from './gyms.constants';
-import type { GymCard } from './gyms.types';
+import type { GymCard, GymCardLinks } from './gyms.types';
 
 const ALL_COUNTIES_OPTION = 'all';
 
@@ -25,17 +26,21 @@ export class GymsPage extends ListPage<GymCard> {
     return this.page.getByTestId(TEST_IDS.countySelect);
   }
 
-  async filterByCounty(county: string): Promise<void> {
-    await this.selectFilter(this.countySelect, county, GYM_CARD_TEST_IDS.county);
+  async filterByCounty(county: County): Promise<void> {
+    await this.selectFilter(this.countySelect, county);
+  }
+
+  async expectOnlyCountyListed(county: County): Promise<void> {
+    await this.expectAllCardsMatchField(GYM_CARD_TEST_IDS.county, county);
   }
 
   async resetCountyFilter(): Promise<void> {
     await this.resetFilter(this.countySelect, ALL_COUNTIES_OPTION);
   }
 
-  async expectCardLinks(name: string, links: { website: string; googleMaps: string }): Promise<void> {
-    const card = this.card(name);
-    await expect(card.getByTestId(TEST_IDS.cardWebsiteLink)).toHaveAttribute('href', links.website);
-    await expect(card.getByTestId(TEST_IDS.cardAddressLink)).toHaveAttribute('href', links.googleMaps);
+  async expectCardLinks(expected: GymCardLinks): Promise<void> {
+    const card = this.card(expected.name);
+    await expect(card.getByTestId(TEST_IDS.cardWebsiteLink)).toHaveAttribute('href', expected.website);
+    await expect(card.getByTestId(TEST_IDS.cardAddressLink)).toHaveAttribute('href', expected.map);
   }
 }

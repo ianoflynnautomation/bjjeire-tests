@@ -1,4 +1,12 @@
+import { BjjEventType } from '@api/features/events/events.types';
 import { EMPTY_LINE2 } from '../common/empty.page';
+
+export const EVENT_TYPE_FILTER_LABELS = {
+  [BjjEventType.OpenMat]: 'Open Mat',
+  [BjjEventType.Seminar]: 'Seminar',
+  [BjjEventType.Camp]: 'Camp',
+  [BjjEventType.Other]: 'Other',
+} as const satisfies Record<BjjEventType, string>;
 
 export const EVENT_CARD_TEST_IDS = {
   county: 'event-card-county',

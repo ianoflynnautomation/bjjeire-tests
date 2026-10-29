@@ -1,5 +1,5 @@
 import { ClassCategory, GymStatus, type GymDto } from '@api/features/gyms/gyms.types';
-import type { GymCard } from './gyms.types';
+import type { GymCard, GymCardLinks } from './gyms.types';
 
 /** Visible chip text from `bjjeire-app` `uiContent.gyms.classCategoryLabels`. Chips are not uppercased. */
 const CLASS_CATEGORY_LABELS: Record<ClassCategory, string> = {
@@ -38,5 +38,17 @@ export function gymCardFromDto(gym: GymDto): GymCard {
     status: STATUS_BADGE_LABELS[gym.status],
     county: `${gym.county} County`,
     classes: gym.offeredClasses.map(category => CLASS_CATEGORY_LABELS[category]),
+  };
+}
+
+export function gymCardLinksFromDto(gym: GymDto): GymCardLinks {
+  if (!gym.website) {
+    throw new Error(`Gym '${gym.name}' has no website, so its card has no website link to assert`);
+  }
+  const { latitude, longitude } = gym.location.coordinates;
+  return {
+    name: gym.name,
+    website: gym.website,
+    map: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
   };
 }

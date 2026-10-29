@@ -140,11 +140,10 @@ export abstract class ListPage<TCard extends { name: string }> {
     await expectAllCardsMatch(this.listItems, this.emptyState, cardFieldTestId, value);
   }
 
-  protected async selectFilter(select: Locator, value: string, cardFieldTestId: string): Promise<void> {
+  protected async selectFilter(select: Locator, value: string): Promise<void> {
     await waitForListOrEmpty(this.listItems, this.emptyState);
     await select.selectOption(value);
     await expect(select).toHaveValue(value);
-    await this.expectAllCardsMatchField(cardFieldTestId, value);
   }
 
   protected async resetFilter(select: Locator, allValue: string): Promise<void> {

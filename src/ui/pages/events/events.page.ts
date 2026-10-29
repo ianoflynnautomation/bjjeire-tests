@@ -1,9 +1,17 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import type { BjjEventType } from '@api/features/events/events.types';
+import type { County } from '@api/support';
 import { waitForListOrEmpty, type TextMatcher } from '@ui/support';
 import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { getEventCardData } from './events.card.page';
-import { EVENT_CARD_TEST_IDS, NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, TEST_IDS } from './events.constants';
+import {
+  EVENT_CARD_TEST_IDS,
+  EVENT_TYPE_FILTER_LABELS,
+  NO_DATA_COPY,
+  NO_SEARCH_RESULTS_COPY,
+  TEST_IDS,
+} from './events.constants';
 import type { BjjEventCard } from './events.types';
 
 const ALL_COUNTIES_OPTION = 'all';
@@ -30,24 +38,31 @@ export class EventsPage extends ListPage<BjjEventCard> {
     return this.filters.getByTestId(TEST_IDS.countySelect);
   }
 
-  private typeFilterButton(label: string): Locator {
-    return this.filters.getByRole('button', { name: label, exact: true });
+  private typeFilterButton(type: BjjEventType): Locator {
+    return this.filters.getByRole('button', { name: EVENT_TYPE_FILTER_LABELS[type], exact: true });
   }
 
-  async filterByCounty(county: string): Promise<void> {
-    await this.selectFilter(this.countySelect, county, EVENT_CARD_TEST_IDS.county);
+  async filterByCounty(county: County): Promise<void> {
+    await this.selectFilter(this.countySelect, county);
+  }
+
+  async expectOnlyCountyListed(county: County): Promise<void> {
+    await this.expectAllCardsMatchField(EVENT_CARD_TEST_IDS.county, county);
   }
 
   async resetCountyFilter(): Promise<void> {
     await this.resetFilter(this.countySelect, ALL_COUNTIES_OPTION);
   }
 
-  async filterByType(typeLabel: string): Promise<void> {
+  async filterByType(type: BjjEventType): Promise<void> {
     await waitForListOrEmpty(this.listItems, this.emptyState);
-    const button = this.typeFilterButton(typeLabel);
+    const button = this.typeFilterButton(type);
     await button.click();
     await expect(button).toHaveAttribute('aria-pressed', 'true');
-    await this.expectAllCardsMatchField(EVENT_CARD_TEST_IDS.type, typeLabel);
+  }
+
+  async expectOnlyTypeListed(type: BjjEventType): Promise<void> {
+    await this.expectAllCardsMatchField(EVENT_CARD_TEST_IDS.type, EVENT_TYPE_FILTER_LABELS[type]);
   }
 
   async expectHeaderTotal(total: TextMatcher): Promise<void> {

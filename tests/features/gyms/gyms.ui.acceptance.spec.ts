@@ -1,6 +1,6 @@
 import { test, gymsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
-import { gymCardFromDto } from '@ui/pages/gyms/gyms.card.mapper';
+import { gymCardFromDto, gymCardLinksFromDto } from '@ui/pages/gyms/gyms.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import {
   SEEDED_GYM_BLACKWATER_VALLEY,
@@ -17,11 +17,7 @@ const seededGymPartialName = SEEDED_GYM_BLACKWATER_VALLEY_PARTIAL_NAME;
 const otherCountyGym = SEEDED_GYM_LIFFEY_GRAPPLING;
 const otherCountyGymCard = gymCardFromDto(otherCountyGym);
 
-const { coordinates } = seededGym.location;
-const seededGymLinks = {
-  website: seededGym.website ?? '',
-  googleMaps: `https://www.google.com/maps/search/?api=1&query=${coordinates.latitude},${coordinates.longitude}`,
-};
+const seededGymLinks = gymCardLinksFromDto(seededGym);
 
 test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash'] }, () => {
   test(
@@ -122,7 +118,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       });
 
       await test.step('Then the gym card links to its website and map', async () => {
-        await gymsPage.expectCardLinks(seededGym.name, seededGymLinks);
+        await gymsPage.expectCardLinks(seededGymLinks);
       });
     },
   );
@@ -143,6 +139,7 @@ test.describe('Gyms UI acceptance', { tag: ['@gyms', '@ui', '@desktop', '@squash
       });
 
       await test.step(`Then only gyms from ${seededGym.county} are listed`, async () => {
+        await gymsPage.expectOnlyCountyListed(seededGym.county);
         await gymsPage.expectCardAbsent(otherCountyGym.name);
         await gymsPage.expectCardData(seededGymCard);
       });

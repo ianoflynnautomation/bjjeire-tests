@@ -1,4 +1,6 @@
 import { test, eventsTestConfig } from './fixtures';
+import { BjjEventType } from '@api/features/events/events.types';
+import { EVENT_TYPE_FILTER_LABELS } from '@ui/pages/events/events.constants';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
@@ -16,7 +18,8 @@ const seededEventCard = eventCardFromDto(seededEvent);
 const seededEventPartialName = SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME;
 const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const seededSeminarCard = eventCardFromDto(seededSeminar);
-const SEMINAR_TYPE_LABEL = 'Seminar';
+const seminarType = BjjEventType.Seminar;
+const seminarTypeLabel = EVENT_TYPE_FILTER_LABELS[seminarType];
 
 test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop', '@squash'] }, () => {
   test(
@@ -178,6 +181,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       });
 
       await test.step(`Then only events from ${seededSeminar.county} are listed`, async () => {
+        await eventsPage.expectOnlyCountyListed(seededSeminar.county);
         await eventsPage.expectCardAbsent(seededEvent.name);
         await eventsPage.expectCardData(seededSeminarCard);
       });
@@ -200,6 +204,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       });
 
       await test.step(`Then only events from ${seededSeminar.county} are listed`, async () => {
+        await eventsPage.expectOnlyCountyListed(seededSeminar.county);
         await eventsPage.expectCardAbsent(seededEvent.name);
         await eventsPage.expectCardData(seededSeminarCard);
       });
@@ -230,11 +235,12 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
         await eventsPage.goTo();
       });
 
-      await test.step(`And the visitor filters by ${SEMINAR_TYPE_LABEL}`, async () => {
-        await eventsPage.filterByType(SEMINAR_TYPE_LABEL);
+      await test.step(`And the visitor filters by ${seminarTypeLabel}`, async () => {
+        await eventsPage.filterByType(seminarType);
       });
 
-      await test.step(`Then only ${SEMINAR_TYPE_LABEL} events are listed`, async () => {
+      await test.step(`Then only ${seminarTypeLabel} events are listed`, async () => {
+        await eventsPage.expectOnlyTypeListed(seminarType);
         await eventsPage.expectCardAbsent(seededEvent.name);
         await eventsPage.expectCardData(seededSeminarCard);
       });
