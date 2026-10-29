@@ -256,6 +256,8 @@ export { expect } from '@playwright/test';
 - Group with `test.describe`; tag suites and tests (`{ tag: ['@smoke'] }`) instead of
   encoding tags in titles.
 - Wrap each Given/When/Then phase in `test.step` (see the `playwright-bdd` skill).
+- What belongs in a spec file versus helpers, isolation, and flaky-test policy: see
+  the `playwright-spec-practices` skill.
 - Data-driven tests: iterate a typed `readonly` array of records and put the case in
   the title.
 

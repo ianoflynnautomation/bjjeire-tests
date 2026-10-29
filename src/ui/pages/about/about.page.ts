@@ -9,8 +9,20 @@ export class AboutPage {
     return this.page.getByRole('main');
   }
 
-  private get headerTitle(): Locator {
+  get headerTitle(): Locator {
     return this.page.getByTestId(TEST_IDS.headerTitle);
+  }
+
+  get missionSection(): Locator {
+    return this.page.getByTestId(TEST_IDS.missionSection);
+  }
+
+  get valuesSection(): Locator {
+    return this.page.getByTestId(TEST_IDS.valuesSection);
+  }
+
+  get contactSection(): Locator {
+    return this.page.getByTestId(TEST_IDS.contactSection);
   }
 
   async navigate(): Promise<void> {
@@ -22,8 +34,8 @@ export class AboutPage {
     await expect(this.page).toHaveURL(/\/about$/);
     await expect(this.main).toBeVisible();
     await expect(this.headerTitle).toBeVisible();
-    await expect(this.page.getByTestId(TEST_IDS.missionSection)).toBeVisible();
-    await expect(this.page.getByTestId(TEST_IDS.valuesSection)).toBeVisible();
-    await expect(this.page.getByTestId(TEST_IDS.contactSection)).toBeVisible();
+    await expect(this.missionSection).toBeVisible();
+    await expect(this.valuesSection).toBeVisible();
+    await expect(this.contactSection).toBeVisible();
   }
 }

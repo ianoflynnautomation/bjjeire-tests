@@ -1,6 +1,6 @@
 ---
 name: playwright-bdd
-description: Project-agnostic BDD guidelines for Playwright acceptance tests written from the user's perspective in declarative Gherkin style (per Cucumber's "Writing better Gherkin"). Covers behaviour-focused test titles, Given/When/Then as test.step titles or .feature files, declarative versus imperative steps, domain language, one behaviour per scenario, data tables and scenario outlines, and a review checklist. Use when writing, naming, or reviewing acceptance scenarios, test titles, test.step titles, or .feature files. For TypeScript coding rules see playwright-typescript-standards.
+description: Project-agnostic BDD guidelines for Playwright acceptance tests written from the user's perspective in declarative Gherkin style (per Cucumber's "Writing better Gherkin"). Covers behaviour-focused test titles, Given/When/Then as test.step titles or .feature files, declarative versus imperative steps, domain language, one behaviour per scenario, data tables and scenario outlines, and a review checklist. Use when writing, naming, or reviewing acceptance scenarios, test titles, test.step titles, or .feature files. For TypeScript coding rules see playwright-typescript-standards; for spec file structure see playwright-spec-practices.
 metadata:
   author: Ian O Flynn
 ---

@@ -186,12 +186,5 @@ export default [
     },
   },
 
-  {
-    files: ['**/*.snapshot.acceptance.spec.ts'],
-    rules: {
-      'playwright/no-skipped-test': 'off',
-    },
-  },
-
   prettierConfig,
 ];

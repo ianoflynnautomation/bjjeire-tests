@@ -1,66 +1,90 @@
-import { test, expect } from '@ui/fixtures';
+import { test } from '@ui/fixtures';
+import { Theme } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
 import { squash } from '@squash/annotations';
 
 test.describe('Theme UI acceptance', { tag: ['@layout', '@theme', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'visitor should be able to cycle through the themes, each applied and kept across reloads',
+    'visitor should see the site in dark mode by default',
     {
       tag: '@acceptance',
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
-    async ({ page }) => {
-      const html = page.locator('html');
-
+    async ({ page, headerSection }) => {
       await test.step('When a visitor opens the About page', async () => {
         await gotoAppShell(page, '/about');
       });
 
       await test.step('Then the site is in dark mode', async () => {
-        await expect(html).toHaveClass(/dark/);
-        await expect(html).not.toHaveClass(/competition/);
+        await headerSection.expectTheme(Theme.Dark);
       });
+    },
+  );
 
-      await test.step('When the visitor switches to competition mode', async () => {
-        await page.getByRole('button', { name: 'Switch to competition mode' }).click();
-      });
-
-      await test.step('Then competition mode is applied', async () => {
-        await expect(html).toHaveClass(/competition/);
-      });
-
-      await test.step('When the visitor reloads the page', async () => {
-        await page.reload();
-      });
-
-      await test.step('Then competition mode is kept', async () => {
-        await expect(html).toHaveClass(/competition/);
-      });
-
-      await test.step('When the visitor switches to light mode', async () => {
-        await page.getByRole('button', { name: 'Switch to light mode' }).click();
-      });
-
-      await test.step('Then light mode is applied', async () => {
-        await expect(html).not.toHaveClass(/dark/);
-        await expect(html).not.toHaveClass(/competition/);
+  test(
+    'visitor should keep competition mode after reloading the page',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, headerSection }) => {
+      await test.step('Given a visitor has switched to competition mode', async () => {
+        await gotoAppShell(page, '/about');
+        await headerSection.switchTheme(Theme.Competition);
       });
 
       await test.step('When the visitor reloads the page', async () => {
         await page.reload();
       });
 
-      await test.step('Then light mode is kept', async () => {
-        await expect(html).not.toHaveClass(/dark/);
+      await test.step('Then the site is still in competition mode', async () => {
+        await headerSection.expectTheme(Theme.Competition);
+      });
+    },
+  );
+
+  test(
+    'visitor should keep light mode after reloading the page',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, headerSection }) => {
+      await test.step('Given a visitor has switched to light mode', async () => {
+        await gotoAppShell(page, '/about');
+        await headerSection.switchTheme(Theme.Competition);
+        await headerSection.switchTheme(Theme.Light);
       });
 
-      await test.step('When the visitor switches to dark mode', async () => {
-        await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+      await test.step('When the visitor reloads the page', async () => {
+        await page.reload();
       });
 
-      await test.step('Then dark mode is applied', async () => {
-        await expect(html).toHaveClass(/dark/);
-        await expect(html).not.toHaveClass(/competition/);
+      await test.step('Then the site is still in light mode', async () => {
+        await headerSection.expectTheme(Theme.Light);
+      });
+    },
+  );
+
+  test(
+    'visitor should return to dark mode after cycling through every theme',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, headerSection }) => {
+      await test.step('When a visitor opens the About page', async () => {
+        await gotoAppShell(page, '/about');
+      });
+
+      await test.step('And the visitor switches through competition, light and dark mode', async () => {
+        await headerSection.switchTheme(Theme.Competition);
+        await headerSection.switchTheme(Theme.Light);
+        await headerSection.switchTheme(Theme.Dark);
+      });
+
+      await test.step('Then the site is in dark mode', async () => {
+        await headerSection.expectTheme(Theme.Dark);
       });
     },
   );

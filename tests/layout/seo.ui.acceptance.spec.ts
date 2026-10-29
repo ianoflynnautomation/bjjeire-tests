@@ -1,9 +1,12 @@
-import { test, expect } from '@ui/fixtures';
+import { test } from '@ui/fixtures';
+import { expectDocumentMeta } from '@ui/support';
 import { squash } from '@squash/annotations';
 
-const SITE_TITLE = 'BJJ Éire — Find BJJ Events & Gyms Across Ireland';
-const SITE_DESCRIPTION =
-  'Discover Brazilian Jiu-Jitsu tournaments, seminars, open mats, and gyms across Ireland. The community-first directory for BJJ in Ireland.';
+const SITE_META = {
+  title: 'BJJ Éire — Find BJJ Events & Gyms Across Ireland',
+  description:
+    'Discover Brazilian Jiu-Jitsu tournaments, seminars, open mats, and gyms across Ireland. The community-first directory for BJJ in Ireland.',
+} as const;
 
 const ROUTES = ['/events', '/gyms', '/competitions', '/stores', '/about'] as const;
 
@@ -21,8 +24,7 @@ test.describe('SEO UI acceptance', { tag: ['@layout', '@seo', '@ui', '@desktop',
         });
 
         await test.step('Then the page has the site title and description', async () => {
-          await expect(page).toHaveTitle(SITE_TITLE);
-          await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', SITE_DESCRIPTION);
+          await expectDocumentMeta(page, SITE_META);
         });
       },
     );

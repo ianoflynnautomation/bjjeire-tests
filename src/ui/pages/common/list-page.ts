@@ -44,7 +44,7 @@ export abstract class ListPage<TCard extends { name: string }> {
     return this.page.getByTestId(this.ids.listItem);
   }
 
-  protected get header(): Locator {
+  get header(): Locator {
     return this.page.getByTestId(this.ids.header);
   }
 
@@ -56,7 +56,7 @@ export abstract class ListPage<TCard extends { name: string }> {
     return this.page.getByTestId(this.ids.search).getByTestId(this.ids.searchInput);
   }
 
-  protected get emptyState(): Locator {
+  get emptyState(): Locator {
     return this.page.getByTestId(this.ids.emptyState);
   }
 
