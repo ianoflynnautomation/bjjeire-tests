@@ -16,7 +16,7 @@ async function getJoinedText(locator: Locator, separator: string): Promise<strin
 }
 
 export async function getEventCardData(locator: Locator): Promise<BjjEventCard> {
-  const [name, type, countyRaw, pricing, schedule, sessions, address, mapUrl, organiserUrl, moreInfoUrl] =
+  const [name, type, countyRaw, pricing, schedule, sessions, address, mapUrl, organiser, organiserUrl, moreInfoUrl] =
     await Promise.all([
       getText(locator.getByTestId(EVENT_CARD_TEST_IDS.name)),
       getJoinedText(locator.getByTestId(EVENT_CARD_TEST_IDS.type), ' '),
@@ -26,6 +26,7 @@ export async function getEventCardData(locator: Locator): Promise<BjjEventCard> 
       locator.getByTestId(EVENT_CARD_SESSION_TEST_ID).allInnerTexts(),
       getTextIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.address)),
       getAttributeIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.addressLink), 'href'),
+      getTextIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.organiserLink)),
       getAttributeIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.organiserLink), 'href'),
       getAttributeIfPresent(locator.getByTestId(EVENT_CARD_TEST_IDS.moreInfoLink), 'href'),
     ]);
@@ -39,6 +40,7 @@ export async function getEventCardData(locator: Locator): Promise<BjjEventCard> 
     sessions: sessions.map(line => stripSessionDate(line.trim())),
     address,
     mapUrl,
+    organiser,
     organiserUrl,
     moreInfoUrl,
   };

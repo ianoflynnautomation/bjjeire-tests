@@ -69,7 +69,10 @@
     "source=bjjeire-tests-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=bjjeire-tests-npm-cache,target=/home/vscode/.npm,type=volume",
     // Keeps the Claude Code login across rebuilds.
-    "source=bjjeire-tests-claude,target=/home/vscode/.claude,type=volume"
+    "source=bjjeire-tests-claude,target=/home/vscode/.claude,type=volume",
+    // The app and product specs, for test work that needs the app source. The
+    // host folder must exist or the container will not start.
+    "source=${localEnv:HOME}/Sources/bjjeire-java,target=/workspaces/bjjeire-java,type=bind"
   ],
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "postStartCommand": "bash .devcontainer/post-start.sh",

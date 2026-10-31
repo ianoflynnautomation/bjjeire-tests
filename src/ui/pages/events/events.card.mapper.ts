@@ -10,7 +10,16 @@ import type { BjjEventCard } from './events.types';
 
 export type ExpectedEventCard = Pick<
   BjjEventCard,
-  'name' | 'type' | 'county' | 'pricing' | 'sessions' | 'address' | 'mapUrl' | 'organiserUrl' | 'moreInfoUrl'
+  | 'name'
+  | 'type'
+  | 'county'
+  | 'pricing'
+  | 'sessions'
+  | 'address'
+  | 'mapUrl'
+  | 'organiser'
+  | 'organiserUrl'
+  | 'moreInfoUrl'
 >;
 
 const GOOGLE_MAPS_SEARCH = 'https://www.google.com/maps/search/?api=1&query=';
@@ -96,6 +105,7 @@ export function eventCardFromDto(event: BjjEventDto): ExpectedEventCard {
     sessions: event.schedule.sessions.map(session => sessionLine(event.schedule, session)),
     address: event.location.address,
     mapUrl: `${GOOGLE_MAPS_SEARCH}${event.location.coordinates.latitude},${event.location.coordinates.longitude}`,
+    organiser: `Organised by: ${event.organiser.name}`,
     organiserUrl: event.organiser.website,
     moreInfoUrl: event.eventUrl,
   };

@@ -6,6 +6,7 @@ import { expectNoDataState } from '../common/empty.page';
 import { ListPage } from '../common/list-page';
 import { getEventCardData } from './events.card.page';
 import {
+  ALL_TYPES_FILTER_LABEL,
   EVENT_CARD_TEST_IDS,
   EVENT_TYPE_FILTER_LABELS,
   NO_DATA_COPY,
@@ -59,6 +60,17 @@ export class EventsPage extends ListPage<BjjEventCard> {
     const button = this.typeFilterButton(type);
     await button.click();
     await expect(button).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  async showAllTypes(): Promise<void> {
+    await waitForListOrEmpty(this.listItems, this.emptyState);
+    const button = this.filters.getByRole('button', { name: ALL_TYPES_FILTER_LABEL, exact: true });
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  async expectTypeNotChosen(type: BjjEventType): Promise<void> {
+    await expect(this.typeFilterButton(type)).toHaveAttribute('aria-pressed', 'false');
   }
 
   async expectOnlyTypeListed(type: BjjEventType): Promise<void> {

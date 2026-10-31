@@ -60,6 +60,14 @@ tail -f /var/log/host-relay.log        # what got bound, what got skipped
 Remote environments (`APP_ENV=dev|staging`) need no relay — set `BASE_URL` /
 `API_URL` in `.env` and go.
 
+## App source
+
+`~/Sources/bjjeire-java` on the host is bind-mounted read-write at
+`/workspaces/bjjeire-java`, so the app source and `bjjeire-java/specs/` can be read
+and edited from here. Clone it to that path first: the container will not start if
+the folder is missing. Edits land directly in your host checkout. Its `node_modules`
+holds host binaries, so install and build the app on the host, not in here.
+
 ## Environment
 
 `postCreateCommand` seeds a `.env` pointing at `http://localhost:8080` only if

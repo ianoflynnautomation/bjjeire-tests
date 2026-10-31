@@ -72,6 +72,8 @@ the host — the app needs a `localhost` origin for MSAL's secure-context check,
 `host.docker.internal` is not a substitute. It has to be an entrypoint, not a
 `postStartCommand`: lifecycle hooks run in a `docker exec` whose leftovers the CLI
 kills. `node_modules` is a named volume — the host tree holds darwin-arm64 binaries.
+The host's `~/Sources/bjjeire-java` is bind-mounted read-write at
+`/workspaces/bjjeire-java`; the folder must exist or the container will not start.
 Details in `.devcontainer/README.md`.
 
 ## Playwright projects

@@ -8,6 +8,8 @@ export const EVENT_TYPE_FILTER_LABELS = {
   [BjjEventType.Other]: 'Other',
 } as const satisfies Record<BjjEventType, string>;
 
+export const ALL_TYPES_FILTER_LABEL = 'All Types';
+
 export const EVENT_CARD_TEST_IDS = {
   address: 'event-card-address',
   addressLink: 'event-card-address-link',

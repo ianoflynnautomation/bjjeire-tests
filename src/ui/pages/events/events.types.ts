@@ -8,6 +8,7 @@ export type BjjEventCard = Readonly<{
   sessions: readonly string[];
   address: string | null;
   mapUrl: string | null;
+  organiser: string | null;
   organiserUrl: string | null;
   moreInfoUrl: string | null;
 }>;

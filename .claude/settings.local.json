@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx eslint *)",
+      "Bash(APP_ENV=local npx playwright *)",
+      "Bash(find *)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -rf trace-extract)",
+      "Bash(mkdir trace-extract *)",
+      "Bash(unzip -q /Users/ianoflynn/bjjeire-tests/test-results/features-competitions-comp-ccf55-loads-the-competitions-list-chromium-desktop/trace.zip -d trace-extract)",
+      "Bash(python3 -c \"import sys,json; [print\\(l[:200]\\) for l in sys.stdin.readline\\(\\).split\\('\\\\n'\\)]\")",
+      "Bash(cat EntityLoader.cs)",
+      "Bash(cat CollectionRunner.cs)",
+      "Bash(xargs sed -n '1,80p')",
+      "Bash(xargs cat)"
+    ]
+  },
+  "enabledMcpjsonServers": ["playwright-test"],
+  "enableAllProjectMcpServers": true
+}
