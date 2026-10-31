@@ -19,6 +19,7 @@ const seededEventCard = eventCardFromDto(seededEvent);
 const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const multiDayCamp = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 const multiDayCampCard = eventCardFromDto(multiDayCamp);
+const perDayCamp = SEEDED_EVENT_TRIBES_NO_GI_CAMP;
 const seminarType = BjjEventType.Seminar;
 const seminarTypeLabel = EVENT_TYPE_FILTER_LABELS[seminarType];
 const campType = BjjEventType.Camp;
@@ -225,6 +226,28 @@ test.describe(
         await test.step(`Then events from ${multiDayCamp.county} are listed and others are not`, async () => {
           await eventsPage.expectCardData(multiDayCampCard);
           await eventsPage.expectCardAbsent(seededEvent.name);
+        });
+      },
+    );
+
+    test(
+      'visitor should see the daily rate of a camp priced per day',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step(`And the visitor searches for "${perDayCamp.name}"`, async () => {
+          await eventsPage.searchFor(perDayCamp.name);
+        });
+
+        await test.step('Then the card shows the price for one day', async () => {
+          await eventsPage.expectResultCount(1);
+          await eventsPage.expectCardData({ name: perDayCamp.name, pricing: 'EUR 55.00 per day' });
         });
       },
     );

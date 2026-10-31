@@ -6,10 +6,10 @@ import type { CompetitionDto, GetCompetitionsPaginationQuery } from './competiti
 export async function getCompetitions(
   request: APIRequestContext,
   schema: ZodType<PaginatedResponse<CompetitionDto>>,
-  { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE }: GetCompetitionsPaginationQuery = {},
+  { page = DEFAULT_PAGE, pageSize = DEFAULT_PAGE_SIZE, includeInactive }: GetCompetitionsPaginationQuery = {},
 ): Promise<PaginatedResponse<CompetitionDto>> {
   const body = await get(request, API_ROUTES.competitions, {
-    params: { page, pageSize },
+    params: { page, pageSize, ...(includeInactive === undefined ? {} : { includeInactive }) },
   });
   return expectSchema(schema, body);
 }

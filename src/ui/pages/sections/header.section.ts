@@ -8,9 +8,19 @@ export class HeaderSection {
     return this.page.getByTestId(HEADER_TEST_IDS.navigation);
   }
 
+  async openPage(name: string): Promise<void> {
+    await this.navigation.getByRole('link', { name, exact: true }).click();
+  }
+
   async expectVisible(): Promise<void> {
     await expect(this.navigation).toBeVisible();
     await expect(this.page.getByTestId(HEADER_TEST_IDS.logoLink)).toBeVisible();
+  }
+
+  async expectLogoClearOfControls(): Promise<void> {
+    const logo = await this.page.getByTestId(HEADER_TEST_IDS.logoLink).boundingBox();
+    const firstControl = await this.navigation.getByRole('button').first().boundingBox();
+    expect(logo && firstControl && logo.x + logo.width <= firstControl.x).toBe(true);
   }
 
   /** Clicks the theme toggle; it only offers the next theme in the cycle. */

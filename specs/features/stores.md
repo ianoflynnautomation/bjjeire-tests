@@ -6,7 +6,7 @@
 
 ## UI scenarios
 
-List (`@smoke`), search (full and partial), empty/error states — titles in
+List (`@smoke`), search (full and partial, names only), empty/error states — titles in
 `stores.ui.acceptance.spec.ts`.
 
 ## API scenarios
@@ -17,4 +17,4 @@ rejected as bad requests; out-of-range paging fails validation — titles in
 
 ## Constraints
 
-- No county. Search is client-side; unique search → `expectResultCount(1)`.
+- No county. Search matches the name only and is client-side; unique search → `expectResultCount(1)`.

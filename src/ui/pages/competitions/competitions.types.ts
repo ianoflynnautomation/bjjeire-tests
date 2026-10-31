@@ -5,3 +5,9 @@ export type CompetitionCard = Readonly<{
   description: string | null;
   tags: string[];
 }>;
+
+export type CompetitionCardLinks = Readonly<{
+  name: string;
+  website: string;
+  registration: string;
+}>;

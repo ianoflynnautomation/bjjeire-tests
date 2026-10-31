@@ -17,4 +17,4 @@ export type CompetitionDto = BaseApiEntityModel<CompetitionId> &
     isActive: boolean;
   }>;
 
-export type GetCompetitionsPaginationQuery = PaginationQuery;
+export type GetCompetitionsPaginationQuery = PaginationQuery & Readonly<{ includeInactive?: boolean }>;

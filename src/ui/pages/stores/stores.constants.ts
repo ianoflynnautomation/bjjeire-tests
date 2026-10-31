@@ -1,5 +1,3 @@
-import { EMPTY_LINE2 } from '../common/empty.page';
-
 export const NO_DATA_COPY = {
   title: 'No Stores Found',
   line1: 'No stores are available right now.',
@@ -9,7 +7,7 @@ export const NO_DATA_COPY = {
 export const NO_SEARCH_RESULTS_COPY = {
   title: 'No Results Found',
   line1: 'No stores matched your search. Try different keywords.',
-  line2: EMPTY_LINE2,
+  line2: 'Check the spelling or try fewer words.',
 } as const;
 
 export const TEST_IDS = {

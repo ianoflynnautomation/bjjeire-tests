@@ -1,6 +1,9 @@
 import { test, storesTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
+import { API_ROUTES, DEFAULT_PAGE_SIZE } from '@api/support';
+import { paginatePages } from '@ui/mocks/paginate.mock';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
+import { expectNoSidewaysScroll } from '@ui/support';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './seeded';
 import { squash } from '@squash/annotations';
@@ -10,6 +13,13 @@ test.use(storesTestConfig);
 const seededStore = SEEDED_STORE_ARAN_FIGHT_GEAR;
 const seededStoreCard = storeCardFromDto(seededStore);
 const seededStorePartialName = SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME;
+const LONG_LINK = `https://www.example.ie/${'a'.repeat(100)}`;
+const pageWithLongDescription = paginatePages(
+  [{ ...seededStore, description: LONG_LINK }],
+  DEFAULT_PAGE_SIZE,
+  API_ROUTES.stores,
+)[1];
+const descriptionOnlyWord = 'fixture';
 
 test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
   test(
@@ -95,6 +105,27 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
   );
 
   test(
+    'visitor should not find a store by a word only in its description',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ storesPage }) => {
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step(`And the visitor searches for "${descriptionOnlyWord}", a word only in store descriptions`, async () => {
+        await storesPage.searchFor(descriptionOnlyWord);
+      });
+
+      await test.step('Then no stores are listed', async () => {
+        await storesPage.expectNoResults();
+      });
+    },
+  );
+
+  test(
     'visitor should see the no-data message when there are no stores to show',
     {
       tag: '@acceptance',
@@ -154,6 +185,32 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
 
       await test.step('Then a server error message is displayed', async () => {
         await storesPage.expectServerErrorMessage();
+      });
+    },
+  );
+});
+
+test.describe('Stores UI acceptance: on a phone', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
+  test.use({ viewport: { width: 360, height: 740 } });
+
+  test(
+    'visitor should see a long unbroken description stay inside its card on a phone',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'low', status: 'work in progress', nature: 'non functional', type: 'regression' }),
+    },
+    async ({ mockStores, storesPage, page }) => {
+      await test.step('Given a store whose description contains a very long link', async () => {
+        await mockStores(pageWithLongDescription);
+      });
+
+      await test.step('When a visitor opens Stores', async () => {
+        await storesPage.goTo();
+        await storesPage.expectResultCount(1);
+      });
+
+      await test.step('Then the page fits the screen', async () => {
+        await expectNoSidewaysScroll(page);
       });
     },
   );

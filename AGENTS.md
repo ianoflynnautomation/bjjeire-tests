@@ -264,8 +264,7 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   only then requests the route's `lazy()` chunk. Those two serial round trips are why
   the first test in a file used to flake on a cold environment. The helpers wait for a
   route anchor on a `TIMEOUTS.appBoot` budget; assertions after that keep the tight
-  `TIMEOUTS.expect` default. Exceptions: the SEO spec (asserts static `index.html`
-  tags) and snapshot specs (keep `load` so images are settled).
+  `TIMEOUTS.expect` default. Exception: snapshot specs (keep `load` so images are settled).
 - API specs assert two things, both written in the test. The feature client
   (`getGyms`, `getBjjEvents`, `getStores`, `getCompetitions`) is called with the
   OpenAPI page schema and a typed query (`GetBjjEventsPaginationQuery` and the

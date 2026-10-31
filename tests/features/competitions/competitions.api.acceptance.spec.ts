@@ -104,6 +104,52 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
     },
   );
 
+  test(
+    'client should receive finished competitions when asking to include inactive ones',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const { data } = await test.step('When a client requests the listing including inactive competitions', () =>
+        getCompetitions(request, competitionsPageSchema, {
+          page: 1,
+          pageSize: FULL_PAGE_SIZE,
+          includeInactive: true,
+        }));
+
+      await test.step(`Then the finished competition "${SEEDED_COMPETITION_FINISHED_KERRY_COAST.name}" is listed`, () => {
+        expect(data.map(competition => competition.slug)).toContain(SEEDED_COMPETITION_FINISHED_KERRY_COAST.slug);
+      });
+    },
+  );
+
+  test(
+    'client should receive an empty page with valid pagination for a page beyond the last',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const beyondLastPage = 999;
+
+      const { data, pagination } =
+        await test.step('When a client requests a page beyond the last page of the listing', () =>
+          getCompetitions(request, competitionsPageSchema, { page: beyondLastPage, pageSize: SMALL_PAGE_SIZE }));
+
+      await test.step('Then the page is empty and its pagination points back, not forward', () => {
+        expect(data).toEqual([]);
+        expect(pagination).toMatchObject({
+          currentPage: beyondLastPage,
+          pageSize: SMALL_PAGE_SIZE,
+          hasNextPage: false,
+          hasPreviousPage: true,
+        });
+        expect(pagination.nextPageUrl).toBeNull();
+      });
+    },
+  );
+
   test.describe('Listing query parameters', () => {
     const malformed = [
       ...INVALID_BOOLEAN_QUERY_VALUES.map(value => ({ param: 'includeInactive', label: 'a non-boolean flag', value })),

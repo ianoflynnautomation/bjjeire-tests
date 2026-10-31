@@ -11,7 +11,7 @@ export const ERROR_TITLE = 'Error Loading Data';
 export const NETWORK_ERROR_MESSAGE =
   'Could not connect to the server. Please check your internet connection and try again.';
 
-export const SERVER_ERROR_MESSAGE = 'Request failed with status code 500';
+export const SERVER_ERROR_MESSAGE = 'Something went wrong on our side. Please try again in a moment.';
 
 export async function expectNetworkError(page: Page): Promise<void> {
   await expect(page.getByTestId(ERROR.title)).toHaveText(ERROR_TITLE);

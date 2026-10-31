@@ -18,9 +18,12 @@ const nameAt = (gyms: readonly GymDto[], index: number): string => {
 const firstPageGym = nameAt(manyGyms, 0);
 const secondPageGym = nameAt(manyGyms, DEFAULT_PAGE_SIZE);
 const dublinGyms = manyGymsIn(County.Dublin, DEFAULT_PAGE_SIZE + 1);
+const DUBLIN_PAGES = 2;
 const lastDublinGym = nameAt(dublinGyms, DEFAULT_PAGE_SIZE);
 const liffeyGym = SEEDED_GYM_LIFFEY_GRAPPLING;
 const corkGym = SEEDED_GYM_BLACKWATER_VALLEY;
+const UNACCENTED_NAME = 'Bru Grappling';
+const accentedGym: GymDto = { ...liffeyGym, name: 'Brú Grappling Studio' };
 const descriptionOnlyWord = 'Zanzibar';
 const addressOnlyWord = 'Ormond';
 const classCode = 'WomensOnly';
@@ -141,6 +144,7 @@ test.describe(
 
         await test.step(`And the visitor filters by ${County.Dublin}`, async () => {
           await gymsPage.filterByCounty(County.Dublin);
+          await gymsPage.expectOnPage(1, DUBLIN_PAGES);
         });
 
         await test.step('And the visitor goes to the next page', async () => {
@@ -195,6 +199,32 @@ test.describe(
         await test.step(`Then ${corkGym.county} is chosen and only its gyms are listed`, async () => {
           await gymsPage.expectCountyChosen(corkGym.county);
           await gymsPage.expectOnlyCountyListed(corkGym.county);
+        });
+      },
+    );
+
+    test(
+      'visitor should find a gym with an accented name without typing the accent',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ mockGymDirectory, gymsPage }) => {
+        await test.step('Given a gym with an accented name', async () => {
+          await mockGymDirectory([accentedGym, liffeyGym]);
+        });
+
+        await test.step('When a visitor opens Gyms', async () => {
+          await gymsPage.goTo();
+        });
+
+        await test.step('And the visitor searches for its name without the accent', async () => {
+          await gymsPage.searchFor(UNACCENTED_NAME);
+        });
+
+        await test.step('Then only that gym is listed', async () => {
+          await gymsPage.expectResultCount(1);
+          await gymsPage.expectCardData({ name: accentedGym.name });
         });
       },
     );

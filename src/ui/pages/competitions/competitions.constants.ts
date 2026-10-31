@@ -1,10 +1,9 @@
-import { EMPTY_LINE2 } from '../common/empty.page';
-
 export const TEST_IDS = {
   cardName: 'competition-card-name',
   emptyState: 'no-data-state',
   header: 'competitions-page-header',
   headerTitle: 'competitions-page-header-title',
+  headerTotal: 'competitions-page-header-total',
   listItem: 'competitions-list-item',
   search: 'competitions-page-search',
   searchInput: 'search-input',
@@ -17,12 +16,16 @@ export const COMPETITION_CARD_TEST_IDS = {
   organisation: 'competition-card-organisation',
   tags: 'competition-card-tags',
   tagItem: 'competition-card-tag-item',
+  websiteButton: 'competition-card-website-button',
+  registerButton: 'competition-card-register-button',
 } as const;
+
+export const WEBSITE_UNAVAILABLE_COPY = 'Website Unavailable';
 
 export const NO_SEARCH_RESULTS_COPY = {
   title: 'No Results Found',
   line1: 'No competitions matched your search. Try different keywords.',
-  line2: EMPTY_LINE2,
+  line2: 'Check the spelling or try fewer words.',
 } as const;
 
 export const NO_DATA_COPY = {

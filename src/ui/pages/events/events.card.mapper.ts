@@ -50,16 +50,6 @@ const EVENT_TYPE_BADGES: Record<BjjEventType, string> = {
   [BjjEventType.Other]: 'OTHER',
 };
 
-const MS_PER_DAY = 86_400_000;
-
-function scheduleSpanDays(schedule: BjjEventScheduleDto): number {
-  if (!schedule.startDate || !schedule.endDate) return 1;
-  const start = new Date(schedule.startDate);
-  const end = new Date(schedule.endDate);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 1;
-  return Math.floor((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
-}
-
 function sessionsInScope(schedule: BjjEventScheduleDto, option: BjjEventPricingModelDto): number {
   const sessions = schedule.sessions;
   if (sessions.length === 0) return 1;
@@ -87,8 +77,7 @@ function pricingDisplay(schedule: BjjEventScheduleDto, option: BjjEventPricingMo
     if (isWeekly) {
       return `${label}${money(option.amount * sessionsInScope(schedule, option))} per week`;
     }
-    const days = option.durationDays && option.durationDays > 0 ? option.durationDays : scheduleSpanDays(schedule);
-    return `${label}${money(option.amount * days)} per day`;
+    return `${label}${money(option.amount)} per day`;
   }
 
   return `${label}${money(option.amount)}`;
