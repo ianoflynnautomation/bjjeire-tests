@@ -1,0 +1,41 @@
+{
+  "id": "mutation-auditor-triage",
+  "tier": "slow",
+  "agent": "playwright-mutation-auditor",
+  "why": "Known answers from the 2026-10-29 audit: schedule.startDate is a gap (shown, not asserted), description is equivalent (never shown), name is killed.",
+  "prompt": "Mutation audit the events UI specs, limited to mutants matching 'schedule\\.startDate|description$|rotate:name$' (use --only). Write the triaged report.",
+  "budgetUsd": 4,
+  "timeoutMin": 25,
+  "setup": [{ "delete": "specs/mutation/2026-10-29-events.md" }],
+  "checks": [
+    { "name": "writes only a mutation report", "type": "changed_only_within", "allow": ["specs/mutation/**"] },
+    {
+      "name": "startDate classed as a gap",
+      "type": "section_matches",
+      "glob": "specs/mutation/*events*.md",
+      "heading": "Gaps",
+      "pattern": "startDate"
+    },
+    {
+      "name": "description classed as equivalent",
+      "type": "section_matches",
+      "glob": "specs/mutation/*events*.md",
+      "heading": "Equivalent",
+      "pattern": "description"
+    },
+    {
+      "name": "points at ExpectedEventCard",
+      "type": "new_file_matches",
+      "glob": "specs/mutation/*events*.md",
+      "pattern": "ExpectedEventCard|cardFromDto",
+      "critical": false
+    },
+    {
+      "name": "no browser left open",
+      "type": "command_output_matches",
+      "run": "npx playwright cli list",
+      "pattern": "no browsers",
+      "critical": false
+    }
+  ]
+}

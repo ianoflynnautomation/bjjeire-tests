@@ -1,0 +1,50 @@
+{
+  "id": "planner-stores-coverage",
+  "tier": "slow",
+  "agent": "playwright-test-planner",
+  "mcp": true,
+  "why": "Planning is open-ended; its contract is not. Only specs/ may change, new scenarios land under ## Planned with layer, data and Given/When/Then, titles follow the actor convention, and steps stay declarative.",
+  "prompt": "Plan acceptance coverage for the Stores page.",
+  "budgetUsd": 5,
+  "timeoutMin": 30,
+  "setup": [],
+  "checks": [
+    {
+      "name": "edits only specs/",
+      "type": "changed_only_within",
+      "allow": ["specs/**"]
+    },
+    {
+      "name": "adds planned scenarios",
+      "type": "section_matches",
+      "glob": "specs/features/stores.md",
+      "heading": "Planned",
+      "pattern": "####\\s+(visitor|client) should "
+    },
+    {
+      "name": "each planned scenario states its layer",
+      "type": "section_matches",
+      "glob": "specs/features/stores.md",
+      "heading": "Planned",
+      "pattern": "Layer:\\s*(UI|API)"
+    },
+    {
+      "name": "Given/When/Then steps",
+      "type": "section_matches",
+      "glob": "specs/features/stores.md",
+      "heading": "Planned",
+      "pattern": "(When|Then) (a|the) (visitor|client)"
+    },
+    {
+      "name": "steps are declarative",
+      "type": "diff_lacks",
+      "pattern": "getBy|data-testid|page\\.|\\b(200|400|404|422|429|500)\\b|https?://"
+    },
+    {
+      "name": "no plan files",
+      "type": "command_output_matches",
+      "run": "ls specs/*.plan.md 2>&1 || true",
+      "pattern": "No such file"
+    }
+  ]
+}

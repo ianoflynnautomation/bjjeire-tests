@@ -1,5 +1,6 @@
 import { devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from '@playwright/test';
 import { env } from '@shared/config/env';
+import { readEnvFlag } from '@shared/config/process-env';
 import { DESKTOP_VIEWPORT, QUARANTINE_TAG } from '@shared/config/playwright';
 
 export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
@@ -8,6 +9,8 @@ const UI_SETUP_TEST_MATCH = /.*\/auth\.setup\.ts$/;
 const UI_TEST_MATCH = /.*\.ui\.acceptance\.spec\.ts$/;
 const SNAPSHOT_TEST_MATCH = /.*\.snapshot\.acceptance\.spec\.ts$/;
 const A11Y_TEST_MATCH = /.*\.a11y\.acceptance\.spec\.ts$/;
+const AGENT_SEED_TEST_MATCH = /.*\/agents\/(seed|explore)\.spec\.ts$/;
+const PERF_TEST_MATCH = /.*\.perf\.acceptance\.spec\.ts$/;
 const SMOKE_TAG = /@smoke/;
 const WIDE_TAGS_GREP = /@layout|@wide/;
 const MOBILE_TAGS_GREP = /@smoke|@mobile/;
@@ -148,8 +151,50 @@ function mobileProjects(ctx: AuthContext): Project[] {
   ];
 }
 
+/**
+ * The seed the Playwright test agents (planner, generator, healer) start every
+ * browser session from. It exists only when the `playwright-test` MCP server
+ * sets `PW_AGENT_SEED` (see `.mcp.json`), so suite and CI runs never see it.
+ */
+function agentSeedProjects(ctx: AuthContext): Project[] {
+  if (!readEnvFlag('PW_AGENT_SEED', false)) return [];
+  return [
+    {
+      name: 'agent-seed',
+      testMatch: AGENT_SEED_TEST_MATCH,
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE),
+    },
+  ];
+}
+
+/**
+ * Boot-performance budgets (`*.perf.acceptance.spec.ts`). Opt-in with `PW_PERF` and run with
+ * one worker (`npm run test:perf`): timings measured under parallel load are noise.
+ */
+function perfProjects(ctx: AuthContext): Project[] {
+  if (!readEnvFlag('PW_PERF', false)) return [];
+  return [
+    {
+      name: 'perf',
+      testMatch: PERF_TEST_MATCH,
+      fullyParallel: false,
+      retries: 0,
+      dependencies: ctx.dependencies,
+      use: desktopUse(ctx, CHROMIUM_DESKTOP_DEVICE),
+    },
+  ];
+}
+
 export function createUiProjects(): Project[] {
   const ctx = resolveAuthContext();
   const setup: Project[] = ctx.configured ? [{ name: 'setup', testMatch: UI_SETUP_TEST_MATCH }] : [];
-  return [...setup, ...desktopProjects(ctx), ...lightProjects(ctx), ...mobileProjects(ctx)];
+  return [
+    ...setup,
+    ...desktopProjects(ctx),
+    ...lightProjects(ctx),
+    ...mobileProjects(ctx),
+    ...agentSeedProjects(ctx),
+    ...perfProjects(ctx),
+  ];
 }

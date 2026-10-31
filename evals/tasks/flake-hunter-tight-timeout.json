@@ -1,0 +1,56 @@
+{
+  "id": "flake-hunter-tight-timeout",
+  "tier": "slow",
+  "agent": "playwright-flake-hunter",
+  "why": "Someone tightened ListPage.expectResultCount to 340 ms, just above the search debounce (~300 ms). It fails about 1 run in 10 with 4 workers on the reference machine (2026-10-30; the rate is machine-dependent). The fix is the default web-first timeout in the page object, not retries, sleeps or a looser test.",
+  "prompt": "'visitor should find only the event searched for by name' in tests/features/events/events.ui.acceptance.spec.ts is flaky: it failed 2 of the last 20 CI runs on chromium-desktop and passes on retry. Find the cause and fix it.",
+  "budgetUsd": 6,
+  "timeoutMin": 40,
+  "setup": [
+    {
+      "file": "src/ui/pages/common/list-page.ts",
+      "find": "    await expect(this.listItems).toHaveCount(count);",
+      "replace": "    await expect(this.listItems).toHaveCount(count, { timeout: 340 });"
+    }
+  ],
+  "selfTest": {
+    "revertSetup": true,
+    "output": "Failure rate 4/40 with 4 workers. Cause: the 340 ms timeout is barely above the search debounce."
+  },
+  "checks": [
+    {
+      "name": "removes the tight timeout",
+      "type": "file_not_matches",
+      "path": "src/ui/pages/common/list-page.ts",
+      "pattern": "toHaveCount\\(count, \\{ timeout: [1-9]\\d{0,2} \\}\\)"
+    },
+    {
+      "name": "keeps a web-first count",
+      "type": "file_matches",
+      "path": "src/ui/pages/common/list-page.ts",
+      "pattern": "await expect\\(this\\.listItems\\)\\.toHaveCount\\(count"
+    },
+    {
+      "name": "spec and config untouched",
+      "type": "unchanged",
+      "paths": ["tests/**", "src/shared/config/**", "playwright*.ts"]
+    },
+    {
+      "name": "no sleeps or retries",
+      "type": "diff_lacks",
+      "pattern": "waitForTimeout|retries|networkidle|@quarantine|\\.fixme\\("
+    },
+    {
+      "name": "stable under load",
+      "type": "command",
+      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts tests/features/events/events.ui.acceptance.spec.ts --project=chromium-desktop -g 'searched for by name|header count match' --repeat-each=10 --workers=4 --max-failures=0 --retries=0 --reporter=line"
+    },
+    { "name": "names the timeout as the cause", "type": "output_matches", "pattern": "timeout|debounce", "flags": "i" },
+    {
+      "name": "reports a measured failure rate",
+      "type": "output_matches",
+      "pattern": "\\d+\\s*(/|of|out of)\\s*\\d+|\\d+\\s*%",
+      "critical": false
+    }
+  ]
+}

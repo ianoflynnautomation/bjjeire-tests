@@ -63,6 +63,13 @@ npx playwright test --project=chromium-desktop --headed     # watch it run
 npx playwright test --ui                                    # Playwright UI mode
 ```
 
+## Test agents
+
+Claude Code subagents plan, generate, heal and review tests against a running app:
+`playwright-test-planner`, `playwright-test-generator`, `playwright-test-healer`,
+`playwright-api-tester`, `playwright-flake-hunter` and `playwright-test-reviewer`.
+Setup, example prompts and troubleshooting: [docs/agents.md](docs/agents.md).
+
 ## Reports & debugging
 
 ```sh

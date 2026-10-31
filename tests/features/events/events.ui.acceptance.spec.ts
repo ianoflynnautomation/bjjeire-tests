@@ -1,14 +1,18 @@
 import { test, eventsTestConfig } from './fixtures';
 import { BjjEventType } from '@api/features/events/events.types';
+import { DEFAULT_PAGE_SIZE } from '@api/support';
 import { EVENT_TYPE_FILTER_LABELS } from '@ui/pages/events/events.constants';
 import { faker } from '@faker-js/faker';
 import { eventCardFromDto } from '@ui/pages/events/events.card.mapper';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import {
+  SEEDED_EVENT_ATLANTIC_COAST_CAMP,
   SEEDED_EVENT_LEINSTER_OPEN_MAT,
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
+  SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT,
 } from './seeded';
+import { firstPageOfManyEvents } from './testdata/multi-page';
 import { squash } from '@squash/annotations';
 
 test.use(eventsTestConfig);
@@ -18,6 +22,11 @@ const seededEventCard = eventCardFromDto(seededEvent);
 const seededEventPartialName = SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME;
 const seededSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const seededSeminarCard = eventCardFromDto(seededSeminar);
+const weeklyOpenMat = SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT;
+const weeklyOpenMatCard = eventCardFromDto(weeklyOpenMat);
+const multiDayCamp = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
+const multiDayCampCard = eventCardFromDto(multiDayCamp);
+const MANY_EVENTS = 45;
 const seminarType = BjjEventType.Seminar;
 const seminarTypeLabel = EVENT_TYPE_FILTER_LABELS[seminarType];
 
@@ -311,3 +320,75 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
     },
   );
 });
+
+test.describe(
+  'Events UI acceptance: card details and paging',
+  { tag: ['@bjj-events', '@events', '@ui', '@desktop', '@squash'] },
+  () => {
+    test(
+      'visitor should see the weekly session times of a recurring open mat',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step(`And the visitor searches for "${weeklyOpenMat.name}"`, async () => {
+          await eventsPage.searchFor(weeklyOpenMat.name);
+        });
+
+        await test.step('Then the open mat is listed with its weekday sessions, venue and links', async () => {
+          await eventsPage.expectResultCount(1);
+          await eventsPage.expectCardData(weeklyOpenMatCard);
+        });
+      },
+    );
+
+    test(
+      "visitor should see each day's session of a multi-day camp",
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step(`And the visitor searches for "${multiDayCamp.name}"`, async () => {
+          await eventsPage.searchFor(multiDayCamp.name);
+        });
+
+        await test.step('Then the camp is listed with one session per day, its venue and links', async () => {
+          await eventsPage.expectResultCount(1);
+          await eventsPage.expectCardData(multiDayCampCard);
+        });
+      },
+    );
+
+    test(
+      'visitor should see the total number of events in the header when the list spans several pages',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ mockBjjEvents, eventsPage }) => {
+        await test.step(`Given there are ${MANY_EVENTS} events, more than fit on one page`, async () => {
+          await mockBjjEvents(firstPageOfManyEvents(MANY_EVENTS));
+        });
+
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step('Then the header counts every event, not just the first page', async () => {
+          await eventsPage.expectHeaderTotal(`Found ${MANY_EVENTS} events.`);
+          await eventsPage.expectResultCount(DEFAULT_PAGE_SIZE);
+        });
+      },
+    );
+  },
+);

@@ -1,5 +1,7 @@
 import { test as base, expect } from '@playwright/test';
+import { readEnv } from '@shared/config/process-env';
 import { buildTraceHeaders, testTraceContext, traceAnnotations } from '@shared/otel/trace-context';
+import { annotateMutation, installResponseMutation } from '@ui/mocks/mutation.mock';
 import { FooterSection } from '@ui/pages/sections/footer.section';
 import { HeaderSection } from '@ui/pages/sections/header.section';
 import { SupportModal } from '@ui/pages/support/bitcoin-support.modal';
@@ -21,6 +23,13 @@ export type CoreUiFixtures = {
    */
   featureFlagOverrides: FeatureFlagOverrides;
   featureFlags: void;
+  /**
+   * Mutation-audit hook (`scripts/mutation-audit.mjs`): a `PW_MUTANT` spec such as
+   * `bjjevent:rotate:county`, or `observe`. Unset in every normal run, which makes
+   * `responseMutation` a no-op.
+   */
+  responseMutant: string | undefined;
+  responseMutation: void;
   headerSection: HeaderSection;
   footerSection: FooterSection;
   supportModal: SupportModal;
@@ -43,6 +52,22 @@ export const test = base.extend<CoreUiFixtures>({
     async ({ page, featureFlagOverrides }, use) => {
       await stubFeatureFlags(page, featureFlagOverrides);
       await use();
+    },
+    { auto: true },
+  ],
+
+  responseMutant: [readEnv('PW_MUTANT'), { option: true }],
+
+  // Registered before any feature mock, so a spec's own `page.route` still wins.
+  responseMutation: [
+    async ({ page, responseMutant }, use, testInfo) => {
+      if (responseMutant === undefined) {
+        await use();
+        return;
+      }
+      const report = await installResponseMutation(page, responseMutant);
+      await use();
+      annotateMutation(testInfo, report());
     },
     { auto: true },
   ],

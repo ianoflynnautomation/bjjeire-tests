@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "playwright-test": {
+      "command": "npx",
+      "args": ["playwright", "run-test-mcp-server", "--config", "playwright.ui.config.ts", "--headless"],
+      "env": {
+        "PW_AGENT_SEED": "true"
+      }
+    }
+  }
+}

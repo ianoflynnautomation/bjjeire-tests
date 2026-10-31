@@ -1,0 +1,36 @@
+{
+  "id": "healer-app-bug",
+  "tier": "fast",
+  "agent": "playwright-test-healer",
+  "why": "The page shows the wrong county for events (simulated with PW_MUTANT). The test is right; the healer must report, not weaken it.",
+  "prompt": "'visitor should find only the event searched for by name' in tests/features/events/events.ui.acceptance.spec.ts fails on chromium-desktop. Heal it.",
+  "budgetUsd": 4,
+  "timeoutMin": 20,
+  "env": {
+    "PW_MUTANT": "bjjevent:rotate:county"
+  },
+  "setup": [],
+  "checks": [
+    {
+      "name": "changes no test code",
+      "type": "unchanged",
+      "paths": ["tests/**", "src/**"]
+    },
+    {
+      "name": "reports a product defect",
+      "type": "output_matches",
+      "pattern": "app(lication)? (bug|defect)|product (bug|defect)|frontend (bug|defect)|wrong county|PW_MUTANT|mutant|mutation",
+      "flags": "i"
+    },
+    {
+      "name": "no browser left open",
+      "type": "command_output_matches",
+      "run": "npx playwright cli list",
+      "pattern": "no browsers",
+      "critical": false
+    }
+  ],
+  "selfTest": {
+    "output": "Root cause: app bug. The card shows the wrong county for the event; the test is correct."
+  }
+}

@@ -1,13 +1,18 @@
 ---
 name: playwright-explore-website
-description: Explore a website for acceptance testing with Playwright MCP or the pinned CLI. Use when asked to explore a page, map user flows, or find what to cover.
+description: Explore the BjjEire app in a browser to plan acceptance coverage for a feature or page. Use when asked to explore a page, map user flows, or find what is untested. Harness-neutral entry point to the playwright-test-planner agent.
 ---
 
-# Website exploration for testing
+# Explore the app to plan coverage
 
-Follow `.agents/skills/playwright-cli/SKILL.md`.
+The procedure is the planner agent: follow
+[`.claude/agents/playwright-test-planner.md`](../../../.claude/agents/playwright-test-planner.md).
+In Claude Code, delegate to that agent instead of running these steps inline.
 
-1. Open the URL the user gave. If they mean the app under test and give no URL, use `http://127.0.0.1:8080`. If neither is clear, ask for a URL.
-2. Walk 3–5 core flows. Snapshot before each interaction. Record the accessible name and role, plus the outcome you observed.
-3. Close the browser.
-4. Summarize the flows. Propose acceptance cases whose titles match `specs/features/` and whose files follow `.specify/rules/playwright-rules.md`. Do not write those specs until asked.
+Harnesses without the `playwright-test` MCP server drive the browser with
+`npx playwright cli` (see `.agents/skills/playwright-cli/SKILL.md`). Start from the
+seed state the planner's `planner_setup_page` gives: signed in, feature flags pinned on,
+app shell mounted. Running `tests/agents/seed.spec.ts` with `PW_AGENT_SEED=true` and
+`--debug=cli`, then attaching, gives the same page.
+
+The output is scenarios in `specs/features/<feature>.md`, not spec code.

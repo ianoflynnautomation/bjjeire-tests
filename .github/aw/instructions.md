@@ -26,11 +26,17 @@ Healing inputs, in order:
 Use `@aplaytest/*` (the `atest` repo) for classify / heal / score. Do not
 re-run the full suite inside the agent job.
 
+`playwright-fix` may re-run the **failing tests only**, against the Docker
+stack its `steps:` start on loopback (`APP_ENV=docker`, no auth). Delegate UI
+failures to the `playwright-test-healer` subagent (Playwright CLI, not MCP) and
+API failures to `playwright-api-tester`. A test that passes on the stack but
+failed upstream is environment or flake evidence, not a clean bill of health.
+
 ## Specs
 
 - Acceptance specs: `specs/features/`.
 - Constitution: `.specify/memory/constitution.md`.
-- Playwright rules: `.specify/rules/playwright-rules.md`.
+- Playwright rules: `AGENTS.md` (§ Test conventions, § Guardrails). There is no separate digest.
 - Product architecture and Mongo contracts: `bjjeire-java/specs/` (read via
   GitHub if needed; do not copy them into this repo).
 

@@ -1,0 +1,39 @@
+{
+  "id": "explorer-discipline",
+  "tier": "slow",
+  "agent": "playwright-exploratory-tester",
+  "why": "Discovery is open-ended; discipline is not. Report written from the template, nothing else touched, budget respected, session closed.",
+  "prompt": "Explore Gyms search and the county filter with reload and back/forward to discover state-sync bugs. Budget 25 actions.",
+  "budgetUsd": 5,
+  "timeoutMin": 30,
+  "setup": [],
+  "checks": [
+    { "name": "writes only an exploration report", "type": "changed_only_within", "allow": ["specs/exploration/**"] },
+    {
+      "name": "report follows the template",
+      "type": "new_file_matches",
+      "glob": "specs/exploration/*.md",
+      "pattern": "## Findings[\\s\\S]*## Candidate scenarios"
+    },
+    {
+      "name": "states the charter and budget",
+      "type": "new_file_matches",
+      "glob": "specs/exploration/*.md",
+      "pattern": "Charter[\\s\\S]*Budget"
+    },
+    {
+      "name": "no browser left open",
+      "type": "command_output_matches",
+      "run": "npx playwright cli list",
+      "pattern": "no browsers"
+    },
+    {
+      "name": "mentions the county filter",
+      "type": "new_file_matches",
+      "glob": "specs/exploration/*.md",
+      "pattern": "county",
+      "flags": "i",
+      "critical": false
+    }
+  ]
+}

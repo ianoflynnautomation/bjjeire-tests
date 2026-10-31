@@ -1,13 +1,17 @@
 ---
 name: playwright-generate-test
-description: Generate a Playwright acceptance spec from a scenario by driving the live page with Playwright MCP or the pinned CLI first. Use when asked to turn a user flow into a test.
+description: Turn one planned UI scenario from specs/features/<feature>.md into a passing Playwright spec in the feature slice, rehearsing it in a live browser first. Use when asked to turn a user flow or planned scenario into a test. Harness-neutral entry point to the playwright-test-generator agent.
 ---
 
-# Test generation
+# Generate a test from a planned scenario
 
-Follow `.agents/skills/playwright-cli/SKILL.md` and `.specify/rules/playwright-rules.md`. CLI codegen, `--debug=cli` attach, and healing are in `.agents/skills/playwright-cli/references/test-generation.md`.
+The procedure is the generator agent: follow
+[`.claude/agents/playwright-test-generator.md`](../../../.claude/agents/playwright-test-generator.md).
+In Claude Code, delegate to that agent instead of running these steps inline. API
+scenarios follow [`.claude/agents/playwright-api-tester.md`](../../../.claude/agents/playwright-api-tester.md).
 
-1. If the user gives no scenario, ask for one. Do not write a spec from the scenario text alone.
-2. Drive every step with MCP or the CLI. Snapshot before each action.
-3. After the flow succeeds, add the spec under `tests/features/<feature>/` using that feature's `./fixtures` and page object. Titles: `<actor> should <outcome> [when <context>]` (`visitor` for UI, `client` for API), matching `specs/features/` when a living spec exists. Locators go through the page object. On the CLI, `generate-locator` is the bridge from a ref. Never paste snapshot refs into a spec.
-4. Run that spec and fix it until it passes. If the app is wrong, stop and report it. Do not weaken the assertion.
+Harnesses without the `playwright-test` MCP server rehearse with `npx playwright cli`
+(CLI codegen and `--debug=cli` attach are in
+`.agents/skills/playwright-cli/references/test-generation.md`). Where that reference
+disagrees with the agent file (seed paths, `// spec:` headers, `test.fixme`), the agent
+file wins. Never paste snapshot refs into a spec.

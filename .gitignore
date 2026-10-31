@@ -25,3 +25,5 @@ node_modules/
 
 *.log
 .DS_STORE
+# Agent eval runs (npm run evals:agents)
+/evals/results/

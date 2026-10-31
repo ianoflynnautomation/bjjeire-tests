@@ -7,7 +7,9 @@
 ## UI scenarios
 
 List, search (full and partial), clear search, header count, county filter,
-reset county, type filter, empty/error states — titles in
+reset county, type filter, empty/error states; card details (address, map,
+organiser and more-information links, session lines) for a weekly open mat and a
+multi-day camp; header total across several pages (mocked). Titles are in
 `events.ui.acceptance.spec.ts`.
 
 ## API scenarios
@@ -23,3 +25,5 @@ params rejected as bad requests; out-of-range paging fails validation — titles
 - Search is client-side; assert `expectResultCount(1)` after a unique search.
 - Finished events must not appear.
 - Organiser spelling on the wire is `organiser`.
+- Schedule dates are seeded relative to seed time. Cards are compared on session times
+  and titles only, until the seeder makes dates deterministic.

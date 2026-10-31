@@ -1,0 +1,54 @@
+{
+  "id": "healer-locator-drift",
+  "tier": "fast",
+  "agent": "playwright-test-healer",
+  "why": "A test id drifted in the page-object constants: the fix belongs there, not in the spec.",
+  "prompt": "Several tests in tests/features/events/events.ui.acceptance.spec.ts fail on chromium-desktop since the last change. Heal them.",
+  "budgetUsd": 4,
+  "timeoutMin": 20,
+  "setup": [
+    {
+      "file": "src/ui/pages/events/events.constants.ts",
+      "find": "county: 'event-card-county',",
+      "replace": "county: 'event-card-region',"
+    }
+  ],
+  "checks": [
+    {
+      "name": "restores the real test id",
+      "type": "file_matches",
+      "path": "src/ui/pages/events/events.constants.ts",
+      "pattern": "county: 'event-card-county',"
+    },
+    {
+      "name": "spec untouched",
+      "type": "unchanged",
+      "paths": ["tests/**"]
+    },
+    {
+      "name": "fix stays in page objects",
+      "type": "changed_only_within",
+      "allow": ["src/ui/pages/**"]
+    },
+    {
+      "name": "no forbidden patterns",
+      "type": "diff_lacks",
+      "pattern": "waitForTimeout|networkidle|force: true|@quarantine|\\.fixme\\(|\\.skip\\("
+    },
+    {
+      "name": "events UI spec passes",
+      "type": "command",
+      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts tests/features/events/events.ui.acceptance.spec.ts --project=chromium-desktop --reporter=line --retries=0"
+    },
+    {
+      "name": "no browser left open",
+      "type": "command_output_matches",
+      "run": "npx playwright cli list",
+      "pattern": "no browsers",
+      "critical": false
+    }
+  ],
+  "selfTest": {
+    "revertSetup": true
+  }
+}

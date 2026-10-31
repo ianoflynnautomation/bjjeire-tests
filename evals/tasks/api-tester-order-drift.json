@@ -1,0 +1,37 @@
+{
+  "id": "api-tester-order-drift",
+  "tier": "fast",
+  "agent": "playwright-api-tester",
+  "why": "The expected order in seeded data drifted from the spec (ordered by name). Fix the data the test uses, keep the assertion.",
+  "prompt": "'client should receive stores ordered by name' in tests/features/stores/stores.api.acceptance.spec.ts fails. Fix it.",
+  "budgetUsd": 3,
+  "timeoutMin": 15,
+  "setup": [
+    {
+      "file": "tests/features/stores/seeded.ts",
+      "find": "  SEEDED_STORE_ARAN_FIGHT_GEAR,\n  SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY,\n  SEEDED_STORE_EMERALD_KIMONOS,\n];",
+      "replace": "  SEEDED_STORE_EMERALD_KIMONOS,\n  SEEDED_STORE_ARAN_FIGHT_GEAR,\n  SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY,\n];"
+    }
+  ],
+  "checks": [
+    {
+      "name": "restores name order",
+      "type": "file_matches",
+      "path": "tests/features/stores/seeded.ts",
+      "pattern": "SEEDED_STORES_BY_NAME[^=]*= \\[\\s*SEEDED_STORE_ARAN_FIGHT_GEAR,\\s*SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY,\\s*SEEDED_STORE_EMERALD_KIMONOS,"
+    },
+    {
+      "name": "assertion untouched",
+      "type": "unchanged",
+      "paths": ["tests/features/stores/stores.api.acceptance.spec.ts", "src/**"]
+    },
+    {
+      "name": "stores API spec passes",
+      "type": "command",
+      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.api.config.ts tests/features/stores/stores.api.acceptance.spec.ts --reporter=line --retries=0"
+    }
+  ],
+  "selfTest": {
+    "revertSetup": true
+  }
+}

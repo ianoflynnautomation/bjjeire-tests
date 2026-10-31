@@ -1,0 +1,60 @@
+{
+  "id": "generator-shared-search-link",
+  "tier": "slow",
+  "agent": "playwright-test-generator",
+  "mcp": true,
+  "why": "Candidate scenario from the 2026-10-29 exploration: ?q= deep links restore search. The generator must land it in the feature slice, passing, in suite style.",
+  "prompt": "Implement 'visitor should see the search results when opening a shared search link' from specs/features/events.md.",
+  "budgetUsd": 6,
+  "timeoutMin": 30,
+  "setup": [
+    {
+      "file": "specs/features/events.md",
+      "find": "## Constraints",
+      "replace": "## Planned\n\n#### visitor should see the search results when opening a shared search link\n\n- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no\n- Given/When/Then:\n  - Given a visitor has a link to Events searched for a seeded event's name\n  - When the visitor opens the link\n  - Then the search box shows the term and only that event is listed\n- Why: exploration 2026-10-29 found `?q=` restores search; no test owns it.\n\n## Constraints"
+    }
+  ],
+  "checks": [
+    {
+      "name": "test exists with the planned title",
+      "type": "file_matches",
+      "path": "tests/features/events/events.ui.acceptance.spec.ts",
+      "pattern": "visitor should see the search results when opening a shared search link"
+    },
+    {
+      "name": "stays in the feature slice",
+      "type": "changed_only_within",
+      "allow": [
+        "tests/features/events/**",
+        "src/ui/pages/events/**",
+        "src/ui/pages/common/**",
+        "src/ui/support/**",
+        "specs/features/events.md"
+      ]
+    },
+    {
+      "name": "no bare page.goto in the spec",
+      "type": "file_not_matches",
+      "path": "tests/features/events/events.ui.acceptance.spec.ts",
+      "pattern": "page\\.goto\\("
+    },
+    {
+      "name": "no forbidden patterns",
+      "type": "diff_lacks",
+      "pattern": "waitForTimeout|networkidle|force: true|@quarantine|\\.fixme\\(|\\.only\\("
+    },
+    {
+      "name": "new test passes",
+      "type": "command",
+      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts tests/features/events/events.ui.acceptance.spec.ts --project=chromium-desktop --reporter=line --retries=0 -g 'shared search link'"
+    },
+    { "name": "lint clean", "type": "command", "run": "npx eslint tests/features/events src/ui/pages" },
+    {
+      "name": "uses Given/When/Then steps",
+      "type": "file_matches",
+      "path": "tests/features/events/events.ui.acceptance.spec.ts",
+      "pattern": "shared search link[\\s\\S]{0,1500}test\\.step\\('Given",
+      "critical": false
+    }
+  ]
+}

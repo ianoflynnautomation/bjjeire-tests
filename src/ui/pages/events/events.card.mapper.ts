@@ -8,7 +8,31 @@ import {
 } from '@api/features/events/events.types';
 import type { BjjEventCard } from './events.types';
 
-export type ExpectedEventCard = Pick<BjjEventCard, 'name' | 'type' | 'county' | 'pricing'>;
+export type ExpectedEventCard = Pick<
+  BjjEventCard,
+  'name' | 'type' | 'county' | 'pricing' | 'sessions' | 'address' | 'mapUrl' | 'organiserUrl' | 'moreInfoUrl'
+>;
+
+const GOOGLE_MAPS_SEARCH = 'https://www.google.com/maps/search/?api=1&query=';
+const NOON_HOUR = 12;
+
+// "19:00:00" → "7:00 PM", as the card renders session times.
+function clockTime(time: string): string {
+  const [hours = 0, minutes = 0] = time.split(':').map(Number);
+  const suffix = hours >= NOON_HOUR ? 'PM' : 'AM';
+  const hour12 = hours % NOON_HOUR || NOON_HOUR;
+  return `${hour12}:${String(minutes).padStart(2, '0')} ${suffix}`;
+}
+
+// Weekly sessions lead with the day; fixed-date ones lead with a seed-relative date the
+// card reader strips, so the expectation is the time span and the title.
+function sessionLine(schedule: BjjEventScheduleDto, session: BjjEventScheduleDto['sessions'][number]): string {
+  const span = `${clockTime(session.startTime)}–${clockTime(session.endTime)}`;
+  const title = session.title ? ` · ${session.title}` : '';
+  return schedule.kind === ScheduleKind.WeeklyRecurring && session.day
+    ? `${session.day}: ${span}${title}`
+    : `${span}${title}`;
+}
 
 const EVENT_TYPE_BADGES: Record<BjjEventType, string> = {
   [BjjEventType.OpenMat]: 'OPEN MAT',
@@ -69,5 +93,10 @@ export function eventCardFromDto(event: BjjEventDto): ExpectedEventCard {
     pricing: event.pricingOptions.length
       ? event.pricingOptions.map(option => pricingDisplay(event.schedule, option)).join(' | ')
       : null,
+    sessions: event.schedule.sessions.map(session => sessionLine(event.schedule, session)),
+    address: event.location.address,
+    mapUrl: `${GOOGLE_MAPS_SEARCH}${event.location.coordinates.latitude},${event.location.coordinates.longitude}`,
+    organiserUrl: event.organiser.website,
+    moreInfoUrl: event.eventUrl,
   };
 }

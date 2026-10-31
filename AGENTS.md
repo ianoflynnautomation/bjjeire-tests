@@ -21,10 +21,14 @@ npm run test:acceptance   # Full suite (@acceptance = every test)
 npm run test:snapshots    # Snapshot project (screenshots + aria)
 npm run test:a11y         # Axe WCAG 2.1 A/AA sweep per route
 npm run test:mobile       # @mobile tests (mobile-iphone + mobile-galaxy projects)
+npm run test:perf         # Opt-in boot budgets per route, desktop + slow 4G (PW_PERF, 1 worker)
 npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentication.md)
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
+npm run mutation:audit -- --feature <f>   # Do the feature's UI specs catch wrong data? (local/docker)
+npm run evals:agents      # Golden-task evals for the agents (billed; --self-test is free; see evals/README.md)
+npm run trace:correlate   # Backend view of failed attempts: Tempo by trace id, or Docker API logs by window
 npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
 npm run squash:run        # Publish with --squash-* flags (a release is SQUASH_TM_RELEASE or --squash-release; see docs/squash-tm.md)
 npm run squash:prune      # Preview (or --yes: delete) sync-created Squash cases in a folder, e.g. after renames
@@ -83,8 +87,13 @@ Details in `.devcontainer/README.md`.
 | `a11y`                                                    | `*.a11y.acceptance.spec.ts`                                     | —                                           |
 | `a11y-light`                                              | a11y specs with `colorScheme: 'light'`                          | —                                           |
 | `mobile-iphone` (iPhone 16), `mobile-galaxy` (Galaxy S24) | UI specs                                                        | `@smoke\|@mobile`                           |
+| `perf` (only with `PW_PERF=true`)                         | `*.perf.acceptance.spec.ts`, one worker                         | —                                           |
 
-Chromium desktop is the system of record. Firefox, WebKit, and light Chromium pay the
+Chromium desktop is the system of record. `perf` measures boot budgets (shell, first
+content, LCP, CLS) per route under desktop and slow-4G throttling via CDP
+(`src/ui/support/performance.ts`). It is opt-in so CI time and noise stay out of the
+acceptance gate until its budgets are agreed. On 2026-10-30 it failed CLS on desktop
+Events, Gyms and Competitions (0.23–0.33 vs 0.1), which is an app finding. Firefox, WebKit, and light Chromium pay the
 cross-browser/theme tax on `@smoke` only so the suite stays inside a 15-minute CI SLA
 as the spec count grows. Wide is layout/nav, not a second copy of every catalog test.
 
@@ -126,14 +135,15 @@ Two-tier taxonomy:
 
 Acceptance behaviour is specified in [`specs/`](specs/) before (or with) the
 Playwright files. Product architecture and Mongo/OpenAPI contracts live in
-`bjjeire-java/specs/`. Agent steering: [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
-and [`.specify/rules/playwright-rules.md`](.specify/rules/playwright-rules.md).
+`bjjeire-java/specs/`. Agent steering: [`.specify/memory/constitution.md`](.specify/memory/constitution.md); the
+Playwright rules are this file (no separate digest, so there is nothing to drift).
 
 GitHub Agentic Workflows (sources under `.github/workflows-aw/`, compiled to
 `.github/workflows/*.lock.yml`):
 
 - `spec-review` — PR comment when tests and `specs/features/` disagree
-- `playwright-fix` — test-only heal from atest / Playwright JSON evidence
+- `playwright-fix` — test-only heal from atest / Playwright JSON evidence,
+  reproduced on a local Docker stack by the `playwright-test-healer` subagent
   (`workflow_dispatch`; not hooked to this repo's lint `CI`)
 
 Engine is Claude Code (`engine: claude`); the jobs need repository secret
@@ -149,12 +159,57 @@ One instruction file, one skill tree. Harness folders are links, not copies.
 - **Skills.** Each skill is `.agents/skills/<name>/SKILL.md` (Agent Skills layout: optional `scripts/`, `references/`, `assets/` beside that file). That directory is the copy you edit. `.claude/skills` and `.grok/skills` are symlinks to it, because Claude Code reads `.claude/skills` and Grok also reads `.grok/skills`. Codex, Cursor, and Copilot read `.agents/skills`. Grok keeps one skill per name. Do not add a root `skills/` directory, and do not replace the symlinks with copies or with a Markdown pointer.
 - **Copilot / gh-aw.** `.github/skills/<name>` is a per-skill symlink to `../../.agents/skills/<name>` when that tool must see the skill at its own path. Today that is `agentic-workflows`.
 - **Commands.** Slash commands live once in `.claude/commands/`. Claude Code and Grok both read that directory. Do not add `.grok/commands`.
-- **Subagents.** Claude subagents stay in `.claude/agents/`. A Grok agent definition, if added, goes in `.grok/agents/` because the file format differs.
+- **Subagents.** Claude subagents stay in `.claude/agents/` (see [Test agents](#test-agents)). A Grok agent definition, if added, goes in `.grok/agents/` because the file format differs.
+- **Hooks.** `.claude/settings.json` runs two hooks on every `Edit`/`MultiEdit`/`Write`, including inside subagents and the `playwright-fix` job. `.claude/hooks/guard-edit.mjs` (PreToolUse) denies edits to generated or recorded files (`src/api/generated/`, `__screenshots__/`, `__aria__/`, `*.lock.yml`, `playwright/.auth/`, run output). It also denies adding `@quarantine`, `.fixme(`, `.only(`, `waitForTimeout(`, `networkidle` or `force: true` to `tests/` or `src/` code. `.claude/hooks/lint-edited.mjs` (PostToolUse) runs `eslint --fix` on the edited `.ts` file and returns the remaining errors to the agent. Hooks bind Claude Code only. Bash writes and humans are not blocked; lint and review still apply to them. Other skills are deliberately limited to this suite: generic engineering packs belong in user-level skills, not here.
 - **Symlinks.** Relative links, committed. macOS and Linux checkouts follow them. A Windows checkout needs `core.symlinks=true`.
 
 ## Browser exploration
 
 The CLI skill is the official one bundled with this Playwright pin. Its canonical copy is [`.agents/skills/playwright-cli/SKILL.md`](.agents/skills/playwright-cli/SKILL.md). Refresh it with `npx playwright cli install --skills`. That writes through the `.claude/skills` symlink into `.agents/skills/playwright-cli/`. Do not also pass `--skills=agents`; that path is the same directory. Delete `.agents/skills/playwright-cli` first when the refresh must not keep stale files (the copy does not remove extras). Playwright MCP remains available when that server is connected. Specs generated from a session still follow the feature-slice rules below; snapshot refs are session-only.
+
+## Test agents
+
+Eight Claude subagents in `.claude/agents/`; how to run them: [docs/agents.md](docs/agents.md). The first three are Playwright's official
+planner, generator and healer (`npx playwright init-agents --loop=claude`), rewritten
+for this suite's conventions. The other five cover exploratory bug hunting, mutation audits, API tests, flaky tests and review.
+
+| Agent                           | Use it to                                                                  | Browser |
+| ------------------------------- | -------------------------------------------------------------------------- | ------- |
+| `playwright-test-planner`       | Explore a feature and write scenarios into `specs/features/<feature>.md`   | MCP     |
+| `playwright-test-generator`     | Rehearse a planned UI scenario live, then write it into the feature slice  | MCP     |
+| `playwright-test-healer`        | Reproduce and fix a failing UI test, or report an app bug                  | CLI     |
+| `playwright-exploratory-tester` | Chartered bug hunt with automatic oracles; report in `specs/exploration/`  | CLI     |
+| `playwright-mutation-auditor`   | Corrupt real responses per mutant; triage survivors into `specs/mutation/` | none    |
+| `playwright-api-tester`         | Write or heal `*.api.acceptance.spec.ts`                                   | none    |
+| `playwright-flake-hunter`       | Measure a flaky test under `--repeat-each`, find the cause, fix it         | none    |
+| `playwright-test-reviewer`      | Review test changes before commit (read-only, ranked findings)             | none    |
+
+The planner and generator use the `playwright-test` MCP server in `.mcp.json`
+(`npx playwright run-test-mcp-server`, UI config, headless): their loops lean on
+its seed, recorder log and per-step introspection. The healer uses
+`npx playwright cli` instead: it runs the failing test with `--debug=cli` and
+attaches, which gives the same paused page at a fraction of the tokens (snapshots
+go to files, and no MCP tool schemas load), and it runs in any shell. The server sets
+`PW_AGENT_SEED`, which adds the `agent-seed` project. Its `tests/agents/seed.spec.ts`
+signs in, pins feature flags on and mounts the app shell before the agent takes over;
+`tests/agents/explore.spec.ts` does the same and then parks on `page.pause()` with no
+timeout, so the exploratory tester's `--debug=cli` session lasts as long as its charter. Without the variable the project does not
+exist, so suite and CI runs never see the seed. The living spec is the plan: no
+`specs/*.plan.md`. When `npx playwright init-agents` is re-run after a Playwright
+bump, compare its output with these files and carry over new tool names only;
+do not overwrite them. Keep `docs/agents.md` in step with the agent files.
+
+Pipeline: planner → generator (UI) or api-tester (API) → reviewer. Healer and
+flake-hunter run on failures. The exploratory tester feeds the planner: its report's
+candidate scenarios enter `specs/features/` only once the planner (or you) accepts them.
+The mutation auditor measures the suite: survivors it classifies as gaps become
+assertions or scenarios for the generator. No agent adds `test.fixme`, `test.skip` or
+`@quarantine`; quarantine is a human decision.
+
+Agents are measured by golden tasks in [`evals/`](evals/README.md): a planted defect,
+a known right answer, deterministic grading. After changing an agent, a skill, this file
+or the hooks, run `npm run evals:agents -- --self-test` and then the fast tier, and
+compare pass rates with the previous run.
 
 ## Test conventions
 
@@ -298,9 +353,15 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   built-in options (`colorScheme`, `viewport`, `timezoneId`, `storageState`, …),
   but note it beats the _project_ value: a spec forcing `colorScheme: 'light'`
   runs light in every project, including `a11y` and the dark snapshot project.
+- **Mutation audit** — `responseMutant` is a core option read from `PW_MUTANT`; when set,
+  the `responseMutation` auto fixture (`src/ui/mocks/mutation.mock.ts`) fetches each real
+  list response and hands the app one deliberate corruption
+  (`<resource>:<operator>[:<field>]`) or, with `observe`, records resources and fields.
+  Unset in every normal run. Specs that mock a route are unaffected (their route wins).
+  `npm run mutation:audit` drives it; never set `PW_MUTANT` in a spec.
 - A feature's route mocks live in `tests/features/<feature>/mocks.ts` and reach specs
   only through that feature's fixtures. `src/ui/mocks/` keeps just the feature-agnostic
-  machinery (`json-response`, `paginate`, `failure`); `failure.mock.ts` takes the route
+  machinery (`json-response`, `paginate`, `failure`, `mutation`); `failure.mock.ts` takes the route
   to break as an argument, so nothing shared imports a feature.
 
 ### Snapshots
@@ -363,6 +424,10 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
   (and a Grafana link when `GRAFANA_URL` is set) into the HTML report. CI passes
   endpoint/headers as optional secrets. Locally: `npm run otel:forward` + the env
   var; `npm run otel:grafana` to explore (README "Tracing test runs").
+  `npm run trace:correlate` (`scripts/trace-correlate.mjs`, skill `trace-correlation`) joins
+  a test attempt from `test-results/results.json` to its trace in Tempo, or, on Docker
+  (OTel off), to the API log lines in its time window. Front-end timing, leaks and JS
+  weight are the `devtools` skill (CDP scripts run through `npx playwright cli`).
 
 ## Guardrails
 
@@ -375,4 +440,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-10-26.
+script, project, or workflow it documents. Last reviewed: 2026-10-29.

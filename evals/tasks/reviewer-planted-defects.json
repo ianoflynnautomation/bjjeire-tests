@@ -1,0 +1,61 @@
+{
+  "id": "reviewer-planted-defects",
+  "tier": "fast",
+  "agent": "playwright-test-reviewer",
+  "why": "The reviewer must catch the suite's most common defects in a new spec, and stay read-only.",
+  "prompt": "Review my latest commit (HEAD): it adds tests/features/events/events-header.ui.acceptance.spec.ts.",
+  "budgetUsd": 2,
+  "timeoutMin": 10,
+  "setup": [
+    {
+      "create": "tests/features/events/events-header.ui.acceptance.spec.ts",
+      "content": "import { test, expect, eventsTestConfig } from './fixtures';\nimport { SEEDED_EVENT_LEINSTER_OPEN_MAT } from './seeded';\n\ntest.use(eventsTestConfig);\n\ntest.describe('Events header', { tag: ['@events', '@ui', '@desktop'] }, () => {\n  test('visitor should see events-page-header-total text', { tag: '@acceptance' }, async ({ page }) => {\n    await page.goto('/events');\n    const total = await page.getByTestId('events-page-header-total').textContent();\n    expect(total).toContain('Found');\n    await expect(page.getByText(SEEDED_EVENT_LEINSTER_OPEN_MAT.name)).toBeVisible();\n  });\n});\n"
+    }
+  ],
+  "checks": [
+    {
+      "name": "read-only",
+      "type": "changed_only_within",
+      "allow": []
+    },
+    {
+      "name": "flags bare page.goto",
+      "type": "output_matches",
+      "pattern": "page\\.goto|gotoRoute|gotoAppShell"
+    },
+    {
+      "name": "flags non-retrying textContent",
+      "type": "output_matches",
+      "pattern": "textContent|web-first|non-retrying|retry",
+      "flags": "i"
+    },
+    {
+      "name": "flags fixture on unfiltered list",
+      "type": "output_matches",
+      "pattern": "unfiltered|page 1|first page|full dataset",
+      "flags": "i"
+    },
+    {
+      "name": "flags test id in title",
+      "type": "output_matches",
+      "pattern": "title[\\s\\S]{0,300}(test ?id|selector|testid)|(test ?id|selector|testid)[\\s\\S]{0,300}title",
+      "flags": "i"
+    },
+    {
+      "name": "flags locators in the spec",
+      "type": "output_matches",
+      "pattern": "page object|page-object",
+      "flags": "i",
+      "critical": false
+    },
+    {
+      "name": "flags missing Given/When/Then",
+      "type": "output_matches",
+      "pattern": "Given|test\\.step",
+      "critical": false
+    }
+  ],
+  "selfTest": {
+    "output": "1. page.goto bare navigation: use gotoRoute. 2. textContent() then expect is non-retrying, use web-first toHaveText. 3. Asserts a seeded fixture on the unfiltered list (page 1 of a full dataset). 4. Title contains a test id selector. 5. Locators belong in the page object. 6. No Given/When/Then test.step."
+  }
+}
