@@ -1,4 +1,5 @@
-import { mockGyms, GYMS_ROUTE } from './mocks';
+import type { GymDto } from '@api/features/gyms/gyms.types';
+import { mockGymDirectory, mockGyms, GYMS_ROUTE } from './mocks';
 import { GymsPage } from '@ui/pages/gyms/gyms.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';
@@ -8,11 +9,13 @@ import { pageFixture } from '@ui/fixtures/page-fixture';
 export type GymsUiFixtures = FailureMocks & {
   gymsPage: GymsPage;
   mockGyms: (body: unknown) => Promise<void>;
+  mockGymDirectory: (gyms: readonly GymDto[]) => Promise<void>;
 };
 
 export const test = core.extend<GymsUiFixtures>({
   gymsPage: pageFixture(GymsPage),
   mockGyms: mockFixture(mockGyms),
+  mockGymDirectory: mockFixture(mockGymDirectory),
   ...failureMockFixtures(GYMS_ROUTE),
 });
 

@@ -20,6 +20,17 @@
 9. visitor should see a network error message when gyms cannot be loaded because the connection fails
 10. visitor should see a server error message when gyms cannot be loaded because of a server problem
 11. visitor should see the gym list after retrying when gyms failed to load
+12. visitor should reach the next page of gyms
+13. visitor should return to the previous page of gyms with Back
+14. visitor should see the same page of gyms after reloading
+15. visitor should stay within the chosen county when moving to its next page
+16. visitor should see the chosen county after reloading
+17. visitor should see only the shared county when opening a shared county link
+18. visitor should find a gym by its county name
+19. visitor should not find a gym by anything other than its name or county
+20. visitor should see a gym's free trial offer on its card
+
+Scenarios 12–20 are in `gyms-navigation.ui.acceptance.spec.ts`. Scenarios 12–15 and 19 are mocked.
 
 ### API
 
@@ -40,6 +51,7 @@ for validation failures the offending `field` + `errorCode`.
 
 ## Constraints
 
+- Search matches gym name and county only. Page and county are URL state.
 - After `searchFor`, `expectResultCount(1)` — uniqueness, not merely visible.
 - Partial name: `SEEDED_GYM_*_PARTIAL_NAME`, never `name.slice`.
 - Maps link: `query=lat,lng` from GeoJSON `[lng, lat]`.

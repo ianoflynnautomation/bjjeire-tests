@@ -22,8 +22,8 @@
 
 ## Questions for the product owner
 
-1. Should filters (county, type) be URL state like search, so filtered views can be shared, bookmarked and survive a reload? If yes, F1 is a bug on every list page. If no, F1 is intended, and the inconsistency with search is worth a product decision anyway.
-2. Search and filter changes replace the history entry rather than pushing one, so Back leaves Events entirely. Is that intended?
+1. **Decided 2026-10-31: yes.** County and type are now URL state, which resolves F1. Should filters (county, type) be URL state like search, so filtered views can be shared, bookmarked and survive a reload?
+2. **Decided 2026-10-31: no, not for filters.** Filter and page changes now add history entries so Back steps through them. Typing a search still replaces the entry, so each keystroke is not a step.
 
 ## Environment notes
 

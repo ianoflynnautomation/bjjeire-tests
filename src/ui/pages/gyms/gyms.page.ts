@@ -34,6 +34,14 @@ export class GymsPage extends ListPage<GymCard> {
     await this.expectAllCardsMatchField(GYM_CARD_TEST_IDS.county, county);
   }
 
+  async expectCountyChosen(county: County): Promise<void> {
+    await expect(this.countySelect).toHaveValue(county);
+  }
+
+  async expectTrialOffer(name: string, offer: string): Promise<void> {
+    await expect(this.card(name).getByTestId(GYM_CARD_TEST_IDS.trialOffer)).toHaveText(offer);
+  }
+
   async resetCountyFilter(): Promise<void> {
     await this.resetFilter(this.countySelect, ALL_COUNTIES_OPTION);
   }

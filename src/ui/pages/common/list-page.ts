@@ -11,6 +11,7 @@ import {
 import { cardByName } from './card.page';
 import { expectNoDataState, type NoDataCopy } from './empty.page';
 import { expectNetworkError, expectNoError, expectServerError, retryAfterError } from './error.page';
+import { expectPageIndicator, goToNextListPage } from './pagination.page';
 
 export type ListPageTestIds = Readonly<{
   header: string;
@@ -66,6 +67,28 @@ export abstract class ListPage<TCard extends { name: string }> {
 
   async goTo(): Promise<void> {
     await gotoRoute(this.page, this.config.route, this.header);
+  }
+
+  async goToWithQuery(query: string): Promise<void> {
+    await gotoRoute(this.page, `${this.config.route}?${query}`, this.header);
+  }
+
+  async reload(): Promise<void> {
+    await this.page.reload();
+    await waitForRouteMounted(this.header);
+  }
+
+  async goBack(): Promise<void> {
+    await this.page.goBack();
+    await waitForRouteMounted(this.header);
+  }
+
+  async goToNextPage(): Promise<void> {
+    await goToNextListPage(this.page);
+  }
+
+  async expectOnPage(currentPage: number, totalPages: number): Promise<void> {
+    await expectPageIndicator(this.page, currentPage, totalPages);
   }
 
   async verifyIsLoaded(): Promise<void> {

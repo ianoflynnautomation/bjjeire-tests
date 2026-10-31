@@ -6,6 +6,7 @@ export const GYM_CARD_TEST_IDS = {
   county: 'gym-card-county',
   name: 'gym-card-name',
   status: 'gym-card-status-badge',
+  trialOffer: 'gym-card-trial-offer',
 } as const;
 
 export const NO_DATA_COPY = {

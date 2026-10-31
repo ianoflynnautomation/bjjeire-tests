@@ -62,6 +62,14 @@ export class EventsPage extends ListPage<BjjEventCard> {
     await expect(button).toHaveAttribute('aria-pressed', 'true');
   }
 
+  async expectCountyChosen(county: County): Promise<void> {
+    await expect(this.countySelect).toHaveValue(county);
+  }
+
+  async expectTypeChosen(type: BjjEventType): Promise<void> {
+    await expect(this.typeFilterButton(type)).toHaveAttribute('aria-pressed', 'true');
+  }
+
   async showAllTypes(): Promise<void> {
     await waitForListOrEmpty(this.listItems, this.emptyState);
     const button = this.filters.getByRole('button', { name: ALL_TYPES_FILTER_LABEL, exact: true });

@@ -228,5 +228,103 @@ test.describe(
         });
       },
     );
+
+    test(
+      'visitor should see the search results when opening a shared search link',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step(`When a visitor opens a shared link to a search for "${seededSeminar.name}"`, async () => {
+          await eventsPage.goToWithQuery(`q=${encodeURIComponent(seededSeminar.name)}`);
+        });
+
+        await test.step('Then the search box shows the shared term and only that event is listed', async () => {
+          await eventsPage.expectSearchValue(seededSeminar.name);
+          await eventsPage.expectResultCount(1);
+          await eventsPage.expectCardData({ name: seededSeminar.name });
+        });
+      },
+    );
+
+    test(
+      'visitor should keep the chosen county and type when reloading Events',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step(`And the visitor filters by ${seededSeminar.county} and ${seminarTypeLabel}`, async () => {
+          await eventsPage.filterByCounty(seededSeminar.county);
+          await eventsPage.filterByType(seminarType);
+        });
+
+        await test.step('And the visitor reloads the page', async () => {
+          await eventsPage.reload();
+        });
+
+        await test.step('Then both filters are still chosen and only matching events are listed', async () => {
+          await eventsPage.expectCountyChosen(seededSeminar.county);
+          await eventsPage.expectTypeChosen(seminarType);
+          await eventsPage.expectOnlyCountyListed(seededSeminar.county);
+          await eventsPage.expectOnlyTypeListed(seminarType);
+        });
+      },
+    );
+
+    test(
+      'visitor should see only the shared filters when opening a shared filter link',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step(`When a visitor opens a shared link to ${seminarTypeLabel} events in ${seededSeminar.county}`, async () => {
+          await eventsPage.goToWithQuery(`county=${seededSeminar.county}&types=${seminarType}`);
+        });
+
+        await test.step('Then both filters are chosen and only matching events are listed', async () => {
+          await eventsPage.expectCountyChosen(seededSeminar.county);
+          await eventsPage.expectTypeChosen(seminarType);
+          await eventsPage.expectOnlyCountyListed(seededSeminar.county);
+          await eventsPage.expectOnlyTypeListed(seminarType);
+        });
+      },
+    );
+
+    test(
+      'visitor should return to the previous filter with Back',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        await test.step(`And the visitor filters by ${seededSeminar.county}`, async () => {
+          await eventsPage.filterByCounty(seededSeminar.county);
+        });
+
+        await test.step(`And the visitor filters by ${seminarTypeLabel}`, async () => {
+          await eventsPage.filterByType(seminarType);
+        });
+
+        await test.step('And the visitor goes back', async () => {
+          await eventsPage.goBack();
+        });
+
+        await test.step(`Then ${seminarTypeLabel} is no longer chosen and ${seededSeminar.county} still is`, async () => {
+          await eventsPage.expectTypeNotChosen(seminarType);
+          await eventsPage.expectCountyChosen(seededSeminar.county);
+        });
+      },
+    );
   },
 );
