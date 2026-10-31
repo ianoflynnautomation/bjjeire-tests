@@ -289,12 +289,39 @@ test.describe(
         });
 
         await test.step('When the visitor clears the search', async () => {
-          await competitionsPage.clearSearch();
+          await competitionsPage.clearSearchWithButton();
         });
 
         await test.step('Then other competitions are listed again', async () => {
           await competitionsPage.expectSearchValue('');
           await competitionsPage.expectSeveralResults();
+        });
+      },
+    );
+
+    test(
+      'visitor should stay in the search box after clearing the search',
+      {
+        tag: '@acceptance',
+        annotation: squash({
+          weight: 'medium',
+          status: 'work in progress',
+          nature: 'non functional',
+          type: 'regression',
+        }),
+      },
+      async ({ competitionsPage }) => {
+        await test.step(`Given a visitor has searched for "${seededCompetitionPartialName}"`, async () => {
+          await competitionsPage.goTo();
+          await competitionsPage.searchFor(seededCompetitionPartialName);
+        });
+
+        await test.step('When the visitor clears the search', async () => {
+          await competitionsPage.clearSearchWithButton();
+        });
+
+        await test.step('Then the visitor can type a new search straight away', async () => {
+          await competitionsPage.expectSearchFocused();
         });
       },
     );

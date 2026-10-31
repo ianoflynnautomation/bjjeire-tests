@@ -13,6 +13,8 @@ import { expectNoDataState, type NoDataCopy } from './empty.page';
 import { expectNetworkError, expectNoError, expectServerError, retryAfterError } from './error.page';
 import { expectPageIndicator, goToNextListPage } from './pagination.page';
 
+const SEARCH_CLEAR_BUTTON_TEST_ID = 'search-clear-button';
+
 export type ListPageTestIds = Readonly<{
   header: string;
   headerTitle: string;
@@ -104,6 +106,14 @@ export abstract class ListPage<TCard extends { name: string }> {
 
   async clearSearch(): Promise<void> {
     await clearListSearch(this.page, this.searchInput);
+  }
+
+  async clearSearchWithButton(): Promise<void> {
+    await this.page.getByTestId(this.ids.search).getByTestId(SEARCH_CLEAR_BUTTON_TEST_ID).click();
+  }
+
+  async expectSearchFocused(): Promise<void> {
+    await expect(this.searchInput).toBeFocused();
   }
 
   async expectSearchValue(term: TextMatcher): Promise<void> {

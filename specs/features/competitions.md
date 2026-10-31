@@ -36,9 +36,10 @@ Phone reflow and page titles already belong to `tests/layout/`.
 5. visitor should see the same page of competitions after reloading
 6. visitor should see the shared search when opening a search link
 7. visitor should see every competition again after clearing the search
-8. visitor should see how many competitions were found
-9. visitor should not find a competition by anything other than its name
-10. visitor should see a competition's dates in Irish time wherever they are
+8. visitor should stay in the search box after clearing the search
+9. visitor should see how many competitions were found
+10. visitor should not find a competition by anything other than its name
+11. visitor should see a competition's dates in Irish time wherever they are
 
 ### API
 
@@ -170,4 +171,4 @@ Made in the app on 2026-10-31.
 
 ### Findings
 
-F1–F4 and F7 are fixed in the app working tree. F5 and F6 are open in the exploration report.
+F1–F4, F6 and F7 are fixed in the app working tree. F5 is open in the exploration report.

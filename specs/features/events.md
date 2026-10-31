@@ -32,6 +32,7 @@ params rejected as bad requests; out-of-range paging fails validation — titles
 - Organiser spelling on the wire is `organiser`.
 - Schedule dates are seeded relative to seed time. Cards are compared on session times
   and titles only, until the seeder makes dates deterministic.
+- Dates show in Irish time wherever the visitor is: `visitor should see an event's date in Irish time wherever they are` in `events-dates.ui.acceptance.spec.ts` (mocked, so the date is fixed).
 
 ## Planned
 

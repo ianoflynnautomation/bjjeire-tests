@@ -5,9 +5,9 @@ import { EVENT_CARD_SESSION_TEST_ID, EVENT_CARD_TEST_IDS } from './events.consta
 
 const stripCountySuffix = (raw: string): string => raw.replace(/\s*county$/i, '').trim();
 
-// Fixed-date sessions render as "November 23, 2026: 10:00 AM–4:00 PM · Day 1 - Gi Camp".
+// Fixed-date sessions render as "23 November 2026: 10:00 AM–4:00 PM · Day 1 - Gi Camp".
 // The seeder places dates relative to seed time, so only the time and title are stable.
-const stripSessionDate = (line: string): string => line.replace(/^[A-Z][a-z]+ \d{1,2}, \d{4}: /, '');
+const stripSessionDate = (line: string): string => line.replace(/^\d{1,2} [A-Z][a-z]+ \d{4}: /, '');
 
 async function getJoinedText(locator: Locator, separator: string): Promise<string | null> {
   const texts = await locator.allInnerTexts();

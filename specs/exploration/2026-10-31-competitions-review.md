@@ -57,7 +57,7 @@
 - **Reproduced**: 2/2 with mocks.
 - **Oracle**: card count against the mocked data and request log.
 
-### F6 · S4 · Clearing the search drops keyboard focus to the top of the page
+### F6 · S4 · (Fixed in the app working tree 2026-10-31) Clearing the search drops keyboard focus to the top of the page
 
 - **Steps** (from a fresh load of `/competitions`):
   1. Search for `Donegal`.
@@ -106,11 +106,12 @@ All accepted and implemented in `specs/features/competitions.md`.
 
 ## Follow-up charters
 
-- Explore Events and Gyms dates with a timezone west of UTC to discover whether F1 is shared.
 - Explore search on Gyms, Events and Stores with more than 100 records to discover whether F5 is shared.
 - Explore Competitions in the light theme to discover contrast and fallback-image problems.
 
 ## Session notes
+
+F1 follow-up, 2026-10-31: Events had the same fault (Tokyo showed 6 November for a 5 November event) and is fixed. Gyms shows no dates.
 
 1. Real data: 9 cards in start-date order, with same-day ties in name order. `Kerry Coast Open Mat` (finished) absent. Logos load (1200px wide) or fall back to the trophy icon.
 2. Stores report follow-up: F1 repeats, as F3 here. Its F2 (long words, mocked 60-character name and 120-character URL) and F3 (320px) do not: no sideways scroll at 1440, 360 or 320. Its F4 does not: the page has one `h1`. Its F5 does not: the hint is `Check the spelling or try fewer words.`
