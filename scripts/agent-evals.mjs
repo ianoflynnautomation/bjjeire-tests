@@ -13,7 +13,7 @@
 // every critical check passes. Results land in evals/results/ (gitignored) and are
 // compared with the previous run.
 //
-// Needs the app reachable (local or docker; see AGENTS.md). Each task is billed API usage.
+// Needs the app reachable (local or docker; see the suite-environments skill). Each task is billed API usage.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
@@ -44,7 +44,7 @@ const ALLOWED_TOOLS = [
   'Bash(npx playwright:*)',
   'Bash(PLAYWRIGHT_HTML_OPEN=never npx playwright:*)',
   'Bash(PW_AGENT_SEED=true:*)',
-  'Bash(PW_MUTANT=:*)',
+  'Bash(PW_MUTANT=*)',
   'Bash(SQUASH_TM_MODE=dry-run npm run squash:sync)',
   'Bash(npm run:*)',
   'Bash(npx eslint:*)',
@@ -335,7 +335,7 @@ if (tasks.length === 0) {
 }
 const app = appIsUp();
 if (!app.ok) {
-  console.error(`app not reachable at ${app.baseUrl}; start it first (AGENTS.md)`);
+  console.error(`app not reachable at ${app.baseUrl}; start it first (see the suite-environments skill)`);
   process.exit(1);
 }
 if (args['self-test']) {

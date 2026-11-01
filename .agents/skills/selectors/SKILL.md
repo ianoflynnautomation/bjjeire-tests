@@ -126,4 +126,4 @@ List pages cover the feedback this app shows. There is no save-success toast.
 
 - `enums` skill — where repeated copy and test ids live, and how to read them from the app.
 - `.agents/skills/playwright-cli/SKILL.md` — `npx playwright cli` from the repo root.
-- `AGENTS.md` — `gotoRoute` / `gotoAppShell`, and the rule that specs do not call `page.goto` for an app route.
+- `AGENTS.md` and the `suite-conventions` skill — `gotoRoute` / `gotoAppShell`, and the rule that specs do not call `page.goto` for an app route.

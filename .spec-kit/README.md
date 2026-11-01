@@ -6,7 +6,6 @@ This directory name (`.spec-kit/`) is a pointer, not the working tree.
 
 | Requested path         | Canonical path                                                          |
 | ---------------------- | ----------------------------------------------------------------------- |
-| `.spec-kit/rules/`     | [`.specify/rules/`](../.specify/rules/)                                 |
 | `.spec-kit/templates/` | [`.specify/templates/`](../.specify/templates/)                         |
 | constitution           | [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) |
 

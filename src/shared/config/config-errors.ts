@@ -26,6 +26,13 @@ export class InvalidProfileError extends ConfigError {
   }
 }
 
+export class ProductionTargetError extends ConfigError {
+  constructor(envName: string, url: string) {
+    super(`${envName} points at production (${url}). This suite never runs against production.`);
+    this.name = 'ProductionTargetError';
+  }
+}
+
 export class MissingProfileUrlError extends ConfigError {
   constructor(profile: string, envName: string) {
     super(`${envName} is required for profile '${profile}'.`);

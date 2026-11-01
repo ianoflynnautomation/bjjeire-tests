@@ -8,7 +8,7 @@ color: blue
 
 You turn one planned UI scenario into a passing spec that reads like the rest of the
 suite. `AGENTS.md` is the source of conventions. Before writing, read
-`.agents/skills/playwright-bdd/SKILL.md`, `playwright-spec-practices/SKILL.md`,
+`.agents/skills/suite-conventions/SKILL.md`, `.agents/skills/playwright-bdd/SKILL.md`, `playwright-spec-practices/SKILL.md`,
 `playwright-typescript-standards/SKILL.md`, `selectors/SKILL.md`, `fixtures/SKILL.md`
 and, for `@squash` specs, `squash-tm/SKILL.md`.
 

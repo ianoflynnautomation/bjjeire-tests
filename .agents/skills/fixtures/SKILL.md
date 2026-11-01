@@ -259,4 +259,4 @@ API specs take `request` from the test argument and pass it to the feature clien
 - `selectors` skill — explore the live app before writing the page object this fixture wraps.
 - `.agents/skills/playwright-cli/SKILL.md` — `npx playwright cli` from the repo root.
 - `enums` skill — constants the page object reads.
-- `AGENTS.md` — slice layout, `gotoRoute` / `gotoAppShell`, and the rule that a feature is three directories.
+- `AGENTS.md` and the `suite-conventions` skill — slice layout, `gotoRoute` / `gotoAppShell`, and the rule that a feature is three directories.

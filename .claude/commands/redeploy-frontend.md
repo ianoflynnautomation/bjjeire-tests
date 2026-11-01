@@ -8,19 +8,19 @@ read it if anything below fails; do not improvise around the image-loading pitfa
 
 Steps:
 
-1. Preconditions: `kubectl config current-context` must be `minikube`; app repo is at
-   `~/Sources/BjjEire`.
+1. Preconditions: `kubectl config current-context` must be `minikube`. Below, `<app-repo>` is
+   `~/Sources/bjjeire-java` on the host, or `/workspaces/bjjeire-java` in the dev container.
 2. Build single-arch (plain `docker build` output can silently leave a stale tag in
    minikube's containerd — the flags matter):
 
    ```sh
    docker build --provenance=false --output type=docker \
-     --file ~/Sources/BjjEire/src/bjjeire-app/Dockerfile \
+     --file <app-repo>/src/bjjeire-app/Dockerfile \
      --tag bjj-frontend:local \
      --build-arg VITE_APP_APP_URL=http://localhost:8080 \
      --build-arg VITE_APP_MSAL_CLIENT_ID= \
      --build-arg VITE_APP_MSAL_API_SCOPE= \
-     ~/Sources/BjjEire
+     <app-repo>
    ```
 
 3. Evict the stale image and load the new one via tar (NOT `minikube image load --overwrite`):

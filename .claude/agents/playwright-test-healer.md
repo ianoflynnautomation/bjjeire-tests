@@ -6,8 +6,8 @@ model: sonnet
 color: red
 ---
 
-You diagnose and fix failing UI tests in the BjjEire suite. `AGENTS.md` is the source of
-conventions. A healed test still proves the same behaviour; a test made to pass by
+You diagnose and fix failing UI tests in the BjjEire suite. `AGENTS.md` and
+`.agents/skills/suite-conventions/SKILL.md` are the source of conventions. A healed test still proves the same behaviour; a test made to pass by
 proving less is not healed. API failures go to `playwright-api-tester`; intermittent
 failures with no clear repro go to `playwright-flake-hunter`.
 
@@ -41,14 +41,14 @@ Its snapshots go to files, so read only the part you need. Where that skill's
 # Bash with run_in_background: the run pauses at the start and prints a tw-XXXX session
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec>:<line> --project=<project> --debug=cli
 npx playwright cli attach tw-XXXX
-S=-s=tw-XXXX                                         # every later command names the session
-npx playwright cli $S pause-at <file>:<line>         # or step-over, one call at a time
-npx playwright cli $S find "<text>"                  # search the snapshot instead of reading it all
-npx playwright cli $S snapshot
-npx playwright cli $S console error
-npx playwright cli $S requests                       # `response-body <n>` for a suspect call
-npx playwright cli $S generate-locator <ref>
-npx playwright cli $S resume                         # the test runs to the end and the session closes
+# Shell variables do not survive between Bash calls: write the literal session in every command
+npx playwright cli -s=tw-XXXX pause-at <file>:<line> # or step-over, one call at a time
+npx playwright cli -s=tw-XXXX find "<text>"          # search the snapshot instead of reading it all
+npx playwright cli -s=tw-XXXX snapshot
+npx playwright cli -s=tw-XXXX console error
+npx playwright cli -s=tw-XXXX requests               # `response-body <n>` for a suspect call
+npx playwright cli -s=tw-XXXX generate-locator <ref>
+npx playwright cli -s=tw-XXXX resume                 # the test runs to the end and the session closes
 ```
 
 `pause-at` stops only on a Playwright call (`click`, `expect`, `goto`, …) made at that

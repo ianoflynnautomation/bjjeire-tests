@@ -13,7 +13,7 @@ npm run evals:agents -- --tier all --repeat 3      # everything, 3 runs each (pa
 npm run evals:agents -- --task healer-app-bug --keep --auth login
 ```
 
-The app must be reachable (`APP_ENV=docker` or local; see AGENTS.md). Every agent run
+The app must be reachable (`APP_ENV=docker` or local; see the `suite-environments` skill). Every agent run
 is billed usage. Each run is capped by the task's `budgetUsd`. `--auth login` drops
 `ANTHROPIC_API_KEY` from the agent's environment so `claude` uses its own login.
 

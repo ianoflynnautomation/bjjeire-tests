@@ -12,6 +12,7 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 .playwright-cli/
+.playwright-mcp/
 
 /allure-results/
 /allure-report/

@@ -12,13 +12,18 @@
       "file": "specs/features/events.md",
       "find": "## Constraints",
       "replace": "## Planned\n\n#### visitor should see the search results when opening a shared search link\n\n- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no\n- Given/When/Then:\n  - Given a visitor has a link to Events searched for a seeded event's name\n  - When the visitor opens the link\n  - Then the search box shows the term and only that event is listed\n- Why: exploration 2026-10-29 found `?q=` restores search; no test owns it.\n\n## Constraints"
+    },
+    {
+      "file": "tests/features/events/events-filters.ui.acceptance.spec.ts",
+      "find": "    test(\n      'visitor should see the search results when opening a shared search link',\n      {\n        tag: '@acceptance',\n        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),\n      },\n      async ({ eventsPage }) => {\n        await test.step(`When a visitor opens a shared link to a search for \"${seededSeminar.name}\"`, async () => {\n          await eventsPage.goToWithQuery(`q=${encodeURIComponent(seededSeminar.name)}`);\n        });\n\n        await test.step('Then the search box shows the shared term and only that event is listed', async () => {\n          await eventsPage.expectSearchValue(seededSeminar.name);\n          await eventsPage.expectResultCount(1);\n          await eventsPage.expectCardData({ name: seededSeminar.name });\n        });\n      },\n    );\n\n",
+      "replace": ""
     }
   ],
   "checks": [
     {
       "name": "test exists with the planned title",
-      "type": "file_matches",
-      "path": "tests/features/events/events.ui.acceptance.spec.ts",
+      "type": "new_file_matches",
+      "glob": "tests/features/events/*.ui.acceptance.spec.ts",
       "pattern": "visitor should see the search results when opening a shared search link"
     },
     {
@@ -34,8 +39,7 @@
     },
     {
       "name": "no bare page.goto in the spec",
-      "type": "file_not_matches",
-      "path": "tests/features/events/events.ui.acceptance.spec.ts",
+      "type": "diff_lacks",
       "pattern": "page\\.goto\\("
     },
     {
@@ -46,14 +50,18 @@
     {
       "name": "new test passes",
       "type": "command",
-      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts tests/features/events/events.ui.acceptance.spec.ts --project=chromium-desktop --reporter=line --retries=0 -g 'shared search link'"
+      "run": "PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts tests/features/events/ --project=chromium-desktop --reporter=line --retries=0 -g 'shared search link'"
     },
-    { "name": "lint clean", "type": "command", "run": "npx eslint tests/features/events src/ui/pages" },
+    {
+      "name": "lint clean",
+      "type": "command",
+      "run": "npx eslint tests/features/events src/ui/pages"
+    },
     {
       "name": "uses Given/When/Then steps",
-      "type": "file_matches",
-      "path": "tests/features/events/events.ui.acceptance.spec.ts",
-      "pattern": "shared search link[\\s\\S]{0,1500}test\\.step\\('Given",
+      "type": "new_file_matches",
+      "glob": "tests/features/events/*.ui.acceptance.spec.ts",
+      "pattern": "shared search link[\\s\\S]{0,1500}test\\.step\\([`'\"](Given|When)",
       "critical": false
     }
   ]

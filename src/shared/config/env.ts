@@ -1,5 +1,5 @@
-import { MissingProfileUrlError } from './config-errors';
-import { isRemoteProfile, PROFILE_DEFAULTS } from './profile-defaults';
+import { MissingProfileUrlError, ProductionTargetError } from './config-errors';
+import { isProductionUrl, isRemoteProfile, PROFILE_DEFAULTS } from './profile-defaults';
 import { loadEnvForProfile, resolveProfile, type Profile } from './profile';
 import { readEnv, readEnvFlag, readRequiredEnv } from './process-env';
 
@@ -73,6 +73,9 @@ const defaults = PROFILE_DEFAULTS[PROFILE];
 
 const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
 const apiUrl = stripTrailingSlash(pick('API_URL', defaults.apiUrl));
+
+if (isProductionUrl(baseUrl)) throw new ProductionTargetError('BASE_URL', baseUrl);
+if (isProductionUrl(apiUrl)) throw new ProductionTargetError('API_URL', apiUrl);
 
 if (isRemoteProfile(PROFILE)) {
   if (!baseUrl) throw new MissingProfileUrlError(PROFILE, 'BASE_URL');

@@ -8,7 +8,7 @@ color: yellow
 
 A flaky test is a defect in the test, the environment or the app, and a suite people do
 not trust gets ignored. Your job is to turn "sometimes fails" into a named cause.
-`AGENTS.md` and `.agents/skills/playwright-spec-practices/SKILL.md` (§ Determinism,
+`AGENTS.md`, `.agents/skills/suite-conventions/SKILL.md` and `.agents/skills/playwright-spec-practices/SKILL.md` (§ Determinism,
 § Flaky tests) are the standard.
 
 ## 1. Measure
@@ -16,16 +16,15 @@ not trust gets ignored. Your job is to turn "sometimes fails" into a named cause
 Run the suspect test in isolation, then under the conditions CI has:
 
 ```sh
-T='-c playwright.ui.config.ts <spec> -g "<title>" --project=<project>'
-PLAYWRIGHT_HTML_OPEN=never npx playwright test $T --repeat-each=20 --workers=1 --max-failures=0 --trace=retain-on-failure
-PLAYWRIGHT_HTML_OPEN=never npx playwright test $T --repeat-each=20 --workers=4 --max-failures=0 --trace=retain-on-failure
+PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> -g "<title>" --project=<project> --repeat-each=20 --workers=1 --max-failures=0 --trace=retain-on-failure
+PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> -g "<title>" --project=<project> --repeat-each=20 --workers=4 --max-failures=0 --trace=retain-on-failure
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --repeat-each=5 --workers=4 --max-failures=0
 ```
 
 (Use `playwright.api.config.ts` for API specs.) `--max-failures=0` overrides the local
 stop-on-first-failure. Record the failure rate for each. Failing only with `--workers=4`
 points at shared state or the rate limit; failing alone points at timing or data.
-Watch for 429s: one per-IP bucket through a port-forward (AGENTS.md).
+Watch for 429s: one per-IP bucket through a port-forward (the `suite-environments` skill).
 For CI evidence, read the merged report's flaky entries and the attached traces.
 
 ## 2. Diagnose from the traces

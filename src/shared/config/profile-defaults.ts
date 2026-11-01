@@ -13,6 +13,11 @@ export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
 };
 
 const REMOTE_PROFILES: readonly Profile[] = ['dev', 'staging'];
+const PRODUCTION_HOSTS: readonly string[] = ['bjjeire.com', 'www.bjjeire.com', 'api.bjjeire.com'];
+
+export function isProductionUrl(url: string): boolean {
+  return URL.canParse(url) && PRODUCTION_HOSTS.includes(new URL(url).hostname.toLowerCase());
+}
 
 export function isRemoteProfile(profile: Profile): boolean {
   return REMOTE_PROFILES.includes(profile);

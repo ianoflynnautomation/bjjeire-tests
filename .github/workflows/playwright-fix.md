@@ -128,7 +128,7 @@ Repair **this repository's tests** from evidence. Do not change the product.
 Read:
 
 1. `.specify/memory/constitution.md`
-2. `AGENTS.md` (§ Test conventions, § Guardrails)
+2. `AGENTS.md` (§ Test conventions, § Guardrails) and `.agents/skills/suite-conventions/SKILL.md`
 3. `.github/aw/instructions.md`
 4. `specs/features/` for the failing feature
 5. `specs/system-architecture.md` (CI attachment / atest notes)

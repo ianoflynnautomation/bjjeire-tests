@@ -20,4 +20,4 @@ Steps:
 Success criteria / report format: total passed and failed; for each failure the test
 title, failing assertion, and a one-line root cause classified as test bug, app bug, or
 environment/data issue. Do not mark the task done with failing tests unless the failure
-is a genuine app bug — then report it explicitly (and note it in TODO.md).
+is a genuine app bug — then report it explicitly.

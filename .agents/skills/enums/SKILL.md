@@ -190,4 +190,4 @@ That is `env` in `src/shared/config`. The api project sets `baseURL` from `env.a
 
 - `api-testing` skill — `API_ROUTES`, `ProblemType`, `expectProblem`, and `invalid-values.ts`.
 - `.agents/skills/playwright-cli/SKILL.md` — how to read rendered copy and `data-testid`s. Invoke it as `npx playwright cli` from the repo root.
-- `AGENTS.md` — feature slice layout and the rule that paths live in `src/api/support/routes.ts`.
+- `AGENTS.md` and the `suite-conventions` skill — feature slice layout and the rule that paths live in `src/api/support/routes.ts`.

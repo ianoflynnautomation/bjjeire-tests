@@ -28,7 +28,7 @@ report). The browser is `npx playwright cli`. Never use a global `playwright-cli
    between Bash calls, so write the literal URL and `-s=tw-XXXX` into every command
    below. Local or
    Docker only. Never production. Staging only when the user asks. Check the rate limit
-   (AGENTS.md); a 429 on `/featureflag` redirects every feature route to `/about`.
+   (the `suite-environments` skill); a 429 on `/featureflag` redirects every feature route to `/about`.
 
 ## 1. Start the session
 

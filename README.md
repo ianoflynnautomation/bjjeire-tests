@@ -133,7 +133,7 @@ All inputs, secrets, and outputs are documented inline in the workflow files.
 Provisioned AKS environments are owned by Flux in `bjjeire-gitops`
 (`bjj-eire-preview`). Callers use
 `bjjeire-ci-templates` `acceptance-gate.yml` (SHA / existing)
-and `BjjEire` `pr-env-validation.yml` (PR previews).
+and `bjjeire-java` `pr-env-validation.yml` (PR previews).
 
 ## Project structure
 
@@ -146,8 +146,8 @@ src/api/features/<feature>/          Typed API clients, Zod schemas, DTO types
 .github/workflows/                   Internal CI + reusable workflows
 ```
 
-Conventions, tag taxonomy, and data policy live in [`AGENTS.md`](AGENTS.md); the
-coverage roadmap lives in [`TODO.md`](TODO.md).
+Conventions, tag taxonomy, and data policy live in [`AGENTS.md`](AGENTS.md) and the
+[`suite-conventions`](.agents/skills/suite-conventions/SKILL.md) skill.
 
 ## Contributing
 

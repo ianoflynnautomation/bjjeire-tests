@@ -38,7 +38,7 @@
     {
       "name": "steps are declarative",
       "type": "diff_lacks",
-      "pattern": "getBy|data-testid|page\\.|\\b(200|400|404|422|429|500)\\b|https?://"
+      "pattern": "getBy|data-testid|\\bpage\\.[a-zA-Z]|\\b(200|400|404|422|429|500)\\b|https?://"
     },
     {
       "name": "no plan files",

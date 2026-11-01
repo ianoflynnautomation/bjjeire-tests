@@ -39,7 +39,7 @@ Read:
 
 1. `.specify/memory/constitution.md`
 2. `.github/aw/instructions.md`
-3. `AGENTS.md` (§ Test conventions, § Guardrails)
+3. `AGENTS.md` (§ Test conventions, § Guardrails) and `.agents/skills/suite-conventions/SKILL.md`
 4. `specs/features/<feature>.md` for each touched feature
 5. The corresponding spec files under `tests/features/<feature>/`
 

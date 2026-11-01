@@ -14,6 +14,7 @@ const PROTECTED = [
   { re: /\/__aria__\//, why: 'aria baselines; regenerate with /update-snapshots on request' },
   { re: /^\.github\/workflows\/.*\.lock\.yml$/, why: 'compiled; edit the .md source and run `gh aw compile`' },
   { re: /^playwright\/\.auth\//, why: 'auth caches; delete them to force a fresh sign-in, never write them' },
+  { re: /^\.env(?!.*\.example$)/, why: 'local configuration and credentials; a person changes them' },
   { re: /^(test-results|playwright-report|blob-report)\//, why: 'run output, not source' },
 ];
 
@@ -21,6 +22,7 @@ const CODE_FILE = /^(tests|src)\/.*\.(ts|mts|js|mjs)$/;
 const FORBIDDEN = [
   { label: '@quarantine', re: /@quarantine/g, why: 'quarantine is a human decision; recommend it to the user instead' },
   { label: '.fixme(', re: /\.fixme\s*\(/g, why: 'never park a test; fix it or report the app bug' },
+  { label: '.skip(', re: /\.skip\s*\(/g, why: 'skipping is a human decision; recommend it to the user instead' },
   { label: '.only(', re: /\.only\s*\(/g, why: 'focused tests must not be left in the suite' },
   { label: 'waitForTimeout(', re: /waitForTimeout\s*\(/g, why: 'wait on a user-visible condition, not a time' },
   { label: 'networkidle', re: /networkidle/g, why: 'wait on a route anchor or web-first assertion instead' },

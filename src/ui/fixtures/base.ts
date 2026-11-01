@@ -67,6 +67,9 @@ export const test = base.extend<CoreUiFixtures>({
       }
       const report = await installResponseMutation(page, responseMutant);
       await use();
+      // A test can end while a list response is still in flight. Without this, the
+      // handler's fulfill on the disposed response fails a test that never read it.
+      await page.unrouteAll({ behavior: 'ignoreErrors' });
       annotateMutation(testInfo, report());
     },
     { auto: true },

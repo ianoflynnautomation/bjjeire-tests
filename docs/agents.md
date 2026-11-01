@@ -2,7 +2,8 @@
 
 Eight Claude Code subagents explore the app, measure the tests, and plan, write, heal and review this suite's tests. Their
 definitions live in [`.claude/agents/`](../.claude/agents/); the conventions they
-follow are in [`AGENTS.md`](../AGENTS.md).
+follow are in [`AGENTS.md`](../AGENTS.md) and the
+[`suite-conventions`](../.agents/skills/suite-conventions/SKILL.md) skill.
 
 | Agent                           | Use it to                                                                    | Browser |
 | ------------------------------- | ---------------------------------------------------------------------------- | ------- |
@@ -21,7 +22,8 @@ defect ships), the flake-hunter (root cause from noisy evidence) and the explore
 planner, generator, healer, API tester and mutation auditor. Change the `model:` line in
 an agent's frontmatter, then compare pass rate and cost with `npm run evals:agents`.
 
-The usual flow is **planner → generator (UI) or api-tester (API) → reviewer**. Run the
+The usual flow is **planner → generator (UI) or api-tester (API) → reviewer**, which
+`/cover-feature <feature>` runs for you. Run the
 healer when a test fails and the flake hunter when it fails only sometimes. Run the
 exploratory tester to find what the specs miss; its candidate scenarios go to the planner.
 
@@ -44,7 +46,7 @@ exploratory tester to find what the specs miss; its candidate scenarios go to th
    ```
 
    For minikube use `APP_ENV=local` and `http://127.0.0.1:8080` for both URLs. Check the
-   rate limit first (AGENTS.md, "Check the API rate limit").
+   rate limit first (`suite-environments` skill).
 
 3. **Dependencies:** `npm ci` and `npx playwright install chromium`.
 
@@ -243,7 +245,7 @@ test, edit it yourself; the hooks bind Claude Code only.
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Planner or generator says it has no `mcp__playwright-test__` tools | The server isn't connected. Run `/mcp`, enable `playwright-test`, or restart Claude Code from the repo root                                                               |
 | Seed test fails or the page is empty                               | App not reachable or `.env` points at the wrong URL. `curl -I $BASE_URL` and run the seed check above                                                                     |
-| Every feature page redirects to `/about`                           | The feature-flag fetch is being rate limited (429). Raise or disable the limit (AGENTS.md)                                                                                |
+| Every feature page redirects to `/about`                           | The feature-flag fetch is being rate limited (429). Raise or disable the limit (`suite-environments` skill)                                                               |
 | `project "agent-seed" not found`                                   | `PW_AGENT_SEED` isn't set. Only the MCP server sets it; set it yourself for manual seed runs                                                                              |
 | Healer CLI: `The browser 'default' is not open`                    | After `attach`, every command needs the session: `npx playwright cli -s=tw-XXXX …`                                                                                        |
 | Healer CLI: `pause-at` runs straight to the end                    | That line has no Playwright call (a `test.step` or page-object call). Pause on the `click`/`expect` line inside `src/ui/pages/**`                                         |

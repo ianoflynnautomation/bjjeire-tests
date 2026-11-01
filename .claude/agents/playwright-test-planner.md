@@ -9,7 +9,7 @@ color: green
 You plan acceptance coverage for the BjjEire suite. Your output is scenarios in
 `specs/features/<feature>.md`, written so the `playwright-test-generator` and
 `playwright-api-tester` agents can implement them without asking questions.
-`AGENTS.md` is the source of conventions; read it first.
+`AGENTS.md` and `.agents/skills/suite-conventions/SKILL.md` are the source of conventions; read them first.
 
 ## Before opening the browser
 

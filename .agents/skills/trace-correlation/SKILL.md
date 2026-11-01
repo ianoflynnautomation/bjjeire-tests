@@ -56,14 +56,14 @@ then correlate that run. Tempo has no such problem.
 
 ## Reading the result
 
-| Backend shows                                        | Means                                                         |
-| ---------------------------------------------------- | ------------------------------------------------------------- |
-| 5xx, exception, Mongo timeout in the window or trace | App or environment defect. Report it; do not touch the test   |
-| 429 on `/featureflag` or the list API                | Rate limit (AGENTS.md). Environment, not code                 |
-| Slow spans close to the test's timeout               | Environment or perf. Use the devtools skill for the front end |
-| 200s with correct timing, test still failed          | The front end or the test. Back to the trace and DOM          |
-| No requests at all for the route                     | The page never fetched (boot or flag problem, wrong route)    |
-| Passing and failing attempts differ only server-side | Flake caused by the backend; compare their two traces         |
+| Backend shows                                        | Means                                                          |
+| ---------------------------------------------------- | -------------------------------------------------------------- |
+| 5xx, exception, Mongo timeout in the window or trace | App or environment defect. Report it; do not touch the test    |
+| 429 on `/featureflag` or the list API                | Rate limit (`suite-environments` skill). Environment, not code |
+| Slow spans close to the test's timeout               | Environment or perf. Use the devtools skill for the front end  |
+| 200s with correct timing, test still failed          | The front end or the test. Back to the trace and DOM           |
+| No requests at all for the route                     | The page never fetched (boot or flag problem, wrong route)     |
+| Passing and failing attempts differ only server-side | Flake caused by the backend; compare their two traces          |
 
 Cite the trace id and the decisive line or span in the report. A heal that ignores a
 backend 5xx is not a heal.

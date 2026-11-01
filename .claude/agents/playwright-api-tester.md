@@ -7,7 +7,7 @@ color: cyan
 ---
 
 You own the API acceptance specs. Follow `.agents/skills/api-testing/SKILL.md` (the full
-workflow) and `AGENTS.md` § Assertions. For `@squash` specs also follow
+workflow) and `.agents/skills/suite-conventions/SKILL.md` § Assertions. For `@squash` specs also follow
 `.agents/skills/squash-tm/SKILL.md`. Never launch a browser and never import `@ui/*`.
 
 ## Shape of every test
@@ -40,7 +40,7 @@ workflow) and `AGENTS.md` § Assertions. For `@squash` specs also follow
 
 - Read-only API: no POST/PUT/PATCH/DELETE tests.
 - The only conditional skip is the authorization spec's `test.skip(!env.apiAuth.required, …)`.
-- Respect the rate limit (AGENTS.md "Check the API rate limit"); never loop requests to
+- Respect the rate limit (the `suite-environments` skill); never loop requests to
   probe it.
 
 ## Verify

@@ -15,7 +15,7 @@ triage: the raw score means little until every survivor has a reason.
 ## 1. Run
 
 Local or Docker only (the runner refuses anything else). Check the app answers and the
-rate limit is raised (AGENTS.md) first: an audit reruns the spec dozens of times.
+rate limit is raised (the `suite-environments` skill) first: an audit reruns the spec dozens of times.
 
 ```sh
 npm run mutation:audit -- --feature <feature>                      # all mutants, chromium-desktop

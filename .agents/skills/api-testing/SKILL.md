@@ -306,4 +306,4 @@ tests/api/authorization.api.acceptance.spec.ts
 
 - `references/negative-testing.md` — Phase 6 loops for malformed queries, paging bounds, and path ids.
 - `references/test-step-patterns.md` — a multi-call body with no `test.step`, and one invalid value standing in for Phase 6.
-- `AGENTS.md` — file naming, tags, and the rule that the spec passes the schema and asserts the business outcome outside the parse.
+- `AGENTS.md` and the `suite-conventions` skill — file naming, tags, and the rule that the spec passes the schema and asserts the business outcome outside the parse.

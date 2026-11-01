@@ -5,7 +5,7 @@
 //
 // Chromium only (it uses CDP). A single function expression, as `run-code` requires
 // (no imports, no trailing semicolon). Reloads the page twice and leaves throttling off.
-// The bootChain shows the path AGENTS.md describes:
+// The bootChain shows the path the suite-conventions skill describes:
 // document → /featureflag + route chunk(s) in parallel → list API → content.
 async page => {
   const PROFILES = {
