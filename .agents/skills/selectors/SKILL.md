@@ -8,7 +8,7 @@ author: Ian O Flynn
 
 ## Critical
 
-- Explore with `npx playwright cli` from the repo root before writing a new locator. The skill is `.agents/skills/playwright-cli/SKILL.md`. The shell is blank until MSAL and the feature-flag fetch settle, so snapshot again before choosing a selector.
+- Explore with `npx playwright cli` from the repo root before writing a new locator. The skill is `.agents/skills/playwright-cli/SKILL.md`. The shell is blank until the feature-flag fetch and route chunk settle, so snapshot again before choosing a selector.
 - Scope first. A locator that is unique on the page stays on `page`. A locator that repeats is scoped to the card, the filter bar, or the dialog.
 - Inside that scope, use `getByRole` when the accessible name is unique. Use `getByTestId` when the app publishes a `data-testid` for a repeated widget, or for a landmark that shares its role with another landmark. The ids are in `bjjeire-app` `src/constants/*DataTestIds.ts` and `src/constants/commonDataTestIds.ts`. The suite copies the ones it uses into `src/ui/pages/<feature>/<feature>.constants.ts`, or into `src/ui/pages/sections/header.constants.ts` for the header.
 - Do not use an unscoped `getByRole('navigation')`. On `/gyms` the header `<nav data-testid="navigation">` and the pagination `<nav aria-label="Pagination navigation">` are both navigation landmarks.
@@ -28,7 +28,7 @@ npx playwright cli open http://localhost:3000/ --browser=chromium
 npx playwright cli snapshot
 ```
 
-The public directory pages do not show a login form when `PW_UI_ENTRA_AUTH` is off. A blank shell means MSAL or the feature-flag fetch has not finished. Snapshot again. If the page stays blank or returns an error, stop and tell the human the URL and the status. Wait for a reachable app before writing locators.
+The public directory pages do not show a login form when `PW_UI_ENTRA_AUTH` is off. A blank shell means the feature-flag fetch or route chunk has not finished. Snapshot again. If the page stays blank or returns an error, stop and tell the human the URL and the status. Wait for a reachable app before writing locators.
 
 ### Phase 2: Explore like a user
 

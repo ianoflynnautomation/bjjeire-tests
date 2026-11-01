@@ -25,24 +25,28 @@ on a slow-4G phone (150 ms RTT, 1.6 Mbps, 4x CPU). For each profile it returns:
 - `shellMs` / `contentMs`: reload until the header nav is attached / until the first
   card, empty state or heading is visible. This is what `gotoRoute` waits for, measured.
 - `bootChain`: start/end (ms from navigation) of the document, `/featureflag`, the
-  route chunks (JS that starts after flags resolve) and the list API call. Gaps
-  between links are serial waiting the visitor sees.
+  route chunks (JS requested dynamically once the entry module runs) and the list API
+  call. Gaps between links are serial waiting the visitor sees.
 - `lcpMs`, `cls`, `tbtMs`, `longTasks`, JS file count and transfer size (largest three),
   and CDP runtime metrics (heap, DOM nodes, layouts, style recalcs, script time).
 - `overBudget`: anything over `BUDGETS` in the script. These are Web Vitals "good"
   thresholds plus a shell budget for this app.
 
-**Reading it.** The app cannot render before MSAL init and the flag fetch, and the route
-chunk cannot load before the first render, so the chain is serial by design. Look for:
+Vitals are read once LCP and CLS have been quiet for 2 s, so each profile takes a few
+seconds longer than `contentMs`.
 
-- A long gap between `featureFlag.end` and the first route chunk: render blocked on
-  MSAL or something else after flags.
-- A gap between the last route chunk and `listApi.start`: the page waits before it
-  fetches. On 2026-10-30 (Docker, desktop, `/events`) this gap was ~300 ms.
-- `contentMs` well after `listApi.end`: rendering or an entrance animation delays
-  content. That day it was ~500 ms, with desktop CLS 0.296 (over 0.1).
-- `cls` over 0.1: cards or filters shifting as data lands. A skeleton or reserved
-  height fixes it in the app.
+**Reading it.** `bootstrap()` loads the flags and the route chunk in parallel and renders
+when both are in (the chunk wait is capped at 1 s), so the page commits with no Suspense
+fallback and the list fetch starts straight away. Look for:
+
+- A gap between `max(featureFlag.end, last route chunk)` and `listApi.start`: the page
+  waits before it fetches. A gap of about 300 ms means a Suspense fallback committed and
+  React's fallback throttle (`FALLBACK_THROTTLE_MS`) is holding the page back. The chunk
+  probably missed the preload, as it did on every route before 2026-11-01.
+- `contentMs` well after `listApi.end`: rendering or an entrance animation delays content.
+- `cls` over 0.1: something shifting as data lands. On 2026-11-01 every route settled at
+  about 0.002, so any shift worth reporting is new. The footer is the usual suspect: a
+  loading state shorter than the viewport leaves it on screen until content pushes it out.
 
 Re-run once before you trust a number. The first run after a stack restart is cold
 server-side. Docker numbers are lower bounds, because AKS adds network, TLS and the
@@ -77,10 +81,10 @@ npx playwright cli -s=<session> --raw run-code --filename=.agents/skills/devtool
 ```
 
 This reloads once and returns, per file, its size, the share executed on load, and the
-unused kB, sorted by unused bytes. On 2026-10-30 (`/events`, Docker) it found 844 kB of
-JS (uncompressed), 548 kB of it unused. `msal` was 254 kB at 13% used, and a `forms`
-chunk was 85 kB at 26% used on a page with no forms. Large and mostly unused points to
-code splitting in the app.
+unused kB, sorted by unused bytes. On 2026-11-01 (`/events`, Docker) it found 511 kB of
+JS (uncompressed), 298 kB of it unused, mostly in `vendor`. An `msal` chunk here is a
+regression: it should load only for a write. Large and mostly unused points to code
+splitting in the app.
 
 ## 4. One-off recipes (`run-code`)
 

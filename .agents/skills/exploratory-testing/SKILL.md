@@ -44,7 +44,7 @@ given none, pick the highest-ranked unexplored row in §5 and state it at the to
 | Structure  | What is it made of?     | Lazy route chunks, cards, header total, filters, footer links    |
 | Function   | What does it do?        | Search, county/type filters, reset, retry, theme toggle          |
 | Data       | What does it process?   | Long names, Irish fadas (Éire), apostrophes, emoji, empty fields |
-| Platform   | What does it depend on? | MSAL boot, feature-flag fetch, API, viewport, colour scheme      |
+| Platform   | What does it depend on? | Feature-flag fetch, route chunk, API, viewport, colour scheme    |
 | Operations | How is it used?         | Deep links, refresh, back/forward, new tab, slow mobile          |
 | Time       | What changes over time? | Event dates near midnight, DST in Europe/Dublin, finished events |
 
@@ -88,16 +88,16 @@ pages handle the same situation four different ways, that is a finding.
 
 ## 5. Risk catalogue (rank before choosing a charter)
 
-| Rank | Area                       | Why it is risky here                                                              |
-| ---- | -------------------------- | --------------------------------------------------------------------------------- |
-| 1    | Filter / search / URL sync | Client-side search on the loaded page combined with server filters; back/forward  |
-| 2    | Boot path                  | MSAL init → `/featureflag` → `lazy()` chunk; a 429 on flags redirects to `/about` |
-| 3    | Error, empty, retry states | Four pages share `ListPage`; one may diverge                                      |
-| 4    | Paging beyond page 1       | Environments hold full datasets; header total vs shown cards                      |
-| 5    | Dates and finished events  | Upcoming-only rule, Europe/Dublin timezone, DST                                   |
-| 6    | Mobile layout              | Long names, badges and filters at 360px                                           |
-| 7    | Theme and persistence      | Dark default, stored theme, `prefers-color-scheme` fallback                       |
-| 8    | External links and modal   | Gym websites, maps, support modal focus trap and Escape                           |
+| Rank | Area                       | Why it is risky here                                                             |
+| ---- | -------------------------- | -------------------------------------------------------------------------------- |
+| 1    | Filter / search / URL sync | Client-side search on the loaded page combined with server filters; back/forward |
+| 2    | Boot path                  | `/featureflag` + route chunk in parallel; a 429 on flags redirects to `/about`   |
+| 3    | Error, empty, retry states | Four pages share `ListPage`; one may diverge                                     |
+| 4    | Paging beyond page 1       | Environments hold full datasets; header total vs shown cards                     |
+| 5    | Dates and finished events  | Upcoming-only rule, Europe/Dublin timezone, DST                                  |
+| 6    | Mobile layout              | Long names, badges and filters at 360px                                          |
+| 7    | Theme and persistence      | Dark default, stored theme, `prefers-color-scheme` fallback                      |
+| 8    | External links and modal   | Gym websites, maps, support modal focus trap and Escape                          |
 
 Before choosing, check `specs/exploration/` for sessions already run on that area and
 `specs/features/<f>.md` for what is already covered by tests.

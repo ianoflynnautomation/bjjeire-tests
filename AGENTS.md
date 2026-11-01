@@ -94,8 +94,9 @@ Details in `.devcontainer/README.md`.
 Chromium desktop is the system of record. `perf` measures boot budgets (shell, first
 content, LCP, CLS) per route under desktop and slow-4G throttling via CDP
 (`src/ui/support/performance.ts`). It is opt-in so CI time and noise stay out of the
-acceptance gate until its budgets are agreed. On 2026-10-30 it failed CLS on desktop
-Events, Gyms and Competitions (0.23–0.33 vs 0.1), which is an app finding. Firefox, WebKit, and light Chromium pay the
+acceptance gate until its budgets are agreed. Vitals are read once LCP and CLS go quiet,
+so late card images count, and first content means a card, the empty state or the About
+page, never a list page's heading. On 2026-11-01 (Docker) every route passed, with CLS about 0.002. Firefox, WebKit, and light Chromium pay the
 cross-browser/theme tax on `@smoke` only so the suite stays inside a 15-minute CI SLA
 as the spec count grows. Wide is layout/nav, not a second copy of every catalog test.
 
@@ -260,9 +261,9 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   (lint error), no polling loops.
 - **Never open an app route with a bare `page.goto`** — use `gotoRoute` /
   `gotoAppShell` from `@ui/support`. `goto` resolves on a document lifecycle event,
-  but the app renders nothing until MSAL init and the feature-flag fetch settle, and
-  only then requests the route's `lazy()` chunk. Those two serial round trips are why
-  the first test in a file used to flake on a cold environment. The helpers wait for a
+  but the app renders nothing until the feature-flag fetch and the route's chunk settle
+  (they load in parallel; the chunk wait is capped at 1 s, then the Suspense fallback
+  shows). That gap is why the first test in a file used to flake on a cold environment. The helpers wait for a
   route anchor on a `TIMEOUTS.appBoot` budget; assertions after that keep the tight
   `TIMEOUTS.expect` default. Exception: snapshot specs (keep `load` so images are settled).
 - API specs assert two things, both written in the test. The feature client
@@ -441,4 +442,4 @@ overrides`, so this wins even if the remote fetch is slow or fails. Feature
 
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-10-29.
+script, project, or workflow it documents. Last reviewed: 2026-11-01.

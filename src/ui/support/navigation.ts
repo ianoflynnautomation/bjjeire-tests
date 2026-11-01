@@ -7,11 +7,10 @@ import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
  *
  * `page.goto` resolves on a document lifecycle event, which for this SPA is a
  * long way short of "the page is there". Nothing renders until `bootstrap()`
- * has awaited MSAL init *and* the feature-flag fetch, and only after that first
- * render does React request the route's `lazy()` chunk. Between navigation and
- * the route appearing there are two serial round trips that no `waitUntil`
- * covers — until the chunk lands, the app shows its Suspense fallback and the
- * route's own elements do not exist at all.
+ * has awaited the feature-flag fetch and the route's chunk, which load side by
+ * side (the chunk wait is capped, after which the app shows its Suspense
+ * fallback). No `waitUntil` covers that gap, and until it closes the route's own
+ * elements do not exist at all.
  *
  * That gap is invisible on a warm environment and opens up on a cold one, so it
  * surfaced as the *first* test in each spec file failing with "element(s) not

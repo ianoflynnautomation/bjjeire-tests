@@ -6,7 +6,7 @@ import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
  * Boot-path measurement for the `perf` project (`*.perf.acceptance.spec.ts`).
  * Same model as `.agents/skills/devtools/scripts/boot-profile.js`, in typed form:
  * throttle with CDP, open the route cold, time the shell and the first content,
- * then read LCP and CLS from the page. Chromium only.
+ * then read LCP and CLS once the page has settled. Chromium only.
  */
 export type NetworkProfile = Readonly<{
   label: string;
@@ -43,8 +43,8 @@ export const BOOT_BUDGETS = {
   slow4g: { shellMs: 6_000, contentMs: 8_000, lcpMs: 4_000, cls: 0.1 },
 } as const satisfies Record<NetworkProfileName, BootBudget>;
 
-const CONTENT_SELECTOR = '[data-testid$="-list-item"], [data-testid="no-data-state"], main h1, main h2';
-const OBSERVER_GRACE_MS = 1_500;
+const CONTENT_SELECTOR = '[data-testid$="-list-item"], [data-testid="no-data-state"], [data-testid="about-page"]';
+const VITALS_QUIET_MS = 2_000;
 
 export async function measureBoot(page: Page, path: string, profile: NetworkProfile): Promise<BootMetrics> {
   const cdp = await page.context().newCDPSession(page);
@@ -66,25 +66,39 @@ export async function measureBoot(page: Page, path: string, profile: NetworkProf
     await expect(page.locator(CONTENT_SELECTOR).first()).toBeVisible({ timeout: TIMEOUTS.appBoot });
     const contentMs = Date.now() - started;
 
-    const vitals = await page.evaluate(async graceMs => {
-      const observe = <T>(type: string, pick: (entries: PerformanceEntry[]) => T): Promise<T> =>
-        new Promise(resolve => {
-          const timer = setTimeout(() => {
-            resolve(pick([]));
-          }, graceMs);
-          new PerformanceObserver((list, observer) => {
-            clearTimeout(timer);
-            observer.disconnect();
-            resolve(pick(list.getEntries()));
-          }).observe({ type, buffered: true });
-        });
+    const vitals = await page.evaluate(quietMs => {
       type LayoutShift = PerformanceEntry & { value: number; hadRecentInput: boolean };
-      const lcpMs = await observe('largest-contentful-paint', entries => entries.at(-1)?.startTime ?? null);
-      const cls = await observe('layout-shift', entries =>
-        (entries as LayoutShift[]).filter(e => !e.hadRecentInput).reduce((sum, e) => sum + e.value, 0),
-      );
-      return { lcpMs, cls };
-    }, OBSERVER_GRACE_MS);
+      return new Promise<{ lcpMs: number | null; cls: number }>(resolve => {
+        let lcpMs: number | null = null;
+        let cls = 0;
+        let quiet: ReturnType<typeof setTimeout>;
+        const observers: PerformanceObserver[] = [];
+        const restartQuietWindow = (): void => {
+          clearTimeout(quiet);
+          quiet = setTimeout(() => {
+            observers.forEach(observer => {
+              observer.disconnect();
+            });
+            resolve({ lcpMs, cls });
+          }, quietMs);
+        };
+        const watch = (type: string, onEntries: (entries: PerformanceEntry[]) => void): void => {
+          const observer = new PerformanceObserver(list => {
+            onEntries(list.getEntries());
+            restartQuietWindow();
+          });
+          observer.observe({ type, buffered: true });
+          observers.push(observer);
+        };
+        watch('largest-contentful-paint', entries => {
+          lcpMs = entries.at(-1)?.startTime ?? lcpMs;
+        });
+        watch('layout-shift', entries => {
+          cls += (entries as LayoutShift[]).filter(e => !e.hadRecentInput).reduce((sum, e) => sum + e.value, 0);
+        });
+        restartQuietWindow();
+      });
+    }, VITALS_QUIET_MS);
 
     return { shellMs, contentMs, lcpMs: vitals.lcpMs === null ? null : Math.round(vitals.lcpMs), cls: vitals.cls };
   } finally {

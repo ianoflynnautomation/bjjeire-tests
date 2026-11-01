@@ -25,7 +25,7 @@ filter before asserting a specific card.
 
 Playwright web-first assertions only. `waitForTimeout()` is a lint error.
 Never open an app route with a bare `page.goto` — use `gotoRoute` /
-`gotoAppShell` from `@ui/support` so MSAL init and the feature-flag fetch
+`gotoAppShell` from `@ui/support` so the feature-flag fetch and route chunk
 settle. Feature flags are pinned on via the auto fixture; never assert the
 flag API.
 
