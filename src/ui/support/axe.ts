@@ -2,6 +2,7 @@ import { AxeBuilder } from '@axe-core/playwright';
 import { expect, type Page } from '@playwright/test';
 
 const WCAG_2_1_A_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
+const AXE_ERROR_CHECK = 'error-occurred';
 
 type AxeResults = Awaited<ReturnType<AxeBuilder['analyze']>>;
 type Violation = AxeResults['violations'][number];
@@ -21,6 +22,16 @@ function diagnose(node: ViolatingNode): Record<string, unknown> {
 /** Scans the page for WCAG 2.1 A/AA violations; a failure diff lists each offending node and why. */
 export async function expectNoWcagViolations(page: Page): Promise<void> {
   const results = await new AxeBuilder({ page }).withTags(WCAG_2_1_A_AA).analyze();
+
+  // A rule that crashes reports "incomplete", not a violation, and can skip the whole page.
+  expect(
+    results.incomplete
+      .filter(result =>
+        result.nodes.some(node => [...node.any, ...node.all, ...node.none].some(check => check.id === AXE_ERROR_CHECK)),
+      )
+      .map(result => result.id),
+    'axe rules that crashed instead of evaluating the page',
+  ).toEqual([]);
 
   expect(
     results.violations.map(violation => ({

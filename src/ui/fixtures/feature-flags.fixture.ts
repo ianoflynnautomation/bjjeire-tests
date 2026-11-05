@@ -10,6 +10,7 @@ export type FeatureFlagOverrides = {
   Gyms: boolean;
   Competitions: boolean;
   Stores: boolean;
+  GymsMap?: boolean;
 };
 
 export const ALL_FEATURES_ENABLED: FeatureFlagOverrides = {

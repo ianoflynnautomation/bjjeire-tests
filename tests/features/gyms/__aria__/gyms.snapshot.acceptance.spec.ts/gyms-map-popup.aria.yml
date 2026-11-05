@@ -1,0 +1,10 @@
+- group "Harbour City Jiu-Jitsu":
+  - heading "Harbour City Jiu-Jitsu" [level=3]
+  - text: /Cork County \d+ Quay Street, Cork, Co\. Cork, Ireland/
+  - 'link "Visit Website: Harbour City Jiu-Jitsu"':
+    - /url: https://harbour-city-jiu-jitsu.example.ie/
+    - text: ""
+  - link "Get directions to Harbour City Jiu-Jitsu":
+    - /url: https://www.google.com/maps/search/?api=1&query=51.8985,-8.4706
+    - text: Get Directions
+  - button "Close gym details"

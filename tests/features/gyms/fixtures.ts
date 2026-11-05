@@ -1,5 +1,6 @@
 import type { GymDto } from '@api/features/gyms/gyms.types';
-import { mockGymDirectory, mockGyms, GYMS_ROUTE } from './mocks';
+import { abortMapTiles, mockGymDirectory, mockGyms, mockMapTiles, GYMS_ROUTE } from './mocks';
+import { GymsMapPage } from '@ui/pages/gyms/gyms-map.page';
 import { GymsPage } from '@ui/pages/gyms/gyms.page';
 import { test as core } from '@ui/fixtures';
 import { failureMockFixtures, type FailureMocks } from '@ui/fixtures/failure.fixture';
@@ -8,12 +9,26 @@ import { pageFixture } from '@ui/fixtures/page-fixture';
 
 export type GymsUiFixtures = FailureMocks & {
   gymsPage: GymsPage;
+  gymsMapPage: GymsMapPage;
+  requestedUrls: string[];
+  mockMapTiles: () => Promise<void>;
+  abortMapTiles: () => Promise<void>;
   mockGyms: (body: unknown) => Promise<void>;
   mockGymDirectory: (gyms: readonly GymDto[]) => Promise<void>;
 };
 
 export const test = core.extend<GymsUiFixtures>({
   gymsPage: pageFixture(GymsPage),
+  gymsMapPage: pageFixture(GymsMapPage),
+  requestedUrls: async ({ page }, use) => {
+    const urls: string[] = [];
+    page.on('request', request => {
+      urls.push(request.url());
+    });
+    await use(urls);
+  },
+  mockMapTiles: mockFixture(mockMapTiles),
+  abortMapTiles: mockFixture(abortMapTiles),
   mockGyms: mockFixture(mockGyms),
   mockGymDirectory: mockFixture(mockGymDirectory),
   ...failureMockFixtures(GYMS_ROUTE),
