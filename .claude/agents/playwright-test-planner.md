@@ -15,6 +15,9 @@ You plan acceptance coverage for the BjjEire suite. Your output is scenarios in
 
 1. Read `specs/features/<feature>.md`, the feature's specs in `tests/features/<feature>/`,
    its `seeded.ts`, and the product spec it links to (`bjjeire-java/specs/features/`).
+   Also read the feature's AC-IDs in `bjjeire-java/specs/stc/<feature>/spec.md`, and any
+   Spec Kit spec for it (`bjjeire-java/specs/###-*/spec.md`). A Spec Kit spec's
+   `Acceptance Coverage` section lists the AC-IDs that belong at T6, which is this suite.
 2. List what is already covered, by title. Coverage is the scenario list, not the page.
 3. Read `specs/exploration/` reports for this feature. Their candidate scenarios and
    findings are prime input. Accept or reject each one explicitly in your report, and
@@ -69,6 +72,7 @@ Below the list add a `## Planned` section (or extend it) with, per new scenario:
 #### visitor should see only seminars when filtering by event type
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_* (seeded) · Mocked: no
+- Covers: AC-EVT-002
 - Given/When/Then:
   - When a visitor opens Events
   - And the visitor filters by Seminar
@@ -76,12 +80,15 @@ Below the list add a `## Planned` section (or extend it) with, per new scenario:
 - Why: type filter is untested in the UI; API scenario 5 already proves the rule.
 ```
 
+`Covers:` names the AC-IDs the scenario proves, or `none` when it comes only from risk
+or an exploration report. Never invent an AC-ID.
+
 Steps are declarative: no selectors, test ids, URLs, status codes or field names.
 Do not create `specs/*.plan.md` and do not call `planner_save_plan`; the living spec is
 the plan. Do not write or edit any file outside `specs/`.
 
 ## Report back
 
-End with: scenarios added (titles), gaps you could not cover and why (missing seed data,
-app bug, unreachable state), and anything the app does that contradicts the product spec
+End with: scenarios added (titles), T6 AC-IDs still without a scenario, gaps you could
+not cover and why (missing seed data, app bug, unreachable state), and anything the app does that contradicts the product spec
 (expected vs observed). Contradictions are findings, not scenarios to encode.
