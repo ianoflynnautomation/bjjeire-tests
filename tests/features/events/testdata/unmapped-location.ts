@@ -24,7 +24,7 @@ export function listingWithoutCoordinates(unmapped: readonly BjjEventDto[]): {
 
 const SHARED_LOCATION_DECIMALS = 5;
 
-type Pin = { venue: string; eventCount: number; events: [BjjEventDto, ...BjjEventDto[]] };
+export type Pin = { venue: string; eventCount: number; events: [BjjEventDto, ...BjjEventDto[]] };
 
 const seededStart = new Map(
   SEEDED_EVENT_SCHEDULE_OFFSETS.map(({ event, startOffsetDays }) => [event.id, startOffsetDays]),

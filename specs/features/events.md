@@ -348,13 +348,13 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 
 - Layer: UI · Tags: @acceptance · Data: every seeded upcoming event plus SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded) · Mocked: tiles only
 - Given/When/Then:
-  - Given a visitor is on the map for the pin's county
+  - Given a visitor is on the map for a narrowed view (the Camp type, or a county)
   - When the visitor opens the pin for a venue
   - Then its popup shows the events at that venue, with their types, address and links
   - When the visitor closes the popup
-  - (repeated for every venue, each on a fresh map for its county)
+  - (repeated for every pin in the view, then for every view)
   - Then the popups show the events as many days long and as far apart as seeded
-- Why: mutation audit 2026-11-05, gap 2 (`location.venue`, `name` and coordinates rotate survived: every other map test is narrowed to Cork, so one event cannot show a pin tied to the wrong event). Pins are grouped by coordinates, as the app does, and the shared Leinster pin holds the open mat and the seminar, in earliest-start order. Each venue is opened on the map narrowed to its county, so the pin is on the map whatever else a full dataset holds (the unfiltered map shows only the first 100 events). Under a county filter a county with one seeded event turns a `rotate` mutant into an identity, so the venue and coordinates rotate kills rest on the Dublin pin (two events) here and on the `@smoke` Camp scenario (two pins in different counties). No pin-geometry check here. After the last popup, the dates shown are checked against the seeded offsets (see the dates scenario below).
+- Why: mutation audit 2026-11-05, gap 2 (`location.venue`, `name` and coordinates rotate survived: every other map test is narrowed to Cork, so one event cannot show a pin tied to the wrong event). Pins are grouped by coordinates, as the app does, and the shared Leinster pin holds the open mat and the seminar, in earliest-start order. The pins are grouped into narrowed views defined in `testdata/map-views.ts` (the Camp type, then one view per county for the rest; a helper checks every seeded pin is in exactly one view), so each pin is on the map whatever else a full dataset holds (the unfiltered map shows only the first 100 events). A county with one seeded event turns a `rotate` mutant into an identity, so the venue and name rotate kills rest on the Dublin pin (two events) here and on the `@smoke` Camp scenario; the latitude/longitude rotate kill comes from the Camp view, where one response holds two places (Galway and Westport) and a rotated coordinate changes a directions link. No pin-geometry check here. After the last popup, the dates shown are checked against the seeded offsets (see the dates scenario below).
 
 #### visitor should see each seeded event's dates as far apart as the seeded schedule says
 

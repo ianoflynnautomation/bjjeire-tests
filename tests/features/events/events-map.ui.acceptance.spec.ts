@@ -7,12 +7,11 @@ import { listingWithoutCoordinates, pinsFor } from './testdata/unmapped-location
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
 import {
   SEEDED_EVENT_ATLANTIC_COAST_CAMP,
-  SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
   SEEDED_EVENT_TRIBES_NO_GI_CAMP,
-  SEEDED_UPCOMING_EVENTS,
 } from './seeded';
 import { expectNoSidewaysScroll } from '@ui/support';
+import { seededMapViews } from './testdata/map-views';
 import { mapPopupFromDtos } from '@ui/pages/events/events.card.mapper';
 import { seededDateProblems } from './testdata/seeded-dates';
 import { squash } from '@squash/annotations';
@@ -104,25 +103,25 @@ test.describe('Events map UI acceptance', { tag: ['@bjj-events', '@events', '@ui
       annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
     },
     async ({ eventsMapPage }) => {
-      const pins = pinsFor([...SEEDED_UPCOMING_EVENTS, SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR]);
-
-      for (const pin of pins) {
-        // Narrowed to the pin's county, so the venue is on the map whatever else the environment holds.
-        await test.step(`Given a visitor is on the map for ${pin.events[0].county}`, async () => {
-          await eventsMapPage.goToMapWithQuery(`county=${pin.events[0].county}`);
+      for (const view of seededMapViews()) {
+        // Narrowed, so the venues are on the map whatever else the environment holds.
+        await test.step(`Given a visitor is on the map for ${view.label}`, async () => {
+          await eventsMapPage.goToMapWithQuery(view.query);
         });
 
-        await test.step(`When the visitor opens the pin for ${pin.venue}`, async () => {
-          await eventsMapPage.openPin(pin.venue, pin.eventCount);
-        });
+        for (const pin of view.pins) {
+          await test.step(`When the visitor opens the pin for ${pin.venue}`, async () => {
+            await eventsMapPage.openPin(pin.venue, pin.eventCount);
+          });
 
-        await test.step(`Then its popup shows the events at ${pin.venue}`, async () => {
-          await eventsMapPage.expectPopupFor(mapPopupFromDtos(pin.events));
-        });
+          await test.step(`Then its popup shows the events at ${pin.venue}`, async () => {
+            await eventsMapPage.expectPopupFor(mapPopupFromDtos(pin.events));
+          });
 
-        await test.step(`When the visitor closes the popup for ${pin.venue}`, async () => {
-          await eventsMapPage.closePopupNotingDates();
-        });
+          await test.step(`When the visitor closes the popup for ${pin.venue}`, async () => {
+            await eventsMapPage.closePopupNotingDates();
+          });
+        }
       }
 
       await test.step('Then the popups show the events as many days long and as far apart as seeded', () => {
