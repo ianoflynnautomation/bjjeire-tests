@@ -28,3 +28,7 @@ node_modules/
 .DS_STORE
 # Agent eval runs (npm run evals:agents)
 /evals/results/
+
+# Default seed template the playwright-test MCP server writes when a setup call finds no seed.
+# The agents use tests/agents/seed.spec.ts; this stub is never wanted.
+/tests/seed.spec.ts

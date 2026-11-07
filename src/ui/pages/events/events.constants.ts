@@ -49,3 +49,53 @@ export const TEST_IDS = {
   search: 'events-page-search',
   searchInput: 'search-input',
 } as const;
+
+export const MAP_TEST_IDS = {
+  map: 'event-map',
+  pin: 'event-map-pin',
+  viewSwitch: 'events-view-switch',
+  viewSwitchList: 'events-view-switch-list',
+  viewSwitchMap: 'events-view-switch-map',
+} as const;
+
+export const MAP_REGION_NAME = 'Map of Brazilian Jiu-Jitsu events in Ireland';
+
+export const MAP_NOTICE_TEST_IDS = {
+  truncated: 'event-map-notice-truncated',
+  unmapped: 'event-map-notice-unmapped',
+} as const;
+
+export const UNMAPPED_NOTICE_COPY = {
+  singular: 'event is not shown on the map because it has no location.',
+  plural: 'events are not shown on the map because they have no location.',
+} as const;
+
+/** The API's maximum page size: the most events the map loads. */
+export const MAP_EVENT_LIMIT = 100;
+
+export const TRUNCATED_NOTICE_COPY =
+  'Not all events are shown on the map. Choose a county or type, or search, to narrow the results.';
+
+export const POPUP_TEST_IDS = {
+  popup: 'event-map-popup',
+  venue: 'event-map-popup-venue',
+  address: 'event-map-popup-address',
+  directionsLink: 'event-map-popup-directions-link',
+  event: 'event-map-popup-event',
+  eventName: 'event-map-popup-event-name',
+  eventTypes: 'event-map-popup-event-types',
+  eventDates: 'event-map-popup-event-dates',
+  eventAddress: 'event-map-popup-event-address',
+  eventLink: 'event-map-popup-event-link',
+  close: 'event-map-popup-close',
+} as const;
+
+/**
+ * Galway against Westport on screen: south-east, with the vertical distance about twice the horizontal one
+ * (Mercator at 53.5 degrees north gives about 2.05). Wide bounds: any real position passes, swapped
+ * latitude and longitude (about 0.5) does not.
+ */
+export const SOUTH_EAST_RATIO_BOUNDS = { min: 1.5, max: 2.7 } as const;
+
+/** The events list endpoint, with or without a query string. */
+export const EVENTS_LIST_API_ROUTE = /\/api\/v[12]\/bjjevent(?:\?|$)/i;

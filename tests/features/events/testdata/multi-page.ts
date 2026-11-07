@@ -10,9 +10,12 @@ const ID_SUFFIX_LENGTH = 4;
 /**
  * First page of a listing that spans several pages: `total` distinct events derived from
  * a seeded one, paged at the app's page size. Only the page-1 body is served, which is all
- * the header total and the first page of cards need.
+ * the header total and the first page of cards need. The map loads one page of `pageSize` 100.
  */
-export function firstPageOfManyEvents(total: number): PaginatedResponse<BjjEventDto> {
+export function firstPageOfManyEvents(
+  total: number,
+  pageSize: number = DEFAULT_PAGE_SIZE,
+): PaginatedResponse<BjjEventDto> {
   const events = Array.from({ length: total }, (_, i): BjjEventDto => {
     const suffix = (i + 1).toString(HEX).padStart(ID_SUFFIX_LENGTH, '0');
     return {
@@ -21,7 +24,7 @@ export function firstPageOfManyEvents(total: number): PaginatedResponse<BjjEvent
       name: `${SEEDED_EVENT_LEINSTER_OPEN_MAT.name} ${i + 1}`,
     };
   });
-  const firstPage = paginatePages(events, DEFAULT_PAGE_SIZE, API_ROUTES.bjjEvents)[1];
+  const firstPage = paginatePages(events, pageSize, API_ROUTES.bjjEvents)[1];
   if (!firstPage) throw new Error(`no first page for ${total} events`);
   return firstPage;
 }

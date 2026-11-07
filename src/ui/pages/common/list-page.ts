@@ -11,7 +11,7 @@ import {
 import { cardByName } from './card.page';
 import { expectNoDataState, type NoDataCopy } from './empty.page';
 import { expectNetworkError, expectNoError, expectServerError, retryAfterError } from './error.page';
-import { expectPageIndicator, goToNextListPage } from './pagination.page';
+import { currentListPageNumber, expectPageIndicator, goToNextListPage, isOnLastListPage } from './pagination.page';
 
 const SEARCH_CLEAR_BUTTON_TEST_ID = 'search-clear-button';
 
@@ -29,6 +29,7 @@ export type ListPageConfig = Readonly<{
   route: string;
   testIds: ListPageTestIds;
   noDataCopy: NoDataCopy;
+  listApiRoute?: RegExp;
 }>;
 
 export abstract class ListPage<TCard extends { name: string }> {
@@ -87,6 +88,52 @@ export abstract class ListPage<TCard extends { name: string }> {
 
   async goToNextPage(): Promise<void> {
     await goToNextListPage(this.page);
+  }
+
+  /**
+   * Counts the cards on every page by paging forward, so the total comes from what the visitor can see
+   * and not from the header. Leaves the list on its last page.
+   */
+  async countListedCards(): Promise<number> {
+    let counted = 0;
+    for (;;) {
+      await waitForListOrEmpty(this.listItems, this.emptyState);
+      counted += await this.listItems.count();
+      if (await isOnLastListPage(this.page)) return counted;
+      await this.goToNextPageOnceLoaded();
+    }
+  }
+
+  private cardNames(): Promise<string[]> {
+    return this.page.getByTestId(this.ids.cardName).allInnerTexts();
+  }
+
+  /**
+   * The app keeps the previous page's cards on screen while the next page loads, and the pager shows the new
+   * page number at once. So wait for the next page's own list response (`page=<current + 1>` on the feature's
+   * list route), then for the card names to differ from the previous page's.
+   * (`goToNextPage` stays as it was for the callers that check the pager only.)
+   */
+  private async goToNextPageOnceLoaded(): Promise<void> {
+    const { listApiRoute } = this.config;
+    if (!listApiRoute) {
+      throw new Error(
+        `${this.constructor.name} has no listApiRoute: pass the feature's list API route in its ListPage config to count cards across pages`,
+      );
+    }
+    const namesBefore = await this.cardNames();
+    const nextPage = (await currentListPageNumber(this.page)) + 1;
+    const listResponse = this.page.waitForResponse(response => {
+      const url = response.url();
+      return (
+        response.request().method() === 'GET' &&
+        listApiRoute.test(url) &&
+        new URL(url).searchParams.get('page') === String(nextPage)
+      );
+    });
+    await goToNextListPage(this.page);
+    await listResponse;
+    await expect.poll(() => this.cardNames(), { message: 'card names of the next page' }).not.toEqual(namesBefore);
   }
 
   async expectOnPage(currentPage: number, totalPages: number): Promise<void> {

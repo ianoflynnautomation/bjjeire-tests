@@ -57,9 +57,6 @@ export const MAP_TILE_SELECTOR = 'img.leaflet-tile';
 /** localStorage key the app reads the chosen theme from (`bjjeire-app` `useTheme`). */
 export const THEME_STORAGE_KEY = 'bjjeire-theme';
 
-/** The app loads tiles from `tile.openstreetmap.org` only (`OSM_TILE_URL`); the pattern also covers `a|b|c.` subdomains. */
-export const MAP_TILE_URL_PATTERN = /^https:\/\/(?:[a-c]\.)?tile\.openstreetmap\.org\//;
-
 /** The lazy map chunk (.js and .css) of a built image. A dev server names its modules differently. */
 export const MAP_CHUNK_URL_PATTERN = /\/assets\/gym-map-[^/]+\.(?:js|css)(?:\?|$)/;
 

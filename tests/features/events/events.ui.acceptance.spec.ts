@@ -1,4 +1,4 @@
-import { test, eventsTestConfig } from './fixtures';
+import { test, expect, eventsTestConfig } from './fixtures';
 import { BjjEventType } from '@api/features/events/events.types';
 import { DEFAULT_PAGE_SIZE } from '@api/support';
 import { EVENT_TYPE_FILTER_LABELS } from '@ui/pages/events/events.constants';
@@ -10,9 +10,13 @@ import {
   SEEDED_EVENT_LEINSTER_OPEN_MAT,
   SEEDED_EVENT_LEINSTER_OPEN_MAT_PARTIAL_NAME,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
+  SEEDED_EVENT_SCHEDULE_OFFSETS,
+  SEEDED_UPCOMING_EVENTS,
   SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT,
 } from './seeded';
 import { firstPageOfManyEvents } from './testdata/multi-page';
+import type { RenderedDateRange } from '@ui/pages/events/events.dates';
+import { seededDateProblems } from './testdata/seeded-dates';
 import { squash } from '@squash/annotations';
 
 test.use(eventsTestConfig);
@@ -26,6 +30,8 @@ const weeklyOpenMat = SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT;
 const weeklyOpenMatCard = eventCardFromDto(weeklyOpenMat);
 const multiDayCamp = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 const multiDayCampCard = eventCardFromDto(multiDayCamp);
+// Every seeded upcoming event, plus the Dublin seminar that is live in every seeded environment.
+const FULL_LISTING_MINIMUM = SEEDED_UPCOMING_EVENTS.length + 1;
 const MANY_EVENTS = 45;
 const seminarType = BjjEventType.Seminar;
 const seminarTypeLabel = EVENT_TYPE_FILTER_LABELS[seminarType];
@@ -139,7 +145,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
 
       await test.step('Then the full event listing is shown', async () => {
         await eventsPage.expectSearchValue('');
-        await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+        await eventsPage.expectHeaderTotalMatchesListedCards({ atLeast: FULL_LISTING_MINIMUM });
       });
     },
   );
@@ -169,7 +175,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
       });
 
       await test.step('Then the header count matches the full listing', async () => {
-        await eventsPage.expectHeaderTotal(/^Found \d+ events\.$/);
+        await eventsPage.expectHeaderTotalMatchesListedCards({ atLeast: FULL_LISTING_MINIMUM });
       });
     },
   );
@@ -193,6 +199,7 @@ test.describe('Events UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '
         await eventsPage.expectOnlyCountyListed(seededSeminar.county);
         await eventsPage.expectCardAbsent(seededEvent.name);
         await eventsPage.expectCardData(seededSeminarCard);
+        await eventsPage.expectHeaderTotalMatchesListedCards({ atLeast: 1 });
       });
     },
   );
@@ -387,6 +394,39 @@ test.describe(
         await test.step('Then the header counts every event, not just the first page', async () => {
           await eventsPage.expectHeaderTotal(`Found ${MANY_EVENTS} events.`);
           await eventsPage.expectResultCount(DEFAULT_PAGE_SIZE);
+        });
+      },
+    );
+
+    test(
+      "visitor should see each seeded event's dates as far apart as the seeded schedule says",
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ eventsPage }) => {
+        const shown = new Map<string, RenderedDateRange>();
+
+        await test.step('When a visitor opens Events', async () => {
+          await eventsPage.goTo();
+        });
+
+        for (const { event } of SEEDED_EVENT_SCHEDULE_OFFSETS) {
+          await test.step(`When the visitor finds ${event.name}`, async () => {
+            await eventsPage.searchFor(event.name);
+          });
+
+          await test.step(`Then only ${event.name} is listed`, async () => {
+            await eventsPage.expectResultCount(1);
+          });
+
+          await test.step(`And the visitor reads the dates of ${event.name}`, async () => {
+            shown.set(event.name, await eventsPage.readScheduledDays(event.name));
+          });
+        }
+
+        await test.step('Then each event runs as many days as seeded and the events start as far apart as seeded', () => {
+          expect(seededDateProblems(shown)).toEqual([]);
         });
       },
     );

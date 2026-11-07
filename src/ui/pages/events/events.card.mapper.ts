@@ -6,6 +6,7 @@ import {
   type BjjEventPricingModelDto,
   type BjjEventScheduleDto,
 } from '@api/features/events/events.types';
+import { EVENT_TYPE_FILTER_LABELS } from './events.constants';
 import type { BjjEventCard } from './events.types';
 
 export type ExpectedEventCard = Pick<
@@ -97,5 +98,39 @@ export function eventCardFromDto(event: BjjEventDto): ExpectedEventCard {
     organiser: `Organised by: ${event.organiser.name}`,
     organiserUrl: event.organiser.website,
     moreInfoUrl: event.eventUrl,
+  };
+}
+
+export type ExpectedMapPopup = Readonly<{
+  venue: string;
+  address: string;
+  directionsUrl: string;
+  events: readonly Readonly<{
+    name: string;
+    types: string;
+    moreInfoUrl: string;
+    /** Shown only when it differs from the pin's address. */
+    ownAddress: string | null;
+  }>[];
+}>;
+
+/**
+ * What a pin's popup shows for the events at one spot, in the order given (earliest start first).
+ * Heading, address and directions come from the first event; each entry shows its own address
+ * only when it differs from that one.
+ */
+export function mapPopupFromDtos(events: readonly [BjjEventDto, ...BjjEventDto[]]): ExpectedMapPopup {
+  const [first] = events;
+  const card = eventCardFromDto(first);
+  return {
+    venue: first.location.venue,
+    address: first.location.address,
+    directionsUrl: card.mapUrl ?? '',
+    events: events.map(event => ({
+      name: event.name,
+      types: event.types.map(type => EVENT_TYPE_FILTER_LABELS[type]).join(' · '),
+      moreInfoUrl: event.eventUrl,
+      ownAddress: event.location.address === first.location.address ? null : event.location.address,
+    })),
   };
 }

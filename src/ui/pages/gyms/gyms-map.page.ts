@@ -8,7 +8,6 @@ import {
   MAP_POPUP_CONTAINER_SELECTOR,
   MAP_REGION_NAME,
   MAP_TILE_SELECTOR,
-  MAP_TILE_URL_PATTERN,
   MAP_TEST_IDS,
   MIN_PIN_SPREAD_PX,
   NORTH_EAST_RATIO_BOUNDS,
@@ -17,6 +16,7 @@ import {
   THEME_STORAGE_KEY,
   TILES_FAILED_COPY,
 } from './gyms.constants';
+import { MAP_TILE_URL_PATTERN } from '../common/map.constants';
 import { Theme } from '../sections/header.constants';
 
 export class GymsMapPage {

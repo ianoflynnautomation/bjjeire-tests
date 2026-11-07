@@ -19,6 +19,7 @@ export default [
       'allure-report/**',
       '**/*.js',
       'src/api/generated/zod.gen.ts',
+      'tests/seed.spec.ts',
     ],
   },
 

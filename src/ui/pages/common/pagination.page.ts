@@ -38,3 +38,14 @@ export async function goToPreviousListPage(page: Page): Promise<void> {
 export async function expectPageIndicator(page: Page, currentPage: number, totalPages: number): Promise<void> {
   await expect(pageIndicator(page)).toHaveText(`${currentPage} / ${totalPages}`);
 }
+
+/** True when there is no pager (one page) or the pager shows the last page. */
+export async function isOnLastListPage(page: Page): Promise<boolean> {
+  if ((await pagination(page).count()) === 0) return true;
+  const { current, total } = await readPageIndicator(page);
+  return current === total;
+}
+
+export async function currentListPageNumber(page: Page): Promise<number> {
+  return (await readPageIndicator(page)).current;
+}

@@ -186,3 +186,49 @@ export const SEEDED_UPCOMING_EVENTS: readonly BjjEventDto[] = [
   SEEDED_EVENT_ATLANTIC_COAST_CAMP,
   SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT,
 ];
+
+/**
+ * Shares Leinster Grappling HQ with the open mat, so the events map shows one pin holding two events; the
+ * per-venue map scenario and the dates scenario use it. Mirrors the live seeder data. Kept out of
+ * `SEEDED_UPCOMING_EVENTS` because its seeder `createdAt` ties with the open mat's (F7), which would
+ * leave the creation-order of the two undefined.
+ */
+export const SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR: BjjEventDto = {
+  id: eventId('acce77e00000000000000007'),
+  name: 'Dublin No-Gi Seminar',
+  description:
+    'Acceptance-test fixture event in Dublin (upcoming). Shares a venue with another upcoming fixture, for the events map.',
+  types: [BjjEventType.Seminar],
+  organiser: { name: 'Dublin No-Gi Collective', website: 'https://dublin-no-gi.example.ie/' },
+  status: EventStatus.Upcoming,
+  socialMedia: {},
+  county: County.Dublin,
+  location: {
+    address: 'Rear Hall, Mat Lane, Dublin 8, Ireland',
+    venue: 'Leinster Grappling HQ',
+    coordinates: seededCoordinates({ longitude: -6.2889, latitude: 53.3382 }, 'Dublin 8, Co. Dublin'),
+  },
+  schedule: EMPTY_FIXED_SCHEDULE,
+  pricingOptions: [{ type: PricingType.Free, amount: 0, currency: 'EUR' }],
+  eventUrl: 'https://dublin-no-gi.example.ie/seminar',
+  imageUrl: '/images/events/acce77e00000000000000001/lg.webp',
+};
+
+/**
+ * Dates the seeder gives each dated event, in days from seed time (`now+Nd` in
+ * `seeder/data-test/bjj-events/*.json`). The DTOs above omit them because the real dates move with every
+ * seed, so tests compare the gaps between rendered dates with these offsets. The weekly Shannonside event
+ * runs from `now+2d` to `now+60d` and shows that range above its session lines.
+ */
+export const SEEDED_EVENT_SCHEDULE_OFFSETS: readonly Readonly<{
+  event: BjjEventDto;
+  startOffsetDays: number;
+  endOffsetDays: number;
+}>[] = [
+  { event: SEEDED_EVENT_SHANNONSIDE_WEEKLY_OPEN_MAT, startOffsetDays: 2, endOffsetDays: 60 },
+  { event: SEEDED_EVENT_LEINSTER_OPEN_MAT, startOffsetDays: 5, endOffsetDays: 5 },
+  { event: SEEDED_EVENT_REBEL_COUNTY_SEMINAR, startOffsetDays: 9, endOffsetDays: 9 },
+  { event: SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR, startOffsetDays: 12, endOffsetDays: 12 },
+  { event: SEEDED_EVENT_TRIBES_NO_GI_CAMP, startOffsetDays: 18, endOffsetDays: 20 },
+  { event: SEEDED_EVENT_ATLANTIC_COAST_CAMP, startOffsetDays: 25, endOffsetDays: 27 },
+];
