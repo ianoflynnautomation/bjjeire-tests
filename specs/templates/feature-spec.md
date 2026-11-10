@@ -38,10 +38,10 @@ how errors are asserted (RFC 9457 problem: status, `type`, `field` + `errorCode`
 
 ## Constraints
 
-<Rules that shape every scenario and that a new test must not violate. Short bullets.
-Examples from this suite: search is client-side so assert `expectResultCount(1)`
-after a unique search; partial names come from `SEEDED_*_PARTIAL_NAME`; dates are
-seeded relative to seed time so compare gaps, not dates; finished items never appear.>
+<Rules that shape every scenario and that a new test must not violate. Short bullets:
+how search or filtering behaves, which values are URL state, what the data policy
+means for this feature (seeded records, partial names, relative dates), what never
+appears.>
 
 - <constraint>
 - <constraint>
@@ -61,7 +61,7 @@ or And line and becomes exactly one assertion in the Then step.>
 - Layer: UI | API · Tags: @acceptance[, @smoke | @mobile | @a11y] · Data: `SEEDED_*` (seeded) | <mock name> · Mocked: no | yes (<empty | error | multi-page | snapshot>, why)
 - Covers: AC-XXX-00n | none (<risk or `specs/exploration/<report>.md` F<n>>)
 - Oracle: <where the expected value comes from, independently of the app: the seeded record; a rule stated in the app spec; a fixed mock body. Never "the same calculation the app does".>
-- Seed: <omit when it is the feature's default, the agent seed above; otherwise the state the test starts from, e.g. `EventsMap: false`, a 360px viewport, timezone America/New_York>
+- Seed: <omit when it is the feature's default, the agent seed above; otherwise the state the test starts from: a flag off, a phone viewport, another timezone>
 - Steps:
   1. Given <context, only if the default state is not enough>
   2. When a visitor opens <Feature>

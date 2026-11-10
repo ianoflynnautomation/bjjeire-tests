@@ -21,7 +21,7 @@ suite. Read this once; after that the templates and `npm run spec:check` carry y
 | Path                              | What it is                                                 |
 | --------------------------------- | ---------------------------------------------------------- |
 | `specs/features/<feature>.md`     | The living spec: scenarios, constraints, planned blocks    |
-| `specs/templates/`                | Copy from here. Start with `feature-spec.example.md`       |
+| `specs/templates/`                | Generic templates to copy; a living spec is the example    |
 | `specs/exploration/`              | Dated exploratory session reports (evidence, not the spec) |
 | `specs/mutation/`                 | Dated mutation audits: which wrong data the tests miss     |
 | `bjjeire-java/specs/stc/<f>/`     | Acceptance criteria with IDs (`AC-GYM-003`) you cite       |

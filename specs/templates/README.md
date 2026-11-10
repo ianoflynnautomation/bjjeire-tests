@@ -5,13 +5,14 @@ template matches what the agents in `.claude/agents/` read and write, so a file
 made from one is usable by the planner, generator, reviewer and the `spec-review`
 workflow without translation.
 
-| Template                                             | Produces                                    | Written by                              |
-| ---------------------------------------------------- | ------------------------------------------- | --------------------------------------- |
-| [`feature-spec.md`](feature-spec.md)                 | `specs/features/<feature>.md`               | You, or `playwright-test-planner`       |
-| [`feature-spec.example.md`](feature-spec.example.md) | A filled example (Stores, real seeded data) | Read it before your first spec          |
-| [`exploration-report.md`](exploration-report.md)     | `specs/exploration/<date>-<charter>.md`     | `playwright-exploratory-tester`, or you |
-| [`mutation-report.md`](mutation-report.md)           | `specs/mutation/<date>-<feature>.md`        | `playwright-mutation-auditor`           |
+| Template                                         | Produces                                | Written by                              |
+| ------------------------------------------------ | --------------------------------------- | --------------------------------------- |
+| [`feature-spec.md`](feature-spec.md)             | `specs/features/<feature>.md`           | You, or `playwright-test-planner`       |
+| [`exploration-report.md`](exploration-report.md) | `specs/exploration/<date>-<charter>.md` | `playwright-exploratory-tester`, or you |
+| [`mutation-report.md`](mutation-report.md)       | `specs/mutation/<date>-<feature>.md`    | `playwright-mutation-auditor`           |
 
+The templates are generic on purpose: every value is a `<placeholder>`. For a filled
+example, read a living spec in `specs/features/` (they were all written to this shape).
 `exploration-report.md` is a symlink to the exploratory-testing skill's own
 template, so there is one copy to maintain.
 
@@ -32,7 +33,7 @@ first line, which `npm run spec:check` verifies.
 
 ## Lifecycle of a scenario
 
-```
+```text
 exploration report (candidate)  ──┐
 product spec AC-ID              ──┼──▶  ## Planned block  ──▶  numbered title + test
 risk the planner found          ──┘           │
