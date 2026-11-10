@@ -5,7 +5,7 @@
 //   - WRITE_SCOPE: the agent's Edit / MultiEdit / Write stay under one folder.
 //   - READ_ONLY_BASH: the agent's Bash is limited to commands that read. Anything not
 //     provably read-only is denied, so a quoted metacharacter can be a false denial.
-// Bash writes by the WRITE_SCOPE agents are not covered; their evals check those.
+// Bash writes by the WRITE_SCOPE agents are not covered; review catches those.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 

@@ -19,8 +19,8 @@ follow are in [`AGENTS.md`](../AGENTS.md) and the
 **Models.** Agents whose output is judgement run on `opus`: the reviewer (a missed
 defect ships), the flake-hunter (root cause from noisy evidence) and the explorer
 (deciding what is suspicious). Agents that follow a tight procedure run on `sonnet`:
-planner, generator, healer, API tester and mutation auditor. Change the `model:` line in
-an agent's frontmatter, then compare pass rate and cost with `npm run evals:agents`.
+planner, generator, healer, API tester and mutation auditor. To change one, edit the
+`model:` line in the agent's frontmatter.
 
 The usual flow is **planner → generator (UI) or api-tester (API) → reviewer**, which
 `/cover-feature <feature>` runs for you. Run the
@@ -269,19 +269,6 @@ Two skills give the healer, flake-hunter and explorer evidence beyond the DOM:
 ```sh
 npx playwright cli -s=<session> --raw run-code --filename=.agents/skills/devtools/scripts/boot-profile.js
 npm run trace:correlate -- --test 'ordered by name' --all
-```
-
-## Measuring the agents
-
-[`evals/`](../evals/README.md) holds golden tasks: a planted defect with a known right
-answer per agent, run headless in a throwaway copy of the repo and graded without an
-LLM. Examples: a drifted test id the healer must fix in constants, an app bug it must
-report without touching the test, and a spec with four planted defects the reviewer must
-name.
-
-```sh
-npm run evals:agents -- --self-test --tier all   # free; validates the graders
-npm run evals:agents -- --auth login             # fast tier against your claude login
 ```
 
 ## Updating the agents

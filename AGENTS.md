@@ -27,7 +27,6 @@ npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
 npm run mutation:audit -- --feature <f>   # Do the feature's UI specs catch wrong data? (local/docker)
-npm run evals:agents      # Golden-task evals for the agents (billed; --self-test is free; see evals/README.md)
 npm run trace:correlate   # Backend view of failed attempts: Tempo by trace id, or Docker API logs by window
 npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
 npm run squash:run        # Publish with --squash-* flags (a release is SQUASH_TM_RELEASE or --squash-release; see docs/squash-tm.md)
@@ -107,11 +106,6 @@ candidate scenarios enter `specs/features/` only once the planner (or you) accep
 The mutation auditor measures the suite: survivors it classifies as gaps become
 assertions or scenarios for the generator. No agent adds `test.fixme`, `test.skip` or
 `@quarantine`; quarantine is a human decision.
-
-Agents are measured by golden tasks in [`evals/`](evals/README.md): a planted defect,
-a known right answer, deterministic grading. After changing an agent, a skill, this file
-or the hooks, run `npm run evals:agents -- --self-test` and then the fast tier, and
-compare pass rates with the previous run.
 
 ## Test conventions
 

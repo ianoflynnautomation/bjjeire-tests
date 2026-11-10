@@ -35,7 +35,6 @@
     "test:mobile": "playwright test -c playwright.ui.config.ts --grep @mobile",
     "test:desktop": "playwright test -c playwright.ui.config.ts --grep @desktop",
     "test:shard": "playwright test -c playwright.ui.config.ts --shard",
-    "evals:agents": "node scripts/agent-evals.mjs",
     "trace:correlate": "node scripts/trace-correlate.mjs",
     "mutation:audit": "node scripts/mutation-audit.mjs",
     "squash:sync": "playwright test -c playwright.acceptance.config.ts --list --reporter=@playwright-squash/playwright-squash/sync",
