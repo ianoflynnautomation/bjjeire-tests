@@ -29,4 +29,5 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run spec:check
       - run: npx prettier --check .

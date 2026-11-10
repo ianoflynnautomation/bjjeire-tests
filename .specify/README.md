@@ -10,16 +10,17 @@ browser, and the reviewer checks them (see `docs/agents.md`). `/speckit-implemen
 would skip the rehearsal and the `--repeat-each` gate. `/speckit-specify` would
 also add numbered `specs/###-*/` directories beside `specs/features/`.
 
-Only the constitution and templates are kept, adopted in place:
+Only the constitution is kept, adopted in place:
 
-| Path                     | Role                        |
-| ------------------------ | --------------------------- |
-| `memory/constitution.md` | Acceptance-suite principles |
-| `templates/`             | Feature spec templates      |
-| `../specs/`              | Living acceptance specs     |
+| Path                     | Role                                                       |
+| ------------------------ | ---------------------------------------------------------- |
+| `memory/constitution.md` | Acceptance-suite principles                                |
+| `../specs/templates/`    | Templates to copy (feature spec, exploration and mutation) |
+| `../specs/`              | Living acceptance specs                                    |
 
 Spec Kit runs in `bjjeire-java` (Claude integration). Its feature specs carry
 AC-IDs and an `Acceptance Coverage` section. `playwright-test-planner` reads them
-and records `Covers: AC-…` against each planned scenario. Product architecture
+and records `Covers: AC-…` against each planned scenario; `npm run spec:check`
+keeps the scenario titles and the tests in step. Product architecture
 and database contracts are **not** duplicated here — they live in
 `bjjeire-java/specs/`.

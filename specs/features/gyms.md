@@ -1,65 +1,80 @@
 # Acceptance spec: Gyms
 
 **App spec**: `bjjeire-java/specs/features/gyms.md`
+**AC-IDs**: `bjjeire-java/specs/stc/gyms/spec.md`
 **Database**: `bjjeire-java/specs/database-contracts/gym.md`
 **Slice**: `tests/features/gyms/` · `src/ui/pages/gyms/` · `src/api/features/gyms/`
+**Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: `tests/features/gyms/seeded.ts`
+**Status**: living · **Reconciled with tests**: 2026-11-10
+
+A visitor opens Gyms and scans, searches, filters by county and pages a directory of
+published gyms, or switches to a map of the same results. Search is client-side on
+the loaded page; county and page are URL state. The app repo owns the flag on the wire
+(AC-GYM-006, AC-GYM-014 API part) and the search mechanics once (AC-GYM-003 T4); this
+suite proves what the visitor sees against real data.
 
 ## Scenarios (must match test titles)
 
 ### UI
 
-1. visitor should see the gym list when opening Gyms (`@smoke`)
-2. visitor should see an empty state when no gym matches the search
-3. visitor should find only the gym searched for by name
-4. visitor should find a gym by part of its name
-5. visitor should reach a gym's website and map location from its card
-6. visitor should see only gyms from the chosen county when filtering by county
-7. visitor should find gyms from other counties again after resetting the county filter
-8. visitor should see the no-data message when there are no gyms to show
-9. visitor should see a network error message when gyms cannot be loaded because the connection fails
-10. visitor should see a server error message when gyms cannot be loaded because of a server problem
-11. visitor should see the gym list after retrying when gyms failed to load
-12. visitor should reach the next page of gyms
-13. visitor should return to the previous page of gyms with Back
-14. visitor should see the same page of gyms after reloading
-15. visitor should stay within the chosen county when moving to its next page
-16. visitor should see the chosen county after reloading
-17. visitor should see only the shared county when opening a shared county link
-18. visitor should find a gym by its county name
-19. visitor should not find a gym by anything other than its name or county
-20. visitor should see a gym's free trial offer on its card
-21. visitor should see the map with the shared county when opening a shared map link
-22. visitor should return to the gym list with Back after switching to the map
-23. visitor should see pins only for the chosen county when filtering the map by county
-24. visitor should see gyms in their real locations on the map
-25. visitor should see a gym's details and links when opening its pin
-26. visitor should see only the searched gym's pin when searching on the map
-27. Gyms map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
-28. visitor should keep the pins and be offered the list when map tiles fail to load
-29. visitor should see the gym list when opening a map link while the map is off
-30. visitor should not download the map when staying on the gym list
+1. visitor should see the gym list when opening Gyms (`@smoke`) · AC-GYM-001
+2. visitor should see an empty state when no gym matches the search · AC-GYM-003
+3. visitor should find only the gym searched for by name · AC-GYM-003
+4. visitor should find a gym by part of its name · AC-GYM-003
+5. visitor should reach a gym's website and map location from its card · AC-GYM-004
+6. visitor should see only gyms from the chosen county when filtering by county · AC-GYM-002
+7. visitor should find gyms from other counties again after resetting the county filter · AC-GYM-002
+8. visitor should see the no-data message when there are no gyms to show · AC-GYM-005
+9. visitor should see a network error message when gyms cannot be loaded because the connection fails · AC-GYM-005
+10. visitor should see a server error message when gyms cannot be loaded because of a server problem · AC-GYM-005
+11. visitor should see the gym list after retrying when gyms failed to load · AC-GYM-005
+12. visitor should reach the next page of gyms · AC-GYM-005
+13. visitor should return to the previous page of gyms with Back · AC-GYM-005
+14. visitor should see the same page of gyms after reloading · AC-GYM-005
+15. visitor should stay within the chosen county when moving to its next page · AC-GYM-002
+16. visitor should see the chosen county after reloading · AC-GYM-002
+17. visitor should see only the shared county when opening a shared county link · AC-GYM-002
+18. visitor should find a gym by its county name · AC-GYM-003
+19. visitor should not find a gym by anything other than its name or county · AC-GYM-003
+20. visitor should see a gym's free trial offer on its card · AC-GYM-004
+21. visitor should see the map with the shared county when opening a shared map link · AC-GYM-007
+22. visitor should return to the gym list with Back after switching to the map · AC-GYM-007
+23. visitor should see pins only for the chosen county when filtering the map by county · AC-GYM-008
+24. visitor should see gyms in their real locations on the map · AC-GYM-009
+25. visitor should see a gym's details and links when opening its pin · AC-GYM-010
+26. visitor should see only the searched gym's pin when searching on the map · AC-GYM-011
+27. Gyms map should have no WCAG 2.1 A/AA violations in the <theme> theme · AC-GYM-015
+28. visitor should keep the pins and be offered the list when map tiles fail to load · AC-GYM-013
+29. visitor should see the gym list when opening a map link while the map is off · AC-GYM-014
+30. visitor should not download the map when staying on the gym list · AC-GYM-016
+31. visitor should find a gym with an accented name without typing the accent · AC-GYM-003
+32. Gyms page header should match the approved image · none (visual baseline)
+33. Gyms map popup should keep its accessible structure · none (aria baseline)
+34. Gyms empty state should keep its accessible structure · none (aria baseline)
 
-Scenarios 12–20 are in `gyms-navigation.ui.acceptance.spec.ts`. Scenarios 12–15 and 19 are mocked.
-Scenarios 21–26 and 28–30 are in `gyms-map.ui.acceptance.spec.ts`, and scenario 27 is in
-`gyms-map.a11y.acceptance.spec.ts`. Their details are in [Planned](#planned).
+Scenarios 1–11 are in `gyms.ui.acceptance.spec.ts`; 12–20 and 31 in
+`gyms-navigation.ui.acceptance.spec.ts` (12–15 and 19 mocked); 21–26 and 28–30 in
+`gyms-map.ui.acceptance.spec.ts`; 27 in `gyms-map.a11y.acceptance.spec.ts` (one test per
+theme); 32–34 in `gyms.snapshot.acceptance.spec.ts`. Map details are in [Planned](#planned).
 
 ### API
 
-1. client should receive each published gym with its details
-2. client should receive only gyms from the chosen county when filtering by county
-3. client should receive gyms ordered by name
-4. client should page through the directory in distinct slices with correct links; client should receive an empty page with valid pagination for a page beyond the last
-5. client should get a bad request for an unknown county "<value>"
-6. client should get a bad request for a non-numeric page / page size "<value>"
-7. client should get a validation error on page / pageSize when `<value>` is out of range
-8. client should receive the details of a published gym by id
-9. client should get not found for a gym id that does not exist
-10. client should get a validation error on the id for a gym id that is `<malformed>`
+1. client should receive each published gym with its details (`@smoke`) · AC-GYM-001
+2. client should receive only gyms from the chosen county when filtering by county · AC-GYM-002
+3. client should receive gyms ordered by name · AC-GYM-001
+4. client should page through the directory in distinct slices with correct links · AC-GYM-005
+5. client should receive an empty page with valid pagination for a page beyond the last · AC-GYM-005
+6. client should get a bad request for <param> "<value>" · AC-GYM-002
+7. client should get a validation error on <param> when <param> <value> is out of range · AC-GYM-005
+8. client should receive the details of a published gym by id · none
+9. client should get not found for a gym id that does not exist · none
+10. client should get a validation error on the id for a gym id that is <malformed> · none
 
-Scenarios 5–7 and 10 are data-driven over `tests/features/common/testdata/invalid-values.ts`.
-Errors are asserted as RFC 9457 problem documents (`expectProblem`): status, `type`, and
-for validation failures the offending `field` + `errorCode`.
+Scenarios 6, 7 and 10 are data-driven over `tests/features/common/testdata/invalid-values.ts`
+(6 covers an unknown county and non-numeric paging values). Errors are asserted as RFC 9457
+problem documents (`expectProblem`): status, `type`, and for validation failures the
+offending `field` + `errorCode`. Get-by-id has no AC-ID in the app repo yet.
 
 ## Constraints
 
@@ -126,8 +141,9 @@ assert the flag API.
 #### visitor should see the map with the shared county when opening a shared map link
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY, SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - When a visitor opens a shared link to the map for Cork
+- Steps:
+  1. When a visitor opens a shared link to the map for Cork
+- Expected results:
   - Then the map is displayed and marked as the current view
   - And Cork is the chosen county
   - And the Cork gyms have pins and the Dublin gym does not
@@ -136,9 +152,10 @@ assert the flag API.
 #### visitor should return to the gym list with Back after switching to the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Given/When/Then:
-  - Given a visitor is on the gym list for Cork
-  - When the visitor switches to the map
+- Steps:
+  1. Given a visitor is on the gym list for Cork
+  2. When the visitor switches to the map
+- Expected results:
   - And the visitor goes back
   - Then the gym list for Cork is displayed
 - Why: AC-GYM-007. Start on the list, because a directly opened link has no earlier page to return to.
@@ -146,9 +163,10 @@ assert the flag API.
 #### visitor should see pins only for the chosen county when filtering the map by county
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY, SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - Given a visitor is on the map
-  - When the visitor filters by Cork
+- Steps:
+  1. Given a visitor is on the map
+  2. When the visitor filters by Cork
+- Expected results:
   - Then the Cork gyms have pins and the Dublin gym does not
   - And the map has moved closer to the Cork gyms
 - Why: AC-GYM-008, SC-004. Full datasets, so assert named gyms, not pin totals. Prove the move by the two Cork pins being further apart on screen than before.
@@ -156,17 +174,19 @@ assert the flag API.
 #### visitor should see gyms in their real locations on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_LIFFEY_GRAPPLING, SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - When a visitor opens the map of all gyms
+- Steps:
+  1. When a visitor opens the map of all gyms
+- Expected results:
   - Then the Dublin gym is north-east of the Cork gym, at the right angle
 - Why: AC-GYM-009, SC-004. From the two pins' on-screen boxes: Dublin is right of and above Cork, and vertical distance divided by horizontal distance is between 0.95 and 1.2. The true geography gives about 1.08. Swapped latitude and longitude gives about 1.53 with the same directions, so a direction check alone cannot catch a swap.
 
 #### visitor should see a gym's details and links when opening its pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - Given a visitor is on the map
-  - When the visitor opens a gym's pin
+- Steps:
+  1. Given a visitor is on the map
+  2. When the visitor opens a gym's pin
+- Expected results:
   - Then the gym's name, county and address are shown
   - And its website and directions links match its card
 - Why: AC-GYM-010, SC-003. Compare with the DTO. Directions use `query=lat,lng`, so `51.8985,-8.4706` here. Both links open in a new tab with `rel="noopener noreferrer"`. The map is narrowed to the gym with `q=`, because Barão Jiu Jitsu Cork sits about 200 m away and its pin can cover this one.
@@ -174,9 +194,10 @@ assert the flag API.
 #### visitor should see only the searched gym's pin when searching on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - Given a visitor is on the map
-  - When the visitor searches for a gym by name
+- Steps:
+  1. Given a visitor is on the map
+  2. When the visitor searches for a gym by name
+- Expected results:
   - Then only that gym has a pin
   - And the map has zoomed to it
 - Why: AC-GYM-008, AC-GYM-011. Assert exactly one `gym-map-pin`, the uniqueness rule from Constraints. Oracle is the map tile zoom (`z` in the tile URLs): below 13 before the search, 13 to 18 after (street level, not maximum; the app uses 15), plus the pin within 40 px of the map centre. A position check alone proves nothing, because the pin is already about 22 px from the horizontal centre before any search.
@@ -184,17 +205,19 @@ assert the flag API.
 #### Gyms map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
 
 - Layer: UI · Tags: @acceptance, @a11y · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
-- Given/When/Then:
-  - Given a visitor has the map open with a gym's pin open, in each of the light, dark and competition themes
+- Steps:
+  1. Given a visitor has the map open with a gym's pin open, in each of the light, dark and competition themes
+- Expected results:
   - Then no accessibility violations are found
 - Why: AC-GYM-015. Use `expectNoWcagViolations`. Competition is not a `colorScheme`, so set the theme through `localStorage['bjjeire-theme']` (`light`, `dark`, `competition`) in an init script. Report violations as app bugs. Leaflet paints tiles with `mix-blend-mode: plus-lighter`, which crashes axe's `color-contrast` and `link-in-text-block` rules and skips them for the whole page while the scan still reports no violations. So the test sets tiles to `normal` before scanning, and `expectNoWcagViolations` fails if an axe rule crashes.
 
 #### visitor should keep the pins and be offered the list when map tiles fail to load
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_BLACKWATER_VALLEY (seeded; Fermoy, no near neighbour, so no overlapping Cork pin can intercept the click) · Mocked: tiles aborted
-- Given/When/Then:
-  - Given map tiles cannot be loaded
-  - When a visitor opens the map for Cork
+- Steps:
+  1. Given map tiles cannot be loaded
+  2. When a visitor opens the map for Cork
+- Expected results:
   - Then a notice offers the gym list and the map stays open
   - And the Cork gym's pin can still be opened
   - And following the notice shows the gym list for Cork
@@ -203,9 +226,10 @@ assert the flag API.
 #### visitor should see the gym list when opening a map link while the map is off
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Given/When/Then:
-  - Given the map feature is off
-  - When a visitor opens a link to the map for Cork
+- Steps:
+  1. Given the map feature is off
+  2. When a visitor opens a link to the map for Cork
+- Expected results:
   - Then the gym list for Cork is displayed on the Gyms page
   - And the visitor is not offered a choice of view
 - Why: AC-GYM-014, SC-006. Needs `GymsMap: false`. Assert the path stays `/gyms` and is not `/about`.
@@ -213,8 +237,9 @@ assert the flag API.
 #### visitor should not download the map when staying on the gym list
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Given/When/Then:
-  - When a visitor opens Gyms and stays on the list
+- Steps:
+  1. When a visitor opens Gyms and stays on the list
+- Expected results:
   - Then no map code or tiles are requested
   - And switching to the map then requests them
 - Why: AC-GYM-016, SC-007. Record request URLs from before navigation and match `tile.openstreetmap.org` and `/assets/gym-map-`. The final step proves the check can see them. Against a local Vite dev server the chunk names differ, so run it against a built image.

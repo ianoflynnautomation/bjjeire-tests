@@ -11,11 +11,15 @@
     "*.ts": [
       "prettier --write",
       "eslint --fix"
+    ],
+    "{specs/features/*.md,tests/**/*.spec.ts}": [
+      "node scripts/spec-check.mjs"
     ]
   },
   "scripts": {
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "spec:check": "node scripts/spec-check.mjs",
     "contract:pull": "scripts/pull-openapi-contract.sh",
     "gen:api-schemas": "openapi-ts -f openapi-ts.config.ts",
     "test": "playwright test -c playwright.ui.config.ts",

@@ -1,6 +1,6 @@
 ---
 name: playwright-spec-practices
-description: Project-agnostic best practices for Playwright spec files, drawn from large-scale engineering test cultures. Covers what belongs in a spec and what moves out (helpers, data, selectors, mocks), DAMP over DRY, no logic in tests, hermetic and isolated tests, API-driven setup, auth reuse, determinism (clock, timezone, network), parallelism, hooks, tagging and test tiers, flaky-test policy, failure diagnostics, ownership, and a spec review checklist. Use when creating, splitting, restructuring, or reviewing a *.spec.ts file, or when deciding where a helper, constant, or piece of setup should live. For TypeScript coding rules see playwright-typescript-standards; for scenario wording see playwright-bdd.
+description: Project-agnostic best practices for Playwright spec files, drawn from large-scale engineering test cultures and from how coding agents are run at frontier labs. Covers the living spec as the contract between spec, test and agent (titles, oracle, AC coverage, lifecycle, drift checks), what belongs in a spec and what moves out (helpers, data, selectors, mocks), DAMP over DRY, no logic in tests, hermetic and isolated tests, API-driven setup, determinism (clock, timezone, network), parallelism, tagging and tiers, flaky-test policy, failure diagnostics, how to write and review agent-authored tests (red-before-green, independent oracle, tooling-enforced rules, separate reviewer), ownership, and a spec review checklist. Use when creating, splitting, restructuring, or reviewing a *.spec.ts file, when deciding where a helper, constant, or piece of setup should live, or when an agent is about to write or verify tests. For TypeScript coding rules see playwright-typescript-standards; for scenario wording see playwright-bdd.
 metadata:
   author: Ian O Flynn
 ---
@@ -33,6 +33,54 @@ skills) win where they are more specific. Related skills: `playwright-typescript
    a defect. Fix it, quarantine it with an owner and a deadline, or delete it.
 7. **Set up through the fastest reliable channel.** Arrange via API, seeding, or
    storage state; drive the UI only for the behaviour under test.
+8. **A test must fail when the behaviour is broken, and someone must have seen it
+   fail.** Red before green: watch it fail against the missing or broken behaviour
+   (or a mutant) before trusting the pass. A test that cannot fail is documentation
+   at best and false confidence at worst.
+9. **Expected values come from an independent oracle.** The spec, the seeded record,
+   or a fixed mock body. Never a re-implementation of the formula the app uses; a
+   mapper that copies the app's arithmetic passes with the app's bug.
+10. **Rules that can be enforced by tooling are enforced by tooling.** Lint rules,
+    pre-commit hooks and agent hooks block `waitForTimeout`, `test.only`, bare
+    `page.goto`, `force: true` and friends. Prose is for judgement, not for rules a
+    machine can check.
+
+## The spec is the contract
+
+Specs come before, or with, the tests. A living spec file per feature (Markdown in
+the repo, beside the code, reviewed in the same pull request) is what a planner
+writes to, a generator implements from, a reviewer checks against, and a healer
+consults before deciding whether the app or the test is wrong.
+
+- **Titles are the contract.** The spec's numbered scenario titles are the test
+  titles, character for character. A title is listed only when its test exists; a
+  planned block without a numbered title is work not yet done. That one rule makes
+  "is this covered?" a text diff instead of an opinion.
+- **Every scenario names four things**: the acceptance criterion it covers
+  (`Covers: AC-…`, or `none` with the risk), the data it uses, whether it mocks and
+  why, and its **oracle**. Writing the oracle down is what exposes a test that would
+  re-derive the expected value from the app.
+- **Steps and expected results, separately.** Follow the shape of Playwright's
+  test-agent plans (a seed, numbered steps, bulleted expected results): each expected
+  result is one observable outcome and becomes exactly one assertion, so a reviewer
+  can count assertions against outcomes. Steps are declarative, Given/When/Then in
+  domain language with no selectors, URLs, status codes or field names; a product
+  owner approves the block and the generator turns each step into a `test.step` with
+  the same wording.
+- **Tests point back.** A generated test starts with `// spec:` and `// seed:`
+  comments naming the plan and the seed it was built from, and the drift check
+  verifies the reference.
+- **Lifecycle is visible.** Planned, implemented, held for a product decision, or
+  rejected with a reason. Rejections stop the next planner from proposing the same
+  scenario; holds stop an agent from encoding a bug as expected behaviour.
+- **Findings are evidence, not scenarios.** App bugs go to a report or an issue and
+  are linked from the spec. A test never weakens its assertion to match a bug.
+- **Drift is a build failure.** A deterministic check (titles in the spec versus
+  `test(` titles in the slice) runs in CI or as a lint. An LLM review on top can
+  judge wording and layer choice, but it must not be the only thing that notices a
+  renamed test.
+- **Cheapest layer per rule.** Record which layer owns each rule (unit, API, UI) so
+  two layers do not both pay for it and no layer assumes another has it.
 
 ## What lives where
 
@@ -61,6 +109,10 @@ Rules of thumb:
   or factory.
 - **Expected values come from the same source of truth as the inputs.** Derive the
   expected card from the seeded record with a mapper rather than retyping strings.
+  The mapper encodes the _spec's_ rendering rule (format, label, link shape), never
+  the app's calculation. If the spec says "price per day" and the app multiplies by
+  the number of days, a mapper that also multiplies hides the bug; a literal from
+  the seeded record would have caught it.
 
 Suggested layout (adapt names to the project):
 
@@ -209,6 +261,10 @@ suite people don't trust gets ignored.
   window. Keep the quarantine list short and visible.
 - **Fix the cause, not the timeout.** Raising a timeout or adding a retry around one
   step hides races. Find the missing wait condition or shared state.
+- **Measure before and after.** Reproduce under `--repeat-each` on one worker and on
+  several; compare a passing and a failing trace; call it fixed only when the same
+  run that failed now passes every time. "It passed once after the change" is not
+  evidence.
 - **Delete low-value tests.** A test that duplicates coverage at a cheaper layer, or
   that nobody can explain, costs more than it protects.
 
@@ -226,6 +282,9 @@ A failing test should be debuggable from the CI report alone.
   `console.log`.
 - Propagate a correlation id (`traceparent` / request id header) so a failing test maps
   to backend logs.
+- Keep the failure artefacts an agent can read without a browser: the aria snapshot
+  Playwright writes on failure (`error-context.md`), the trace, the request log. A
+  healer that can reproduce from those alone is a healer that can run in CI.
 
 ## Ownership and maintenance
 
@@ -237,8 +296,54 @@ A failing test should be debuggable from the CI report alone.
 - Treat test code with production standards: reviewed, linted, type-checked, and
   refactored.
 
+## Agent-authored tests
+
+Coding agents write most new tests in a modern suite. The practices below are how
+teams that run agents at scale keep that output trustworthy; they apply equally to a
+human in a hurry.
+
+**Give the agent a way to verify, then make it use it.**
+
+- Write the test first and watch it fail (missing behaviour, a mutant, or a
+  deliberately broken assertion), then make it pass. Tell the agent explicitly that
+  the test must fail first and that it may not special-case the test to pass.
+- Require proof of stability in the report: the exact command and the
+  `--repeat-each` output, not "it passes".
+- Separate writing from judging. The agent that wrote the test does not approve it;
+  a reviewer with a fresh context (a different agent, or a human) reads the diff
+  against the spec. Self-review in the same context inherits the same blind spots.
+- Hooks over prompts. A pre-tool hook that denies `.skip(`, `.only(`,
+  `waitForTimeout(` or edits to generated files holds under pressure; an instruction
+  in a prompt does not. Lint on every edit, and feed the errors back.
+- Keep instruction files short and single-sourced (one `AGENTS.md`, skills for the
+  detail). Agents follow a 150-line file better than a 1500-line one, and two files
+  that disagree are followed at random.
+
+**What to look for when reviewing agent output** (the failure modes that recur):
+
+| Failure mode               | What it looks like                                                                             | Check                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Overclaiming title         | "visitor should see the gym's details" but Then only checks the card is visible                | Every noun in the title has an assertion                         |
+| Cannot fail                | `expect(list).toBeVisible()` on a container that always renders; `toHaveCount` after no action | Break the behaviour (or run a mutant) and confirm the test fails |
+| Oracle copied from the app | Expected value computed the same way the component computes it                                 | Expected values trace to the spec or the seeded record           |
+| Mocking the happy path     | `route.fulfill` so the assertion is about the mock, not the product                            | Mocks only for states that cannot be seeded                      |
+| Waiting on time            | `waitForTimeout`, `networkidle`, manual polling                                                | Web-first assertions on a user-visible condition                 |
+| Quiet scope change         | A looser assertion, a changed title, or a skipped case to get to green                         | Diff the spec block against the test; titles identical           |
+| Environment assumption     | Asserts a fixture is first on an unfiltered page; depends on the dataset's size                | Narrow first (search, filter, id), then assert                   |
+| Layer duplication          | A UI test re-proving a validation rule the API spec owns                                       | One owner per rule, recorded in the spec                         |
+| Fixing the symptom         | Raised timeout, added retry, `force: true`                                                     | Root cause named; the fix is a wait condition or data change     |
+
+**Measure the suite, not just the run.** A green run says the tests passed; it does
+not say they would notice a regression. Periodically corrupt real responses one field
+at a time (a mutation audit) and triage every survivor into a gap, an equivalent, or
+a rule owned elsewhere. The "tests that do not prove their title" list from such an
+audit is the most valuable review input there is.
+
 ## Spec review checklist
 
+- [ ] The title is in the living spec, character for character, with its AC-ID and oracle.
+- [ ] Someone saw the test fail: against missing behaviour, a mutant, or a broken assertion.
+- [ ] Expected values trace to the spec or the seeded record, not to the app's own calculation.
 - [ ] The file only declares tests; no exported helpers, selectors, or factories.
 - [ ] Reading the spec alone explains what each test proves (DAMP).
 - [ ] No `if` / `try` / computed expectations in test bodies; loops only generate tests.
@@ -250,3 +355,5 @@ A failing test should be debuggable from the CI report alone.
 - [ ] Tags place the test in the right tier; no `test.only` / unconditional `test.skip`.
 - [ ] Failure output (step titles, messages, attachments) identifies the broken behaviour.
 - [ ] The behaviour isn't already covered at a cheaper layer.
+- [ ] If an agent wrote it: the report shows the failing-then-passing run and the
+      `--repeat-each` output, and a different context reviewed the diff.

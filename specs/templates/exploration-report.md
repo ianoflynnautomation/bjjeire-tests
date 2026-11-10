@@ -1,0 +1,1 @@
+../../.agents/skills/exploratory-testing/references/report-template.md

@@ -38,20 +38,27 @@ No scenario → ask for one; do not invent behaviour. API scenarios go to
 - The test goes in `tests/features/<feature>/<feature>.ui.acceptance.spec.ts`, inside
   the existing `describe`, importing `test`/`expect` from `./fixtures`. The file calls
   `test.use(<feature>TestConfig)`. Specs never construct page objects or hold locators.
-- Title exactly as in the spec file. Top-level `test.step`s start Given/When/Then/And;
-  assertions only in Then. Navigation via `gotoRoute`/`gotoAppShell` (or the page
-  object's `goTo`), never a bare `page.goto`.
+- Title exactly as in the spec file. The file starts with `// spec: specs/features/<feature>.md`
+  and `// seed: tests/agents/seed.spec.ts` (Playwright's test-agent convention; `spec:check`
+  verifies the first). Each numbered line under the block's `Steps:` becomes one top-level
+  `test.step` with that line as its title (Given/When/And); the lines under
+  `Expected results:` become one `Then` step holding exactly one assertion per line, in
+  order, and nothing the block does not list. Navigation via `gotoRoute`/`gotoAppShell`
+  (or the page object's `goTo`), never a bare `page.goto`.
 - Data: seeded constants from `seeded.ts`, expected values derived through a mapper
   (`cardFromDto`), faker only for "matches nothing" input. Mocks only for empty/error/
   multi-page states, via the feature's `mocks.ts` fixture and `parseMockBody`.
 - Tags: `@acceptance` always, `@smoke` if the plan says so. In a `@squash` describe set
   `annotation: squash({ weight, status: 'work in progress', nature, type: 'regression' })`.
-- Move the scenario from `## Planned` into the numbered list if it is not there yet.
+- Add the title to the numbered list under `## Scenarios`, with its smoke tag and the
+  AC-ID from the block's `Covers:` line, keeping the block under `## Planned` as the
+  design note. Expected values follow the block's `Oracle:` line, never the app's
+  calculation.
 
 ## 3. Verify
 
 ```sh
-npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck
+npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck && npm run spec:check -- --feature <feature>
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=chromium-desktop -g "<title>"
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=chromium-desktop -g "<title>" --repeat-each=5
 ```

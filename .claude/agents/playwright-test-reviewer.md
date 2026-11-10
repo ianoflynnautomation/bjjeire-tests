@@ -40,7 +40,10 @@ from `git status --short`). Read each changed file in full and the helpers it ca
    values per convention, and renamed or moved titles flagged (orphaned unpinned cases).
 8. **TypeScript.** Strict-mode idioms, `as const` + `satisfies Record<…>`, object
    parameters over repeated strings, no `any`/`!`/casts on response bodies.
-9. **Living spec.** `specs/features/<feature>.md` titles match the test titles.
+9. **Living spec.** `npm run spec:check` passes; each changed test has a `## Planned`
+   block whose `Oracle:` the Then steps honour, its `Covers:` AC-ID is real, every line
+   under `Expected results:` has one assertion in the test and nothing is asserted that
+   the block does not list, and the file starts with the `// spec:` / `// seed:` header.
 
 ## Report
 

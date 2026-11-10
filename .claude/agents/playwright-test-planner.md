@@ -73,15 +73,29 @@ Below the list add a `## Planned` section (or extend it) with, per new scenario:
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_* (seeded) · Mocked: no
 - Covers: AC-EVT-002
-- Given/When/Then:
-  - When a visitor opens Events
-  - And the visitor filters by Seminar
+- Oracle: the seeded seminar's `types`; every listed card is one of the seeded seminars
+- Steps:
+  1. When a visitor opens Events
+  2. And the visitor filters by Seminar
+- Expected results:
   - Then only seminars are listed
+  - And the Cork seminar is among them
 - Why: type filter is untested in the UI; API scenario 5 already proves the rule.
 ```
 
+`Steps:` are the Given/When/And lines, numbered, as Playwright's test-agent plans do;
+`Expected results:` are the Then/And lines, one observable outcome each, so the generator
+writes exactly one assertion per line. Add a `Seed:` line only when the scenario starts
+from something other than the agent seed named in the spec header (a flag off, a phone
+viewport, another timezone).
+
 `Covers:` names the AC-IDs the scenario proves, or `none` when it comes only from risk
-or an exploration report. Never invent an AC-ID.
+or an exploration report. Never invent an AC-ID. `Oracle:` says where the expected value
+comes from independently of the app (seeded record, app-spec rule, fixed mock body);
+never a re-implementation of the app's own calculation. The block goes under `## Planned`
+only; the numbered title is added when the test exists (the generator does that), so
+`npm run spec:check` stays green. Check `## Rejected` and `## Held` first so you do not
+re-propose a decided scenario. The full format is `specs/templates/feature-spec.md`.
 
 Steps are declarative: no selectors, test ids, URLs, status codes or field names.
 Do not create `specs/*.plan.md` and do not call `planner_save_plan`; the living spec is
