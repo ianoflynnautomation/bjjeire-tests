@@ -1,3 +1,5 @@
+// spec: specs/features/gyms.md
+// seed: tests/agents/seed.spec.ts
 import { test, gymsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { gymCardFromDto, gymCardLinksFromDto } from '@ui/pages/gyms/gyms.card.mapper';

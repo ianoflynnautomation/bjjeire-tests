@@ -40,10 +40,15 @@ from `git status --short`). Read each changed file in full and the helpers it ca
    values per convention, and renamed or moved titles flagged (orphaned unpinned cases).
 8. **TypeScript.** Strict-mode idioms, `as const` + `satisfies Record<…>`, object
    parameters over repeated strings, no `any`/`!`/casts on response bodies.
-9. **Living spec.** `npm run spec:check` passes; each changed test has a `## Planned`
-   block whose `Oracle:` the Then steps honour, its `Covers:` AC-ID is real, every line
-   under `Expected results:` has one assertion in the test and nothing is asserted that
-   the block does not list, and the file starts with the `// spec:` / `// seed:` header.
+9. **Living spec.** `npm run spec:check` passes. Each changed test has a `####` block.
+   `Covers:` is a real AC-ID or `none` with a reason. The Then steps honour `Oracle:`.
+   Every `Steps:` line and every `Expected results:` bullet is one `test.step`, in
+   order, and nothing is asserted that the block does not list. An expected-result
+   line that is an action ("the visitor goes", "searches", "filters") is a finding.
+   A `Why:` longer than two sentences, or one that contains a selector, a test id, a
+   URL or a pixel tolerance, is a finding: that detail belongs on `Test design`.
+   The file starts with the `// spec:` and `// seed:` header. A generator report
+   that skips the failing run is a finding.
 
 ## Report
 

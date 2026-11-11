@@ -1,3 +1,5 @@
+// spec: specs/features/events.md
+// seed: tests/agents/seed.spec.ts
 import { test, eventsTestConfig } from './fixtures';
 import { ScheduleKind, type BjjEventDto } from '@api/features/events/events.types';
 import { API_ROUTES, DEFAULT_PAGE_SIZE, type PaginatedResponse } from '@api/support';

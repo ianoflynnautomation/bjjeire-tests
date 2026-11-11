@@ -26,6 +26,7 @@ The usual flow is **planner → generator (UI) or api-tester (API) → reviewer*
 `/cover-feature <feature>` runs for you. Run the
 healer when a test fails and the flake hunter when it fails only sometimes. Run the
 exploratory tester to find what the specs miss; its candidate scenarios go to the planner.
+The whole loop is drawn in [docs/spec-guide.md](spec-guide.md#end-to-end).
 
 ## Before you start
 
@@ -80,9 +81,10 @@ then tells you what changed. Nothing is committed; review the working tree yours
 ```
 
 It reads the existing spec file and tests, explores the page in a browser, and adds
-numbered scenario titles plus a `## Planned` section (Given/When/Then, layer, data,
-reason) to `specs/features/stores.md`. It edits nothing outside `specs/`. Read the plan
-before generating: delete scenarios you don't want.
+`####` blocks under `## Planned`. It does not add a numbered title. The generator adds
+that title in the same change as the test, so `spec:check` stays green. The block
+shape is `specs/templates/feature-spec.md`. It edits nothing outside `specs/`. Read
+the plan before generating: delete scenarios you don't want.
 
 ### Generate a UI test
 

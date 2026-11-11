@@ -8,8 +8,13 @@
  * `*.spec.ts` under `tests/` must be claimed by exactly one spec, and must start with
  * `// spec: specs/features/<name>.md` (Playwright's test-agent convention) naming it.
  *
- * Placeholders: a `${expr}` in a test title and a `<word>` in a spec title are both
- * read as one placeholder, so `for ${label} "${value}"` matches `for <param> "<value>"`.
+ * Every `####` block under `## Planned` must have `Covers:` (`AC-…` or `none`) and
+ * `Oracle:`. An expected-result bullet that is a visitor action fails. When a block
+ * and a test share a title, the block's steps then expected results must equal that
+ * test's `test.step` titles. Numbered scenarios with no block are grandfathered.
+ *
+ * Placeholders: a `${expr}` in a test and a `<word>` in a spec are both read as one
+ * placeholder, so `for ${label} "${value}"` matches `for <param> "<value>"`.
  * Trailing `(\`@smoke\`)` tags and `· AC-…` coverage notes on a spec line are ignored.
  *
  *   npm run spec:check                 # every spec
@@ -24,6 +29,9 @@ const ROOT = process.cwd();
 const SPECS_DIR = path.join(ROOT, 'specs', 'features');
 const TESTS_DIR = path.join(ROOT, 'tests');
 const UNCLAIMED_OK = ['tests/agents/', 'tests/features/_template/'];
+const COVERS = /^(?:AC-[A-Z]+-\d+)(?:\s*,\s*AC-[A-Z]+-\d+)*$|^none\b/;
+const ACTION =
+  /^(?:And|Then|But) the (?:visitor|client) (?:goes|searches|filters|chooses|switches|retries|reloads|clears|opens|follows|reads)\b/;
 
 const args = process.argv.slice(2);
 const featureFlagIndex = args.indexOf('--feature');
@@ -47,11 +55,16 @@ const walkSpecFiles = dir =>
 
 const rel = file => path.relative(ROOT, file).split(path.sep).join('/');
 
-function readSpec(file) {
-  const md = fs.readFileSync(file, 'utf8');
-  const sliceLine = md.match(/^\*\*Slice\*\*:(.*)$/m);
-  const slice = sliceLine?.[1].match(/`(tests\/[^`]+)`/)?.[1] ?? null;
-  const section = md.match(/^## Scenarios[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m)?.[1] ?? '';
+function sectionBody(md, heading) {
+  const start = md.search(new RegExp(`^## ${heading}\\b.*$`, 'm'));
+  if (start === -1) return '';
+  const after = md.slice(md.indexOf('\n', start) + 1);
+  const next = after.search(/^## /m);
+  return next === -1 ? after : after.slice(0, next);
+}
+
+function scenarioTitles(md) {
+  const section = sectionBody(md, 'Scenarios');
   const titles = [];
   for (const line of section.split('\n')) {
     const m = line.match(/^\d+\.\s+(.+)$/);
@@ -63,18 +76,85 @@ function readSpec(file) {
         .trim(),
     );
   }
-  return { slice, titles };
+  return titles;
+}
+
+function plannedBlocks(md) {
+  const section = sectionBody(md, 'Planned');
+  return section
+    .split(/^#### /m)
+    .slice(1)
+    .map(chunk => {
+      const breakAt = chunk.indexOf('\n');
+      const title = (breakAt === -1 ? chunk : chunk.slice(0, breakAt)).trim();
+      const body = breakAt === -1 ? '' : chunk.slice(breakAt + 1);
+      const covers = body.match(/^- Covers:\s*(.*)$/m)?.[1]?.trim() ?? null;
+      const oracle = body.match(/^- Oracle:\s*(.*)$/m)?.[1]?.trim() ?? null;
+      const steps = [...(body.split(/^- Expected results:\s*$/m)[0] ?? '').matchAll(/^\s+\d+\.\s+(.+)$/gm)].map(m =>
+        m[1].trim(),
+      );
+      const expectedSection = body.split(/^- Expected results:\s*$/m)[1]?.split(/^- [A-Za-z]/)[0] ?? '';
+      const expected = [...expectedSection.matchAll(/^\s+- (.+)$/gm)].map(m => m[1].trim());
+      return { title, covers, oracle, steps, expected };
+    });
+}
+
+function readSpec(file) {
+  const md = fs.readFileSync(file, 'utf8');
+  const sliceLine = md.match(/^\*\*Slice\*\*:(.*)$/m);
+  const slice = sliceLine?.[1].match(/`(tests\/[^`]+)`/)?.[1] ?? null;
+  return { slice, titles: scenarioTitles(md), blocks: plannedBlocks(md) };
 }
 
 function readTests(files) {
-  const titles = [];
+  const tests = [];
   const dynamic = [];
   for (const file of files) {
     const src = fs.readFileSync(file, 'utf8');
-    for (const m of src.matchAll(/\btest\(\s*(['"`])([\s\S]+?)\1\s*,/g)) titles.push(m[2].replace(/\s+/g, ' '));
+    const headers = [...src.matchAll(/\btest\(\s*(['"`])([\s\S]+?)\1/g)];
+    for (let i = 0; i < headers.length; i++) {
+      const header = headers[i];
+      const end = i + 1 < headers.length ? headers[i + 1].index : src.length;
+      const body = src.slice(header.index + header[0].length, end);
+      const steps = [...body.matchAll(/test\.step\(\s*(['"`])([\s\S]+?)\1/g)].map(m =>
+        m[2].replace(/\s+/g, ' ').trim(),
+      );
+      tests.push({ title: header[2].replace(/\s+/g, ' ').trim(), steps, file: rel(file) });
+    }
     for (const m of src.matchAll(/\btest\(\s*([A-Za-z_$][\w$.]*)\s*,/g)) dynamic.push(`${rel(file)}: test(${m[1]}, …)`);
   }
-  return { titles, dynamic };
+  return { tests, dynamic };
+}
+
+function blockProblems(blocks, tests) {
+  const problems = [];
+  const seen = new Set();
+  const byTitle = new Map(tests.map(test => [normalise(test.title), test]));
+  for (const block of blocks) {
+    const key = normalise(block.title);
+    if (seen.has(key)) problems.push(`planned block listed twice: "${block.title}"`);
+    seen.add(key);
+    if (!block.covers) problems.push(`planned block has no Covers: "${block.title}"`);
+    else if (!COVERS.test(block.covers))
+      problems.push(`Covers must be AC-… or none: "${block.title}" (${block.covers})`);
+    if (!block.oracle) problems.push(`planned block has no Oracle: "${block.title}"`);
+    for (const line of block.expected) {
+      if (ACTION.test(line))
+        problems.push(`expected result is an action, so it belongs in Steps: "${block.title}" — ${line}`);
+    }
+    const test = byTitle.get(key);
+    if (!test) continue;
+    const wanted = [...block.steps, ...block.expected];
+    const got = test.steps;
+    const same =
+      wanted.length === got.length && wanted.every((line, index) => normalise(line) === normalise(got[index]));
+    if (!same) {
+      problems.push(
+        `steps differ from ${test.file}: "${block.title}"\n      spec: ${wanted.join(' | ') || '(none)'}\n      test: ${got.join(' | ') || '(none)'}`,
+      );
+    }
+  }
+  return problems;
 }
 
 const specFiles = fs
@@ -93,7 +173,7 @@ let failures = 0;
 
 for (const specFile of specFiles) {
   const name = path.basename(specFile, '.md');
-  const { slice, titles: specTitles } = readSpec(specFile);
+  const { slice, titles: specTitles, blocks } = readSpec(specFile);
   const problems = [];
 
   if (!slice) {
@@ -116,11 +196,11 @@ for (const specFile of specFiles) {
         problems.push(`${rel(f)} must start with \`${expected}\` (found: ${firstLine.trim() || 'empty line'})`);
     }
 
-    const { titles: testTitles, dynamic } = readTests(files);
+    const { tests, dynamic } = readTests(files);
     for (const d of dynamic) problems.push(`title is a variable, so it cannot be checked: ${d}`);
 
     const specSet = new Map(specTitles.map(t => [normalise(t), t]));
-    const testSet = new Map(testTitles.map(t => [normalise(t), t]));
+    const testSet = new Map(tests.map(t => [normalise(t.title), t.title]));
     const seen = new Set();
     for (const t of specTitles) {
       const key = normalise(t);
@@ -129,6 +209,7 @@ for (const specFile of specFiles) {
     }
     for (const [key, title] of testSet) if (!specSet.has(key)) problems.push(`test has no spec title: "${title}"`);
     for (const [key, title] of specSet) if (!testSet.has(key)) problems.push(`spec title has no test: "${title}"`);
+    problems.push(...blockProblems(blocks, tests));
   }
 
   if (problems.length === 0) {
@@ -152,9 +233,7 @@ if (!onlyFeature) {
 }
 
 if (failures > 0) {
-  console.log(
-    `\nspec:check: ${failures} problem${failures === 1 ? '' : 's'}. The numbered titles in specs/features/*.md must match the test titles; see docs/spec-guide.md.`,
-  );
+  console.log(`\nspec:check: ${failures} problem${failures === 1 ? '' : 's'}. See specs/templates/README.md.`);
   process.exit(1);
 }
 console.log('\nspec:check: specs and tests agree.');

@@ -1,3 +1,5 @@
+// spec: specs/features/gyms.md
+// seed: tests/agents/seed.spec.ts
 import { expect, test, gymsTestConfig } from './fixtures';
 import gymsFixture from './testdata/gyms.page-1.json';
 import { SEEDED_GYM_HARBOUR_CITY } from './seeded';

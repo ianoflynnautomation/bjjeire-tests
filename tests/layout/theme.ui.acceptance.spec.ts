@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test } from '@ui/fixtures';
 import { Theme } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';

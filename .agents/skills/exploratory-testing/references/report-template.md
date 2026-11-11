@@ -8,12 +8,16 @@
 
 ## Findings
 
+Severity is the visitor's: **S1** blocks the purpose, **S2** is a wrong result with a workaround, **S3** is a degraded experience, **S4** is cosmetic. The full scale is in the exploratory-testing skill.
+
+HICCUPPS names the oracle when no spec line applies: **H**istory, **I**mage, **C**omparable products, **C**laims, **U**ser expectations, **P**roduct, **P**urpose, **S**tatutes. Write the letter.
+
 ### F1 · S2 · <one-line summary in visitor language>
 
 - **Steps** (from a fresh load of `<start URL>`):
   1. …
   2. …
-- **Expected**: … (claim: `specs/features/<f>.md` / HICCUPPS letter)
+- **Expected**: … (claim: `specs/features/<f>.md`, or HICCUPPS letter)
 - **Actual**: …
 - **Reproduced**: 2/2 from a fresh load
 - **Oracle**: probe field and value, or the console error

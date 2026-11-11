@@ -1,3 +1,4 @@
+// spec: specs/features/authorization.md
 import { test } from '@api/fixtures';
 import { API_ROUTES, expectProblem, ProblemType } from '@api/support';
 import { env } from '@shared/config';

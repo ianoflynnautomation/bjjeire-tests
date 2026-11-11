@@ -1,3 +1,5 @@
+// spec: specs/features/gyms.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect, gymsTestConfig } from './fixtures';
 import { County } from '@api/support';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';

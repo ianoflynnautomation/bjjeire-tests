@@ -1,104 +1,80 @@
 # Acceptance spec: <Feature>
 
+<!--
+Copy this file to specs/features/<feature>.md and delete these comments.
+Steps, expected results and Why are the behaviour a product owner can read.
+The Test design line is for the generator. Keep selectors, test ids, URLs,
+status codes and field names out of the steps.
+Add a title under ## Scenarios only in the change that adds its test.
+spec:check requires Covers and Oracle on every block. See specs/templates/README.md.
+-->
+
 **App spec**: `bjjeire-java/specs/features/<feature>.md`
 **AC-IDs**: `bjjeire-java/specs/stc/<feature>/spec.md`
 **Slice**: `tests/features/<feature>/` · `src/ui/pages/<feature>/` · `src/api/features/<feature>/`
 **Seeded**: `tests/features/<feature>/seeded.ts`
-**Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
-**Status**: living · **Reconciled with tests**: YYYY-MM-DD
+**Agent seed**: `tests/agents/seed.spec.ts`
+**Status**: living · **Reconciled**: YYYY-MM-DD
 
-<Application overview, one or two sentences: what a visitor can do on this feature, and
-which app behaviours this suite deliberately does not re-prove because the app repo's
-unit, integration or Pact tests own them.>
+<One or two sentences: what a visitor can do, and which behaviours this suite does not re-prove because the app repo owns them.>
 
-## Scenarios (must match test titles)
+## Coverage
 
-<Every title below is a Playwright test title, character for character. A title is
-listed only when its test exists. Order the list by file, then by the order in the
-file, so a reader can scan both side by side. Mark the critical journey `(@smoke)`
-and phone-only tests `(@mobile)`. Data-driven titles write the varying part as
-`<value>`, one placeholder per `${}` in the code. If the feature has more than one
-spec file, say which titles live where in one line after each list.>
+<!-- One row per AC-ID the header points at. "Owned by" is scenario numbers, or "App repo". -->
+
+| Criterion  | Owned by    |
+| ---------- | ----------- |
+| AC-XXX-001 | UI 1, API 1 |
+| AC-XXX-006 | App repo    |
+
+## Scenarios
+
+<!--
+Numbered titles are the Playwright test titles, in file order.
+(@smoke) marks the critical journey. (@mobile) marks a phone-only test.
+A data-driven title uses one <placeholder> per ${} in the test.
+-->
 
 ### UI
 
 1. visitor should see the <thing> list when opening <Feature> (`@smoke`) · AC-XXX-001
-2. visitor should see an empty state when no <thing> matches the search · AC-XXX-002
-3. visitor should <outcome> when <context> · AC-XXX-00n
-
-Titles 1–n are in `<feature>.ui.acceptance.spec.ts`.
 
 ### API
 
-1. client should receive each published <thing> with its details · AC-XXX-001
-2. client should get a bad request for <param> "<value>" · AC-XXX-004
-
-<Add a line for data-driven sets: which `invalid-values.ts` export drives them and
-how errors are asserted (RFC 9457 problem: status, `type`, `field` + `errorCode`).>
+1. client should receive each published <thing> with its details (`@smoke`) · AC-XXX-001
 
 ## Constraints
 
-<Rules that shape every scenario and that a new test must not violate. Short bullets:
-how search or filtering behaves, which values are URL state, what the data policy
-means for this feature (seeded records, partial names, relative dates), what never
-appears.>
-
-- <constraint>
-- <constraint>
+- <A rule every scenario obeys, in visitor language.>
 
 ## Planned
 
-<One `####` block per scenario, implemented or not. The block is the design note the
-generator implements from and the healer and reviewer read. Keep it after the test
-exists. Group blocks under a `###` heading when they share setup (a map view, a
-multi-page mock), and put the shared setup once under that heading. The shape follows
-Playwright's test-agent plan: a seed, numbered steps, bulleted expected results. Steps
-are the Given/When/And lines and become `test.step`s; each expected result is one Then
-or And line and becomes exactly one assertion in the Then step.>
+<!--
+One #### block per scenario. Keep the block after the test exists.
+Group blocks under a ### heading when they share setup, and write that setup once.
+-->
 
 #### <actor> should <outcome> when <context>
 
-- Layer: UI | API · Tags: @acceptance[, @smoke | @mobile | @a11y] · Data: `SEEDED_*` (seeded) | <mock name> · Mocked: no | yes (<empty | error | multi-page | snapshot>, why)
-- Covers: AC-XXX-00n | none (<risk or `specs/exploration/<report>.md` F<n>>)
-- Oracle: <where the expected value comes from, independently of the app: the seeded record; a rule stated in the app spec; a fixed mock body. Never "the same calculation the app does".>
-- Seed: <omit when it is the feature's default, the agent seed above; otherwise the state the test starts from: a flag off, a phone viewport, another timezone>
+- Covers: AC-XXX-00n
+- Oracle: <the seeded record, a rule in the app spec, or a fixed mock body. Never the app's own calculation.>
 - Steps:
-  1. Given <context, only if the default state is not enough>
-  2. When a visitor opens <Feature>
-  3. And the visitor <does one thing in domain language>
+  1. When a visitor opens <Feature>
+  2. And the visitor <does one thing>
 - Expected results:
-  - Then <one observable outcome, one assertion>
-  - And <another outcome of the same action, one assertion>
-- Why: <the risk this guards, in one line. What breaks for the visitor if it regresses, and why no existing test would catch it.>
+  - Then <one observable outcome>
+- Why: <One sentence: what breaks for the visitor, and why no other test would catch it.>
 
-#### <next title>
-
-- Layer: … · Tags: … · Data: … · Mocked: …
-- Covers: …
-- Oracle: …
-- Steps:
-  1. …
-- Expected results:
-  - …
-- Why: …
+Test design: UI · @acceptance · `SEEDED_*` · not mocked · default seed
 
 ## Held for a product decision
-
-<Scenarios that need an answer before they can be written. Do not implement these.>
 
 - `<title>` · Question: <what must be decided> · Asked: YYYY-MM-DD · Owner: <who answers>
 
 ## Rejected
 
-<Proposals the planner or a human turned down, with the reason, so they are not
-proposed again.>
-
-- `<title>` · Why not: <covered at a cheaper layer | duplicate of n | not visitor-observable | …>
+- `<title>` · Why not: <covered at a cheaper layer, duplicate, or not visitor-observable>
 
 ## Findings
 
-<Pointers only. The evidence lives in `specs/exploration/` or the app repo issue.
-Give each a status so the list can be pruned.>
-
 - **F1 (open, app repo #<n>)**: <one line in visitor language>. Source: `specs/exploration/<report>.md`.
-- **F2 (fixed YYYY-MM-DD)**: <one line>. Guarded by scenario UI n.

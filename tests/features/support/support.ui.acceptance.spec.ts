@@ -1,3 +1,5 @@
+// spec: specs/features/support.md
+// seed: tests/agents/seed.spec.ts
 import { test } from '@ui/fixtures';
 import { gotoAppShell } from '@ui/support';
 import { squash } from '@squash/annotations';

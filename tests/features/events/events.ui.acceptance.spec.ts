@@ -1,3 +1,5 @@
+// spec: specs/features/events.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect, eventsTestConfig } from './fixtures';
 import { BjjEventType } from '@api/features/events/events.types';
 import { DEFAULT_PAGE_SIZE } from '@api/support';
@@ -420,7 +422,7 @@ test.describe(
             await eventsPage.expectResultCount(1);
           });
 
-          await test.step(`And the visitor reads the dates of ${event.name}`, async () => {
+          await test.step("And that event's dates are shown", async () => {
             shown.set(event.name, await eventsPage.readScheduledDays(event.name));
           });
         }

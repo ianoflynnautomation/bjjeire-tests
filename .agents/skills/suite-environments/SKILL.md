@@ -106,9 +106,12 @@ signs in, pins feature flags on and mounts the app shell before the agent takes 
 `tests/agents/explore.spec.ts` does the same and then parks on `page.pause()` with no
 timeout, so the exploratory tester's `--debug=cli` session lasts as long as its charter. Without the variable the project does not
 exist, so suite and CI runs never see the seed. The living spec is the plan: no
-`specs/*.plan.md`. When `npx playwright init-agents` is re-run after a Playwright
-bump, compare its output with these files and carry over new tool names only;
-do not overwrite them. Keep `docs/agents.md` in step with the agent files.
+`specs/*.plan.md`. The CLI skill's `references/spec-driven-testing.md` describes
+Playwright's own plan files and allows `test.fixme`. This suite's templates and
+the healer win where they disagree. When `npx playwright init-agents` is re-run
+after a Playwright bump, compare its output with these files and carry over new
+tool names only; do not overwrite them. Keep `docs/agents.md` in step with the
+agent files.
 
 ## Agentic workflows
 
@@ -119,6 +122,11 @@ GitHub Agentic Workflows (sources under `.github/workflows-aw/`, compiled to
 - `playwright-fix` — test-only heal from atest / Playwright JSON evidence,
   reproduced on a local Docker stack by the `playwright-test-healer` subagent
   (`workflow_dispatch`; not hooked to this repo's lint `CI`)
+
+Healing evidence can also come from the `atest` repo, published as `@aplaytest/*`.
+See that repo's `docs/11-adoption-bjjeire.md` and `docs/14-bjjeire-ci-integration.md`.
+Do not run `aplaytest ci generate` here. This suite is invoked from `bjjeire-java`
+via `bjjeire-ci-templates`. Phase-1 ingest reads the uploaded Playwright JSON.
 
 Engine is Claude Code (`engine: claude`); the jobs need repository secret
 `ANTHROPIC_API_KEY`. After editing workflow Markdown:

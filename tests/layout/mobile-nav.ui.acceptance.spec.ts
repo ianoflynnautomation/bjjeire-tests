@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect } from '@ui/fixtures';
 import { HEADER_NAV_LINKS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';

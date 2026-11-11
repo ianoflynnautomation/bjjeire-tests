@@ -1,3 +1,5 @@
+// spec: specs/features/gyms.md
+// seed: tests/agents/seed.spec.ts
 import { TIMEOUTS } from '@shared/config/timeouts';
 import { test, gymsTestConfig } from './fixtures';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';

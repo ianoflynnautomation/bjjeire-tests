@@ -1,3 +1,5 @@
+// spec: specs/features/<feature>.md
+// seed: tests/agents/seed.spec.ts
 import { test, templateTestConfig } from './fixtures';
 import { squash } from '@squash/annotations';
 

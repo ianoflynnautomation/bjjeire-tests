@@ -1,3 +1,5 @@
+// spec: specs/features/gyms.md
+// seed: tests/agents/seed.spec.ts
 import { test, gymsTestConfig } from './fixtures';
 import type { GymDto } from '@api/features/gyms/gyms.types';
 import { API_ROUTES, County, DEFAULT_PAGE_SIZE, type PaginatedResponse } from '@api/support';

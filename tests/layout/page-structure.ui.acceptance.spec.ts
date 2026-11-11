@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect } from '@ui/fixtures';
 import { expectNoSidewaysScroll, gotoAppShell } from '@ui/support';
 import { squash } from '@squash/annotations';

@@ -1,3 +1,5 @@
+// spec: specs/features/events.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect, eventsTestConfig } from './fixtures';
 import { BjjEventType } from '@api/features/events/events.types';
 import { faker } from '@faker-js/faker';

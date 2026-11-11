@@ -10,6 +10,10 @@ You plan acceptance coverage for the BjjEire suite. Your output is scenarios in
 `specs/features/<feature>.md`, written so the `playwright-test-generator` and
 `playwright-api-tester` agents can implement them without asking questions.
 `AGENTS.md` and `.agents/skills/suite-conventions/SKILL.md` are the source of conventions; read them first.
+The block shape is `specs/templates/feature-spec.md` and the filled example is
+`specs/templates/README.md`. Do not copy `specs/features/gyms.md` as the pattern.
+Where `.agents/skills/playwright-cli/references/spec-driven-testing.md` disagrees
+(plan files, imperative steps, `test.fixme`), this file and the templates win.
 
 ## Before opening the browser
 
@@ -61,45 +65,39 @@ gap for the app repo's seeder; mock only empty, error, multi-page and snapshot s
 
 ## Write the plan
 
-Edit `specs/features/<feature>.md` in place (create it from an existing feature file if
-missing). Keep its sections. Each new scenario is one numbered line under `### UI` or
-`### API`, exactly the future test title: `<actor> should <outcome> [when <context>]`,
-`visitor` for UI and `client` for API, with `(@smoke)` where it applies.
+Edit `specs/features/<feature>.md` in place. If the file is missing, copy
+`specs/templates/feature-spec.md` and delete its HTML comments. Keep the existing
+sections. Do not add a numbered title. The generator adds it with the test, so
+`npm run spec:check` stays green. Check `## Rejected` and `## Held` first.
 
-Below the list add a `## Planned` section (or extend it) with, per new scenario:
+Each new scenario is one `####` block under `## Planned`:
 
 ```markdown
 #### visitor should see only seminars when filtering by event type
 
-- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_* (seeded) · Mocked: no
 - Covers: AC-EVT-002
-- Oracle: the seeded seminar's `types`; every listed card is one of the seeded seminars
+- Oracle: the seeded seminars. Every listed card is one of those seminars.
 - Steps:
   1. When a visitor opens Events
   2. And the visitor filters by Seminar
 - Expected results:
   - Then only seminars are listed
   - And the Cork seminar is among them
-- Why: type filter is untested in the UI; API scenario 5 already proves the rule.
+- Why: a type filter that shows the wrong events is invisible to the API scenario, which the visitor never sees.
+
+Test design: UI · @acceptance · `SEEDED_EVENT_*` · not mocked · default seed
 ```
 
-`Steps:` are the Given/When/And lines, numbered, as Playwright's test-agent plans do;
-`Expected results:` are the Then/And lines, one observable outcome each, so the generator
-writes exactly one assertion per line. Add a `Seed:` line only when the scenario starts
-from something other than the agent seed named in the spec header (a flag off, a phone
-viewport, another timezone).
+`Steps:` are Given, When and And. `Expected results:` are Then and And, one observable
+outcome each, and none of them is an action such as "the visitor searches" or "goes to
+the next page". `Why:` is one sentence of visitor risk. Selectors, test ids, URLs,
+status codes, field names and pixel tolerances go on `Test design` or not at all.
+`Covers:` is an AC-ID from the app spec, or `none` with the reason. Never invent an
+AC-ID. `Oracle:` is the seeded record, an app-spec rule, or a fixed mock body. Mention
+a non-default seed on `Test design` (a flag off, a phone viewport, another timezone).
 
-`Covers:` names the AC-IDs the scenario proves, or `none` when it comes only from risk
-or an exploration report. Never invent an AC-ID. `Oracle:` says where the expected value
-comes from independently of the app (seeded record, app-spec rule, fixed mock body);
-never a re-implementation of the app's own calculation. The block goes under `## Planned`
-only; the numbered title is added when the test exists (the generator does that), so
-`npm run spec:check` stays green. Check `## Rejected` and `## Held` first so you do not
-re-propose a decided scenario. The full format is `specs/templates/feature-spec.md`.
-
-Steps are declarative: no selectors, test ids, URLs, status codes or field names.
-Do not create `specs/*.plan.md` and do not call `planner_save_plan`; the living spec is
-the plan. Do not write or edit any file outside `specs/`.
+Do not create `specs/*.plan.md` and do not call `planner_save_plan`. The living spec
+is the plan. Do not write or edit any file outside `specs/`.
 
 ## Report back
 

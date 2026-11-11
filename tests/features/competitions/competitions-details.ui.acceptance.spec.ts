@@ -1,3 +1,5 @@
+// spec: specs/features/competitions.md
+// seed: tests/agents/seed.spec.ts
 import { test, competitionsTestConfig } from './fixtures';
 import type { CompetitionDto } from '@api/features/competitions/competitions.types';
 import { API_ROUTES, DEFAULT_PAGE_SIZE, type PaginatedResponse } from '@api/support';

@@ -1,3 +1,4 @@
+// spec: specs/features/stores.md
 import { test, expect } from '@api/fixtures';
 import { storesPageSchema } from '@api/features/stores/stores.schemas';
 import { getStores } from '@api/features/stores/stores.service';

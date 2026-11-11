@@ -106,40 +106,48 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should reach the next page of events
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
+- Covers: none (no AC-ID in the app spec yet)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
   2. When a visitor opens Events
+  3. And the visitor goes to the next page
 - Expected results:
-  - And the visitor goes to the next page
   - Then the next events are listed instead of the first ones
 - Why: the current paging test stops at the header total and never moves page.
 
 #### visitor should return to the first page when changing a filter on a later page
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
+- Covers: none (no AC-ID in the app spec yet)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
   2. When a visitor opens Events
+  3. And the visitor goes to the next page
+  4. And the visitor filters by county
 - Expected results:
-  - And the visitor goes to the next page
-  - And the visitor filters by county
   - Then the first page of that county's events is listed
 - Why: stale page state is a likely regression and would strand the visitor on an empty page.
 
 #### visitor should find an event on a later page by searching
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
+- Covers: none (no AC-ID in the app spec yet)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
   2. When a visitor opens Events
+  3. And the visitor searches for an event that is not on the first page
 - Expected results:
-  - And the visitor searches for an event that is not on the first page
   - Then only that event is listed
 - Why: search reaches beyond the loaded page, and no test proves it.
 
 #### visitor should see the events after retrying a failed load
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing after recovery · Mocked: yes (first response fails)
+- Covers: none (no AC-ID in the app spec yet)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the event service is unavailable
   2. When a visitor opens Events
@@ -152,17 +160,21 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should be able to filter and search events using only the keyboard
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
+- Covers: none (no AC-ID in the app spec yet)
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events
+  2. And the visitor chooses Seminar using the keyboard
+  3. And the visitor searches for the seminar using the keyboard
 - Expected results:
-  - And the visitor chooses Seminar using the keyboard
-  - And the visitor searches for the seminar using the keyboard
   - Then only that event is listed
 - Why: the a11y sweep checks rules on a static page, not that the controls can be operated.
 
 #### visitor should see event cards fit the screen on a phone
 
 - Layer: UI · Tags: @acceptance, @mobile · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
+- Covers: AC-EVT-007, AC-EVT-017
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events on a phone
 - Expected results:
@@ -213,6 +225,8 @@ same tile rules.
 #### visitor should see the map with the shared filters when opening a shared map link
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-007
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens a shared link to the map for Cork and seminars
 - Expected results:
@@ -224,17 +238,21 @@ same tile rules.
 #### visitor should return to the event list with Back after switching to the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-EVT-007
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the event list for Dublin
   2. When the visitor switches to the map
+  3. And the visitor goes back
 - Expected results:
-  - And the visitor goes back
   - Then the event list for Dublin is displayed
 - Why: AC-EVT-007. Start on the list: a directly opened link has no earlier page.
 
 #### visitor should see pins only for the chosen county when filtering the map by county
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR, SEEDED_EVENT_LEINSTER_OPEN_MAT (seeded) · Mocked: tiles only
+- Covers: AC-EVT-008
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor filters by Cork
@@ -246,6 +264,8 @@ same tile rules.
 #### visitor should see pins only for the chosen type when filtering the map by type
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_TRIBES_NO_GI_CAMP, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-008
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor filters by Camp
@@ -256,6 +276,8 @@ same tile rules.
 #### visitor should see only the searched event's pin when searching on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-008, AC-EVT-012
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor searches for an event by name
@@ -267,6 +289,8 @@ same tile rules.
 #### visitor should see events in their real locations on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-009
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens the map of all events
 - Expected results:
@@ -276,6 +300,8 @@ same tile rules.
 #### visitor should see an event's details and links when opening its pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-011
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor opens an event's pin
@@ -288,6 +314,8 @@ same tile rules.
 #### visitor should see every event at a venue when opening that venue's pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded, see data gap) · Mocked: tiles only
+- Covers: AC-EVT-010
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given two upcoming events at Leinster Grappling HQ
   2. When a visitor opens that venue's pin on the map
@@ -299,6 +327,8 @@ same tile rules.
 #### Events map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
 
 - Layer: UI · Tags: @acceptance, @a11y · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT (seeded) · Mocked: tiles only
+- Covers: AC-EVT-016
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor has the map open with the shared-venue popup open, in each of the light, dark and competition themes
 - Expected results:
@@ -308,6 +338,8 @@ same tile rules.
 #### visitor should keep the pins and be offered the list when map tiles fail to load
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles aborted
+- Covers: AC-EVT-014
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given map tiles cannot be loaded
   2. When a visitor opens the map for Cork
@@ -320,6 +352,8 @@ same tile rules.
 #### visitor should see the event list when opening a map link while the events map is off
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-EVT-015
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given the events map is off
   2. When a visitor opens a link to the map
@@ -331,6 +365,8 @@ same tile rules.
 #### visitor should not download the map when staying on the event list
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-EVT-017
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events and stays on the list
 - Expected results:
@@ -345,6 +381,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see pins for the current results when switching from the event list to the map
 
 - Layer: UI · Tags: @acceptance, @smoke · Data: SEEDED_EVENT_TRIBES_NO_GI_CAMP, SEEDED_EVENT_ATLANTIC_COAST_CAMP, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-007
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor has opened the event list for camps
   2. When the visitor switches to the map
@@ -357,6 +395,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should keep the search, county and type when switching from the map back to the list
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-007
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map filtered by Cork and Seminar
   2. When the visitor switches to the list
@@ -368,6 +408,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see the empty-search message when a search matches nothing on the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-EVT-013
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor searches for text no event contains
@@ -378,6 +420,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see an error message and be able to retry when events cannot be loaded on the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing after recovery · Mocked: yes (first response fails, then recovers) and tiles
+- Covers: AC-EVT-013
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the event service is unavailable
   2. When a visitor opens the map for Cork
@@ -390,6 +434,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should be told how many events are not shown when some have no usable location
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing plus one event without coordinates · Mocked: yes (snapshot state; seeded data has no unmapped event)
+- Covers: AC-EVT-009
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given one event has no usable coordinates
   2. When a visitor opens the map
@@ -402,8 +448,10 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should be told to filter when more events match than the map can show
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents-style listing of 100 events with a larger total · Mocked: yes (multi-page)
+- Covers: AC-EVT-008
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
-  1. Given 130 events match, more than the map can show
+  1. Given <count> events match, more than the map can show
   2. When a visitor opens the map
 - Expected results:
   - Then a notice says not every event is shown and suggests filtering
@@ -413,6 +461,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should switch between list and map using only the keyboard
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-016
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events for Cork
   2. And the visitor chooses the map view using the keyboard
@@ -427,6 +477,8 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see the map fit the screen on a phone
 
 - Layer: UI · Tags: @acceptance, @mobile · Data: seeded · Mocked: tiles only
+- Covers: AC-EVT-016
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens the map on a phone
 - Expected results:
@@ -437,12 +489,13 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see each venue's events when opening its pin on the map
 
 - Layer: UI · Tags: @acceptance · Data: every seeded upcoming event plus SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded) · Mocked: tiles only
+- Covers: AC-EVT-010
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given a visitor is on the map for a narrowed view (the Camp type, or a county)
-  2. When the visitor opens the pin for a venue
-  3. Then its popup shows the events at that venue, with their types, address and links
-  4. When the visitor closes the popup
-  5. (repeated for every pin in the view, then for every view)
+  1. Given a visitor is on the map for <view>
+  2. When the visitor opens the pin for <venue>
+  3. Then its popup shows the events at <venue>
+  4. When the visitor closes the popup for <venue>
 - Expected results:
   - Then the popups show the events as many days long and as far apart as seeded
 - Why: mutation audit 2026-11-05, gap 2 (`location.venue`, `name` and coordinates rotate survived: every other map test is narrowed to Cork, so one event cannot show a pin tied to the wrong event). Pins are grouped by coordinates, as the app does, and the shared Leinster pin holds the open mat and the seminar, in earliest-start order. The pins are grouped into narrowed views defined in `testdata/map-views.ts` (the Camp type, then one view per county for the rest; a helper checks every seeded pin is in exactly one view), so each pin is on the map whatever else a full dataset holds (the unfiltered map shows only the first 100 events). A county with one seeded event turns a `rotate` mutant into an identity, so the venue and name rotate kills rest on the Dublin pin (two events) here and on the `@smoke` Camp scenario; the latitude/longitude rotate kill comes from the Camp view, where one response holds two places (Galway and Westport) and a rotated coordinate changes a directions link. No pin-geometry check here. After the last popup, the dates shown are checked against the seeded offsets (see the dates scenario below).
@@ -450,12 +503,14 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see each seeded event's dates as far apart as the seeded schedule says
 
 - Layer: UI · Tags: @acceptance · Data: every seeded dated event plus SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR, with `SEEDED_EVENT_SCHEDULE_OFFSETS` (seeded) · Mocked: no
+- Covers: AC-EVT-004
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events
-  2. When the visitor finds an event (repeated for every seeded dated event)
+  2. When the visitor finds <name>
+  3. Then only <name> is listed
 - Expected results:
-  - Then only that event is listed
-  - And the visitor reads the dates of that event
+  - And that event's dates are shown
   - Then each event runs as many days as seeded and the events start as far apart as seeded
 - Why: mutation audit 2026-11-05, gap 4 (`schedule.startDate`/`endDate` rotate and mangle survived: seeded dates move with every seed, so the cards' dates were never asserted on real data). The seeder sets `now+Nd`, so the test compares gaps between the rendered dates with the seeded offsets and never the dates themselves; it makes no API call. It reads the first line of the card's schedule (the date range; Shannonside's weekly sessions follow it). The seeder adds 24-hour days to one instant and the card shows the Irish calendar day, so a clock change can move a date near midnight: a pair of dates that span the March change may show one day more than seeded (+1), a pair that span the October change one day fewer (−1). Only that signed difference is allowed, only across that change. A rotate swaps two events' dates and a mangle breaks a date, so both change a gap. A shift of every date by the same number of days is not caught, and no seed-time source exists without the API. The same check runs on the map popups in the per-venue scenario above.
 

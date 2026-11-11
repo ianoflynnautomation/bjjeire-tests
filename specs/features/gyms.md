@@ -78,12 +78,11 @@ offending `field` + `errorCode`. Get-by-id has no AC-ID in the app repo yet.
 
 ## Constraints
 
-- Search matches gym name and county only. Page and county are URL state.
-- After `searchFor`, `expectResultCount(1)` — uniqueness, not merely visible.
-- Partial name: `SEEDED_GYM_*_PARTIAL_NAME`, never `name.slice`.
-- Maps link: `query=lat,lng` from GeoJSON `[lng, lat]`.
-- Status on the wire is `GymStatus` PascalCase; badge copy must follow the
-  mapper, not a lowercased guess.
+- Search matches gym name and county only. County and page are part of the address, so a shared link opens the same view.
+- A search that names one gym lists that gym and no other.
+- A partial name is the seeded partial name for that gym.
+- Directions use the gym's latitude, then its longitude.
+- The status badge shows the published label for the gym's status.
 
 ## Planned
 
@@ -91,6 +90,8 @@ Map view, from User Story 5 and AC-GYM-007 to AC-GYM-016 in `bjjeire-java/specs/
 Written from the app spec and its tests, then automated against the running app. UI only:
 the app's unit and Pact tests own the `GymsMap` flag on the wire, and the suite does not
 assert the flag API.
+
+### Test design for the map
 
 **Setup for all of them**
 
@@ -141,79 +142,100 @@ assert the flag API.
 #### visitor should see the map with the shared county when opening a shared map link
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY, SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING (seeded) · Mocked: tiles only
+- Covers: AC-GYM-007
+- Oracle: the seeded Cork gyms have pins and the seeded Dublin gym does not. Cork is the chosen county.
 - Steps:
   1. When a visitor opens a shared link to the map for Cork
 - Expected results:
   - Then the map is displayed and marked as the current view
   - And Cork is the chosen county
   - And the Cork gyms have pins and the Dublin gym does not
-- Why: AC-GYM-007, SC-005. The app's page tests cover this against mocks; only this proves it on real data.
+- Why: a shared map link that opens the list, or the wrong county, cannot be sent on.
 
 #### visitor should return to the gym list with Back after switching to the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-GYM-007
+- Oracle: the gym list for the seeded Cork county is showing again after Back.
 - Steps:
   1. Given a visitor is on the gym list for Cork
   2. When the visitor switches to the map
+  3. And the visitor goes back
 - Expected results:
-  - And the visitor goes back
   - Then the gym list for Cork is displayed
-- Why: AC-GYM-007. Start on the list, because a directly opened link has no earlier page to return to.
+- Why: a map opened from the list that ignores Back leaves the visitor without the list they came from.
 
 #### visitor should see pins only for the chosen county when filtering the map by county
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY, SEEDED_GYM_BLACKWATER_VALLEY, SEEDED_GYM_LIFFEY_GRAPPLING (seeded) · Mocked: tiles only
+- Covers: AC-GYM-008
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor filters by Cork
 - Expected results:
   - Then the Cork gyms have pins and the Dublin gym does not
   - And the map has moved closer to the Cork gyms
-- Why: AC-GYM-008, SC-004. Full datasets, so assert named gyms, not pin totals. Prove the move by the two Cork pins being further apart on screen than before.
+- Why: a county filter that leaves another county's pins on the map shows the wrong gyms.
 
 #### visitor should see gyms in their real locations on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_LIFFEY_GRAPPLING, SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
+- Covers: AC-GYM-009
+- Oracle: the seeded coordinates of the Dublin and Cork gyms. Dublin is north-east of Cork, close enough that a latitude/longitude swap fails.
 - Steps:
   1. When a visitor opens the map of all gyms
 - Expected results:
   - Then the Dublin gym is north-east of the Cork gym, at the right angle
-- Why: AC-GYM-009, SC-004. From the two pins' on-screen boxes: Dublin is right of and above Cork, and vertical distance divided by horizontal distance is between 0.95 and 1.2. The true geography gives about 1.08. Swapped latitude and longitude gives about 1.53 with the same directions, so a direction check alone cannot catch a swap.
+- Why: a swapped latitude and longitude still looks like a map of Ireland.
 
 #### visitor should see a gym's details and links when opening its pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
+- Covers: AC-GYM-010
+- Oracle: the seeded gym's name, county, address and links. Directions use that gym's latitude, then its longitude.
 - Steps:
-  1. Given a visitor is on the map
-  2. When the visitor opens a gym's pin
+  1. Given a visitor is on the map, narrowed to the gym by name so no neighbouring pin covers it
+  2. When the visitor opens the gym's pin
 - Expected results:
-  - Then the gym's name, county and address are shown
-  - And its website and directions links match its card
-- Why: AC-GYM-010, SC-003. Compare with the DTO. Directions use `query=lat,lng`, so `51.8985,-8.4706` here. Both links open in a new tab with `rel="noopener noreferrer"`. The map is narrowed to the gym with `q=`, because Barão Jiu Jitsu Cork sits about 200 m away and its pin can cover this one.
+  - Then the gym name, county and address are shown
+  - And its website and directions links match its card and open safely in a new tab
+- Why: a pin that shows another gym's address or link sends the visitor to the wrong place.
 
 #### visitor should see only the searched gym's pin when searching on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
+- Covers: AC-GYM-011
+- Oracle: the seeded gym is the only pin, and the map moves from an overview to street level. A pin that was already near the centre is not enough.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor searches for a gym by name
 - Expected results:
   - Then only that gym has a pin
   - And the map has zoomed to it
-- Why: AC-GYM-008, AC-GYM-011. Assert exactly one `gym-map-pin`, the uniqueness rule from Constraints. Oracle is the map tile zoom (`z` in the tile URLs): below 13 before the search, 13 to 18 after (street level, not maximum; the app uses 15), plus the pin within 40 px of the map centre. A position check alone proves nothing, because the pin is already about 22 px from the horizontal centre before any search.
+- Why: a search that leaves other pins up, or does not move the map, hides the gym the visitor asked for.
+
+Test design: tiles mocked. Street level is a tile zoom from 13 to 18. The pin finishes within 40 px of the map centre.
 
 #### Gyms map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
 
 - Layer: UI · Tags: @acceptance, @a11y · Data: SEEDED_GYM_HARBOUR_CITY (seeded) · Mocked: tiles only
+- Covers: AC-GYM-015
+- Oracle: axe reports no WCAG 2.1 A or AA violations at the pinned axe-core version, in each theme.
 - Steps:
-  1. Given a visitor has the map open with a gym's pin open, in each of the light, dark and competition themes
+  1. Given a visitor has the map open in the <theme> theme
+  2. And the gym's pin is open and fully faded in
 - Expected results:
   - Then no accessibility violations are found
-- Why: AC-GYM-015. Use `expectNoWcagViolations`. Competition is not a `colorScheme`, so set the theme through `localStorage['bjjeire-theme']` (`light`, `dark`, `competition`) in an init script. Report violations as app bugs. Leaflet paints tiles with `mix-blend-mode: plus-lighter`, which crashes axe's `color-contrast` and `link-in-text-block` rules and skips them for the whole page while the scan still reports no violations. So the test sets tiles to `normal` before scanning, and `expectNoWcagViolations` fails if an axe rule crashes.
+- Why: a map popup that fails contrast or naming is unusable with a screen reader.
+
+Test design: UI · @a11y · tiles use a normal blend before the scan, because the map's lighter blend crashes axe colour rules. The theme is the stored theme, including competition.
 
 #### visitor should keep the pins and be offered the list when map tiles fail to load
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_GYM_BLACKWATER_VALLEY (seeded; Fermoy, no near neighbour, so no overlapping Cork pin can intercept the click) · Mocked: tiles aborted
+- Covers: AC-GYM-013
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given map tiles cannot be loaded
   2. When a visitor opens the map for Cork
@@ -221,25 +243,35 @@ assert the flag API.
   - Then a notice offers the gym list and the map stays open
   - And the Cork gym's pin can still be opened
   - And following the notice shows the gym list for Cork
-- Why: AC-GYM-013. Abort the tile route instead of fulfilling it.
+- Why: a failed map background that removes the pins leaves the visitor with nothing to open.
+
+Test design: the tile request is aborted, not replaced with a blank image.
 
 #### visitor should see the gym list when opening a map link while the map is off
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-GYM-014
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given the map feature is off
   2. When a visitor opens a link to the map for Cork
 - Expected results:
   - Then the gym list for Cork is displayed on the Gyms page
   - And the visitor is not offered a choice of view
-- Why: AC-GYM-014, SC-006. Needs `GymsMap: false`. Assert the path stays `/gyms` and is not `/about`.
+- Why: a map link while the map is off must still show that county's gyms.
+
+Test design: map flag off. The address stays on Gyms and does not fall through to About.
 
 #### visitor should not download the map when staying on the gym list
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
+- Covers: AC-GYM-016
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Gyms and stays on the list
 - Expected results:
   - Then no map code or tiles are requested
   - And switching to the map then requests them
-- Why: AC-GYM-016, SC-007. Record request URLs from before navigation and match `tile.openstreetmap.org` and `/assets/gym-map-`. The final step proves the check can see them. Against a local Vite dev server the chunk names differ, so run it against a built image.
+- Why: downloading the map on the list makes every visit pay for a map the visitor did not open.
+
+Test design: run against a built image. The list requests neither a map tile nor the gym-map asset. Switching to the map does.

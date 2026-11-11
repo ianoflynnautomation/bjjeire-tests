@@ -1,3 +1,4 @@
+// spec: specs/features/gyms.md
 import { test, expect } from '@api/fixtures';
 import { gymSchema, gymsPageSchema } from '@api/features/gyms/gyms.schemas';
 import { getGymById, getGyms } from '@api/features/gyms/gyms.service';

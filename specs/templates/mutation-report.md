@@ -16,6 +16,7 @@ what moved).>
 | `<feature>.ui.acceptance.spec.ts` | n     | n      | n        | n     | nn% |
 | **Union (real-data specs)**       |       | n      | n        | n     | nn% |
 
+Raw is the runner score: killed / (killed + survived). No-ops are excluded.
 Adjusted score (killed / (killed + gaps + owned-by-API)): **nn%**. <Before → after, when re-auditing.>
 
 ## Gaps (ranked by visitor impact)

@@ -1,3 +1,5 @@
+// spec: specs/features/competitions.md
+// seed: tests/agents/seed.spec.ts
 import { test, competitionsTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { API_ROUTES } from '@api/support';

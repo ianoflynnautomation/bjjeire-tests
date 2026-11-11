@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test as core, expect } from '@ui/fixtures';
 import { pageFixture } from '@ui/fixtures/page-fixture';
 import { EventsPage } from '@ui/pages/events/events.page';

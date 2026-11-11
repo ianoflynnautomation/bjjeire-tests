@@ -1,9 +1,6 @@
 # Spec templates
 
-Copy a template, fill it, delete the guidance lines in `<angle brackets>`. Each
-template matches what the agents in `.claude/agents/` read and write, so a file
-made from one is usable by the planner, generator, reviewer and the `spec-review`
-workflow without translation.
+Copy a template, fill it, and delete the HTML comments. The agents in `.claude/agents/` read these files as they are. There is one filled block below. Do not copy a living feature spec as the pattern. Several of them predate this shape.
 
 | Template                                         | Produces                                | Written by                              |
 | ------------------------------------------------ | --------------------------------------- | --------------------------------------- |
@@ -11,25 +8,36 @@ workflow without translation.
 | [`exploration-report.md`](exploration-report.md) | `specs/exploration/<date>-<charter>.md` | `playwright-exploratory-tester`, or you |
 | [`mutation-report.md`](mutation-report.md)       | `specs/mutation/<date>-<feature>.md`    | `playwright-mutation-auditor`           |
 
-The templates are generic on purpose: every value is a `<placeholder>`. For a filled
-example, read a living spec in `specs/features/` (they were all written to this shape).
-`exploration-report.md` is a symlink to the exploratory-testing skill's own
-template, so there is one copy to maintain.
+`exploration-report.md` is a symlink to the exploratory-testing skill, so there is one copy.
 
-## The contract in one paragraph
+## The contract
 
-A feature spec is the **visitor-observable contract** and the **index of the tests
-that prove it**. Its numbered scenario titles are the Playwright test titles,
-character for character. A title appears in the numbered list only when its test
-exists; a `####` block under `## Planned` with no numbered entry is work not yet
-done. Each scenario names the acceptance criterion it covers (`Covers: AC-…` from
-`bjjeire-java/specs/stc/<feature>/spec.md`), the data it uses, whether it mocks,
-and the **oracle**: where the expected value comes from, independently of the app.
-Its block follows the shape of a Playwright test-agent plan
-([playwright.dev/docs/test-agents](https://playwright.dev/docs/test-agents)): a seed,
-numbered **Steps** and bulleted **Expected results**, each expected result being one
-assertion. Every test file points back with a `// spec: specs/features/<feature>.md`
-first line, which `npm run spec:check` verifies.
+A feature spec is the visitor-observable behaviour and the index of the tests that prove it.
+
+- The numbered titles under `## Scenarios` are the Playwright `test()` titles. A title is listed only when its test exists, in that same change.
+- A `####` block under `## Planned` with no numbered title is work not yet done. Keep the block after the test exists. The healer and the reviewer read it.
+- `Covers:` names the acceptance criterion in `bjjeire-java/specs/stc/<feature>/spec.md`, or `none` with the reason. Never invent an AC-ID.
+- `Oracle:` says where the expected value comes from, independently of the app. The seeded record, a rule in the app spec, or a fixed mock body. A calculation shared with the app is not an oracle. Events finding F1 is the case: a per-day price was multiplied by the number of days and still labelled per day, and a mapper that did the same multiplication would have passed.
+- `Steps:` are Given, When and And. `Expected results:` are Then and And. Each line is one `test.step` and one assertion. Three to six steps.
+- `Why:` is one sentence of visitor risk.
+- `Test design:` is one line for the generator: layer, tags, data, mock, seed. An older block may say `Layer:` instead. Selectors and pixel tolerances stay there, or in the page object.
+
+## A filled block
+
+```markdown
+#### visitor should find a gym by part of its name
+
+- Covers: AC-GYM-003
+- Oracle: the seeded gym's name. The search term is that gym's seeded partial name.
+- Steps:
+  1. When a visitor opens Gyms
+  2. And the visitor searches for part of that gym's name
+- Expected results:
+  - Then only that gym is listed
+- Why: a search that returns the wrong gym, or more than one, is invisible to the full-name scenario.
+
+Test design: UI · @acceptance · `SEEDED_GYM_*_PARTIAL_NAME` · not mocked · default seed
+```
 
 ## Lifecycle of a scenario
 
@@ -41,30 +49,32 @@ risk the planner found          ──┘           │
                                               └──▶  ## Rejected (with the reason)
 ```
 
-- **Planned**: the block exists, the title is not yet in the numbered list.
-- **Implemented**: the title is in the numbered list. Keep the block; it is the
-  design note the healer and reviewer read.
-- **Held**: a product decision is needed first. Say what the question is and who
-  owns it. Never implement a held scenario.
-- **Rejected**: say why, so the next planner does not propose it again.
+- **Planned.** The block exists. The title is not in the numbered list. The planner writes this and stops.
+- **Implemented.** The generator, the API tester, or you add the test and the numbered title together. The block stays.
+- **Held.** A product decision is required. Name the question and the owner. Do not implement it.
+- **Rejected.** Say why, so the next planner does not propose it again.
+
+That is the life of one block. The full loop is the [diagram in the spec guide](../../docs/spec-guide.md#end-to-end).
+
+## What `spec:check` fails on
+
+`npm run spec:check` (lint-staged and CI) fails when:
+
+- a numbered title and a `test()` title differ, a `*.spec.ts` has no spec, or `// spec:` names the wrong file
+- a `####` block has no `Covers:` or `Oracle:`, or `Covers:` is not an `AC-…` id or `none`
+- an expected result is a visitor action (`goes`, `searches`, `filters`, `chooses`, and the same class of verb)
+- a block and a test both exist and their step titles differ
+
+A numbered scenario with no block is grandfathered. 133 scenarios predate the convention. New scenarios get a block first. The reviewer rejects a changed test that has no block.
+
+The reviewer, not the script, judges oracle quality, declarative wording, and whether the scenario sits at the cheapest layer.
 
 ## Rules that keep a spec honest
 
-1. **Titles are the contract.** `<actor> should <outcome> [when <context>]`, actor
-   `visitor` (UI) or `client` (API). Data-driven tests write the varying part as
-   `<value>` in the spec (`for a non-numeric page size "<value>"`).
-2. **Steps are declarative.** No selectors, test ids, URLs, status codes or field
-   names. The `playwright-bdd` skill has the wording rules.
-3. **Name the oracle.** A test is only as strong as where its expected value comes
-   from. "Seeded record + the spec's rule" is an oracle. A mapper that re-implements
-   the app's own formula is not (see finding F1 in `specs/features/events.md`: the
-   test and the app shared the same wrong multiplication).
-4. **Cheapest layer wins.** Validation, ordering, paging and filter correctness are
-   API scenarios. The UI scenario proves the visitor sees the result once.
-5. **Mock only what cannot be seeded**: empty, error, multi-page and snapshot states.
-   Say `Mocked: yes (<why>)` on the block.
-6. **Findings are evidence, not scenarios.** App bugs go to the exploration report
-   or the app repo issue, with a link from the spec's `## Findings` list. Do not
-   encode a bug as expected behaviour.
-7. **Reconcile when tests change.** A renamed, added or deleted test changes the
-   numbered list in the same commit. `npm run spec:check` (lint-staged and CI) fails on any difference; the reviewer agent and `spec-review` judge the rest.
+1. **Titles are the contract.** `<actor> should <outcome> [when <context>]`. The actor is `visitor` for UI and `client` for API. A data-driven title writes `<value>` in the spec for each `${}` in the test.
+2. **Steps are declarative.** No selectors, test ids, URLs, status codes or field names. The `playwright-bdd` skill is the wording reference.
+3. **Name the oracle.** "The seeded record and the spec's rule" is an oracle. A mapper that repeats the app's formula is not.
+4. **The cheapest layer wins.** Validation, ordering, paging and filter correctness are API scenarios. The UI scenario proves the visitor sees the result once.
+5. **Mock only what cannot be seeded.** Empty, error, multi-page and snapshot states. Say so on `Test design`.
+6. **A finding is evidence, not a scenario.** Link it from `## Findings`. Do not encode a bug as the expected result.
+7. **Rename or delete a test in the same change as its title.** If the test is `@squash`, the Squash skill says how to keep the case history.

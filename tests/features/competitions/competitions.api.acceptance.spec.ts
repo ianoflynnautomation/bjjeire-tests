@@ -1,3 +1,4 @@
+// spec: specs/features/competitions.md
 import { test, expect } from '@api/fixtures';
 import { competitionsPageSchema } from '@api/features/competitions/competitions.schemas';
 import { getCompetitions } from '@api/features/competitions/competitions.service';

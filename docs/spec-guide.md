@@ -11,41 +11,84 @@ suite. Read this once; after that the templates and `npm run spec:check` carry y
 2. **The spec is the index of the tests.** The numbered titles in a feature spec are
    the test titles, character for character. If they differ, `npm run spec:check`
    fails, locally (lint-staged) and in CI.
-3. **Agents read and write the same file.** The planner adds scenarios, the generator
-   implements one, the reviewer checks the diff against it, the healer consults it
-   before deciding whether the app or the test is wrong. Writing a good spec block
-   is the highest-leverage thing you can do for them.
+3. **Agents read and write the same file.** The planner adds a `####` block. The
+   generator or API tester adds the test and the numbered title together. The
+   reviewer checks the diff against the block. The healer reads the block before
+   deciding whether the app or the test is wrong. Writing a good spec block is the
+   highest-leverage thing you can do for them.
+
+## End to end
+
+`/cover-feature <feature>` runs the middle: plan, then one scenario at a time,
+then review. A numbered title is added only in the change that adds its test.
+
+```mermaid
+flowchart TD
+  ac["Acceptance criterion in the app spec"]
+  explore["Exploration report, still a candidate"]
+  gap["Mutation gap"]
+  planner["Planner, or you"]
+
+  ac --> planner
+  explore --> planner
+  gap --> planner
+
+  planner --> kind{"What is it?"}
+  kind -->|open question| held["Held. Name the question and stop."]
+  kind -->|not this suite| rejected["Rejected. Say why and stop."]
+  kind -->|behaviour to prove| block["Planned block. No numbered title yet."]
+
+  block --> author["Generator, API tester, or you"]
+  author --> red["Red run: break the assertion, or set PW_MUTANT"]
+  red --> named{"The failure names this scenario?"}
+  named -->|no| weak["Stop. The test does not prove the block."]
+  named -->|yes| match{"The app matches the block?"}
+  match -->|no| finding["Finding. Leave the test red."]
+  match -->|yes| green["Restore, spec:check, then pass five times"]
+
+  green --> listed["Same change adds the numbered title. The block stays."]
+  listed --> reviewer["Reviewer, in a fresh context"]
+  reviewer -->|send it back| author
+  reviewer -->|accepted| living["Living scenario"]
+
+  living --> gate["lint-staged and CI run spec:check"]
+  gate --> pr["Pull request: spec-review comments"]
+
+  living -->|fails every time| healer["Healer"]
+  living -->|fails sometimes| flake["Flake hunter"]
+  healer -->|test is wrong| author
+  healer -->|app is wrong| finding
+  flake --> author
+
+  living --> audit["Mutation auditor"]
+  audit -->|new scenario| planner
+  audit -->|missing assertion| author
+```
+
+Held and Rejected are how a proposal stops. The block stays after the test exists, so the healer and the reviewer can read it.
+
+A red run that still passes means the test does not prove the block. When the app disagrees with the block, the test stays red and the difference is a finding. `spec:check` runs again in the green step, before review.
+
+Agents do not commit. A `playwright-fix` dispatch is the healer again, later, from CI evidence, and it may repair a test only. Scenarios that predate a block are grandfathered. New ones get a block first.
 
 ## The map
 
-| Path                              | What it is                                                 |
-| --------------------------------- | ---------------------------------------------------------- |
-| `specs/features/<feature>.md`     | The living spec: scenarios, constraints, planned blocks    |
-| `specs/templates/`                | Generic templates to copy; a living spec is the example    |
-| `specs/exploration/`              | Dated exploratory session reports (evidence, not the spec) |
-| `specs/mutation/`                 | Dated mutation audits: which wrong data the tests miss     |
-| `bjjeire-java/specs/stc/<f>/`     | Acceptance criteria with IDs (`AC-GYM-003`) you cite       |
-| `.specify/memory/constitution.md` | The principles; short, read it                             |
-| `scripts/spec-check.mjs`          | The drift check behind `npm run spec:check`                |
+| Path                              | What it is                                                      |
+| --------------------------------- | --------------------------------------------------------------- |
+| `specs/features/<feature>.md`     | The living spec: scenarios, constraints, planned blocks         |
+| `specs/templates/`                | Templates to copy. The filled block is in `templates/README.md` |
+| `specs/exploration/`              | Dated exploratory session reports (evidence, not the spec)      |
+| `specs/mutation/`                 | Dated mutation audits: which wrong data the tests miss          |
+| `bjjeire-java/specs/stc/<f>/`     | Acceptance criteria with IDs (`AC-GYM-003`) you cite            |
+| `.specify/memory/constitution.md` | The principles; short, read it                                  |
+| `scripts/spec-check.mjs`          | The drift check behind `npm run spec:check`                     |
 
 ## Anatomy of a feature spec
 
-```
-# Acceptance spec: <Feature>
-**App spec** · **AC-IDs** · **Slice** · **Seeded** · **Status**   ← header
-## Scenarios (must match test titles)
-### UI   1. visitor should … (`@smoke`) · AC-XXX-001             ← the contract
-### API  1. client should … · AC-XXX-004
-## Constraints                                                     ← rules every test obeys
-## Planned                                                         ← one #### block per scenario
-#### visitor should …
-- Layer · Tags · Data · Mocked
-- Covers: AC-XXX-00n | none (<risk or report>)
-- Oracle: where the expected value comes from
-- Given/When/Then: …
-- Why: …
-## Held for a product decision · ## Rejected · ## Findings
-```
+The section order is the template: header, overview, `## Coverage`, `## Scenarios`,
+`## Constraints`, `## Planned`, then Held, Rejected and Findings. A planned block
+has `Covers`, `Oracle`, `Steps`, `Expected results`, `Why` and one `Test design`
+line. The filled example is in [`specs/templates/README.md`](../specs/templates/README.md).
 
 The `**Slice**:` line is what `spec:check` uses to find the tests: the first backticked
 `tests/...` path. Every `*.spec.ts` under `tests/` must be claimed by one spec.
@@ -56,12 +99,12 @@ The `**Slice**:` line is what `spec:check` uses to find the tests: the first bac
    something already decided.
 2. Find the acceptance criterion in `bjjeire-java/specs/stc/<feature>/spec.md`. If none
    fits, write `Covers: none` and name the risk or the exploration finding.
-3. Write the `####` block under `## Planned`: layer, data, whether it mocks and why, the
-   oracle, declarative Given/When/Then, and the one-line Why.
+3. Write the `####` block under `## Planned` in the template shape: `Covers`, `Oracle`,
+   `Steps`, `Expected results`, one-sentence `Why`, and `Test design`.
 4. Write the test with the same title and the same step wording. Watch it fail first
    (against missing behaviour, a mutant with `PW_MUTANT=…`, or a deliberately broken
    assertion), then make it pass, then run it with `--repeat-each=5`.
-5. Add the title to the numbered list, with its tags and AC-ID.
+5. Add the title to the numbered list, with its tags and AC-ID, in that same change.
 6. Run `npm run spec:check`, then ask `@agent-playwright-test-reviewer` to review the diff.
 
 Or let the agents do steps 3 to 6: `/cover-feature <feature>` runs planner, generator or
@@ -69,21 +112,14 @@ API tester, and reviewer. You still read the plan before the generator runs.
 
 ## Writing a good block
 
-- **Titles**: `<actor> should <outcome> [when <context>]`. `visitor` for UI, `client`
-  for API. Snapshot and a11y tests name the component instead
-  (`Gyms map popup should keep its accessible structure`).
-- **Steps** are what a product owner would say: no selectors, test ids, URLs, status
-  codes or field names. The `playwright-bdd` skill has the wording rules.
-- **Data** is a seeded record from `tests/features/<feature>/seeded.ts`. Mock only
-  empty, error, multi-page and snapshot states, and say so.
-- **Oracle**: the seeded record, the app spec's rule, or the mock body. If you catch
-  yourself computing the expected value the way the app does, stop: that test passes
-  with the app's bug (events finding F1 is the cautionary tale).
-- **Placeholders**: a data-driven test writes `${label}` in code and `<label>` in the
-  spec, one placeholder per `${}`:
-  `client should get a bad request for <param> "<value>"`.
-- **Why** names the risk and why no existing test catches it. "Untested" is not a
-  reason; "a swapped URL passes every current test" is.
+Follow [`specs/templates/README.md`](../specs/templates/README.md). Two details that
+are easy to get wrong while typing:
+
+- A data-driven test writes `${label}` in code and `<label>` in the spec, one
+  placeholder per `${}`: `client should get a bad request for <param> "<value>"`.
+- Snapshot and a11y tests name the component
+  (`Gyms map popup should keep its accessible structure`). Every other title is
+  `<actor> should <outcome> [when <context>]`.
 
 ## Keeping it honest
 
@@ -134,7 +170,7 @@ shape is theirs; the wording and the guardrails are this suite's.
 | Per scenario: **Seed**, numbered **Steps**, bulleted **Expected Results**       | Per `####` block: `Seed:` (default `tests/agents/seed.spec.ts`), `Steps:` (Given/When/And), `Expected results:` (Then/And) |
 | A seed test that runs the project's fixtures so agents start in the right state | `tests/agents/seed.spec.ts` on project `agent-seed`: signed in, flags pinned on, shell mounted                             |
 | Generated tests begin with `// spec:` and `// seed:` comments                   | Every `*.spec.ts` starts with them; `npm run spec:check` fails if the `// spec:` line names the wrong spec                 |
-| One comment per plan step, one `expect` per expected result                     | One `test.step` per step (its title is the step), one assertion per expected result inside the Then step                   |
+| One comment per plan step, one `expect` per expected result                     | One `test.step` per step and per expected result, with one assertion in that step                                          |
 | Imperative steps ("click the input, type, press Enter")                         | Declarative steps ("the visitor searches for a gym"): a product owner reads them, and Squash publishes them                |
 | Role and text locators                                                          | The same, scoped to a section or card, held by the page object (the `selectors` skill)                                     |
 | The healer may skip a test it believes is broken functionality                  | Never. The healer reports an app bug and leaves the test red; quarantine is a human decision                               |

@@ -11,6 +11,9 @@ suite. `AGENTS.md` is the source of conventions. Before writing, read
 `.agents/skills/suite-conventions/SKILL.md`, `.agents/skills/playwright-bdd/SKILL.md`, `playwright-spec-practices/SKILL.md`,
 `playwright-typescript-standards/SKILL.md`, `selectors/SKILL.md`, `fixtures/SKILL.md`
 and, for `@squash` specs, `squash-tm/SKILL.md`.
+Where `.agents/skills/playwright-cli/references/spec-driven-testing.md` disagrees
+(plan files, one test per file, editing the spec to match the app, `test.fixme`),
+this file wins.
 
 Input: a scenario title from `specs/features/<feature>.md` and its `## Planned` entry.
 No scenario → ask for one; do not invent behaviour. API scenarios go to
@@ -40,11 +43,11 @@ No scenario → ask for one; do not invent behaviour. API scenarios go to
   `test.use(<feature>TestConfig)`. Specs never construct page objects or hold locators.
 - Title exactly as in the spec file. The file starts with `// spec: specs/features/<feature>.md`
   and `// seed: tests/agents/seed.spec.ts` (Playwright's test-agent convention; `spec:check`
-  verifies the first). Each numbered line under the block's `Steps:` becomes one top-level
-  `test.step` with that line as its title (Given/When/And); the lines under
-  `Expected results:` become one `Then` step holding exactly one assertion per line, in
-  order, and nothing the block does not list. Navigation via `gotoRoute`/`gotoAppShell`
-  (or the page object's `goTo`), never a bare `page.goto`.
+  verifies the first). Each numbered `Steps:` line and each `Expected results:` bullet
+  becomes one top-level `test.step`, in that order, with that line as its title. Each
+  expected-result step holds one assertion, and the test asserts nothing the block does
+  not list. Navigation via `gotoRoute`/`gotoAppShell` (or the page object's `goTo`),
+  never a bare `page.goto`.
 - Data: seeded constants from `seeded.ts`, expected values derived through a mapper
   (`cardFromDto`), faker only for "matches nothing" input. Mocks only for empty/error/
   multi-page states, via the feature's `mocks.ts` fixture and `parseMockBody`.
@@ -55,7 +58,17 @@ No scenario → ask for one; do not invent behaviour. API scenarios go to
   design note. Expected values follow the block's `Oracle:` line, never the app's
   calculation.
 
-## 3. Verify
+## 3. See it fail, then see it pass
+
+Break the assertion the scenario exists for (change the expected text, or set
+`PW_MUTANT` to the field the oracle names). Run:
+
+```sh
+PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=chromium-desktop -g "<title>"
+```
+
+The failure must name this scenario. If the broken assertion still passes, stop: the
+test does not prove the block. Restore the assertion. Then:
 
 ```sh
 npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck && npm run spec:check -- --feature <feature>
@@ -67,6 +80,7 @@ It must pass five times in a row. Run `--project=mobile-iphone` too when the tes
 `@mobile` or `@smoke`. If it only passes with a sleep, a retry or a looser assertion, the
 wait condition is wrong; find the user-visible signal instead. If the app disagrees with
 the spec, stop and report expected vs observed; do not encode the app's behaviour.
+Report the failing command, the assertion error, and the five passing runs.
 
 Never: `waitForTimeout`, `networkidle`, `force: true`, `test.only`, `test.skip`,
 `test.fixme`, `@quarantine`, editing `src/api/generated/`, committing, running against

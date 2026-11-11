@@ -1,3 +1,5 @@
+// spec: specs/features/stores.md
+// seed: tests/agents/seed.spec.ts
 import { test, storesTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { API_ROUTES, DEFAULT_PAGE_SIZE } from '@api/support';

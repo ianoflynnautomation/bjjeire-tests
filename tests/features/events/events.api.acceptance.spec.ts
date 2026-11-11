@@ -1,3 +1,4 @@
+// spec: specs/features/events.md
 import { test, expect } from '@api/fixtures';
 import { bjjEventSchema, bjjEventsPageSchema } from '@api/features/events/events.schemas';
 import { getBjjEventById, getBjjEvents } from '@api/features/events/events.service';

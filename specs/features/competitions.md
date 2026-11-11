@@ -71,16 +71,20 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should reach a competition's website and registration from its card
 
 - Layer: UI · Tags: @acceptance · Data: `SEEDED_COMPETITION_DONEGAL_GI_CLASSIC` (seeded) · Mocked: no
+- Covers: none (exploration 2026-10-31)
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Competitions
+  2. And the visitor searches for <name>
 - Expected results:
-  - And the visitor searches for the Donegal Winter Gi Classic
-  - Then the competition's website and registration can be reached from its card
+  - Then the card links to its website and registration
 - Why: reaching the organiser is the point of the page. High impact, and no test checks the targets.
 
 #### visitor should see a competition's dates on its card
 
 - Layer: UI · Tags: @acceptance · Data: one competition each for a single day, days in one month, and days across months · Mocked: yes (seeded dates roll, and `seeded.ts` holds none)
+- Covers: none (exploration 2026-10-31)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given competitions run on one day, within a month and across months
   2. When a visitor opens Competitions
@@ -91,10 +95,13 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see the competition list after retrying when competitions failed to load
 
 - Layer: UI · Tags: @acceptance · Data: `competitions-pagination-page-1.json` · Mocked: yes
+- Covers: AC-CMP-004
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
-  1. Given the competition service is unavailable
-  2. And a visitor sees the error on Competitions
-  3. When the service recovers and the visitor retries
+  1. Given the competition service is briefly unavailable
+  2. When a visitor opens Competitions
+  3. Then a server error message is displayed
+  4. When the visitor retries
 - Expected results:
   - Then the competition list is displayed
 - Why: the existing error scenarios stop at the message. Gyms already has this one.
@@ -102,6 +109,8 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see website unavailable when a competition has no safe links
 
 - Layer: UI · Tags: @acceptance · Data: a competition with unsafe website and registration addresses · Mocked: yes
+- Covers: none (exploration 2026-10-31)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given a competition has only unsafe links
   2. When a visitor opens Competitions
@@ -112,10 +121,13 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see the same page of competitions after reloading
 
 - Layer: UI · Tags: @acceptance · Data: `paginatePages` over the existing fixture · Mocked: yes
+- Covers: AC-CMP-004
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the competition list has two pages
-  2. And a visitor is on the second page
-  3. When the visitor reloads
+  2. When a visitor opens Competitions
+  3. And the visitor opens the next page
+  4. And the visitor reloads the page
 - Expected results:
   - Then the second page is still shown
 - Why: page state is shared, but Competitions only covers moving between pages.
@@ -123,8 +135,10 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see the shared search when opening a search link
 
 - Layer: UI · Tags: @acceptance · Data: `SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME` (seeded) · Mocked: no
+- Covers: none (exploration 2026-10-31)
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. When a visitor opens a link to a search for the Donegal Winter competition
+  1. When a visitor opens a link to a search for "<name>"
 - Expected results:
   - Then the search is filled in
   - And only that competition is listed
@@ -133,8 +147,10 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see every competition again after clearing the search
 
 - Layer: UI · Tags: @acceptance · Data: `SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME` (seeded) · Mocked: no
+- Covers: AC-CMP-003
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given a visitor has searched for the Donegal Winter competition
+  1. Given a visitor has searched for "<name>"
   2. When the visitor clears the search
 - Expected results:
   - Then other competitions are listed again
@@ -143,38 +159,46 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### client should receive finished competitions when asking to include inactive ones
 
 - Layer: API · Tags: @acceptance · Data: `SEEDED_COMPETITION_FINISHED_KERRY_COAST` (seeded) · Mocked: no
+- Covers: AC-CMP-002
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. When a client asks for the listing including inactive competitions
+  1. When a client requests the listing including inactive competitions
 - Expected results:
-  - Then the finished competition is returned
+  - Then the finished competition "<name>" is listed
 - Why: only malformed values of this option are tested. Page size must be large enough to reach the record.
 
 #### client should receive an empty page with valid pagination for a page beyond the last
 
 - Layer: API · Tags: @acceptance · Data: seeded listing · Mocked: no
+- Covers: AC-CMP-004
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. When a client asks for a page beyond the last
+  1. When a client requests a page beyond the last page of the listing
 - Expected results:
-  - Then no competitions are returned
-  - And the pagination still describes the listing
+  - Then the page is empty and its pagination points back, not forward
 - Why: Gyms has this bound and Competitions does not.
 
 #### visitor should see how many competitions were found
 
 - Layer: UI · Tags: @acceptance · Data: `SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME` (seeded) · Mocked: no · Needs: F2 fixed
+- Covers: none (decided 2026-10-31)
+- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Competitions
+  2. And the visitor searches for <name>
 - Expected results:
-  - And the visitor searches for the Donegal Winter competition
   - Then the page says one competition was found
 - Why: decided 2026-10-31. A search narrows the count to one, so it holds on a full dataset.
 
 #### visitor should not find a competition by anything other than its name
 
 - Layer: UI · Tags: @acceptance · Data: seeded DTOs; terms for description, organisation, country and tag · Mocked: yes (a real dataset may have "Ireland" in a name) · Needs: F3 fixed
+- Covers: AC-CMP-003
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
-  1. Given a competition whose description, organisation, country and tags do not appear in any name
-  2. When a visitor searches for each of those in turn
+  1. Given a competition with a description, an organisation, a country and tags
+  2. When a visitor opens Competitions
+  3. And the visitor searches for a word only in its <field>
 - Expected results:
   - Then no competitions are listed
 - Why: decided 2026-10-31, and matches the product spec. Same rule as Stores.
@@ -182,11 +206,13 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see a competition's dates in Irish time wherever they are
 
 - Layer: UI · Tags: @acceptance · Data: one competition with fixed dates · Mocked: yes · Timezone: America/New_York, set with `test.use` · Needs: F1 fixed
+- Covers: none (decided 2026-10-31)
+- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
-  1. Given a visitor is in a timezone behind Ireland
-  2. When the visitor opens Competitions
+  1. Given a competition running on two days in Ireland
+  2. When a visitor behind Ireland opens Competitions
 - Expected results:
-  - Then the competition's dates are those of the event in Ireland
+  - Then its dates are those of the event in Ireland
 - Why: decided 2026-10-31. Fails today, showing the day before.
 
 ## Held for a product decision

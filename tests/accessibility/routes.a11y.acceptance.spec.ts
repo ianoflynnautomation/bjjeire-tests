@@ -1,3 +1,5 @@
+// spec: specs/features/accessibility.md
+// seed: tests/agents/seed.spec.ts
 import { TIMEOUTS } from '@shared/config/timeouts';
 import { test, expect } from '@ui/fixtures';
 import { expectNoWcagViolations, gotoRoute } from '@ui/support';

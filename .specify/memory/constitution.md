@@ -38,17 +38,17 @@ flag API. Rules a machine can check are enforced by lint, hooks and
 
 ### IV. Feature-slice layout
 
+A feature is three directories and does not import another feature.
+
 ```
-tests/features/<feature>/                 # spec files only
-src/ui/pages/<feature>/                   # page object class; list pages extend ListPage
-tests/features/<feature>/fixtures.ts      # feature's own `test`, extends fixtures/base.ts
-src/api/features/<feature>/               # .api.ts + .types.ts + .schemas.ts
-tests/features/<feature>/seeded.ts        # DTO-typed seeded fixtures + mocks.ts
+tests/features/<feature>/     # specs, fixtures.ts, seeded.ts, mocks.ts, testdata/
+src/ui/pages/<feature>/       # page object; list pages extend ListPage
+src/api/features/<feature>/   # <feature>.service.ts, <feature>.types.ts, <feature>.schemas.ts
 ```
 
 Page objects are classes taking `page` in the constructor. No page singletons, no
 state beyond `page`.
-`route.fulfill()` only for empty/error/pagination/snapshot-determinism cases,
+`route.fulfill()` only for empty, error, multi-page and snapshot cases,
 and every mocked body is parsed with the feature Zod page schema.
 
 ### V. Healing may patch tests, never the product
@@ -89,7 +89,11 @@ This constitution supersedes local convenience for tests. Agentic reviews
 (`spec-review`, `playwright-fix`) must check it. Amendments land in the same
 PR as the convention change, and `AGENTS.md` is updated in that PR.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-10
+**Version**: 1.2.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-10
+
+Amendment 1.2.0 (2026-11-10): IV names the real slice. Specs, fixtures,
+seeded data and mocks live together under `tests/features/<feature>/`.
+The API file is `<feature>.service.ts`.
 
 Amendment 1.1.0 (2026-11-10): II gains the title contract, `spec:check`,
 `Covers` and the oracle rule; III names tooling over prose; VI (evidence,

@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect } from '@ui/fixtures';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
 import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';

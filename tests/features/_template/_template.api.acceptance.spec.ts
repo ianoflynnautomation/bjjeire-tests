@@ -1,3 +1,4 @@
+// spec: specs/features/<feature>.md
 import { z } from 'zod';
 import { test, expect } from '@api/fixtures';
 import { API_BASE_PATH, expectSchema, get, paginatedResponseSchema, schemaFor } from '@api/support';

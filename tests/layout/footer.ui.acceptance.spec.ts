@@ -1,3 +1,5 @@
+// spec: specs/features/layout.md
+// seed: tests/agents/seed.spec.ts
 import { test, expect } from '@ui/fixtures';
 import { FOOTER_QUICK_LINKS } from '@ui/pages/sections/footer.constants';
 import { gotoAppShell } from '@ui/support';

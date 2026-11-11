@@ -26,7 +26,7 @@ npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentic
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # ESLint (+ Prettier via plugin)
 npm run typecheck         # tsc --noEmit
-npm run spec:check        # Spec titles == test titles for every specs/features/*.md (also lint-staged + CI)
+npm run spec:check        # Titles, // spec:, Covers, Oracle and step wording (lint-staged + CI)
 npm run mutation:audit -- --feature <f>   # Do the feature's UI specs catch wrong data? (local/docker)
 npm run trace:correlate   # Backend view of failed attempts: Tempo by trace id, or Docker API logs by window
 npm run squash:sync       # Sync test cases to Squash TM (needs SQUASH_TM_MODE; see docs/squash-tm.md)
@@ -65,12 +65,15 @@ Playwright files. Product architecture and Mongo/OpenAPI contracts live in
 Playwright rules are this file (no separate digest, so there is nothing to drift).
 
 - The numbered titles in `specs/features/<feature>.md` **are** the test titles.
-  `npm run spec:check` (lint-staged and CI) fails on any difference, and every
-  `tests/**/*.spec.ts` must be claimed by a spec's `**Slice**:` line.
+  `npm run spec:check` (lint-staged and CI) fails when they differ, when a spec file
+  is unclaimed, when `// spec:` is wrong, and when a `####` block lacks `Covers:` or
+  `Oracle:`, puts an action in Expected results, or disagrees with the test's steps.
+  Scenarios that predate a block are grandfathered. The contract is
+  [`specs/templates/README.md`](specs/templates/README.md).
 - Each planned scenario carries `Covers: AC-…` (from `bjjeire-java/specs/stc/`), an
-  `Oracle:` line, numbered `Steps:` and bulleted `Expected results:` (Playwright's
-  test-agent plan shape; one assertion per expected result). Every spec file starts with
-  `// spec:` and `// seed:` comments. New specs start from [`specs/templates/`](specs/templates/README.md).
+  `Oracle:` line, numbered `Steps:` and bulleted `Expected results:` (one `test.step`
+  and one assertion per line). Every spec file starts with `// spec:` and `// seed:`
+  comments. New specs start from [`specs/templates/`](specs/templates/README.md).
 - New to this? Read [`docs/spec-guide.md`](docs/spec-guide.md).
 
 The `spec-review` and `playwright-fix` agentic workflows are described in the `suite-environments` skill.
@@ -153,4 +156,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-01.
+script, project, or workflow it documents. Last reviewed: 2026-11-10.
