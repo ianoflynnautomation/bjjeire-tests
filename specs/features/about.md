@@ -1,5 +1,6 @@
 # Acceptance spec: About
 
+**Requirements**: `bjjeire/requirements` · epic `&5`
 **Slice**: `tests/features/about/` · `src/ui/pages/about/`
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: none (static page)

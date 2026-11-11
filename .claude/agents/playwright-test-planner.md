@@ -19,9 +19,10 @@ Where `.agents/skills/playwright-cli/references/spec-driven-testing.md` disagree
 
 1. Read `specs/features/<feature>.md`, the feature's specs in `tests/features/<feature>/`,
    its `seeded.ts`, and the product spec it links to (`bjjeire-java/specs/features/`).
-   Also read the feature's AC-IDs in `bjjeire-java/specs/stc/<feature>/spec.md`, and any
-   Spec Kit spec for it (`bjjeire-java/specs/###-*/spec.md`). A Spec Kit spec's
-   `Acceptance Coverage` section lists the AC-IDs that belong at T6, which is this suite.
+   Also read the GitLab requirement issues named on that spec's **Requirements** line
+   (the epic is only the group), and any Spec Kit spec for it
+   (`bjjeire-java/specs/###-*/spec.md`). A Spec Kit spec's `Acceptance Coverage`
+   section lists what belongs at T6, which is this suite. Cite the issue id, not the epic.
 2. List what is already covered, by title. Coverage is the scenario list, not the page.
 3. Read `specs/exploration/` reports for this feature. Their candidate scenarios and
    findings are prime input. Accept or reject each one explicitly in your report, and
@@ -75,7 +76,7 @@ Each new scenario is one `####` block under `## Planned`:
 ```markdown
 #### visitor should see only seminars when filtering by event type
 
-- Covers: AC-EVT-002
+- Covers: #142
 - Oracle: the seeded seminars. Every listed card is one of those seminars.
 - Steps:
   1. When a visitor opens Events
@@ -92,8 +93,8 @@ Test design: UI · @acceptance · `SEEDED_EVENT_*` · not mocked · default seed
 outcome each, and none of them is an action such as "the visitor searches" or "goes to
 the next page". `Why:` is one sentence of visitor risk. Selectors, test ids, URLs,
 status codes, field names and pixel tolerances go on `Test design` or not at all.
-`Covers:` is an AC-ID from the app spec, or `none` with the reason. Never invent an
-AC-ID. `Oracle:` is the seeded record, an app-spec rule, or a fixed mock body. Mention
+`Covers:` is the GitLab requirement issue (`#142` in `bjjeire/requirements`), or
+`none` with the reason. Never invent an id, and never cite the epic. `Oracle:` is the seeded record, an app-spec rule, or a fixed mock body. Mention
 a non-default seed on `Test design` (a flag off, a phone viewport, another timezone).
 
 Do not create `specs/*.plan.md` and do not call `planner_save_plan`. The living spec
@@ -101,6 +102,6 @@ is the plan. Do not write or edit any file outside `specs/`.
 
 ## Report back
 
-End with: scenarios added (titles), T6 AC-IDs still without a scenario, gaps you could
+End with: scenarios added (titles), requirement issues still without a scenario, gaps you could
 not cover and why (missing seed data, app bug, unreachable state), and anything the app does that contradicts the product spec
 (expected vs observed). Contradictions are findings, not scenarios to encode.

@@ -6,11 +6,12 @@ Steps, expected results and Why are the behaviour a product owner can read.
 The Test design line is for the generator. Keep selectors, test ids, URLs,
 status codes and field names out of the steps.
 Add a title under ## Scenarios only in the change that adds its test.
-spec:check requires Covers and Oracle on every block. See specs/templates/README.md.
+spec:check requires Covers and Oracle on every block. Covers is the GitLab
+requirement issue. See specs/templates/README.md.
 -->
 
 **App spec**: `bjjeire-java/specs/features/<feature>.md`
-**AC-IDs**: `bjjeire-java/specs/stc/<feature>/spec.md`
+**Requirements**: `bjjeire/requirements` · epic `&<n>`
 **Slice**: `tests/features/<feature>/` · `src/ui/pages/<feature>/` · `src/api/features/<feature>/`
 **Seeded**: `tests/features/<feature>/seeded.ts`
 **Agent seed**: `tests/agents/seed.spec.ts`
@@ -20,12 +21,12 @@ spec:check requires Covers and Oracle on every block. See specs/templates/README
 
 ## Coverage
 
-<!-- One row per AC-ID the header points at. "Owned by" is scenario numbers, or "App repo". -->
+<!-- One row per requirement issue in the project named above. Criterion is that issue's id. Never the epic. "Owned by" is scenario numbers, or "App repo". -->
 
-| Criterion  | Owned by    |
-| ---------- | ----------- |
-| AC-XXX-001 | UI 1, API 1 |
-| AC-XXX-006 | App repo    |
+| Criterion | Owned by    |
+| --------- | ----------- |
+| `#142`    | UI 1, API 1 |
+| `#148`    | App repo    |
 
 ## Scenarios
 
@@ -37,11 +38,11 @@ A data-driven title uses one <placeholder> per ${} in the test.
 
 ### UI
 
-1. visitor should see the <thing> list when opening <Feature> (`@smoke`) · AC-XXX-001
+1. visitor should see the <thing> list when opening <Feature> (`@smoke`) · `#142`
 
 ### API
 
-1. client should receive each published <thing> with its details (`@smoke`) · AC-XXX-001
+1. client should receive each published <thing> with its details (`@smoke`) · `#142`
 
 ## Constraints
 
@@ -56,7 +57,7 @@ Group blocks under a ### heading when they share setup, and write that setup onc
 
 #### <actor> should <outcome> when <context>
 
-- Covers: AC-XXX-00n
+- Covers: `#142`
 - Oracle: <the seeded record, a rule in the app spec, or a fixed mock body. Never the app's own calculation.>
 - Steps:
   1. When a visitor opens <Feature>

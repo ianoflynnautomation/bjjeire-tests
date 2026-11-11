@@ -1,5 +1,6 @@
 # Acceptance spec: Accessibility sweep
 
+**Requirements**: `bjjeire/requirements` · epic `&6`
 **Slice**: `tests/accessibility/` (project `a11y`, `npm run test:a11y`; the project selects `*.a11y.acceptance.spec.ts` by file name)
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Support**: `expectNoWcagViolations` in `src/ui/support/` (`@axe-core/playwright`, WCAG 2.1 A and AA)

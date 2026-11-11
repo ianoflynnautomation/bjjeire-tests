@@ -1,6 +1,7 @@
 # Acceptance spec: App shell and layout
 
 **App spec**: `bjjeire-java/specs/system-architecture.md` (SPA shell, routing, feature flags)
+**Requirements**: `bjjeire/requirements` · epic `&8`
 **Slice**: `tests/layout/` · `src/ui/pages/sections/` · `src/ui/fixtures/base.ts`
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: none (the shell needs no data; list pages wait for their route anchor)
@@ -9,7 +10,7 @@
 Cross-cutting behaviour of the shell every feature shares: header and footer navigation,
 the mobile menu, routing defaults, document titles, themes, page structure and reflow,
 and what a disabled feature does to the shell. These specs import `@ui/fixtures`, never a
-feature's fixtures. There are no AC-IDs for the shell in the app repo; `Covers` is `none`
+feature's fixtures. There is no requirement issue for the shell; `Covers` is `none`
 throughout and the risk is named instead.
 
 ## Scenarios (must match test titles)

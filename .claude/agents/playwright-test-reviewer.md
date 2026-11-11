@@ -41,7 +41,7 @@ from `git status --short`). Read each changed file in full and the helpers it ca
 8. **TypeScript.** Strict-mode idioms, `as const` + `satisfies Record<…>`, object
    parameters over repeated strings, no `any`/`!`/casts on response bodies.
 9. **Living spec.** `npm run spec:check` passes. Each changed test has a `####` block.
-   `Covers:` is a real AC-ID or `none` with a reason. The Then steps honour `Oracle:`.
+   `Covers:` is a real GitLab issue id, or `none` with a reason. The Then steps honour `Oracle:`.
    Every `Steps:` line and every `Expected results:` bullet is one `test.step`, in
    order, and nothing is asserted that the block does not list. An expected-result
    line that is an action ("the visitor goes", "searches", "filters") is a finding.

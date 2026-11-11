@@ -70,10 +70,12 @@ Playwright rules are this file (no separate digest, so there is nothing to drift
   `Oracle:`, puts an action in Expected results, or disagrees with the test's steps.
   Scenarios that predate a block are grandfathered. The contract is
   [`specs/templates/README.md`](specs/templates/README.md).
-- Each planned scenario carries `Covers: AC-…` (from `bjjeire-java/specs/stc/`), an
-  `Oracle:` line, numbered `Steps:` and bulleted `Expected results:` (one `test.step`
-  and one assertion per line). Every spec file starts with `// spec:` and `// seed:`
-  comments. New specs start from [`specs/templates/`](specs/templates/README.md).
+- Each planned scenario carries `Covers:` as the GitLab requirement issue (`#142`
+  in `bjjeire/requirements`), or `none` with the reason. The epic stays on the spec's
+  **Requirements** line. It also has an `Oracle:` line, numbered `Steps:` and bulleted
+  `Expected results:` (one `test.step` and one assertion per line). Every spec file
+  starts with `// spec:` and `// seed:` comments. New specs start from
+  [`specs/templates/`](specs/templates/README.md).
 - New to this? Read [`docs/spec-guide.md`](docs/spec-guide.md).
 
 The `spec-review` and `playwright-fix` agentic workflows are described in the `suite-environments` skill.
@@ -156,4 +158,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-10.
+script, project, or workflow it documents. Last reviewed: 2026-11-11.

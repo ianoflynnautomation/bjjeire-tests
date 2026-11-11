@@ -16,18 +16,20 @@ A feature spec is the visitor-observable behaviour and the index of the tests th
 
 - The numbered titles under `## Scenarios` are the Playwright `test()` titles. A title is listed only when its test exists, in that same change.
 - A `####` block under `## Planned` with no numbered title is work not yet done. Keep the block after the test exists. The healer and the reviewer read it.
-- `Covers:` names the acceptance criterion in `bjjeire-java/specs/stc/<feature>/spec.md`, or `none` with the reason. Never invent an AC-ID.
+- `Covers:` is the GitLab requirement issue (`#142` in `bjjeire/requirements`), or `none` with the reason. The epic (`&<n>`) stays on the **Requirements** line. Never cite an epic, and never invent an id. CI for this repo stays on GitHub.
 - `Oracle:` says where the expected value comes from, independently of the app. The seeded record, a rule in the app spec, or a fixed mock body. A calculation shared with the app is not an oracle. Events finding F1 is the case: a per-day price was multiplied by the number of days and still labelled per day, and a mapper that did the same multiplication would have passed.
 - `Steps:` are Given, When and And. `Expected results:` are Then and And. Each line is one `test.step` and one assertion. Three to six steps.
 - `Why:` is one sentence of visitor risk.
 - `Test design:` is one line for the generator: layer, tags, data, mock, seed. An older block may say `Layer:` instead. Selectors and pixel tolerances stay there, or in the page object.
+
+The issue numbers in the living specs are placeholders until those GitLab issues exist. Gyms are epic `&1`, issues `#1001`–`#1016`. Events are `&2`, `#2001`–`#2017`. Competitions are `&3`, `#3001`–`#3004`. Stores are `&4`, `#4001`–`#4004`. About, accessibility, authorization, layout, performance and support are epics `&5` to `&10` and have no issues yet. Replace a placeholder with the real issue id when the issue exists.
 
 ## A filled block
 
 ```markdown
 #### visitor should find a gym by part of its name
 
-- Covers: AC-GYM-003
+- Covers: `#142`
 - Oracle: the seeded gym's name. The search term is that gym's seeded partial name.
 - Steps:
   1. When a visitor opens Gyms
@@ -43,7 +45,7 @@ Test design: UI · @acceptance · `SEEDED_GYM_*_PARTIAL_NAME` · not mocked · d
 
 ```text
 exploration report (candidate)  ──┐
-product spec AC-ID              ──┼──▶  ## Planned block  ──▶  numbered title + test
+GitLab requirement issue        ──┼──▶  ## Planned block  ──▶  numbered title + test
 risk the planner found          ──┘           │
                                               ├──▶  ## Held (product question open)
                                               └──▶  ## Rejected (with the reason)
@@ -61,7 +63,7 @@ That is the life of one block. The full loop is the [diagram in the spec guide](
 `npm run spec:check` (lint-staged and CI) fails when:
 
 - a numbered title and a `test()` title differ, a `*.spec.ts` has no spec, or `// spec:` names the wrong file
-- a `####` block has no `Covers:` or `Oracle:`, or `Covers:` is not an `AC-…` id or `none`
+- a `####` block has no `Covers:` or `Oracle:`, or `Covers:` is not a GitLab issue id (`#142`) or `none`
 - an expected result is a visitor action (`goes`, `searches`, `filters`, `chooses`, and the same class of verb)
 - a block and a test both exist and their step titles differ
 

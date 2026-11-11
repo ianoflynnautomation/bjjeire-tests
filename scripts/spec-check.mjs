@@ -8,14 +8,15 @@
  * `*.spec.ts` under `tests/` must be claimed by exactly one spec, and must start with
  * `// spec: specs/features/<name>.md` (Playwright's test-agent convention) naming it.
  *
- * Every `####` block under `## Planned` must have `Covers:` (`AC-…` or `none`) and
- * `Oracle:`. An expected-result bullet that is a visitor action fails. When a block
- * and a test share a title, the block's steps then expected results must equal that
- * test's `test.step` titles. Numbered scenarios with no block are grandfathered.
+ * Every `####` block under `## Planned` must have `Covers:` (a GitLab issue id
+ * `#142`, or `none`) and `Oracle:`. An expected-result bullet
+ * that is a visitor action fails. When a block and a test share a title, the block's
+ * steps then expected results must equal that test's `test.step` titles. Numbered
+ * scenarios with no block are grandfathered.
  *
  * Placeholders: a `${expr}` in a test and a `<word>` in a spec are both read as one
  * placeholder, so `for ${label} "${value}"` matches `for <param> "<value>"`.
- * Trailing `(\`@smoke\`)` tags and `· AC-…` coverage notes on a spec line are ignored.
+ * Trailing `(\`@smoke\`)` tags and `· #142` coverage notes on a spec line are ignored.
  *
  *   npm run spec:check                 # every spec
  *   npm run spec:check -- --feature gyms
@@ -29,7 +30,8 @@ const ROOT = process.cwd();
 const SPECS_DIR = path.join(ROOT, 'specs', 'features');
 const TESTS_DIR = path.join(ROOT, 'tests');
 const UNCLAIMED_OK = ['tests/agents/', 'tests/features/_template/'];
-const COVERS = /^(?:AC-[A-Z]+-\d+)(?:\s*,\s*AC-[A-Z]+-\d+)*$|^none\b/;
+const ONE_COVER = /(?:#\d+|(?:[\w.-]+\/)*[\w.-]+#\d+)/;
+const COVERS = new RegExp(`^(?:${ONE_COVER.source})(?:\\s*,\\s*${ONE_COVER.source})*$|^none\\b`);
 const ACTION =
   /^(?:And|Then|But) the (?:visitor|client) (?:goes|searches|filters|chooses|switches|retries|reloads|clears|opens|follows|reads)\b/;
 
@@ -88,7 +90,11 @@ function plannedBlocks(md) {
       const breakAt = chunk.indexOf('\n');
       const title = (breakAt === -1 ? chunk : chunk.slice(0, breakAt)).trim();
       const body = breakAt === -1 ? '' : chunk.slice(breakAt + 1);
-      const covers = body.match(/^- Covers:\s*(.*)$/m)?.[1]?.trim() ?? null;
+      const covers =
+        body
+          .match(/^- Covers:\s*(.*)$/m)?.[1]
+          ?.trim()
+          .replace(/`/g, '') ?? null;
       const oracle = body.match(/^- Oracle:\s*(.*)$/m)?.[1]?.trim() ?? null;
       const steps = [...(body.split(/^- Expected results:\s*$/m)[0] ?? '').matchAll(/^\s+\d+\.\s+(.+)$/gm)].map(m =>
         m[1].trim(),
@@ -136,7 +142,7 @@ function blockProblems(blocks, tests) {
     seen.add(key);
     if (!block.covers) problems.push(`planned block has no Covers: "${block.title}"`);
     else if (!COVERS.test(block.covers))
-      problems.push(`Covers must be AC-… or none: "${block.title}" (${block.covers})`);
+      problems.push(`Covers must be a GitLab issue (#…) or none: "${block.title}" (${block.covers})`);
     if (!block.oracle) problems.push(`planned block has no Oracle: "${block.title}"`);
     for (const line of block.expected) {
       if (ACTION.test(line))

@@ -1,7 +1,7 @@
 # Acceptance spec: Competitions
 
 **App spec**: `bjjeire-java/specs/features/competitions.md`
-**AC-IDs**: `bjjeire-java/specs/stc/competitions/spec.md`
+**Requirements**: `bjjeire/requirements` · epic `&3`
 **Slice**: `tests/features/competitions/` · `src/ui/pages/competitions/` · `src/api/features/competitions/`
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: `tests/features/competitions/seeded.ts`
@@ -16,23 +16,23 @@ are excluded unless a client asks for inactive ones.
 
 ### UI
 
-1. visitor should see the competition list when opening Competitions (`@smoke`) · AC-CMP-001
-2. visitor should see an empty state when no competition matches the search · AC-CMP-003
-3. visitor should find only the competition searched for by name · AC-CMP-003
-4. visitor should find a competition by part of its name · AC-CMP-003
-5. visitor should see different competitions on each page · AC-CMP-004
-6. visitor should see the no-data message when there are no competitions to show · AC-CMP-004
-7. visitor should see a network error message when competitions cannot be loaded because the connection fails · AC-CMP-004
-8. visitor should see a server error message when competitions cannot be loaded because of a server problem · AC-CMP-004
+1. visitor should see the competition list when opening Competitions (`@smoke`) · `#3001`
+2. visitor should see an empty state when no competition matches the search · `#3003`
+3. visitor should find only the competition searched for by name · `#3003`
+4. visitor should find a competition by part of its name · `#3003`
+5. visitor should see different competitions on each page · `#3004`
+6. visitor should see the no-data message when there are no competitions to show · `#3004`
+7. visitor should see a network error message when competitions cannot be loaded because the connection fails · `#3004`
+8. visitor should see a server error message when competitions cannot be loaded because of a server problem · `#3004`
 9. visitor should see how many competitions were found · none (decided 2026-10-31)
-10. visitor should not find a competition by anything other than its name · AC-CMP-003
+10. visitor should not find a competition by anything other than its name · `#3003`
 11. visitor should reach a competition's website and registration from its card · none (exploration 2026-10-31)
 12. visitor should see a competition's dates on its card · none (exploration 2026-10-31)
-13. visitor should see the competition list after retrying when competitions failed to load · AC-CMP-004
+13. visitor should see the competition list after retrying when competitions failed to load · `#3004`
 14. visitor should see website unavailable when a competition has no safe links · none (exploration 2026-10-31)
-15. visitor should see the same page of competitions after reloading · AC-CMP-004
+15. visitor should see the same page of competitions after reloading · `#3004`
 16. visitor should see the shared search when opening a search link · none (exploration 2026-10-31)
-17. visitor should see every competition again after clearing the search · AC-CMP-003
+17. visitor should see every competition again after clearing the search · `#3003`
 18. visitor should stay in the search box after clearing the search · none (exploration 2026-10-31)
 19. visitor should see a competition's dates in Irish time wherever they are · none (decided 2026-10-31)
 
@@ -41,14 +41,14 @@ Scenarios 1–8 are in `competitions.ui.acceptance.spec.ts` (5–8 mocked); 9–
 
 ### API
 
-1. client should receive each published competition with its details (`@smoke`) · AC-CMP-001
-2. client should not receive finished competitions · AC-CMP-001
-3. client should receive competitions ordered by start date · AC-CMP-001
-4. client should page through the listing in distinct slices with correct links · AC-CMP-004
-5. client should receive finished competitions when asking to include inactive ones · AC-CMP-002
-6. client should receive an empty page with valid pagination for a page beyond the last · AC-CMP-004
-7. client should get a bad request for <param> "<value>" · AC-CMP-002
-8. client should get a validation error on <param> when <param> <value> is out of range · AC-CMP-004
+1. client should receive each published competition with its details (`@smoke`) · `#3001`
+2. client should not receive finished competitions · `#3001`
+3. client should receive competitions ordered by start date · `#3001`
+4. client should page through the listing in distinct slices with correct links · `#3004`
+5. client should receive finished competitions when asking to include inactive ones · `#3002`
+6. client should receive an empty page with valid pagination for a page beyond the last · `#3004`
+7. client should get a bad request for <param> "<value>" · `#3002`
+8. client should get a validation error on <param> when <param> <value> is out of range · `#3004`
 
 Scenarios 7 and 8 are data-driven over `tests/features/common/testdata/invalid-values.ts`
 (7 covers malformed `includeInactive` and paging values). Errors are asserted as RFC 9457
@@ -95,7 +95,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see the competition list after retrying when competitions failed to load
 
 - Layer: UI · Tags: @acceptance · Data: `competitions-pagination-page-1.json` · Mocked: yes
-- Covers: AC-CMP-004
+- Covers: `#3004`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the competition service is briefly unavailable
@@ -121,7 +121,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see the same page of competitions after reloading
 
 - Layer: UI · Tags: @acceptance · Data: `paginatePages` over the existing fixture · Mocked: yes
-- Covers: AC-CMP-004
+- Covers: `#3004`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the competition list has two pages
@@ -147,7 +147,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should see every competition again after clearing the search
 
 - Layer: UI · Tags: @acceptance · Data: `SEEDED_COMPETITION_DONEGAL_GI_CLASSIC_PARTIAL_NAME` (seeded) · Mocked: no
-- Covers: AC-CMP-003
+- Covers: `#3003`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor has searched for "<name>"
@@ -159,7 +159,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### client should receive finished competitions when asking to include inactive ones
 
 - Layer: API · Tags: @acceptance · Data: `SEEDED_COMPETITION_FINISHED_KERRY_COAST` (seeded) · Mocked: no
-- Covers: AC-CMP-002
+- Covers: `#3002`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a client requests the listing including inactive competitions
@@ -170,7 +170,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### client should receive an empty page with valid pagination for a page beyond the last
 
 - Layer: API · Tags: @acceptance · Data: seeded listing · Mocked: no
-- Covers: AC-CMP-004
+- Covers: `#3004`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a client requests a page beyond the last page of the listing
@@ -193,7 +193,7 @@ reflow and page titles belong to `specs/features/layout.md`.
 #### visitor should not find a competition by anything other than its name
 
 - Layer: UI · Tags: @acceptance · Data: seeded DTOs; terms for description, organisation, country and tag · Mocked: yes (a real dataset may have "Ireland" in a name) · Needs: F3 fixed
-- Covers: AC-CMP-003
+- Covers: `#3003`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given a competition with a description, an organisation, a country and tags

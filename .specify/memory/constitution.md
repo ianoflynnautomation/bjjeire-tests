@@ -19,8 +19,10 @@ layer; a UI scenario does not re-prove a rule an API scenario owns.
 Feature behaviour is specified in `specs/features/` here and in
 `bjjeire-java/specs/`. The numbered titles in a feature spec **are** the test
 titles, and `npm run spec:check` fails when they differ. Every scenario names
-the acceptance criterion it covers (`Covers: AC-…` from
-`bjjeire-java/specs/stc/`) and its oracle: the seeded record, the app spec's
+the requirement it covers (`Covers:`): the GitLab requirement issue (`#142`
+in `bjjeire/requirements`), or `none` with the reason. The epic stays on the
+spec's **Requirements** line. It also names
+its oracle: the seeded record, the app spec's
 rule, or a fixed mock body. An expected value that re-implements the app's own
 calculation is not an oracle. Tests consume the seeded DTOs in
 `tests/features/<feature>/seeded.ts`. Partial search terms live next to those
@@ -89,7 +91,9 @@ This constitution supersedes local convenience for tests. Agentic reviews
 (`spec-review`, `playwright-fix`) must check it. Amendments land in the same
 PR as the convention change, and `AGENTS.md` is updated in that PR.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-10
+**Version**: 1.2.1 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-11
+
+Amendment 1.2.1 (2026-11-11): II names the GitLab requirement issue as `Covers`. The epic stays on the spec's Requirements line. Requirement ids in the living specs are placeholders until the GitLab issues exist.
 
 Amendment 1.2.0 (2026-11-10): IV names the real slice. Specs, fixtures,
 seeded data and mocks live together under `tests/features/<feature>/`.

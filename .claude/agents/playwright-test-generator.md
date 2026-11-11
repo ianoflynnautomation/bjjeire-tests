@@ -54,7 +54,7 @@ No scenario → ask for one; do not invent behaviour. API scenarios go to
 - Tags: `@acceptance` always, `@smoke` if the plan says so. In a `@squash` describe set
   `annotation: squash({ weight, status: 'work in progress', nature, type: 'regression' })`.
 - Add the title to the numbered list under `## Scenarios`, with its smoke tag and the
-  AC-ID from the block's `Covers:` line, keeping the block under `## Planned` as the
+  issue id from the block's `Covers:` line, keeping the block under `## Planned` as the
   design note. Expected values follow the block's `Oracle:` line, never the app's
   calculation.
 

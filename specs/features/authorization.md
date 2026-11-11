@@ -1,5 +1,6 @@
 # Acceptance spec: API authorization
 
+**Requirements**: `bjjeire/requirements` · epic `&7`
 **Slice**: `tests/api/` (`authorization.api.acceptance.spec.ts`)
 **Agent seed**: none (API; no browser)
 **Support**: `requestAuth` option on `@api/fixtures`; `env.apiAuth.required` in `src/shared/config`
@@ -21,7 +22,7 @@ is the one place a conditional `test.skip` is allowed.
   still apply (they clear the edge, not the API).
 - Skipped with `test.skip(!env.apiAuth.required, …)` where auth is not enforced.
 - Writes (POST/PUT/DELETE) are not tested here: the API is read-only for this suite and
-  the app repo owns write authorization (AC-GYM-006, AC-EVT-006).
+  the app repo owns write authorization (`#1006`, `#2006`).
 
 ## Planned
 

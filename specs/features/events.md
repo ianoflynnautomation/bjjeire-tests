@@ -1,7 +1,7 @@
 # Acceptance spec: Events
 
 **App spec**: `bjjeire-java/specs/features/events.md`
-**AC-IDs**: `bjjeire-java/specs/stc/events/spec.md`
+**Requirements**: `bjjeire/requirements` · epic `&2`
 **Slice**: `tests/features/events/` · `src/ui/pages/events/` · `src/api/features/events/`
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: `tests/features/events/seeded.ts`
@@ -10,51 +10,51 @@
 A visitor opens Events and scans, searches, filters by county and type, and pages a list
 of upcoming events, or switches to a map of the same results. Search is client-side on
 the loaded page; county, type, page and view are URL state. The app repo owns the flag on
-the wire (AC-EVT-006, AC-EVT-015 API part) and the search mechanics once (AC-EVT-003 T4);
+the wire (`#2006`, `#2015` API part) and the search mechanics once (`#2003` T4);
 this suite proves what the visitor sees against real data.
 
 ## Scenarios (must match test titles)
 
 ### UI
 
-1. visitor should see the event list when opening Events (`@smoke`) · AC-EVT-001
-2. visitor should see an empty state when no event matches the search · AC-EVT-003
-3. visitor should find only the event searched for by name · AC-EVT-003
-4. visitor should find an event by part of its name · AC-EVT-003
-5. visitor should see the full event listing again after clearing the search · AC-EVT-003
-6. visitor should see the header count match the events a search finds · AC-EVT-003
-7. visitor should see only events from the chosen county when filtering by county · AC-EVT-002
-8. visitor should see events from every county after resetting the county filter · AC-EVT-002
-9. visitor should see only events of the chosen type when filtering by type · AC-EVT-002
-10. visitor should see the no-data message when there are no events to show · AC-EVT-005
-11. visitor should see a network error message when events cannot be loaded because the connection fails · AC-EVT-005
-12. visitor should see a server error message when events cannot be loaded because of a server problem · AC-EVT-005
-13. visitor should see the weekly session times of a recurring open mat · AC-EVT-004
-14. visitor should see each day's session of a multi-day camp · AC-EVT-004
-15. visitor should see the total number of events in the header when the list spans several pages · AC-EVT-005
-16. visitor should see each seeded event's dates as far apart as the seeded schedule says · AC-EVT-004
-17. visitor should see events of every chosen type when choosing several types · AC-EVT-002
-18. visitor should see every type of event again after choosing All Types · AC-EVT-002
-19. visitor should find only the matching event when combining county, type and search · AC-EVT-002
-20. visitor should see no results when a search matches nothing within the chosen filters · AC-EVT-005
-21. visitor should be told no events match when the chosen filters find nothing · AC-EVT-005
-22. visitor should find an event by its <field> · AC-EVT-003
-23. visitor should find events by county name · AC-EVT-003
+1. visitor should see the event list when opening Events (`@smoke`) · `#2001`
+2. visitor should see an empty state when no event matches the search · `#2003`
+3. visitor should find only the event searched for by name · `#2003`
+4. visitor should find an event by part of its name · `#2003`
+5. visitor should see the full event listing again after clearing the search · `#2003`
+6. visitor should see the header count match the events a search finds · `#2003`
+7. visitor should see only events from the chosen county when filtering by county · `#2002`
+8. visitor should see events from every county after resetting the county filter · `#2002`
+9. visitor should see only events of the chosen type when filtering by type · `#2002`
+10. visitor should see the no-data message when there are no events to show · `#2005`
+11. visitor should see a network error message when events cannot be loaded because the connection fails · `#2005`
+12. visitor should see a server error message when events cannot be loaded because of a server problem · `#2005`
+13. visitor should see the weekly session times of a recurring open mat · `#2004`
+14. visitor should see each day's session of a multi-day camp · `#2004`
+15. visitor should see the total number of events in the header when the list spans several pages · `#2005`
+16. visitor should see each seeded event's dates as far apart as the seeded schedule says · `#2004`
+17. visitor should see events of every chosen type when choosing several types · `#2002`
+18. visitor should see every type of event again after choosing All Types · `#2002`
+19. visitor should find only the matching event when combining county, type and search · `#2002`
+20. visitor should see no results when a search matches nothing within the chosen filters · `#2005`
+21. visitor should be told no events match when the chosen filters find nothing · `#2005`
+22. visitor should find an event by its <field> · `#2003`
+23. visitor should find events by county name · `#2003`
 24. visitor should see the daily rate of a camp priced per day · none (finding F1; expected to fail until fixed)
 25. visitor should see the search results when opening a shared search link · none (exploration 2026-10-29)
 26. visitor should keep the chosen county and type when reloading Events · none (decided 2026-10-31)
 27. visitor should see only the shared filters when opening a shared filter link · none (decided 2026-10-31)
 28. visitor should return to the previous filter with Back · none (decided 2026-10-31)
 29. visitor should see an event's date in Irish time wherever they are · none (decided 2026-10-31)
-30. visitor should see pins for the current results when switching from the event list to the map (`@smoke`) · AC-EVT-007
-31. visitor should keep the search, county and type when switching from the map back to the list · AC-EVT-007
-32. visitor should see each venue's events when opening its pin on the map · AC-EVT-010
-33. visitor should see the empty-search message when a search matches nothing on the map · AC-EVT-013
-34. visitor should see an error message and be able to retry when events cannot be loaded on the map · AC-EVT-013
-35. visitor should be told how many events are not shown when some have no usable location · AC-EVT-009
-36. visitor should be told to filter when more events match than the map can show · AC-EVT-008
-37. visitor should switch between list and map using only the keyboard · AC-EVT-016
-38. visitor should see the map fit the screen on a phone · AC-EVT-016
+30. visitor should see pins for the current results when switching from the event list to the map (`@smoke`) · `#2007`
+31. visitor should keep the search, county and type when switching from the map back to the list · `#2007`
+32. visitor should see each venue's events when opening its pin on the map · `#2010`
+33. visitor should see the empty-search message when a search matches nothing on the map · `#2013`
+34. visitor should see an error message and be able to retry when events cannot be loaded on the map · `#2013`
+35. visitor should be told how many events are not shown when some have no usable location · `#2009`
+36. visitor should be told to filter when more events match than the map can show · `#2008`
+37. visitor should switch between list and map using only the keyboard · `#2016`
+38. visitor should see the map fit the screen on a phone · `#2016`
 
 Scenarios 1–16 are in `events.ui.acceptance.spec.ts`; 17–28 in
 `events-filters.ui.acceptance.spec.ts`; 29 in `events-dates.ui.acceptance.spec.ts` (mocked,
@@ -64,23 +64,22 @@ county. Design notes for 17–38 are in [Planned](#planned).
 
 ### API
 
-1. client should receive each upcoming event with its details (`@smoke`) · AC-EVT-001
-2. client should not receive finished events · AC-EVT-001
-3. client should receive only upcoming events from the chosen county when filtering by county · AC-EVT-002
-4. client should receive events ordered by creation date · AC-EVT-001
-5. client should receive only upcoming events of the chosen type when filtering by type · AC-EVT-002
-6. client should receive an event with several types when filtering by any one of them · AC-EVT-002
-7. client should page through the listing in distinct slices with correct links · AC-EVT-005
-8. client should get a bad request for <param> "<value>" · AC-EVT-002
-9. client should get a validation error on <param> when <param> <value> is out of range · AC-EVT-005
+1. client should receive each upcoming event with its details (`@smoke`) · `#2001`
+2. client should not receive finished events · `#2001`
+3. client should receive only upcoming events from the chosen county when filtering by county · `#2002`
+4. client should receive events ordered by creation date · `#2001`
+5. client should receive only upcoming events of the chosen type when filtering by type · `#2002`
+6. client should receive an event with several types when filtering by any one of them · `#2002`
+7. client should page through the listing in distinct slices with correct links · `#2005`
+8. client should get a bad request for <param> "<value>" · `#2002`
+9. client should get a validation error on <param> when <param> <value> is out of range · `#2005`
 10. client should receive the details of an upcoming event by id · none
 11. client should get not found for an event id that does not exist · none
 12. client should get a validation error on the id for an event id that is <malformed> · none
 
 Scenarios 8, 9 and 12 are data-driven over `tests/features/common/testdata/invalid-values.ts`
 (8 covers malformed `county`, `types`, `includeInactive` and paging values). Errors are
-asserted as RFC 9457 problem documents (`expectProblem`). Get-by-id has no AC-ID in the app
-repo yet.
+asserted as RFC 9457 problem documents (`expectProblem`). Get-by-id has no requirement issue yet.
 
 ## Constraints
 
@@ -106,7 +105,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should reach the next page of events
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no AC-ID in the app spec yet)
+- Covers: none (no requirement issue yet)
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
@@ -119,7 +118,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should return to the first page when changing a filter on a later page
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no AC-ID in the app spec yet)
+- Covers: none (no requirement issue yet)
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
@@ -133,7 +132,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should find an event on a later page by searching
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no AC-ID in the app spec yet)
+- Covers: none (no requirement issue yet)
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given there are more events than fit on one page
@@ -146,7 +145,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should see the events after retrying a failed load
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing after recovery · Mocked: yes (first response fails)
-- Covers: none (no AC-ID in the app spec yet)
+- Covers: none (no requirement issue yet)
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the event service is unavailable
@@ -160,7 +159,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should be able to filter and search events using only the keyboard
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
-- Covers: none (no AC-ID in the app spec yet)
+- Covers: none (no requirement issue yet)
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events
@@ -173,7 +172,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 #### visitor should see event cards fit the screen on a phone
 
 - Layer: UI · Tags: @acceptance, @mobile · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
-- Covers: AC-EVT-007, AC-EVT-017
+- Covers: `#2007`, `#2017`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events on a phone
@@ -183,7 +182,7 @@ UI only; the API suite already owns the county and type rules, finished events a
 
 ### Map view
 
-From User Story 4 and AC-EVT-007 to AC-EVT-017 in `bjjeire-java/specs/`. Written from the
+From User Story 4 and `#2007` to `#2017` in `bjjeire-java/specs/`. Written from the
 app spec and its tests. Implemented in `events-map.ui.acceptance.spec.ts` unless a scenario says otherwise; the per-scenario notes below say what was explored live. UI only:
 the app's unit and Pact tests own the `EventsMap` flag on the wire, and the suite does not
 assert the flag API. The gym map (`gyms.md`, scenarios 21–30) is the model: same setup,
@@ -225,7 +224,7 @@ same tile rules.
 #### visitor should see the map with the shared filters when opening a shared map link
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-007
+- Covers: `#2007`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens a shared link to the map for Cork and seminars
@@ -233,12 +232,12 @@ same tile rules.
   - Then the map is displayed and marked as the current view
   - And Cork and Seminar are chosen
   - And the Cork seminar has a pin and the Dublin events do not
-- Why: AC-EVT-007, SC-004. The app's page tests prove this against mocks only.
+- Why: `#2007`, SC-004. The app's page tests prove this against mocks only.
 
 #### visitor should return to the event list with Back after switching to the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Covers: AC-EVT-007
+- Covers: `#2007`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the event list for Dublin
@@ -246,12 +245,12 @@ same tile rules.
   3. And the visitor goes back
 - Expected results:
   - Then the event list for Dublin is displayed
-- Why: AC-EVT-007. Start on the list: a directly opened link has no earlier page.
+- Why: `#2007`. Start on the list: a directly opened link has no earlier page.
 
 #### visitor should see pins only for the chosen county when filtering the map by county
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR, SEEDED_EVENT_LEINSTER_OPEN_MAT (seeded) · Mocked: tiles only
-- Covers: AC-EVT-008
+- Covers: `#2008`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
@@ -259,24 +258,24 @@ same tile rules.
 - Expected results:
   - Then the Cork seminar has a pin and Leinster Grappling HQ does not
   - And the map has moved closer to Cork
-- Why: AC-EVT-008, SC-003. Assert named pins, not totals.
+- Why: `#2008`, SC-003. Assert named pins, not totals.
 
 #### visitor should see pins only for the chosen type when filtering the map by type
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_TRIBES_NO_GI_CAMP, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-008
+- Covers: `#2008`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
   2. When the visitor filters by Camp
 - Expected results:
   - Then the Galway camp has a pin and the Cork seminar does not
-- Why: AC-EVT-008. Type is a server filter, and only this proves it reaches the map on real data.
+- Why: `#2008`. Type is a server filter, and only this proves it reaches the map on real data.
 
 #### visitor should see only the searched event's pin when searching on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-008, AC-EVT-012
+- Covers: `#2008`, `#2012`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
@@ -284,23 +283,23 @@ same tile rules.
 - Expected results:
   - Then only that event has a pin
   - And the map has zoomed to it
-- Why: AC-EVT-008, AC-EVT-012. Exactly one pin; check the tile zoom level, as the gym scenario does.
+- Why: `#2008`, `#2012`. Exactly one pin; check the tile zoom level, as the gym scenario does.
 
 #### visitor should see events in their real locations on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-009
+- Covers: `#2009`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens the map of all events
 - Expected results:
   - Then the Dublin venue is north-east of the Cork venue, at the right angle
-- Why: AC-EVT-009, SC-003. Dublin is right of and above Cork, and vertical distance divided by horizontal distance is between 0.95 and 1.2. The true geography gives about 1.09; swapped latitude and longitude gives about 1.53 with the same directions.
+- Why: `#2009`, SC-003. Dublin is right of and above Cork, and vertical distance divided by horizontal distance is between 0.95 and 1.2. The true geography gives about 1.09; swapped latitude and longitude gives about 1.53 with the same directions.
 
 #### visitor should see an event's details and links when opening its pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-011
+- Covers: `#2011`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
@@ -309,12 +308,12 @@ same tile rules.
   - Then the venue and address are shown
   - And the event's name, type and dates are shown
   - And its event and directions links match its card
-- Why: AC-EVT-011. Dates are seeded relative to seed time, so compare them with the card, not a fixed date. Directions use `query=lat,lng` from GeoJSON `[lng, lat]`.
+- Why: `#2011`. Dates are seeded relative to seed time, so compare them with the card, not a fixed date. Directions use `query=lat,lng` from GeoJSON `[lng, lat]`.
 
 #### visitor should see every event at a venue when opening that venue's pin
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded, see data gap) · Mocked: tiles only
-- Covers: AC-EVT-010
+- Covers: `#2010`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given two upcoming events at Leinster Grappling HQ
@@ -322,23 +321,23 @@ same tile rules.
 - Expected results:
   - Then both events are listed, earliest first
   - And the venue is shown once
-- Why: AC-EVT-010, SC-005. The pin is named `Leinster Grappling HQ, 2 events`. The open mat starts first.
+- Why: `#2010`, SC-005. The pin is named `Leinster Grappling HQ, 2 events`. The open mat starts first.
 
 #### Events map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
 
 - Layer: UI · Tags: @acceptance, @a11y · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT (seeded) · Mocked: tiles only
-- Covers: AC-EVT-016
+- Covers: `#2016`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor has the map open with the shared-venue popup open, in each of the light, dark and competition themes
 - Expected results:
   - Then no accessibility violations are found
-- Why: AC-EVT-016. Use `expectNoWcagViolations`, in `events-map.a11y.acceptance.spec.ts` so `npm run test:a11y` selects it. Make the tiles readable by axe first, as the gym map scenario does. Axe does not judge focus indicators or pin contrast on tiles; the app's browser tests own those.
+- Why: `#2016`. Use `expectNoWcagViolations`, in `events-map.a11y.acceptance.spec.ts` so `npm run test:a11y` selects it. Make the tiles readable by axe first, as the gym map scenario does. Axe does not judge focus indicators or pin contrast on tiles; the app's browser tests own those.
 
 #### visitor should keep the pins and be offered the list when map tiles fail to load
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles aborted
-- Covers: AC-EVT-014
+- Covers: `#2014`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given map tiles cannot be loaded
@@ -347,12 +346,12 @@ same tile rules.
   - Then a notice offers the event list and the map stays open
   - And the Cork seminar's pin can still be opened
   - And following the notice shows the event list for Cork
-- Why: AC-EVT-014.
+- Why: `#2014`.
 
 #### visitor should see the event list when opening a map link while the events map is off
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Covers: AC-EVT-015
+- Covers: `#2015`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given the events map is off
@@ -360,19 +359,19 @@ same tile rules.
 - Expected results:
   - Then the event list is displayed on the Events page
   - And the visitor is not offered a choice of view
-- Why: AC-EVT-015, SC-006. Needs `EventsMap: false`. Assert the path stays `/events`.
+- Why: `#2015`, SC-006. Needs `EventsMap: false`. Assert the path stays `/events`.
 
 #### visitor should not download the map when staying on the event list
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Covers: AC-EVT-017
+- Covers: `#2017`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events and stays on the list
 - Expected results:
   - Then no map code or tiles are requested
   - And switching to the map then requests them
-- Why: AC-EVT-017. Record request URLs from before navigation and match `tile.openstreetmap.org`, `/assets/event-map-` and `/assets/leaflet-`. Both maps now share a separate Leaflet chunk. Run against a built image.
+- Why: `#2017`. Record request URLs from before navigation and match `tile.openstreetmap.org`, `/assets/event-map-` and `/assets/leaflet-`. Both maps now share a separate Leaflet chunk. Run against a built image.
 
 ### Additional map scenarios (planner, 2026-11-05)
 
@@ -381,7 +380,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see pins for the current results when switching from the event list to the map
 
 - Layer: UI · Tags: @acceptance, @smoke · Data: SEEDED_EVENT_TRIBES_NO_GI_CAMP, SEEDED_EVENT_ATLANTIC_COAST_CAMP, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-007
+- Covers: `#2007`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor has opened the event list for camps
@@ -390,12 +389,12 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
   - Then the map is displayed and marked as the current view
   - And the Galway and Westport camps have pins and the Cork seminar does not
   - And the Galway pin is south-east of the Westport pin
-- Why: AC-EVT-007 (User Story 4, scenario 1). The map's critical journey; the shared-link scenario starts on the map and never uses the switch. Narrowed by the Camp type, which gives two seeded events at different venues (Tribes in Galway, Atlantic Coast in Westport) and does not depend on the Dublin seminar, so the results are a real set the map must match: a pin for each, none for a non-camp venue, and the pins placed the right way round (mutation audit 2026-11-05, gap 2 and the smoke test that proved too little). Galway lies south-east of Westport; the check is tolerant (ratio 1.5 to 2.7, Mercator gives about 2.05).
+- Why: `#2007` (User Story 4, scenario 1). The map's critical journey; the shared-link scenario starts on the map and never uses the switch. Narrowed by the Camp type, which gives two seeded events at different venues (Tribes in Galway, Atlantic Coast in Westport) and does not depend on the Dublin seminar, so the results are a real set the map must match: a pin for each, none for a non-camp venue, and the pins placed the right way round (mutation audit 2026-11-05, gap 2 and the smoke test that proved too little). Galway lies south-east of Westport; the check is tolerant (ratio 1.5 to 2.7, Mercator gives about 2.05).
 
 #### visitor should keep the search, county and type when switching from the map back to the list
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-007
+- Covers: `#2007`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map filtered by Cork and Seminar
@@ -408,7 +407,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see the empty-search message when a search matches nothing on the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
-- Covers: AC-EVT-013
+- Covers: `#2013`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map
@@ -420,7 +419,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see an error message and be able to retry when events cannot be loaded on the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing after recovery · Mocked: yes (first response fails, then recovers) and tiles
-- Covers: AC-EVT-013
+- Covers: `#2013`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given the event service is unavailable
@@ -434,7 +433,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should be told how many events are not shown when some have no usable location
 
 - Layer: UI · Tags: @acceptance · Data: seeded listing plus one event without coordinates · Mocked: yes (snapshot state; seeded data has no unmapped event)
-- Covers: AC-EVT-009
+- Covers: `#2009`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given one event has no usable coordinates
@@ -448,7 +447,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should be told to filter when more events match than the map can show
 
 - Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents-style listing of 100 events with a larger total · Mocked: yes (multi-page)
-- Covers: AC-EVT-008
+- Covers: `#2008`
 - Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
 - Steps:
   1. Given <count> events match, more than the map can show
@@ -461,7 +460,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should switch between list and map using only the keyboard
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-016
+- Covers: `#2016`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events for Cork
@@ -477,7 +476,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see the map fit the screen on a phone
 
 - Layer: UI · Tags: @acceptance, @mobile · Data: seeded · Mocked: tiles only
-- Covers: AC-EVT-016
+- Covers: `#2016`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens the map on a phone
@@ -489,7 +488,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see each venue's events when opening its pin on the map
 
 - Layer: UI · Tags: @acceptance · Data: every seeded upcoming event plus SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded) · Mocked: tiles only
-- Covers: AC-EVT-010
+- Covers: `#2010`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. Given a visitor is on the map for <view>
@@ -503,7 +502,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 #### visitor should see each seeded event's dates as far apart as the seeded schedule says
 
 - Layer: UI · Tags: @acceptance · Data: every seeded dated event plus SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR, with `SEEDED_EVENT_SCHEDULE_OFFSETS` (seeded) · Mocked: no
-- Covers: AC-EVT-004
+- Covers: `#2004`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
   1. When a visitor opens Events

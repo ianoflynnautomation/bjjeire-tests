@@ -18,9 +18,9 @@ Only the constitution is kept, adopted in place:
 | `../specs/templates/`    | Templates to copy (feature spec, exploration and mutation) |
 | `../specs/`              | Living acceptance specs                                    |
 
-Spec Kit runs in `bjjeire-java` (Claude integration). Its feature specs carry
-AC-IDs and an `Acceptance Coverage` section. `playwright-test-planner` reads them
-and records `Covers: AC-…` against each planned scenario; `npm run spec:check`
-keeps the scenario titles and the tests in step. Product architecture
-and database contracts are **not** duplicated here — they live in
-`bjjeire-java/specs/`.
+Spec Kit runs in `bjjeire-java` (Claude integration). This suite does not copy
+those AC-IDs. Requirements and epics live in GitLab (`bjjeire/requirements`);
+`playwright-test-planner` records `Covers:` as the requirement issue.
+`npm run spec:check` keeps the scenario titles and the tests in step. Product
+architecture and database contracts are **not** duplicated here — they live in
+`bjjeire-java/specs/`. CI for this repo stays on GitHub.

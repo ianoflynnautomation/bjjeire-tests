@@ -1,5 +1,6 @@
 # Acceptance spec: Boot performance
 
+**Requirements**: `bjjeire/requirements` · epic `&9`
 **Slice**: `tests/performance/boot.perf.acceptance.spec.ts` (project `perf`, opt-in with `PW_PERF=true`)
 **Agent seed**: none (budgets are measured by the perf project, not explored)
 **Support**: `src/ui/support/performance.ts`

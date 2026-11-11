@@ -1,5 +1,6 @@
 # Acceptance spec: Support modal
 
+**Requirements**: `bjjeire/requirements` · epic `&10`
 **Slice**: `tests/features/support/` · `src/ui/pages/support/` (`bitcoin-support.modal.ts`, a section on the core fixtures)
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: none

@@ -24,7 +24,7 @@ then review. A numbered title is added only in the change that adds its test.
 
 ```mermaid
 flowchart TD
-  ac["Acceptance criterion in the app spec"]
+  ac["GitLab requirement issue"]
   explore["Exploration report, still a candidate"]
   gap["Mutation gap"]
   planner["Planner, or you"]
@@ -73,15 +73,15 @@ Agents do not commit. A `playwright-fix` dispatch is the healer again, later, fr
 
 ## The map
 
-| Path                              | What it is                                                      |
-| --------------------------------- | --------------------------------------------------------------- |
-| `specs/features/<feature>.md`     | The living spec: scenarios, constraints, planned blocks         |
-| `specs/templates/`                | Templates to copy. The filled block is in `templates/README.md` |
-| `specs/exploration/`              | Dated exploratory session reports (evidence, not the spec)      |
-| `specs/mutation/`                 | Dated mutation audits: which wrong data the tests miss          |
-| `bjjeire-java/specs/stc/<f>/`     | Acceptance criteria with IDs (`AC-GYM-003`) you cite            |
-| `.specify/memory/constitution.md` | The principles; short, read it                                  |
-| `scripts/spec-check.mjs`          | The drift check behind `npm run spec:check`                     |
+| Path                              | What it is                                                          |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `specs/features/<feature>.md`     | The living spec: scenarios, constraints, planned blocks             |
+| `specs/templates/`                | Templates to copy. The filled block is in `templates/README.md`     |
+| `specs/exploration/`              | Dated exploratory session reports (evidence, not the spec)          |
+| `specs/mutation/`                 | Dated mutation audits: which wrong data the tests miss              |
+| GitLab `bjjeire/requirements`     | Requirement issues (`#142`) and epics (`&<n>`). CI stays on GitHub. |
+| `.specify/memory/constitution.md` | The principles; short, read it                                      |
+| `scripts/spec-check.mjs`          | The drift check behind `npm run spec:check`                         |
 
 ## Anatomy of a feature spec
 
@@ -93,18 +93,43 @@ line. The filled example is in [`specs/templates/README.md`](../specs/templates/
 The `**Slice**:` line is what `spec:check` uses to find the tests: the first backticked
 `tests/...` path. Every `*.spec.ts` under `tests/` must be claimed by one spec.
 
+## Before you add a scenario
+
+Name what you are assuming before you write the block. The ones that change the
+scenario are the browser project, the seeded record, the GitLab issue, and whether
+the app repo already owns the rule. A guess goes in `## Held` with the question, and
+you stop.
+
+A vague request is not a scenario yet. "Make search better" becomes one requirement
+issue, one oracle, and one Then: the visitor searches for part of a seeded name and
+only that record is listed. If you cannot name what the visitor would notice, there
+is nothing to plan.
+
+Skip a new block when the spec already says the thing:
+
+- A typo in a step title is an edit to that line.
+- A behaviour that is already a numbered scenario needs no second block.
+- A rule the Coverage table marks `App repo` is not re-proved here.
+
+| Temptation                                                           | What to do                                                                                     |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| "The app already does this, so I'll copy it and fix the spec later." | The block is the requirement. If the app disagrees, the test stays red and you file a finding. |
+| "This is too small to specify."                                      | A two-line block is enough: one When, one Then.                                                |
+| "I'll add the numbered title now and the test in a follow-up."       | The title is added in the same change as the test.                                             |
+
 ## Adding a scenario by hand
 
 1. Open the feature spec. Check `## Rejected` and `## Held` so you do not re-propose
    something already decided.
-2. Find the acceptance criterion in `bjjeire-java/specs/stc/<feature>/spec.md`. If none
-   fits, write `Covers: none` and name the risk or the exploration finding.
+2. Find the requirement issue in the GitLab project named on the spec's
+   **Requirements** line. Cite that issue's id (`#142`). If none fits, write
+   `Covers: none` and name the risk or the exploration finding.
 3. Write the `####` block under `## Planned` in the template shape: `Covers`, `Oracle`,
    `Steps`, `Expected results`, one-sentence `Why`, and `Test design`.
 4. Write the test with the same title and the same step wording. Watch it fail first
    (against missing behaviour, a mutant with `PW_MUTANT=…`, or a deliberately broken
    assertion), then make it pass, then run it with `--repeat-each=5`.
-5. Add the title to the numbered list, with its tags and AC-ID, in that same change.
+5. Add the title to the numbered list, with its tags and the issue id, in that same change.
 6. Run `npm run spec:check`, then ask `@agent-playwright-test-reviewer` to review the diff.
 
 Or let the agents do steps 3 to 6: `/cover-feature <feature>` runs planner, generator or
