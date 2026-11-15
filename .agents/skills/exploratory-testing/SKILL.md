@@ -133,3 +133,7 @@ steps, expected (with the claim it comes from), actual, severity and evidence pa
 form, each with the layer (UI or API) and why the suite should own it. The
 `playwright-test-planner` decides whether they enter `specs/features/`. Exploration
 never writes spec code.
+
+Each **Findings** item is also one GitHub issue on `ianoflynnautomation/bjjeire`,
+titled `fix: …`, labelled `type/fix`. Search open issues first and comment when the
+defect is already there. Questions and environment notes stay in the report.

@@ -9,7 +9,10 @@ defaults where they conflict.
   secret `ANTHROPIC_API_KEY` (or Anthropic WIF).
 - Agent jobs stay read-only. Test patches go through
   `safe-outputs.create-pull-request` with an `allowed-files` allowlist.
-- Never commit or push with `git` from the agent. Never touch `bjjeire-java`.
+  A reproduced app defect goes through `safe-outputs.create-issue` on
+  `ianoflynnautomation/bjjeire` (label `type/fix`). A repeat comments on that
+  issue. Never edit or push the app repo.
+- Never commit or push with `git` from the agent.
 
 ## Playwright CI is not this workflow
 

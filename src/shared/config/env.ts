@@ -1,5 +1,5 @@
-import { MissingProfileUrlError, ProductionTargetError } from './config-errors';
-import { isProductionUrl, isRemoteProfile, PROFILE_DEFAULTS } from './profile-defaults';
+import { InvalidEnvVarError, MissingProfileUrlError, ProductionTargetError } from './config-errors';
+import { isProductionUrl, isRemoteProfile, PROFILE_DEFAULTS, type FlagState } from './profile-defaults';
 import { loadEnvForProfile, resolveProfile, type Profile } from './profile';
 import { readEnv, readEnvFlag, readRequiredEnv } from './process-env';
 
@@ -50,6 +50,8 @@ export type Env = Readonly<{
   profile: Profile;
   baseUrl: string;
   apiUrl: string;
+  /** Does the environment's API serve tournaments? `undefined` = unknown, see `TOURNAMENTS_FLAG`. */
+  tournamentsFlag: FlagState | undefined;
   isCI: boolean;
   acceptInvalidCerts: boolean;
   context: RuntimeContext;
@@ -73,6 +75,13 @@ const defaults = PROFILE_DEFAULTS[PROFILE];
 
 const baseUrl = stripTrailingSlash(pick('BASE_URL', defaults.baseUrl));
 const apiUrl = stripTrailingSlash(pick('API_URL', defaults.apiUrl));
+
+function readFlagState(name: string, fallback: FlagState | undefined): FlagState | undefined {
+  const raw = readEnv(name)?.toLowerCase();
+  if (raw === undefined) return fallback;
+  if (raw === 'on' || raw === 'off') return raw;
+  throw new InvalidEnvVarError(name, raw, 'on or off');
+}
 
 if (isProductionUrl(baseUrl)) throw new ProductionTargetError('BASE_URL', baseUrl);
 if (isProductionUrl(apiUrl)) throw new ProductionTargetError('API_URL', apiUrl);
@@ -126,6 +135,7 @@ export const env: Env = Object.freeze({
   profile: PROFILE,
   baseUrl,
   apiUrl,
+  tournamentsFlag: readFlagState('TOURNAMENTS_FLAG', defaults.tournaments),
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
   context: runtimeContext,

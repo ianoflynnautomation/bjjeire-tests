@@ -38,7 +38,7 @@ workflow) and `.agents/skills/suite-conventions/SKILL.md` § Assertions. For `@s
 
 ## Scope
 
-- Read-only API: no POST/PUT/PATCH/DELETE tests.
+- Read-only data is shared and never changed. A test that updates or deletes creates its own record first (a test-scoped fixture that creates through the API and deletes after `use()`, a name built only from `PW ` plus the test id or a faker token, never containing a seeded name) and must pass in parallel and under `--repeat-each`. Never write to seeded records. Rule 5 of the data policy in the `suite-conventions` skill.
 - The only conditional skip is the authorization spec's `test.skip(!env.apiAuth.required, …)`.
 - Respect the rate limit (the `suite-environments` skill); never loop requests to
   probe it.

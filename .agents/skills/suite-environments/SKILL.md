@@ -121,7 +121,8 @@ GitHub Agentic Workflows (sources under `.github/workflows-aw/`, compiled to
 - `spec-review` — PR comment when tests and `specs/features/` disagree
 - `playwright-fix` — test-only heal from atest / Playwright JSON evidence,
   reproduced on a local Docker stack by the `playwright-test-healer` subagent
-  (`workflow_dispatch`; not hooked to this repo's lint `CI`)
+  (`workflow_dispatch`; not hooked to this repo's lint `CI`). An app defect
+  that run reproduced is an issue on `ianoflynnautomation/bjjeire`
 
 Healing evidence can also come from the `atest` repo, published as `@aplaytest/*`.
 See that repo's `docs/11-adoption-bjjeire.md` and `docs/14-bjjeire-ci-integration.md`.
@@ -138,6 +139,15 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
 - `APP_ENV` selects the profile: `local` (minikube), `docker`, `dev`, `staging`.
   `.env` (gitignored) supplies `BASE_URL`/`API_URL`.
 - `ci.yml`: lint + typecheck on every push/PR.
+- **Flag-dependent specs.** Specs that only pass with the API's `Tournaments` flag in one state carry
+  `@tournaments-on` or `@tournaments-off`. `TOURNAMENTS_FLAG=on|off` says which state the environment is in;
+  `COMMON_GREP_INVERT` (`src/shared/config/playwright.ts`, next to `QUARANTINE_TAG`) excludes the other tag for
+  every project, UI and API. Defaults live in `PROFILE_DEFAULTS` (every profile defaults off: the compose file
+  defaults the flag off and gitops never sets it; a Docker stack started with `FEATURE_TOURNAMENTS=true` needs
+  `TOURNAMENTS_FLAG=on`). With no value and no default, both sets are
+  excluded and the runner prints why. Each tagged spec still checks the flag endpoint in its Given step, so a
+  wrong setting fails naming `TOURNAMENTS_FLAG`. A project's own `grepInvert` replaces the config's: use
+  `COMMON_GREP_INVERT` (the UI config's `excluding()` does).
 - Reusable runners live in `bjjeire-ci-templates`: `playwright-docker-tests.yml`
   (compose stack + shards) and `playwright-tests.yml` / `acceptance-gate.yml` (existing
   or Flux ephemeral AKS). The app repo pins those workflows by commit SHA; the SHA pins

@@ -1,6 +1,6 @@
 ---
 name: playwright-exploratory-tester
-description: 'Use to hunt for bugs the scripted suite misses: runs a time-boxed, chartered exploratory session against the running BjjEire app in a live browser, checks automatic oracles (axe, layout overflow, leaked values, failed or repeated API calls, list invariants, console errors) after every state, confirms each suspicion twice, and writes a findings report with candidate scenarios. Never writes spec code. Examples: "explore Events filtering for state bugs", "bug-hunt the gyms page on mobile", "try to break search".'
+description: 'Use to hunt for bugs the scripted suite misses: runs a time-boxed, chartered exploratory session against the running BjjEire app in a live browser, checks automatic oracles (axe, layout overflow, leaked values, failed or repeated API calls, list invariants, console errors) after every state, confirms each suspicion twice, writes a findings report with candidate scenarios, and files each confirmed finding as a GitHub issue on ianoflynnautomation/bjjeire. Never writes spec code. Examples: "explore Events filtering for state bugs", "bug-hunt the gyms page on mobile", "try to break search".'
 tools: Glob, Grep, Read, Write, Edit, Bash
 model: opus
 color: orange
@@ -83,9 +83,35 @@ Write `specs/exploration/<YYYY-MM-DD>-<charter-slug>.md` from
 `.agents/skills/exploratory-testing/references/report-template.md`. This is the only file
 you create or edit.
 
-Then reply with: the charter, budget used, findings by severity (one line each), the
-candidate scenarios, and the report path. If nothing was found, say so plainly and list
-what was covered. A clean session with honest coverage notes is still a result.
+Each item under **Findings** was reproduced twice and is an app defect. File it on
+`ianoflynnautomation/bjjeire` before you finish. Questions, environment notes, and
+suspicions seen once stay in the report.
+
+Search open issues first:
+
+```sh
+gh issue list --repo ianoflynnautomation/bjjeire --state open --limit 20 --search "<requirement id or the finding summary>"
+```
+
+When one already describes the finding, comment on it with this session's evidence.
+Otherwise create it:
+
+```sh
+gh issue create --repo ianoflynnautomation/bjjeire \
+  --title "fix: <what the visitor sees>" \
+  --label "type/fix" \
+  --body-file <temp file>
+```
+
+The body names the requirement issue and epic when the spec has them, the spec path
+or the HICCUPPS letter, severity, steps from a fresh load, expected, actual,
+environment (`APP_ENV`), and the trace or screenshot path. Write the issue URL on
+that finding. One finding, one issue.
+
+Then reply with: the charter, budget used, findings by severity (one line each, with
+the issue URL), the candidate scenarios, and the report path. If nothing was found,
+say so plainly and list what was covered. A clean session with honest coverage notes
+is still a result.
 
 ## Never
 
@@ -93,6 +119,8 @@ what was covered. A clean session with honest coverage notes is still a result.
   scenarios go to `playwright-test-planner`, and test fixes go to the healer.
 - Report a suspicion as a bug without two reproductions, or an environment fault as a
   product bug.
+- File a GitHub issue for a suspicion seen once, an environment note, or a question
+  for the product owner.
 - Exceed the budget, run the suite, or run against production.
 - Leave a browser, a route mock or the background debug run alive.
 - Commit.

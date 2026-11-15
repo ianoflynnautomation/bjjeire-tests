@@ -9,8 +9,8 @@ follow are in [`AGENTS.md`](../AGENTS.md) and the
 | ------------------------------- | ---------------------------------------------------------------------------- | ------- |
 | `playwright-test-planner`       | Explore a feature and add scenarios to `specs/features/<feature>.md`         | MCP     |
 | `playwright-test-generator`     | Turn one planned UI scenario into a passing spec in the feature slice        | MCP     |
-| `playwright-test-healer`        | Reproduce and fix a failing UI test, or report an app bug                    | CLI     |
-| `playwright-exploratory-tester` | Chartered bug hunt; findings and candidate scenarios in `specs/exploration/` | CLI     |
+| `playwright-test-healer`        | Reproduce and fix a failing UI test, or file an app defect as a GitHub issue | CLI     |
+| `playwright-exploratory-tester` | Chartered bug hunt; findings in `specs/exploration/` and a GitHub issue each | CLI     |
 | `playwright-mutation-auditor`   | Find what the UI specs would not notice; triaged report in `specs/mutation/` | none    |
 | `playwright-api-tester`         | Write or heal `*.api.acceptance.spec.ts`                                     | none    |
 | `playwright-flake-hunter`       | Measure a flaky test with `--repeat-each`, find the cause, fix it            | none    |
@@ -149,7 +149,10 @@ overflow, leaked `undefined`/`NaN`, broken images, dead links, failed/slow/repea
 calls, list total vs cards) plus `console error`. A suspicion becomes a finding only after
 two reproductions from a fresh load. The report lands in
 `specs/exploration/<date>-<charter>.md` with severity-ranked findings, product questions
-and **candidate scenarios**. Hand those to the planner. It writes nothing else.
+and **candidate scenarios**. Each finding is also one issue on
+`ianoflynnautomation/bjjeire` (`fix: …`, label `type/fix`); an open issue for the same
+defect gets a comment instead. Hand the candidate scenarios to the planner. The report
+is the only file it writes.
 
 You can run the probe yourself in any CLI session:
 
@@ -199,8 +202,9 @@ Claude Code. The healer's CLI session can be watched with `npx playwright cli sh
 
 The [`playwright-fix`](../.github/workflows-aw/playwright-fix.md) agentic workflow runs
 the healer (and the API tester) on GitHub. It starts the app's Docker stack on the
-runner, re-runs only the failing tests, and opens a `fix(test):` pull request or posts
-an app-bug comment.
+runner, re-runs only the failing tests, and opens a `fix(test):` pull request or, for
+an app defect it reproduced, an issue on `ianoflynnautomation/bjjeire`. A second run
+comments on that issue. Evidence without a reproduction stays in the run output.
 
 ```sh
 gh workflow run playwright-fix.lock.yml \

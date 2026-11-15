@@ -1,7 +1,7 @@
 import { devices, type PlaywrightTestOptions, type PlaywrightWorkerOptions, type Project } from '@playwright/test';
 import { env } from '@shared/config/env';
 import { readEnvFlag } from '@shared/config/process-env';
-import { DESKTOP_VIEWPORT, QUARANTINE_TAG } from '@shared/config/playwright';
+import { COMMON_GREP_INVERT, DESKTOP_VIEWPORT } from '@shared/config/playwright';
 
 export const STORAGE_STATE_PATH = 'playwright/.auth/ui-user.json';
 
@@ -29,13 +29,13 @@ type UiUse = NonNullable<Project<PlaywrightTestOptions, PlaywrightWorkerOptions>
  * A project's `grepInvert` REPLACES the config-level one rather than adding to
  * it — verified by dropping `QUARANTINE_TAG` from one project, which promptly
  * ran a `@quarantine` test. So every project that filters has to restate the
- * quarantine exclusion, and this helper is the only way to write it.
+ * common exclusions (quarantine, the tournament set the environment cannot run), and this helper is the only way to write it.
  *
  * Projects with no `grepInvert` of their own (snapshots, a11y, mobile) inherit
  * the config-level filter and stay quarantine-free without it.
  */
 function excluding(...tags: RegExp[]): RegExp[] {
-  return [...tags, QUARANTINE_TAG];
+  return [...tags, ...COMMON_GREP_INVERT];
 }
 
 type AuthContext = {

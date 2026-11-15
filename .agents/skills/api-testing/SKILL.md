@@ -6,7 +6,7 @@ author: Ian O Flynn
 
 # API Testing
 
-Acceptance specs for the read-only directory API (gyms, events, competitions, stores). Phases stay in this order. The call path is Playwright's `request` fixture passed into a feature client.
+Acceptance specs for the directory API (gyms, events, competitions, stores: read-only) and the tournaments API (whose write routes follow rule 5 of the data policy in `suite-conventions`: a test creates and deletes its own record). Phases stay in this order. The call path is Playwright's `request` fixture passed into a feature client.
 
 ## Critical
 
@@ -277,7 +277,7 @@ Promote when a second feature would copy the same code:
 
 `listing-assertions.ts` is the promotion that already happened. Every list spec needed the same pagination checks, and the helpers still do not call `get()`.
 
-There is no per-test create or teardown fixture. The seeder in the app repo owns the rows. `seeded.ts` names the ones a spec asserts.
+The seeder in the app repo owns the read-only rows, and `seeded.ts` names the ones a spec asserts. A test that updates or deletes never touches them: a test-scoped fixture creates the record it acts on through the API and deletes it after `use()` (rule 5 of the data policy in `suite-conventions`).
 
 ## API Architecture
 

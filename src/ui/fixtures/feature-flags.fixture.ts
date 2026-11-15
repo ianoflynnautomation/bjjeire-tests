@@ -12,6 +12,7 @@ export type FeatureFlagOverrides = {
   Stores: boolean;
   GymsMap?: boolean;
   EventsMap?: boolean;
+  Tournaments?: boolean;
 };
 
 export const ALL_FEATURES_ENABLED: FeatureFlagOverrides = {
@@ -19,6 +20,8 @@ export const ALL_FEATURES_ENABLED: FeatureFlagOverrides = {
   Gyms: true,
   Competitions: true,
   Stores: true,
+  // Pinned off: only tournaments specs turn it on, so shared chrome is the same on every environment.
+  Tournaments: false,
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 

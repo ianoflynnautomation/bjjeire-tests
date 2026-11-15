@@ -115,8 +115,17 @@ safe-outputs:
       - 'src/ui/**'
       - 'src/api/**'
       - 'specs/features/**'
+  create-issue:
+    title-prefix: 'fix: '
+    labels: [type/fix]
+    allowed-labels: [type/fix]
+    max: 5
+    target-repo: ianoflynnautomation/bjjeire
+    deduplicate-by-title: true
   add-comment:
-    max: 1
+    max: 5
+    target: '*'
+    target-repo: ianoflynnautomation/bjjeire
 ---
 
 # Playwright fix (atest-backed)
@@ -192,7 +201,8 @@ background test run before finishing.
 - Regenerating screenshot baselines unless the dispatch text explicitly says
   the change is visual and both darwin and linux will be updated
 - Editing anything outside `allowed-files`
-- Opening a PR against `bjjeire-java`
+- Opening a PR against `bjjeire-java`, or editing that repo. A reproduced app
+  defect is an issue there, through `create_issue` or `add_comment` only
 - Introducing `waitForTimeout`
 
 ## Required effects
@@ -200,8 +210,17 @@ background test run before finishing.
 - If the evidence supports a **test** defect: `create-pull-request` with a
   focused patch and a body that cites the failing title, project, and evidence,
   plus the local re-run result (before and after) when the stack was used.
-- If the evidence supports an **application** defect: `add-comment` (or PR
-  body on this run's summary) describing the app finding; do **not** patch tests.
+- If this run reproduced an **application** defect on the Docker stack: do **not**
+  patch tests. Search open issues in `ianoflynnautomation/bjjeire`. When one
+  already covers the defect, `add_comment` on it with the new evidence. Otherwise
+  `create_issue`. The title is the visitor-visible defect without a `fix:` prefix
+  (the workflow adds `fix: ` and the `type/fix` label). The body names the
+  requirement issue and epic when the spec has them, the spec path, the steps,
+  expected, actual, `APP_ENV`, the app ref, and the trace. One defect, one issue.
+  The safe-outputs job uses `GH_AW_GITHUB_TOKEN`, which needs permission to open
+  issues on that repo.
+- If `reproduce` is false, or the stack did not answer: do not open an issue.
+  Call `noop` and put the finding in that message.
 - If artifacts are missing: `noop` explaining what the caller must upload
   (`results.json` and/or `.atest/evidence` via `extra-output-paths` in the
   templates — not yet present; JSON ingest is the current seam).

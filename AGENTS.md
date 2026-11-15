@@ -56,6 +56,7 @@ Two-tier taxonomy:
 - `@quarantine` marks known-flaky tests: excluded from every run via config
   `grepInvert` (`QUARANTINE_TAG` in `src/shared/config/playwright.ts`) but kept in
   the repo so they stay greppable. Fix or delete promptly — never let the list grow.
+- `@tournaments-on` / `@tournaments-off` mark specs that depend on the environment's real `Tournaments` flag; `TOURNAMENTS_FLAG=on|off` (per-profile default) excludes the other set via config, see `suite-environments`.
 
 ## Spec-driven development
 
@@ -106,8 +107,8 @@ for this suite's conventions. The other five cover exploratory bug hunting, muta
 | ------------------------------- | -------------------------------------------------------------------------- | ------- |
 | `playwright-test-planner`       | Explore a feature and write scenarios into `specs/features/<feature>.md`   | MCP     |
 | `playwright-test-generator`     | Rehearse a planned UI scenario live, then write it into the feature slice  | MCP     |
-| `playwright-test-healer`        | Reproduce and fix a failing UI test, or report an app bug                  | CLI     |
-| `playwright-exploratory-tester` | Chartered bug hunt with automatic oracles; report in `specs/exploration/`  | CLI     |
+| `playwright-test-healer`        | Reproduce and fix a failing UI test, or file the app defect on GitHub      | CLI     |
+| `playwright-exploratory-tester` | Chartered bug hunt; report in `specs/exploration/` and file each finding   | CLI     |
 | `playwright-mutation-auditor`   | Corrupt real responses per mutant; triage survivors into `specs/mutation/` | none    |
 | `playwright-api-tester`         | Write or heal `*.api.acceptance.spec.ts`                                   | none    |
 | `playwright-flake-hunter`       | Measure a flaky test under `--repeat-each`, find the cause, fix it         | none    |
@@ -128,7 +129,7 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 
 - **Files:** `<feature>.ui.acceptance.spec.ts`, `.api.`, `.snapshot.`, `.a11y.`. Titles are `<actor> should <outcome> [when <context>]`, with Given/When/Then in top-level `test.step` titles.
 - **Slices:** a feature is exactly `tests/features/<f>/`, `src/ui/pages/<f>/` and `src/api/features/<f>/`. Scaffold with `/add-feature`. A feature never imports another feature.
-- **Data:** assert real seeded data from `seeded.ts`. Environments hold full datasets, so never assert a fixture is on page 1 of an unfiltered list. Mock with `route.fulfill()` only for empty, error, multi-page and snapshot states, parsed with `parseMockBody`.
+- **Data:** assert real seeded data from `seeded.ts`. Environments hold full datasets, so never assert a fixture is on page 1 of an unfiltered list. Mock with `route.fulfill()` only for empty, error, multi-page and snapshot states, parsed with `parseMockBody`. Read-only data is shared; a test that updates or deletes creates its own record in a fixture and deletes it afterwards, so every test is isolated and parallel-safe.
 - **Assertions:** web-first only, with no `waitForTimeout()` or polling loops. After `searchFor`, assert `expectResultCount(1)`.
 - **Navigation:** never a bare `page.goto` for an app route. Use `gotoRoute` or `gotoAppShell` from `@ui/support`. Snapshot specs are the exception.
 - **API specs:** call the feature client with the generated schema, then assert business values. Error paths use `expectProblem`. Negative inputs are data-driven.
@@ -158,4 +159,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-11.
+script, project, or workflow it documents. Last reviewed: 2026-11-15.

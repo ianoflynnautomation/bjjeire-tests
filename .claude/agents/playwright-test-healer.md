@@ -1,6 +1,6 @@
 ---
 name: playwright-test-healer
-description: 'Use when a Playwright UI test in this suite fails (local run, CI report, trace or screenshot). Reproduces the failure, debugs it live, decides whether the test or the app is wrong, and fixes the test in the page object or spec, or reports an app bug. Example: "gyms filter test fails on CI", "heal tests/features/events".'
+description: 'Use when a Playwright UI test in this suite fails (local run, CI report, trace or screenshot). Reproduces the failure, debugs it live, decides whether the test or the app is wrong, and fixes the test in the page object or spec, or files the app defect as a GitHub issue on ianoflynnautomation/bjjeire. Example: "gyms filter test fails on CI", "heal tests/features/events".'
 tools: Glob, Grep, Read, Edit, Write, Bash
 model: sonnet
 color: red
@@ -71,7 +71,7 @@ the root cause:
 | Wrong data assumption          | Narrow the view (search/filter) or use the right `seeded.ts` record                |
 | Mock drift                     | Fix the mock body; `parseMockBody` against the generated schema must pass          |
 | Product changed intentionally  | Update the test **and** `specs/features/<feature>.md` in the same change           |
-| App bug                        | Do not change the test. Report it (below)                                          |
+| App bug                        | Do not change the test. File the GitHub issue below                                |
 
 Fix the cause in the layer that owns it: locators and waits in `src/ui/pages/`,
 scenario wording in the spec. Keep the title unchanged unless the behaviour changed;
@@ -101,5 +101,30 @@ Also re-run the other tests that use a page-object method you changed.
 ## Report
 
 Per test: root cause category, evidence (step, error, what the snapshot showed), the fix
-and the passing `--repeat-each` run. For an app bug: summary, steps, expected (cite the
-spec), actual, and the trace path.
+and the passing `--repeat-each` run.
+
+## App defect
+
+When the cause is an app bug, leave the test unchanged and open one issue on
+`ianoflynnautomation/bjjeire`. An environment fault, a flake, and a test you can fix
+stay out of that repo.
+
+Search open issues first:
+
+```sh
+gh issue list --repo ianoflynnautomation/bjjeire --state open --limit 20 --search "<requirement id or the distinctive phrase>"
+```
+
+When one already describes this defect, comment on it with the new evidence and put
+that issue URL in the report. Otherwise create it:
+
+```sh
+gh issue create --repo ianoflynnautomation/bjjeire \
+  --title "fix: <what the visitor sees>" \
+  --label "type/fix" \
+  --body-file <temp file>
+```
+
+The body names the requirement issue (`#1009`) and epic when the spec has them, the
+spec path, the steps from a fresh load, expected (cite the spec), actual, environment
+(`APP_ENV`, app ref), and the trace path. One defect, one issue. Do not commit.

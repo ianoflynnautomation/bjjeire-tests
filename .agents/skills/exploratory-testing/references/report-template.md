@@ -22,6 +22,7 @@ HICCUPPS names the oracle when no spec line applies: **H**istory, **I**mage, **C
 - **Reproduced**: 2/2 from a fresh load
 - **Oracle**: probe field and value, or the console error
 - **Evidence**: `.playwright-cli/<file>.png`, trace path
+- **Issue**: `https://github.com/ianoflynnautomation/bjjeire/issues/<n>`
 
 ## Questions for the product owner
 

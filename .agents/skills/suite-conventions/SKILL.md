@@ -45,6 +45,26 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
    the feature's Zod page schema (`parseMockBody`) — drifted mocks fail loudly.
 4. Partial search terms live next to their DTOs (`SEEDED_*_PARTIAL_NAME`, guarded by
    `partialNameOf`); never derive them with `name.slice(...)` in specs.
+5. **A test that writes owns its data.** Read-only seeded data (gyms, events, stores,
+   competitions, the seeded tournaments) is shared: assert it, never change it. A test
+   that updates or deletes something (an organiser editing or deleting a tournament, a
+   competitor saving or deleting a profile) first creates the record it acts on, and
+   deletes it afterwards:
+   - Create it through the API in a test-scoped fixture in the feature's `fixtures.ts`
+     (setup before `await use(...)`, delete after it, so cleanup runs when the test
+     fails). Ignore a 404 on delete: the test may have deleted it already.
+   - Build its name only from the prefix `PW ` plus the test id or a faker token
+     (`PW 3f9c…`). Search is a case-insensitive substring match on the whole name, so
+     the whole name must contain no seeded search term or `SEEDED_*_PARTIAL_NAME`; never
+     reuse a seeded name ("PW Acceptance Open copy" still matches "Acceptance Open").
+   - Create it unpublished when the scenario allows, so it never shows on public lists.
+     A test that must publish leaves nothing published at its end and runs serially (or
+     against a mocked list), because a published record shifts paged list counts in
+     other workers.
+   - Never update or delete a seeded record or another test's record, and never rely on
+     test order. Every test must pass under `fullyParallel` and `--repeat-each`.
+   - Because other workers' records can exist at the same time, list assertions stay
+     relational or scoped (search, exact-name card), never an absolute total.
 
 ### Assertions
 

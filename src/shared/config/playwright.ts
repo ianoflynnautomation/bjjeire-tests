@@ -4,6 +4,7 @@ import { defineConfig, type PlaywrightTestConfig, type ReporterDescription } fro
 import { cfAccessHeaders } from './cf-access';
 import { InvalidEnvVarError } from './config-errors';
 import { env } from './env';
+import type { FlagState } from './profile-defaults';
 import { readEnv } from './process-env';
 import { resolveRunId } from './run-id';
 import { TIMEOUTS } from './timeouts';
@@ -19,6 +20,26 @@ const MAX_FAILURES = IS_CI ? 0 : 1;
 export const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export const QUARANTINE_TAG = /@quarantine/;
+
+// Specs whose outcome depends on the environment's real `Tournaments` flag carry one of these tags.
+// The set that does not match the environment is excluded, so a full run is not red by construction.
+export const TOURNAMENTS_ON_TAG = /@tournaments-on/;
+export const TOURNAMENTS_OFF_TAG = /@tournaments-off/;
+
+/** The tournament set the environment cannot run. Unknown flag: both, with the reason printed. */
+export function tournamentFlagExclusions(flag: FlagState | undefined = env.tournamentsFlag): RegExp[] {
+  if (flag === 'on') return [TOURNAMENTS_OFF_TAG];
+  if (flag === 'off') return [TOURNAMENTS_ON_TAG];
+  // Workers load this config too; only the runner explains.
+  if (process.env['TEST_WORKER_INDEX'] === undefined)
+    process.stderr.write(
+      `TOURNAMENTS_FLAG is not set and APP_ENV=${env.profile} has no default: skipping both @tournaments-on and @tournaments-off specs. Set TOURNAMENTS_FLAG=on or off to match the environment's FEATURE_TOURNAMENTS.\n`,
+    );
+  return [TOURNAMENTS_ON_TAG, TOURNAMENTS_OFF_TAG];
+}
+
+/** Every exclusion that applies to every project. A project's own `grepInvert` replaces the config's, so it restates this. */
+export const COMMON_GREP_INVERT: RegExp[] = [QUARANTINE_TAG, ...tournamentFlagExclusions()];
 
 function resolveWorkers(): number | string {
   const override = readEnv('PLAYWRIGHT_WORKERS');
@@ -94,7 +115,7 @@ export function createBaseConfig(overrides: PlaywrightTestConfig = {}): Playwrig
     workers: resolveWorkers(),
     reporter: activeReporters(),
     testIgnore: /.*\/_template\/.*/,
-    grepInvert: QUARANTINE_TAG,
+    grepInvert: COMMON_GREP_INVERT,
     maxFailures: MAX_FAILURES,
     timeout: TIMEOUTS.test,
     expect: {

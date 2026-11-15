@@ -20,7 +20,7 @@ The UI chain and the API chain stay separate. An API spec imports `@api/fixtures
 - **Auto fixtures** use `{ auto: true }` for a precondition every test in that chain needs. `featureFlags` is the one. Do not mark a page object auto.
 - **Teardown is code after `await use(...)`.** It runs when the test fails. Add it only when the fixture holds something Playwright will not dispose with the page or the request context.
 - **Do not add `mergeTests`, `fixtures/pom/test-options.ts`, or an `apiRequest` fixture.** This suite extends one base per chain.
-- **Do not add a fixture that performs an API call.** The spec calls the feature client or `request.get`. See the `api-testing` skill, Phase 8.
+- **Do not add a fixture that performs an API call**, with one exception: a test-data fixture that creates the record a writing test acts on and deletes it after `use()` (rule 5 of the data policy in `suite-conventions`). The spec still calls the feature client for the behaviour under test. See the `api-testing` skill, Phase 8.
 
 ## Fixture Architecture
 
