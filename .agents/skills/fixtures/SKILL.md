@@ -13,13 +13,14 @@ The UI chain and the API chain stay separate. An API spec imports `@api/fixtures
 ## Critical
 
 - **ALWAYS** take a page object from a fixture. **NEVER** write `new GymsPage(page)` (or any other page class) in a spec.
-- **ALWAYS** import `test` and `expect` from the same module: `./fixtures` in a feature spec, `@ui/fixtures` in a cross-cutting spec, `@api/fixtures` in an API spec.
+- **ALWAYS** import `test` and `expect` from the same module: `./fixtures` in a feature UI spec, `./fixtures.api` in a feature API spec that needs its test-data fixture, `@ui/fixtures` in a cross-cutting spec, `@api/fixtures` in any other API spec.
 - **Page objects for one feature** are registered in `tests/features/<feature>/fixtures.ts` with `pageFixture`. Do not add them to `src/ui/fixtures/base.ts`.
 - **Route mocks** are registered with `mockFixture` in that same feature file. A mock runs only when the test calls it (`await mockGyms(body)`). Do not make it `auto`.
 - **Options** use the tuple form `[default, { option: true }]`. `test.use` overrides an option. It does not override a plain fixture.
 - **Auto fixtures** use `{ auto: true }` for a precondition every test in that chain needs. `featureFlags` is the one. Do not mark a page object auto.
 - **Teardown is code after `await use(...)`.** It runs when the test fails. Add it only when the fixture holds something Playwright will not dispose with the page or the request context.
 - **Do not add `mergeTests`, `fixtures/pom/test-options.ts`, or an `apiRequest` fixture.** This suite extends one base per chain.
+- **A feature's API chain.** When a feature's API specs need a test-data fixture, it lives in `tests/features/<feature>/fixtures.api.ts`, extending `@api/fixtures` (never in the shared `src/api/fixtures`, which stays feature-free). The feature's UI fixtures may import the data helper behind it from `src/api/features/<feature>/`, the same feature's slice; they never import another chain's `test`.
 - **Do not add a fixture that performs an API call**, with one exception: a test-data fixture that creates the record a writing test acts on and deletes it after `use()` (rule 5 of the data policy in `suite-conventions`). The spec still calls the feature client for the behaviour under test. See the `api-testing` skill, Phase 8.
 
 ## Fixture Architecture

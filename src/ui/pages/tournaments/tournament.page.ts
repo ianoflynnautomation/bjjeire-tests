@@ -2,9 +2,11 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import { gotoRoute } from '@ui/support';
 import {
   SIGN_UP_CONTROL_PATTERN,
+  OWN_SIGN_UPS_API_ROUTE,
   TOURNAMENT_NOT_FOUND_COPY,
   TOURNAMENT_PAGE_COPY,
   TOURNAMENT_PAGE_TEST_IDS as IDS,
+  tournamentSignUpPath,
 } from './tournaments.constants';
 
 /** One tournament's public page. */
@@ -98,9 +100,43 @@ export class TournamentPage {
     await expect(this.page.getByTestId(IDS.registrationMessage)).toHaveText(TOURNAMENT_PAGE_COPY.closed);
   }
 
+  /** The one sign-up control the app renders; the present and absent checks both go through it. */
+  private get signUpLink(): Locator {
+    return this.registrationSection.getByTestId(IDS.signUpLink);
+  }
+
+  /** The sign-up is offered: a visible, enabled "Sign up" link to this tournament's sign-up. It is never followed. */
+  async expectSignUpOffered(): Promise<void> {
+    await expect(this.signUpLink).toBeVisible();
+    await expect(this.signUpLink).toBeEnabled();
+    await expect(this.signUpLink).toHaveText(TOURNAMENT_PAGE_COPY.signUp);
+  }
+
+  /** Chooses "My sign-ups" beside the sign-up link: the visitor's route to their own list (the nav icon leads to the profile). */
+  async chooseMySignUps(): Promise<void> {
+    // Wait for the list to load (200), so what the page shows next is the competitor's real list, not the
+    // state before it arrives or after a failed fetch.
+    const loaded = this.page.waitForResponse(
+      response => response.request().method() === 'GET' && OWN_SIGN_UPS_API_ROUTE.test(response.url()),
+    );
+    await this.registrationSection.getByTestId(IDS.mySignUpsLink).click();
+    const response = await loaded;
+    expect(response.status(), `${response.url()} must load the competitor's sign-ups`).toBe(200);
+  }
+
+  /** Chooses "Sign up". Only navigates: the sign-up itself is made on the next page, which no test submits. */
+  async chooseSignUp(): Promise<void> {
+    await this.signUpLink.click();
+  }
+
+  async expectSignUpLeadsToTournament(slug: string): Promise<void> {
+    await expect(this.signUpLink).toHaveAttribute('href', tournamentSignUpPath(slug));
+  }
+
   /** No button or link in the registration section: the page offers nothing to sign up with. */
   async expectNoSignUp(): Promise<void> {
     await expect(this.registrationSection).toBeVisible();
+    await expect(this.signUpLink).toHaveCount(0);
     await expect(this.registrationSection.getByRole('button')).toHaveCount(0);
     await expect(this.registrationSection.getByRole('link')).toHaveCount(0);
     await expect(this.root.getByRole('button', { name: SIGN_UP_CONTROL_PATTERN })).toHaveCount(0);

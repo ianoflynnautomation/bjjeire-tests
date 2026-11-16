@@ -52,6 +52,8 @@ export type Env = Readonly<{
   apiUrl: string;
   /** Does the environment's API serve tournaments? `undefined` = unknown, see `TOURNAMENTS_FLAG`. */
   tournamentsFlag: FlagState | undefined;
+  /** Does the API issue a competitor token to any email? See `LOCAL_SIGN_IN`. */
+  localSignIn: FlagState;
   isCI: boolean;
   acceptInvalidCerts: boolean;
   context: RuntimeContext;
@@ -136,6 +138,7 @@ export const env: Env = Object.freeze({
   baseUrl,
   apiUrl,
   tournamentsFlag: readFlagState('TOURNAMENTS_FLAG', defaults.tournaments),
+  localSignIn: readFlagState('LOCAL_SIGN_IN', defaults.localSignIn) ?? defaults.localSignIn,
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
   context: runtimeContext,

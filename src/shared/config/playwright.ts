@@ -38,8 +38,22 @@ export function tournamentFlagExclusions(flag: FlagState | undefined = env.tourn
   return [TOURNAMENTS_ON_TAG, TOURNAMENTS_OFF_TAG];
 }
 
+// Specs that need the stack's local competitor sign-in (a token for any email) carry this tag. It is excluded
+// wherever the environment has no such route, so a run on dev or staging is not red by construction.
+export const LOCAL_SIGN_IN_TAG = /@local-sign-in/;
+
+/** `@local-sign-in` when the environment has no local competitor sign-in. The runner says why. */
+export function localSignInExclusions(flag: FlagState = env.localSignIn): RegExp[] {
+  if (flag === 'on') return [];
+  if (process.env['TEST_WORKER_INDEX'] === undefined)
+    process.stderr.write(
+      `LOCAL_SIGN_IN is off for APP_ENV=${env.profile}: skipping @local-sign-in specs. Set LOCAL_SIGN_IN=on when the stack runs the local profile with bjjeire.local-sign-in.enabled.\n`,
+    );
+  return [LOCAL_SIGN_IN_TAG];
+}
+
 /** Every exclusion that applies to every project. A project's own `grepInvert` replaces the config's, so it restates this. */
-export const COMMON_GREP_INVERT: RegExp[] = [QUARANTINE_TAG, ...tournamentFlagExclusions()];
+export const COMMON_GREP_INVERT: RegExp[] = [QUARANTINE_TAG, ...tournamentFlagExclusions(), ...localSignInExclusions()];
 
 function resolveWorkers(): number | string {
   const override = readEnv('PLAYWRIGHT_WORKERS');

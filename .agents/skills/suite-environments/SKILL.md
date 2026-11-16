@@ -148,6 +148,12 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
   excluded and the runner prints why. Each tagged spec still checks the flag endpoint in its Given step, so a
   wrong setting fails naming `TOURNAMENTS_FLAG`. A project's own `grepInvert` replaces the config's: use
   `COMMON_GREP_INVERT` (the UI config's `excluding()` does).
+- **Local competitor sign-in.** Specs that need a competitor token carry `@local-sign-in`. The API's
+  `POST /api/v1/local-sign-in/competitor` (`LocalSignInController`, local profile only, hidden from the OpenAPI document)
+  issues one for any email. `LOCAL_SIGN_IN=on|off` says whether the environment has it; `PROFILE_DEFAULTS.localSignIn`
+  is on for local and docker, off for dev and staging, and `COMMON_GREP_INVERT` excludes `@local-sign-in` when off (the
+  runner prints why). Specs get a signed-in `competitor` from the feature's fixtures (`tests/features/tournaments/fixtures.api.ts`
+  for API, `fixtures.ts` for UI); see the data policy in `suite-conventions`.
 - Reusable runners live in `bjjeire-ci-templates`: `playwright-docker-tests.yml`
   (compose stack + shards) and `playwright-tests.yml` / `acceptance-gate.yml` (existing
   or Flux ephemeral AKS). The app repo pins those workflows by commit SHA; the SHA pins

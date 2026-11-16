@@ -8,6 +8,7 @@ export const API_ROUTES = {
   stores: `${API_BASE_PATH}/store`,
   featureFlags: `${API_BASE_PATH}/featureflag`,
   tournaments: `${API_BASE_PATH}/tournament`,
+  localSignIn: `${API_BASE_PATH}/local-sign-in`,
   competitorMe: `${API_BASE_PATH}/competitor/me`,
   registrationMe: `${API_BASE_PATH}/registration/me`,
   registrations: `${API_BASE_PATH}/registration`,

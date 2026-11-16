@@ -12,13 +12,18 @@ export type ProfileDefaults = Readonly<{
    * values never set it, so the API default (off) applies.
    */
   tournaments: FlagState | undefined;
+  /**
+   * Whether the API issues a competitor token to any email through its local sign-in route
+   * (`bjjeire.local-sign-in.enabled`, local profile only). On for local and Docker stacks, off for dev and staging.
+   */
+  localSignIn: FlagState;
 }>;
 
 export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
-  local: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5000', tournaments: 'off' },
-  docker: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5003', tournaments: 'off' },
-  dev: { baseUrl: '', apiUrl: '', tournaments: 'off' },
-  staging: { baseUrl: '', apiUrl: '', tournaments: 'off' },
+  local: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5000', tournaments: 'off', localSignIn: 'on' },
+  docker: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5003', tournaments: 'off', localSignIn: 'on' },
+  dev: { baseUrl: '', apiUrl: '', tournaments: 'off', localSignIn: 'off' },
+  staging: { baseUrl: '', apiUrl: '', tournaments: 'off', localSignIn: 'off' },
 };
 
 const REMOTE_PROFILES: readonly Profile[] = ['dev', 'staging'];

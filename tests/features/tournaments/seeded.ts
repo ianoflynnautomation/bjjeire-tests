@@ -44,6 +44,23 @@ export const SEEDED_TOURNAMENT_OPEN_DIVISION_GROUPS = [
   { label: 'No-Gi · Female', rows: 1 },
 ] as const;
 
+/**
+ * The one `acceptance-open` division a white-belt adult man may enter, as the sign-up page words it
+ * (`<discipline> · <gender> · <age> · <belt> · <weight>`), from the seed file.
+ */
+export const SEEDED_TOURNAMENT_OPEN_WHITE_BELT_MALE_DIVISIONS = ['Gi · Male · Adult · White · -76 kg'] as const;
+
+/** `acceptance-open`'s one division for a blue-belt adult man, in the sign-up page's wording. */
+export const SEEDED_TOURNAMENT_OPEN_BLUE_BELT_MALE_DIVISIONS = ['Gi · Male · Adult · Blue · -82.3 kg'] as const;
+
+/** `acceptance-open`'s other four divisions: another gender, belt or age category than a blue-belt adult man. */
+export const SEEDED_TOURNAMENT_OPEN_OTHER_DIVISIONS = [
+  'Gi · Male · Adult · White · -76 kg',
+  'Gi · Female · Adult · White · -64 kg',
+  'No-Gi · Male · Master 1 · Purple · -85.5 kg',
+  'No-Gi · Female · Adult · Blue · -66.5 kg',
+] as const;
+
 export const SEEDED_TOURNAMENTS: readonly SeededTournamentFacts[] = [
   SEEDED_TOURNAMENT_OPEN,
   SEEDED_TOURNAMENT_OPENS_LATER,
@@ -60,3 +77,11 @@ export const NO_MATCH_SEARCH_TERM = 'zzzz-no-such-tournament';
 if (seededTournamentsMatching(NO_MATCH_SEARCH_TERM).length > 0) {
   throw new Error(`'${NO_MATCH_SEARCH_TERM}' now matches a seeded tournament — choose another term.`);
 }
+
+/**
+ * A gym from the gym directory, for the academy picker. Recorded here, not imported, because a feature never imports
+ * another feature: it is `SEEDED_GYM_BLACKWATER_VALLEY` in `tests/features/gyms/seeded.ts`, from the app's test dataset
+ * (`bjjeire-java/seeder/data-test/gyms/`). Update both when the seed changes.
+ */
+export const SEEDED_DIRECTORY_GYM_NAME = 'Blackwater Valley BJJ';
+export const SEEDED_DIRECTORY_GYM_PARTIAL_NAME = partialNameOf({ name: SEEDED_DIRECTORY_GYM_NAME }, 'Blackwater');

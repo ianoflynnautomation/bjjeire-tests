@@ -61,6 +61,12 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
      A test that must publish leaves nothing published at its end and runs serially (or
      against a mocked list), because a published record shifts paged list counts in
      other workers.
+   - A competitor is such a record. A `@local-sign-in` spec takes the `competitor` fixture
+     (`tests/features/tournaments/fixtures.api.ts` for API specs, `fixtures.ts` for UI, both built on
+     `src/api/features/tournaments/competitor.service.ts`): a fresh `pw-<token>@example.test` account signed in through
+     the local route, a profile saved from the `competitorProfile` option, and the account deleted after `use()`.
+     It never creates a sign-up, because a sign-up takes a place that cannot be given back and blocks deleting the
+     competitor. The UI `competitor` fixture enforces it: it aborts any POST to the sign-up and checkout routes and fails the test if the page sent one.
    - Never update or delete a seeded record or another test's record, and never rely on
      test order. Every test must pass under `fullyParallel` and `--repeat-each`.
    - Because other workers' records can exist at the same time, list assertions stay
@@ -139,7 +145,9 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
   parameter, and exports a `<feature>TestConfig` that every one of its UI specs
   passes to `test.use(...)` — empty by default, and the single place to put an
   option the whole feature needs. Specs import `expect` from that same module
-  (`./fixtures`, `@ui/fixtures`, or `@api/fixtures`). The UI chain and the API
+  (`./fixtures`, `./fixtures.api`, `@ui/fixtures`, or `@api/fixtures`). A feature whose API specs need a test-data fixture
+  adds `tests/features/<feature>/fixtures.api.ts`, which extends `@api/fixtures`; that feature's API specs import it.
+  The UI chain and the API
   chain stay separate, so an API spec never imports `@ui/fixtures` and never
   launches a browser. A layout spec that needs one feature page object extends
   `@ui/fixtures` in that file with `pageFixture`; it does not import the

@@ -18,3 +18,13 @@ export type SeededTournamentFacts = Readonly<{
   divisionCount: number;
   registrationState: 'OPEN' | 'CLOSED' | 'NOT_OPEN';
 }>;
+
+/** The details a competitor types into the profile form; the labels are the app's, the values are the test's. */
+export type ProfileDetails = Readonly<{
+  firstName: string;
+  lastName: string;
+  nationality: string;
+  dateOfBirth: string;
+  gender: string;
+  belt: string;
+}>;

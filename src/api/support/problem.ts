@@ -10,6 +10,7 @@ export const ProblemType = {
   NotFound: 'urn:bjjeire:not-found',
   MethodNotAllowed: 'urn:bjjeire:method-not-allowed',
   Conflict: 'urn:bjjeire:conflict',
+  RegistrationNotOpen: 'urn:bjjeire:registration-not-open',
   Validation: 'urn:bjjeire:validation-error',
   RateLimit: 'urn:bjjeire:rate-limit-exceeded',
   Internal: 'urn:bjjeire:internal-error',
@@ -19,6 +20,8 @@ export type ProblemType = (typeof ProblemType)[keyof typeof ProblemType];
 export const ValidationErrorCode = {
   InvalidFormat: 'INVALID_FORMAT',
   ValueOutOfRange: 'VALUE_OUT_OF_RANGE',
+  NotNull: 'NOT_NULL',
+  AssertTrue: 'AssertTrue',
 } as const;
 
 // The published OpenAPI contract lists only 200 responses, so error bodies have no generated

@@ -57,6 +57,7 @@ Two-tier taxonomy:
   `grepInvert` (`QUARANTINE_TAG` in `src/shared/config/playwright.ts`) but kept in
   the repo so they stay greppable. Fix or delete promptly — never let the list grow.
 - `@tournaments-on` / `@tournaments-off` mark specs that depend on the environment's real `Tournaments` flag; `TOURNAMENTS_FLAG=on|off` (per-profile default) excludes the other set via config, see `suite-environments`.
+- `@local-sign-in` marks specs that need the stack's local competitor sign-in (a token for any email); `LOCAL_SIGN_IN=on|off` (on for local and docker, off for dev and staging) excludes them via config, see `suite-environments`.
 
 ## Spec-driven development
 
@@ -133,7 +134,7 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 - **Assertions:** web-first only, with no `waitForTimeout()` or polling loops. After `searchFor`, assert `expectResultCount(1)`.
 - **Navigation:** never a bare `page.goto` for an app route. Use `gotoRoute` or `gotoAppShell` from `@ui/support`. Snapshot specs are the exception.
 - **API specs:** call the feature client with the generated schema, then assert business values. Error paths use `expectProblem`. Negative inputs are data-driven.
-- **Page objects:** only they hold locators, and specs never construct them. Specs import `test` and `expect` from `./fixtures`, `@ui/fixtures` or `@api/fixtures`. UI and API chains stay separate.
+- **Page objects:** only they hold locators, and specs never construct them. Specs import `test` and `expect` from `./fixtures`, `./fixtures.api` (a feature's API test-data fixtures), `@ui/fixtures` or `@api/fixtures`. UI and API chains stay separate.
 - **Feature flags:** pinned on by a fixture, never asserted.
 - **Snapshots:** baselines are per platform. Regenerate both with `/update-snapshots`.
 

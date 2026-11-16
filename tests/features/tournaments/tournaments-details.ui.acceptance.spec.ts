@@ -116,6 +116,42 @@ test.describe(
     );
 
     test(
+      'visitor should be offered to sign up when registration is open',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ tournamentsPage, tournamentPage }) => {
+        await test.step('Given tournaments are switched on', () => {
+          givenTournamentsSwitchedOn();
+        });
+
+        await test.step('When a visitor opens Tournaments', async () => {
+          await tournamentsPage.goTo();
+        });
+
+        await test.step('And the visitor searches for "Acceptance Open"', async () => {
+          await tournamentsPage.searchFor(openTournament.name);
+          // "Acceptance Open" is also the start of "Acceptance Opens Later", so the seed implies several cards.
+          await tournamentsPage.expectResultCount(seededTournamentsMatching(openTournament.name).length);
+        });
+
+        await test.step('And the visitor opens the "Acceptance Open" tournament', async () => {
+          await tournamentsPage.openTournament(openTournament.name);
+        });
+
+        // The sign-up is only looked at, never followed: a sign-up would take a seeded place for good.
+        await test.step('Then a sign-up is offered', async () => {
+          await tournamentPage.expectSignUpOffered();
+        });
+
+        await test.step('And the sign-up leads to the sign-up for that tournament', async () => {
+          await tournamentPage.expectSignUpLeadsToTournament(openTournament.slug);
+        });
+      },
+    );
+
+    test(
       'visitor should see when registration opens and no sign-up when registration has not opened',
       {
         tag: '@acceptance',
