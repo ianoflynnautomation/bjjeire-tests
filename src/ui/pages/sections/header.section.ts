@@ -3,7 +3,7 @@ import {
   ACCOUNT_ENTRY_PATTERN,
   HEADER_BUTTON_NAMES,
   HEADER_TEST_IDS,
-  TOURNAMENT_ENTRY_PATTERN,
+  RETIRED_NAME_ENTRY_PATTERN,
   THEME_SWITCH_LABELS,
   Theme,
 } from './header.constants';
@@ -30,10 +30,11 @@ export class HeaderSection {
     await expect(this.page.getByTestId(HEADER_TEST_IDS.desktopLinks).getByRole('link')).toHaveText([...names]);
   }
 
-  async expectNoTournamentEntry(): Promise<void> {
+  /** No link or button carries the retired name of BJJ Éire competitions. */
+  async expectNoRetiredNameEntry(): Promise<void> {
     await expect(this.navigation).toBeVisible();
-    await expect(this.navigation.getByRole('link', { name: TOURNAMENT_ENTRY_PATTERN })).toHaveCount(0);
-    await expect(this.navigation.getByRole('button', { name: TOURNAMENT_ENTRY_PATTERN })).toHaveCount(0);
+    await expect(this.navigation.getByRole('link', { name: RETIRED_NAME_ENTRY_PATTERN })).toHaveCount(0);
+    await expect(this.navigation.getByRole('button', { name: RETIRED_NAME_ENTRY_PATTERN })).toHaveCount(0);
   }
 
   /** Closed world: the only buttons are the known ones, and no link is named like an account control. */

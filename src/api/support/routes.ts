@@ -5,14 +5,16 @@ export const API_ROUTES = {
   gyms: `${API_BASE_PATH}/gym`,
   bjjEvents: `${API_BASE_PATH}/bjjevent`,
   competitions: `${API_BASE_PATH}/competition`,
+  bjjEireCompetitions: `${API_BASE_PATH}/bjjeire-competition`,
   stores: `${API_BASE_PATH}/store`,
   featureFlags: `${API_BASE_PATH}/featureflag`,
-  tournaments: `${API_BASE_PATH}/tournament`,
   localSignIn: `${API_BASE_PATH}/local-sign-in`,
   competitorMe: `${API_BASE_PATH}/competitor/me`,
   registrationMe: `${API_BASE_PATH}/registration/me`,
   registrations: `${API_BASE_PATH}/registration`,
   donateBitcoinQr: `${API_BASE_PATH}/donate/bitcoin/qr`,
+  /** A route no feature owns: the baseline for what an unknown route answers. */
+  noSuchFeature: `${API_BASE_PATH}/no-such-feature`,
   openApiV1: `/openapi/${API_VERSION}.json`,
 } as const;
 

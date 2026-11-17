@@ -139,20 +139,22 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
 - `APP_ENV` selects the profile: `local` (minikube), `docker`, `dev`, `staging`.
   `.env` (gitignored) supplies `BASE_URL`/`API_URL`.
 - `ci.yml`: lint + typecheck on every push/PR.
-- **Flag-dependent specs.** Specs that only pass with the API's `Tournaments` flag in one state carry
-  `@tournaments-on` or `@tournaments-off`. `TOURNAMENTS_FLAG=on|off` says which state the environment is in;
-  `COMMON_GREP_INVERT` (`src/shared/config/playwright.ts`, next to `QUARANTINE_TAG`) excludes the other tag for
-  every project, UI and API. Defaults live in `PROFILE_DEFAULTS` (every profile defaults off: the compose file
-  defaults the flag off and gitops never sets it; a Docker stack started with `FEATURE_TOURNAMENTS=true` needs
-  `TOURNAMENTS_FLAG=on`). With no value and no default, both sets are
-  excluded and the runner prints why. Each tagged spec still checks the flag endpoint in its Given step, so a
-  wrong setting fails naming `TOURNAMENTS_FLAG`. A project's own `grepInvert` replaces the config's: use
-  `COMMON_GREP_INVERT` (the UI config's `excluding()` does).
+- **Flag-dependent specs.** Specs that need the API's `BjjEireCompetitions` flag (BJJ Éire competitions, competitor
+  accounts and registration) on carry `@bjjeire-competitions-on`; there is no `-off` set (the app's API integration
+  tests own flag-off behaviour). `BJJEIRE_COMPETITIONS_FLAG=on|off` says which state the environment is in;
+  `COMMON_GREP_INVERT` (`src/shared/config/playwright.ts`, next to `QUARANTINE_TAG`) excludes the tag for every
+  project, UI and API, unless the value is `on`. Defaults live in `PROFILE_DEFAULTS.bjjEireCompetitions`: on for local
+  and docker (the acceptance stacks run with `FEATURE_BJJEIRE_COMPETITIONS=true`), off for dev and staging (gitops never
+  sets it). A stack started with the compose default (off) needs `BJJEIRE_COMPETITIONS_FLAG=off`. Off or unset, the
+  runner prints that it skips the tag. Each tagged spec still checks the flag endpoint in its Given step, so a wrong setting
+  fails naming `BJJEIRE_COMPETITIONS_FLAG`. A project's own `grepInvert` replaces the config's: use
+  `COMMON_GREP_INVERT` (the UI config's `excluding()` does). In the browser the flag is pinned, not read:
+  `ALL_FEATURES_ENABLED` pins `BjjEireCompetitions: false` and `competitionsTestConfig` pins it on.
 - **Local competitor sign-in.** Specs that need a competitor token carry `@local-sign-in`. The API's
   `POST /api/v1/local-sign-in/competitor` (`LocalSignInController`, local profile only, hidden from the OpenAPI document)
   issues one for any email. `LOCAL_SIGN_IN=on|off` says whether the environment has it; `PROFILE_DEFAULTS.localSignIn`
   is on for local and docker, off for dev and staging, and `COMMON_GREP_INVERT` excludes `@local-sign-in` when off (the
-  runner prints why). Specs get a signed-in `competitor` from the feature's fixtures (`tests/features/tournaments/fixtures.api.ts`
+  runner prints why). Specs get a signed-in `competitor` from the feature's fixtures (`tests/features/competitions/fixtures.api.ts`
   for API, `fixtures.ts` for UI); see the data policy in `suite-conventions`.
 - Reusable runners live in `bjjeire-ci-templates`: `playwright-docker-tests.yml`
   (compose stack + shards) and `playwright-tests.yml` / `acceptance-gate.yml` (existing

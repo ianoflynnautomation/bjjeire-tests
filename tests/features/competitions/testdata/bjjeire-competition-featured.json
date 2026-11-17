@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "mck88000000000000000001",
+      "slug": "mocked-featured-open",
+      "name": "Mocked Featured Open",
+      "date": "2035-09-01",
+      "venue": {
+        "address": "1 Test Road, Dublin",
+        "venue": "Mock Arena"
+      },
+      "entryFeeCents": 2000,
+      "currency": "EUR",
+      "registrationOpensAt": "2026-01-01T09:00:00.000Z",
+      "registrationClosesAt": "2035-08-01T09:00:00.000Z",
+      "placesTaken": 0,
+      "status": "PUBLISHED",
+      "registrationState": "OPEN",
+      "divisionCount": 5
+    }
+  ],
+  "pagination": {
+    "totalItems": 1,
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalPages": 1,
+    "hasNextPage": false,
+    "hasPreviousPage": false,
+    "nextPageUrl": null,
+    "previousPageUrl": null
+  }
+}

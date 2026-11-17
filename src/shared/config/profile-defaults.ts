@@ -6,12 +6,13 @@ export type ProfileDefaults = Readonly<{
   baseUrl: string;
   apiUrl: string;
   /**
-   * Whether the environment's API serves tournaments (`FEATURE_TOURNAMENTS`). `undefined` = unknown, so a
-   * run selects neither tournament set until `TOURNAMENTS_FLAG` says. Docker: the compose file defaults it
-   * off (a stack started with FEATURE_TOURNAMENTS=true needs TOURNAMENTS_FLAG=on). Local (minikube), dev and staging: the gitops
+   * Whether the environment's API serves BJJ Éire competitions (`FEATURE_BJJEIRE_COMPETITIONS`, flag
+   * `BjjEireCompetitions`). `undefined` = unknown, so a run selects neither flag-dependent set until
+   * `BJJEIRE_COMPETITIONS_FLAG` says. Local and Docker: on, because the acceptance stacks run with the flag on (a
+   * stack started with the compose default, off, needs BJJEIRE_COMPETITIONS_FLAG=off). Dev and staging: the gitops
    * values never set it, so the API default (off) applies.
    */
-  tournaments: FlagState | undefined;
+  bjjEireCompetitions: FlagState | undefined;
   /**
    * Whether the API issues a competitor token to any email through its local sign-in route
    * (`bjjeire.local-sign-in.enabled`, local profile only). On for local and Docker stacks, off for dev and staging.
@@ -20,10 +21,20 @@ export type ProfileDefaults = Readonly<{
 }>;
 
 export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
-  local: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5000', tournaments: 'off', localSignIn: 'on' },
-  docker: { baseUrl: 'http://localhost:3000', apiUrl: 'http://localhost:5003', tournaments: 'off', localSignIn: 'on' },
-  dev: { baseUrl: '', apiUrl: '', tournaments: 'off', localSignIn: 'off' },
-  staging: { baseUrl: '', apiUrl: '', tournaments: 'off', localSignIn: 'off' },
+  local: {
+    baseUrl: 'http://localhost:3000',
+    apiUrl: 'http://localhost:5000',
+    bjjEireCompetitions: 'on',
+    localSignIn: 'on',
+  },
+  docker: {
+    baseUrl: 'http://localhost:3000',
+    apiUrl: 'http://localhost:5003',
+    bjjEireCompetitions: 'on',
+    localSignIn: 'on',
+  },
+  dev: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off' },
+  staging: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off' },
 };
 
 const REMOTE_PROFILES: readonly Profile[] = ['dev', 'staging'];

@@ -39,7 +39,7 @@ Where `.agents/skills/playwright-cli/references/spec-driven-testing.md` disagree
   cannot show the state.
 - Use the local app only (`BASE_URL` from `.env`, normally `http://127.0.0.1:8080`).
   Never production. Staging only if the user asks.
-- The public directory is read-only. Tournaments add write flows (organiser create, edit, publish, delete; competitor profile and registration). Plan them, and write in each such block's Test design that the test creates the record it acts on and deletes it afterwards (rule 5 of the data policy in `suite-conventions`). Never plan a scenario that changes a seeded record.
+- The public directory is read-only. BJJ Éire competitions add write flows (organiser create, edit, publish, delete; competitor profile and registration). Plan them, and write in each such block's Test design that the test creates the record it acts on and deletes it afterwards (rule 5 of the data policy in `suite-conventions`). Never plan a scenario that changes a seeded record.
 - Read `browser_network_requests` to see which API calls a view makes; that tells you
   which behaviours belong at the API layer instead.
 - Close the browser when done.

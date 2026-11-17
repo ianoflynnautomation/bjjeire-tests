@@ -29,7 +29,7 @@ type UiUse = NonNullable<Project<PlaywrightTestOptions, PlaywrightWorkerOptions>
  * A project's `grepInvert` REPLACES the config-level one rather than adding to
  * it — verified by dropping `QUARANTINE_TAG` from one project, which promptly
  * ran a `@quarantine` test. So every project that filters has to restate the
- * common exclusions (quarantine, the tournament set the environment cannot run), and this helper is the only way to write it.
+ * common exclusions (quarantine, the BJJ Éire competitions set the environment cannot run), and this helper is the only way to write it.
  *
  * Projects with no `grepInvert` of their own (snapshots, a11y, mobile) inherit
  * the config-level filter and stay quarantine-free without it.

@@ -3,12 +3,14 @@ import { test, expect } from '@api/fixtures';
 import { competitionsPageSchema } from '@api/features/competitions/competitions.schemas';
 import { getCompetitions } from '@api/features/competitions/competitions.service';
 import {
+  API_BASE_PATH,
   API_ROUTES,
   expectConsecutivePagePagination,
   expectListingToInclude,
   expectPagesAreDistinct,
   expectProblem,
   expectRelativeOrder,
+  problemDetailSchema,
   ProblemType,
   ValidationErrorCode,
 } from '@api/support';
@@ -22,6 +24,9 @@ import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 50;
 const SMALL_PAGE_SIZE = 2;
+
+/** The BJJ Éire competitions API's address before ADR-0015; it must answer as an address that never existed (`#3016`). */
+const RETIRED_API_ROUTE = `${API_BASE_PATH}/tournament`;
 
 test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@squash'] }, () => {
   test(
@@ -147,6 +152,43 @@ test.describe('Competitions API acceptance', { tag: ['@competitions', '@api', '@
           hasPreviousPage: true,
         });
         expect(pagination.nextPageUrl).toBeNull();
+      });
+    },
+  );
+
+  test(
+    'client should get the same answer at a retired API route as at a route that never existed',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const [retired, unknown] =
+        await test.step('When a client calls a retired competitions route and a route that never existed with no token', () =>
+          Promise.all([
+            request.get(RETIRED_API_ROUTE, { maxRedirects: 0 }),
+            request.get(API_ROUTES.noSuchFeature, { maxRedirects: 0 }),
+          ]));
+
+      await test.step('Then both answers have the same status and the retired route does not succeed', () => {
+        expect(retired.status()).toBe(unknown.status());
+        expect(retired.ok()).toBe(false);
+      });
+
+      await test.step('And both answers are the same problem document', async () => {
+        expect(retired.headers()['content-type']).toBe(unknown.headers()['content-type']);
+        const retiredProblem = problemDetailSchema.parse(await retired.json());
+        const unknownProblem = problemDetailSchema.parse(await unknown.json());
+        expect(retiredProblem).toMatchObject({
+          type: unknownProblem.type,
+          title: unknownProblem.title,
+          status: unknownProblem.status,
+        });
+      });
+
+      await test.step('And neither redirects', () => {
+        expect(retired.headers()['location']).toBeUndefined();
+        expect(unknown.headers()['location']).toBeUndefined();
       });
     },
   );

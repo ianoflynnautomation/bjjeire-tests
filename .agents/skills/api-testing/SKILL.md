@@ -6,7 +6,7 @@ author: Ian O Flynn
 
 # API Testing
 
-Acceptance specs for the directory API (gyms, events, competitions, stores: read-only) and the tournaments API (whose write routes follow rule 5 of the data policy in `suite-conventions`: a test creates and deletes its own record). Phases stay in this order. The call path is Playwright's `request` fixture passed into a feature client.
+Acceptance specs for the directory API (gyms, events, competitions, stores: read-only) and the BJJ Éire competitions, competitor and registration API (whose write routes follow rule 5 of the data policy in `suite-conventions`: a test creates and deletes its own record). Phases stay in this order. The call path is Playwright's `request` fixture passed into a feature client.
 
 ## Critical
 

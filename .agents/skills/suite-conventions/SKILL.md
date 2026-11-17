@@ -46,8 +46,8 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
 4. Partial search terms live next to their DTOs (`SEEDED_*_PARTIAL_NAME`, guarded by
    `partialNameOf`); never derive them with `name.slice(...)` in specs.
 5. **A test that writes owns its data.** Read-only seeded data (gyms, events, stores,
-   competitions, the seeded tournaments) is shared: assert it, never change it. A test
-   that updates or deletes something (an organiser editing or deleting a tournament, a
+   competitions, the seeded BJJ Éire competitions) is shared: assert it, never change it. A test
+   that updates or deletes something (an organiser editing or deleting a BJJ Éire competition, a
    competitor saving or deleting a profile) first creates the record it acts on, and
    deletes it afterwards:
    - Create it through the API in a test-scoped fixture in the feature's `fixtures.ts`
@@ -62,8 +62,8 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
      against a mocked list), because a published record shifts paged list counts in
      other workers.
    - A competitor is such a record. A `@local-sign-in` spec takes the `competitor` fixture
-     (`tests/features/tournaments/fixtures.api.ts` for API specs, `fixtures.ts` for UI, both built on
-     `src/api/features/tournaments/competitor.service.ts`): a fresh `pw-<token>@example.test` account signed in through
+     (`tests/features/competitions/fixtures.api.ts` for API specs, `fixtures.ts` for UI, both built on
+     `src/api/features/competitions/competitor.service.ts`): a fresh `pw-<token>@example.test` account signed in through
      the local route, a profile saved from the `competitorProfile` option, and the account deleted after `use()`.
      It never creates a sign-up, because a sign-up takes a place that cannot be given back and blocks deleting the
      competitor. The UI `competitor` fixture enforces it: it aborts any POST to the sign-up and checkout routes and fails the test if the page sent one.

@@ -56,7 +56,7 @@ Two-tier taxonomy:
 - `@quarantine` marks known-flaky tests: excluded from every run via config
   `grepInvert` (`QUARANTINE_TAG` in `src/shared/config/playwright.ts`) but kept in
   the repo so they stay greppable. Fix or delete promptly — never let the list grow.
-- `@tournaments-on` / `@tournaments-off` mark specs that depend on the environment's real `Tournaments` flag; `TOURNAMENTS_FLAG=on|off` (per-profile default) excludes the other set via config, see `suite-environments`.
+- `@bjjeire-competitions-on` marks specs that need the environment's real `BjjEireCompetitions` flag (BJJ Éire competitions) on; `BJJEIRE_COMPETITIONS_FLAG=on|off` (on for local and docker, off for dev and staging) excludes them via config unless it is `on`, see `suite-environments`.
 - `@local-sign-in` marks specs that need the stack's local competitor sign-in (a token for any email); `LOCAL_SIGN_IN=on|off` (on for local and docker, off for dev and staging) excludes them via config, see `suite-environments`.
 
 ## Spec-driven development
@@ -160,4 +160,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-15.
+script, project, or workflow it documents. Last reviewed: 2026-11-17.

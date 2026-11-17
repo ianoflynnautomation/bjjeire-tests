@@ -21,21 +21,19 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 
 export const QUARANTINE_TAG = /@quarantine/;
 
-// Specs whose outcome depends on the environment's real `Tournaments` flag carry one of these tags.
-// The set that does not match the environment is excluded, so a full run is not red by construction.
-export const TOURNAMENTS_ON_TAG = /@tournaments-on/;
-export const TOURNAMENTS_OFF_TAG = /@tournaments-off/;
+// Specs that need the environment's API to serve BJJ Éire competitions (`BjjEireCompetitions` flag on) carry this tag.
+// Where the flag is off, or unknown, they are excluded, so a run there is not red by construction.
+export const BJJEIRE_COMPETITIONS_ON_TAG = /@bjjeire-competitions-on/;
 
-/** The tournament set the environment cannot run. Unknown flag: both, with the reason printed. */
-export function tournamentFlagExclusions(flag: FlagState | undefined = env.tournamentsFlag): RegExp[] {
-  if (flag === 'on') return [TOURNAMENTS_OFF_TAG];
-  if (flag === 'off') return [TOURNAMENTS_ON_TAG];
+/** `@bjjeire-competitions-on` unless the environment's flag is known to be on. The runner says why. */
+export function bjjEireCompetitionsFlagExclusions(flag: FlagState | undefined = env.bjjEireCompetitionsFlag): RegExp[] {
+  if (flag === 'on') return [];
   // Workers load this config too; only the runner explains.
   if (process.env['TEST_WORKER_INDEX'] === undefined)
     process.stderr.write(
-      `TOURNAMENTS_FLAG is not set and APP_ENV=${env.profile} has no default: skipping both @tournaments-on and @tournaments-off specs. Set TOURNAMENTS_FLAG=on or off to match the environment's FEATURE_TOURNAMENTS.\n`,
+      `BJJEIRE_COMPETITIONS_FLAG is ${flag ?? `not set and APP_ENV=${env.profile} has no default`}: skipping @bjjeire-competitions-on specs. Set BJJEIRE_COMPETITIONS_FLAG=on when the environment runs with FEATURE_BJJEIRE_COMPETITIONS=true.\n`,
     );
-  return [TOURNAMENTS_ON_TAG, TOURNAMENTS_OFF_TAG];
+  return [BJJEIRE_COMPETITIONS_ON_TAG];
 }
 
 // Specs that need the stack's local competitor sign-in (a token for any email) carry this tag. It is excluded
@@ -53,7 +51,11 @@ export function localSignInExclusions(flag: FlagState = env.localSignIn): RegExp
 }
 
 /** Every exclusion that applies to every project. A project's own `grepInvert` replaces the config's, so it restates this. */
-export const COMMON_GREP_INVERT: RegExp[] = [QUARANTINE_TAG, ...tournamentFlagExclusions(), ...localSignInExclusions()];
+export const COMMON_GREP_INVERT: RegExp[] = [
+  QUARANTINE_TAG,
+  ...bjjEireCompetitionsFlagExclusions(),
+  ...localSignInExclusions(),
+];
 
 function resolveWorkers(): number | string {
   const override = readEnv('PLAYWRIGHT_WORKERS');

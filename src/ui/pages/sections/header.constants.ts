@@ -31,14 +31,11 @@ export const HEADER_NAV_LINKS = [
   { name: 'About', path: '/about' },
 ] as const;
 
-/** With the `Tournaments` flag on, the entry sits between Stores and About. */
-export const HEADER_NAV_LINKS_TOURNAMENTS_ON = [
-  ...HEADER_NAV_LINKS.filter(link => link.name !== 'About'),
-  { name: 'Tournaments', path: '/tournaments' },
-  { name: 'About', path: '/about' },
-] as const;
-
-export const TOURNAMENT_ENTRY_PATTERN = /tournament/i;
+/**
+ * The retired name of BJJ Éire competitions (ADR-0015). No header entry may carry it, whatever the flags
+ * (merge spec FR-005, `#3015`); the word is fixed here, not read from the app.
+ */
+export const RETIRED_NAME_ENTRY_PATTERN = /tournament/i;
 export const ACCOUNT_ENTRY_PATTERN =
   /sign[ -]?in|sign[ -]?up|log[ -]?in|log[ -]?out|register|registration|account|profile|competitor|my |user menu/i;
 
