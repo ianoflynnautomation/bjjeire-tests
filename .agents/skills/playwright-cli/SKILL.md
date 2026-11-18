@@ -1,10 +1,20 @@
 ---
 name: playwright-cli
-description: Automate browser interactions, test web pages and work with Playwright tests.
-allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*)
+description: >
+  Drive the browser with `npx playwright cli` from the bjjeire-tests repo root:
+  open, snapshot, attach, console, requests, and generate-locator. Use when
+  healing or exploring with the CLI. Do not install a global `playwright-cli`.
+  The planner and generator use the playwright-test MCP server instead. Where
+  references/spec-driven-testing.md disagrees with .claude/agents/ and
+  specs/templates/, the agents and the templates win.
+allowed-tools: Bash(npx:*) Bash(npm:*)
 ---
 
 # Browser Automation with playwright-cli
+
+In this repository the command is `npx playwright cli`, run from the repo root. Do not install a global `playwright-cli`. The examples below use the `playwright-cli` spelling. Prefix them with `npx playwright` and pass `cli` first: `npx playwright cli snapshot`.
+
+Where [references/spec-driven-testing.md](references/spec-driven-testing.md) disagrees with `.claude/agents/` and `specs/templates/`, the agents and the templates win. Do not create `specs/*.plan.md` or `tests/seed.spec.ts`, and do not edit a living spec so a test goes green.
 
 ## Quick start
 
@@ -327,16 +337,10 @@ playwright-cli kill-all
 
 ## Installation
 
-If global `playwright-cli` command is not available, try a local version via `npx playwright-cli`:
+Playwright is already a dependency of this repository. Run the CLI through npx from the repo root. Do not install `@playwright/cli` or a global `playwright-cli`.
 
 ```bash
-npx --no-install playwright-cli --version
-```
-
-When local version is available, use `npx playwright-cli` in all commands. Otherwise, install `playwright-cli` as a global command:
-
-```bash
-npm install -g @playwright/cli@latest
+npx playwright cli --help
 ```
 
 ## Example: Form submission
@@ -398,7 +402,7 @@ playwright-cli show --annotate
 - **Request mocking** [references/request-mocking.md](references/request-mocking.md)
 - **Running Playwright code** [references/running-code.md](references/running-code.md)
 - **Browser session management** [references/session-management.md](references/session-management.md)
-- **Spec-driven testing (plan / generate / heal)** [references/spec-driven-testing.md](references/spec-driven-testing.md)
+- **Spec-driven testing (plan / generate / heal)** [references/spec-driven-testing.md](references/spec-driven-testing.md). Command mechanics only. Where it disagrees with `.claude/agents/` and `specs/templates/`, the agents and the templates win.
 - **Storage state (cookies, localStorage)** [references/storage-state.md](references/storage-state.md)
 - **Test generation** [references/test-generation.md](references/test-generation.md)
 - **Tracing** [references/tracing.md](references/tracing.md)
