@@ -139,6 +139,29 @@ Test design: UI · @acceptance · not mocked · default seed
 
 Test design: API (static file on the app host) · @acceptance · not mocked
 
+### Merch switched off (`#6026`, planned 2026-11-18, slice 0)
+
+Behaviour: `bjjeire-java/specs/stc/shop/spec.md` § `#6026` and ADR-0016. The `Merch` switch is off by default
+and in every environment until the shop launches. While it is off, every product and order route answers 404
+before sign-in, whatever token is sent. No merch screen exists yet, so the visitor-facing half of `#6026` (no
+merch section, basket, product page or merch admin screen) gets its blocks with slice 2. No test claims this
+block yet.
+
+#### client should not reach the merch shop while merch is switched off <route>
+
+- Covers: `#6026`
+- Oracle: ADR-0016 and the app's STC overlay (`/api/v1/product/**` and `/api/v1/order/**` answer 404 `urn:bjjeire:not-found` while `Merch` is off). Not a calculation shared with the app.
+- Steps:
+  1. Given the environment's flag endpoint reports `Merch: false`
+  2. When a client calls <route> without a token
+- Expected results:
+  - Then the response is a 404 problem document of type `urn:bjjeire:not-found`
+  - And it carries a `traceId`
+  - And it is not a 401: the route is absent, not protected
+- Why: a switched-off shop that answered 401 instead would tell anyone probing the API that order and product routes exist, and a 200 would mean guest checkout is open before launch.
+
+Test design: API · @acceptance · data-driven over `the catalogue` (`GET /api/v1/product`), `the delivery fee` (`GET /api/v1/order/delivery`), `checkout` (`POST /api/v1/order`), `the organiser's orders` (`GET /api/v1/order/admin`) and `the shop webhook` (`POST /api/v1/order/stripe-webhook`) · not mocked · no data. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: true`, as `tests/features/competitions/switched-on-ui.ts` does for its flag. Assert with `expectProblem` (status and `type`), never on the `detail` wording.
+
 ## Held for a product decision
 
 None.
