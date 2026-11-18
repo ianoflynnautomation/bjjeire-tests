@@ -533,6 +533,24 @@ Test design: UI · @acceptance @bjjeire-competitions-on @local-sign-in · seeded
 
 Test design: UI · @acceptance @bjjeire-competitions-on @local-sign-in · creates its own draft with a unique slug, publishes it, and deletes or cancels it afterwards (rule 5 of the data policy; the published draft is featured on Competitions until cancelled, so other scenarios must not count the featured cards) · not mocked · local and docker only. Never edits the three seeded records.
 
+### Featured card logo (planned 2026-11-17, slice 6)
+
+Behaviour: `bjjeire-java/specs/features/competitions.md` § `#3006`. Each featured BJJ Éire competition card is headed by the BJJ Éire logo, served by the SPA at `/bjjeire-competition.jpg`. The image is decorative (`alt=""`), so it adds nothing to the card's accessible name. No test claims this block yet.
+
+#### visitor should see the BJJ Éire logo at the top of each featured competition card
+
+- Covers: `#3006`
+- Oracle: the seeded acceptance BJJ Éire competitions (`acceptance-open`, `acceptance-opens-later`, `acceptance-closed`), and the product spec's rule that every featured card is headed by the BJJ Éire logo.
+- Steps:
+  1. When a visitor opens Competitions
+- Expected results:
+  - Then each of the three seeded featured cards shows the BJJ Éire logo above its name
+  - And the logo has loaded (it is not a broken image)
+  - And the card's accessible name is still just the competition's name
+- Why: the logo is what marks BJJ Éire's own competitions apart from the directory cards below; a broken image on the featured cards is the first thing a visitor sees on Competitions.
+
+Test design: UI · @acceptance @bjjeire-competitions-on · seeded acceptance BJJ Éire competitions · not mocked · default seed. Find the image by the card test id `bjjeire-competition-card-image` within each featured card (`bjjeire-competitions-featured-card`), never by alt text: the alt is empty on purpose. "Loaded" means the image's `naturalWidth` is greater than 0 after scrolling it into view (it loads lazily). Assert on the three seeded cards by name, not on a total count of featured cards. Leave the `@smoke` featured-section scenario as it is.
+
 ### Results and leaderboard (planned 2026-11-16, slice 5)
 
 Behaviour: `bjjeire-java/specs/features/competitions.md` § User Story BE5. No test claims these blocks yet. The test dataset seeds `acceptance-finished` (`/competitions/acceptance-finished`, id `acce88000000000000000004`): a finished competition with a recorded podium in each of five divisions, and the profile `medallist@acceptance.bjjeire.test` (local competitor sign-in) owning a gold and a silver. Expected leaderboard, worked out from the seed files: academies Lee Valley Jiu-Jitsu 22, Liffey BJJ 15, Corrib Grappling 12, Shannon Combat Club 2; affiliations Atlantic Alliance 27, Celtic Collective 22; winners Lee Valley Jiu-Jitsu and Atlantic Alliance; the brown belt -94.3 kg division had one competitor and adds no points. The seed is fixed: a scenario that records, corrects or finishes must use its own competition. The public leaderboard is `GET /api/v1/bjjeire-competition/{id}/leaderboard`; the organiser's results section reads `GET /api/v1/bjjeire-competition/admin/{id}/result`.
@@ -867,7 +885,7 @@ Competitor-facing copy is from the app's `config/content/` (`registrations.ts`, 
 - Steps:
   1. When a visitor opens the site
 - Expected results:
-  - Then the navigation lists Events, Gyms, Competitions, Stores and About
+  - Then the navigation lists Events, Gyms, Competitions, Shop and About
   - And the navigation has no entry with the retired name
   - And the navigation has no sign-in or account entry
 - Why: a switched-off feature leaking an account entry into the menu sends every visitor to a sign-in that does not work.
@@ -882,7 +900,7 @@ Test design: UI · @acceptance · no data · flags pinned in the browser `{ ...A
   1. Given BJJ Éire competitions are switched on
   2. When a visitor opens the site
 - Expected results:
-  - Then the navigation lists Events, Gyms, Competitions, Stores and About
+  - Then the navigation lists Events, Gyms, Competitions, Shop and About
   - And the navigation has no entry with the retired name
 - Why: a leftover entry leads every visitor to an address that no longer exists.
 

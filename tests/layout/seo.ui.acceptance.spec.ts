@@ -11,7 +11,7 @@ const ROUTE_TITLES = {
   '/events': 'BJJ Events in Ireland | BJJ Éire',
   '/gyms': 'BJJ Gyms in Ireland | BJJ Éire',
   '/competitions': 'BJJ Competitions | BJJ Éire',
-  '/stores': 'BJJ Clothing Stores | BJJ Éire',
+  '/shop': 'Shop | BJJ Éire',
   '/about': 'About | BJJ Éire',
 } as const;
 
@@ -51,12 +51,12 @@ test.describe('SEO UI acceptance', { tag: ['@layout', '@seo', '@ui', '@desktop',
         await gotoAppShell(page, '/gyms');
       });
 
-      await test.step('And the visitor moves to Stores from the navigation', async () => {
-        await headerSection.openPage('Stores');
+      await test.step('And the visitor moves to Shop from the navigation', async () => {
+        await headerSection.openPage('Shop');
       });
 
-      await test.step('Then the tab title names Stores', async () => {
-        await expect(page).toHaveTitle(ROUTE_TITLES['/stores']);
+      await test.step('Then the tab title names Shop', async () => {
+        await expect(page).toHaveTitle(ROUTE_TITLES['/shop']);
       });
     },
   );

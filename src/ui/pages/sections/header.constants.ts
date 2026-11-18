@@ -23,11 +23,14 @@ export const THEME_SWITCH_LABELS = {
   [Theme.Competition]: 'Switch to competition mode',
 } as const satisfies Record<Theme, string>;
 
+/** Shop, called Stores until the merch shop's first slice (`#4005`). The one place its name and address are written. */
+export const SHOP_NAV_LINK = { name: 'Shop', path: '/shop' } as const;
+
 export const HEADER_NAV_LINKS = [
   { name: 'Events', path: '/events' },
   { name: 'Gyms', path: '/gyms' },
   { name: 'Competitions', path: '/competitions' },
-  { name: 'Stores', path: '/stores' },
+  SHOP_NAV_LINK,
   { name: 'About', path: '/about' },
 ] as const;
 

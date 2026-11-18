@@ -19,6 +19,16 @@ export class HeaderSection {
     await this.navigation.getByRole('link', { name, exact: true }).click();
   }
 
+  /** The desktop navigation offers a link named `name` that goes to `path`. */
+  async expectPageLink(name: string, path: string): Promise<void> {
+    await expect(this.navigation.getByRole('link', { name, exact: true })).toHaveAttribute('href', path);
+  }
+
+  async expectNoPageLink(name: string): Promise<void> {
+    await expect(this.navigation).toBeVisible();
+    await expect(this.navigation.getByRole('link', { name, exact: true })).toHaveCount(0);
+  }
+
   async expectVisible(): Promise<void> {
     await expect(this.navigation).toBeVisible();
     await expect(this.page.getByTestId(HEADER_TEST_IDS.logoLink)).toBeVisible();

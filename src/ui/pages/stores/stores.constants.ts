@@ -1,3 +1,5 @@
+import { SHOP_NAV_LINK } from '../sections/header.constants';
+
 export const NO_DATA_COPY = {
   title: 'No Stores Found',
   line1: 'No stores are available right now.',
@@ -20,3 +22,6 @@ export const TEST_IDS = {
   search: 'stores-page-search',
   searchInput: 'search-input',
 } as const;
+
+/** The section's name and address in the navigation (`#4005`); the old name is the one that must be gone. */
+export const SHOP_NAV = { ...SHOP_NAV_LINK, retiredName: 'Stores' } as const;

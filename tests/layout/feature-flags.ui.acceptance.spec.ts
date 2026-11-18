@@ -2,7 +2,6 @@
 // seed: tests/agents/seed.spec.ts
 import { test, expect } from '@ui/fixtures';
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
-import { HEADER_TEST_IDS } from '@ui/pages/sections/header.constants';
 import { gotoAppShell } from '@ui/support';
 import { squash } from '@squash/annotations';
 
@@ -17,7 +16,7 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
     },
     async ({ page }) => {
       await test.step('When a visitor opens the stores page while stores are disabled', async () => {
-        await gotoAppShell(page, '/stores');
+        await gotoAppShell(page, '/shop');
       });
 
       await test.step('Then the visitor lands on Events', async () => {
@@ -37,12 +36,11 @@ test.describe('Disabled feature UI acceptance', { tag: ['@layout', '@routing', '
         await gotoAppShell(page, '/');
       });
 
-      await test.step('Then the header offers Gyms and does not offer Stores', async () => {
+      await test.step('Then the header offers Gyms and does not offer Shop', async () => {
         await headerSection.expectVisible();
 
-        const navigation = page.getByTestId(HEADER_TEST_IDS.navigation);
-        await expect(navigation.getByRole('link', { name: 'Stores' })).toHaveCount(0);
-        await expect(navigation.getByRole('link', { name: 'Gyms' })).toBeVisible();
+        await headerSection.expectPageLink('Gyms', '/gyms');
+        await headerSection.expectNoPageLink('Shop');
       });
     },
   );

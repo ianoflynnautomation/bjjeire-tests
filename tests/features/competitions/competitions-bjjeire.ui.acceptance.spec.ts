@@ -25,7 +25,7 @@ test.describe('BJJ Éire competitions UI acceptance', { tag: ['@competitions', '
           await gotoAppShell(page, '/');
         });
 
-        await test.step('Then the navigation lists Events, Gyms, Competitions, Stores and About', async () => {
+        await test.step('Then the navigation lists Events, Gyms, Competitions, Shop and About', async () => {
           await headerSection.expectPageLinks(HEADER_NAV_LINKS.map(link => link.name));
         });
 
@@ -58,7 +58,7 @@ test.describe('BJJ Éire competitions UI acceptance', { tag: ['@competitions', '
           await gotoAppShell(page, '/');
         });
 
-        await test.step('Then the navigation lists Events, Gyms, Competitions, Stores and About', async () => {
+        await test.step('Then the navigation lists Events, Gyms, Competitions, Shop and About', async () => {
           await headerSection.expectPageLinks(HEADER_NAV_LINKS.map(link => link.name));
         });
 

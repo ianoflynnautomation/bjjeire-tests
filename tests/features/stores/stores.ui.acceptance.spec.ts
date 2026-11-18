@@ -1,13 +1,14 @@
-// spec: specs/features/stores.md
+// spec: specs/features/shop.md
 // seed: tests/agents/seed.spec.ts
 import { test, storesTestConfig } from './fixtures';
 import { faker } from '@faker-js/faker';
 import { API_ROUTES, DEFAULT_PAGE_SIZE } from '@api/support';
 import { paginatePages } from '@ui/mocks/paginate.mock';
 import { storeCardFromDto } from '@ui/pages/stores/stores.card.mapper';
-import { expectNoSidewaysScroll } from '@ui/support';
+import { expectAddress, expectNoSidewaysScroll, goBackToPreviousPage, gotoAppShell } from '@ui/support';
 import { emptyPage } from '../common/testdata/mocks/empty-page';
 import { SEEDED_STORE_ARAN_FIGHT_GEAR, SEEDED_STORE_ARAN_FIGHT_GEAR_PARTIAL_NAME } from './seeded';
+import { SHOP_NAV } from '@ui/pages/stores/stores.constants';
 import { squash } from '@squash/annotations';
 
 test.use(storesTestConfig);
@@ -21,17 +22,21 @@ const pageWithLongDescription = paginatePages(
   DEFAULT_PAGE_SIZE,
   API_ROUTES.stores,
 )[1];
+const OLD_STORES_LINKS = [
+  { label: 'to the directory', address: '/stores' },
+  { label: 'to a page under it', address: '/stores/some-old-page' },
+];
 const descriptionOnlyWord = 'fixture';
 
 test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
   test(
-    'visitor should see the store list when opening Stores',
+    'visitor should see the store list when opening Shop',
     {
       tag: ['@smoke', '@acceptance'],
       annotation: squash({ weight: 'high', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -48,7 +53,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -69,7 +74,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -91,7 +96,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -113,7 +118,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
     },
     async ({ storesPage }) => {
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -138,7 +143,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
         await mockStores(emptyPage);
       });
 
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -160,7 +165,7 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
         await mockNetworkError();
       });
 
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
@@ -181,12 +186,122 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
         await mockServerError();
       });
 
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
       });
 
       await test.step('Then a server error message is displayed', async () => {
         await storesPage.expectServerErrorMessage();
+      });
+    },
+  );
+
+  test(
+    'visitor should see Shop in the navigation instead of Stores',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, headerSection, footerSection }) => {
+      await test.step('When a visitor opens the home page', async () => {
+        await gotoAppShell(page, '/');
+      });
+
+      await test.step('Then the header offers a Shop link to `/shop`', async () => {
+        await headerSection.expectPageLink(SHOP_NAV.name, SHOP_NAV.path);
+      });
+
+      await test.step('And the header offers no Stores link', async () => {
+        await headerSection.expectNoPageLink(SHOP_NAV.retiredName);
+      });
+
+      await test.step('And the footer quick links offer a Shop link to `/shop`', async () => {
+        await footerSection.expectQuickLink(SHOP_NAV.name, SHOP_NAV.path);
+      });
+    },
+  );
+
+  test(
+    'visitor should land on the Shop page when choosing Shop in the navigation',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, headerSection, storesPage }) => {
+      await test.step('When a visitor opens the home page', async () => {
+        await gotoAppShell(page, '/');
+      });
+
+      await test.step('And the visitor chooses Shop in the header', async () => {
+        await headerSection.openPage(SHOP_NAV.name);
+      });
+
+      await test.step('Then the address is `/shop`', async () => {
+        await storesPage.expectOnShopPage();
+      });
+
+      await test.step('And the main heading is "Shop"', async () => {
+        await storesPage.expectTitle(SHOP_NAV.name);
+      });
+
+      await test.step('And the tab title is "Shop | BJJ Éire"', async () => {
+        await storesPage.expectTabTitle(`${SHOP_NAV.name} | BJJ Éire`);
+      });
+
+      await test.step("And a seeded store's card is listed", async () => {
+        await storesPage.expectCardData(seededStoreCard);
+      });
+    },
+  );
+
+  for (const { label, address } of OLD_STORES_LINKS) {
+    test(
+      `visitor should land on the Shop page when following an old Stores link ${label}`,
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ storesPage }) => {
+        await test.step(`When a visitor opens ${address}`, async () => {
+          await storesPage.goToOldAddress(address);
+        });
+
+        await test.step('Then the address is `/shop`', async () => {
+          await storesPage.expectOnShopPage();
+        });
+
+        await test.step('And the main heading is "Shop"', async () => {
+          await storesPage.expectTitle(SHOP_NAV.name);
+        });
+
+        await test.step("And a seeded store's card is listed", async () => {
+          await storesPage.expectCardData(seededStoreCard);
+        });
+      },
+    );
+  }
+
+  test(
+    'visitor should return to the page before the old Stores link when going back',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ page, storesPage }) => {
+      await test.step('When a visitor opens Gyms', async () => {
+        await gotoAppShell(page, '/gyms');
+      });
+
+      await test.step('And the visitor opens `/stores`', async () => {
+        await storesPage.goToOldAddress('/stores');
+      });
+
+      await test.step('And the visitor goes back', async () => {
+        await goBackToPreviousPage(page);
+      });
+
+      await test.step('Then the address is `/gyms`', async () => {
+        await expectAddress(page, '/gyms');
       });
     },
   );
@@ -206,7 +321,7 @@ test.describe('Stores UI acceptance: on a phone', { tag: ['@stores', '@ui', '@de
         await mockStores(pageWithLongDescription);
       });
 
-      await test.step('When a visitor opens Stores', async () => {
+      await test.step('When a visitor opens Shop', async () => {
         await storesPage.goTo();
         await storesPage.expectResultCount(1);
       });

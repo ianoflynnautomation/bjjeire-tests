@@ -18,7 +18,7 @@ const ROUTES = [
   { name: 'Events', path: '/events', readyTestId: 'events-list-item' },
   { name: 'Gyms', path: '/gyms', readyTestId: 'gyms-list-item' },
   { name: 'Competitions', path: '/competitions', readyTestId: 'competitions-list-item' },
-  { name: 'Stores', path: '/stores', readyTestId: 'stores-list-item' },
+  { name: 'Shop', path: '/shop', readyTestId: 'stores-list-item' },
 ] as const;
 
 test.describe('Page structure UI acceptance', { tag: ['@layout', '@ui', '@desktop', '@squash'] }, () => {
@@ -86,8 +86,8 @@ test.describe('Page structure UI acceptance', { tag: ['@layout', '@ui', '@deskto
       }),
     },
     async ({ page, headerSection }) => {
-      await test.step('When a visitor opens Stores', async () => {
-        await gotoAppShell(page, '/stores');
+      await test.step('When a visitor opens Shop', async () => {
+        await gotoAppShell(page, '/shop');
         await expect(page.getByTestId('stores-list-item').first()).toBeVisible();
       });
 

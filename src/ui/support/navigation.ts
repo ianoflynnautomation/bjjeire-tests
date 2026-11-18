@@ -40,3 +40,20 @@ export async function gotoRoute(page: Page, path: string, routeAnchor: Locator):
 export async function gotoAppShell(page: Page, path: string): Promise<void> {
   await gotoRoute(page, path, page.getByTestId(HEADER_TEST_IDS.navigation));
 }
+
+/**
+ * The address is exactly `path`, ignoring the origin, with an optional trailing slash, query or hash. So
+ * `/admin/gyms` and `/gyms/some-page` do not satisfy `/gyms`.
+ */
+export async function expectAddress(page: Page, path: string): Promise<void> {
+  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  await expect(page).toHaveURL(new RegExp(`^https?://[^/]+${escaped}/?(?:[?#]|$)`));
+}
+
+/**
+ * Step back one history entry and wait only for the document, not for any route anchor. Unlike
+ * `ListPage.goBack`, which waits for the list's own header, this suits a page that is not the list.
+ */
+export async function goBackToPreviousPage(page: Page): Promise<void> {
+  await page.goBack({ waitUntil: 'domcontentloaded' });
+}

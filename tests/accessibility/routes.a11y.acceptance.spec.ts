@@ -10,7 +10,7 @@ const ROUTES = [
   { name: 'Gyms', path: '/gyms', readyTestId: 'gyms-list-item' },
   // The flags pin BjjEireCompetitions off here; competitions UI 52 owns the featured BJJ Éire competitions section.
   { name: 'Competitions', path: '/competitions', readyTestId: 'competitions-list-item' },
-  { name: 'Stores', path: '/stores', readyTestId: 'stores-list-item' },
+  { name: 'Shop', path: '/shop', readyTestId: 'stores-list-item' },
   { name: 'About', path: '/about', readyTestId: 'about-page' },
 ] as const;
 

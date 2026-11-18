@@ -18,6 +18,11 @@ export const API_ROUTES = {
   openApiV1: `/openapi/${API_VERSION}.json`,
 } as const;
 
+/** Paths served by the app host (`env.baseUrl`), not the API host (`env.apiUrl`). Never join these to the API URL. */
+export const APP_ROUTES = {
+  sitemap: '/sitemap.xml',
+} as const;
+
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 20;
 

@@ -1,7 +1,7 @@
-// spec: specs/features/stores.md
+// spec: specs/features/shop.md
 import { test, expect } from '@api/fixtures';
 import { storesPageSchema } from '@api/features/stores/stores.schemas';
-import { getStores } from '@api/features/stores/stores.service';
+import { getSitemapPaths, getStores } from '@api/features/stores/stores.service';
 import {
   API_ROUTES,
   expectConsecutivePagePagination,
@@ -78,6 +78,25 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
       await test.step('Then the two pages hold different entries and link to each other', () => {
         expectConsecutivePagePagination(firstPage, secondPage, SMALL_PAGE_SIZE);
         expectPagesAreDistinct(firstPage, secondPage, store => store.id);
+      });
+    },
+  );
+
+  test(
+    'client should find the Shop address and no Stores address in the site map',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'approved', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const paths = await test.step('When a client requests the site map from the app', () => getSitemapPaths(request));
+
+      await test.step('Then it lists the Shop address', () => {
+        expect(paths).toContain('/shop');
+      });
+
+      await test.step('And it lists no address under the old Stores one', () => {
+        expect(paths.filter(path => path === '/stores' || path.startsWith('/stores/'))).toEqual([]);
       });
     },
   );
