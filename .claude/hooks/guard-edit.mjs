@@ -45,8 +45,9 @@ const deny = reason => {
 const count = (text, re) => (text.match(re) ?? []).length;
 
 const input = JSON.parse(readFileSync(0, 'utf8'));
-const toolInput = input.tool_input ?? {};
-const filePath = toolInput.file_path;
+const toolName = input.tool_name ?? input.toolName ?? '';
+const toolInput = input.tool_input ?? input.toolInput ?? {};
+const filePath = toolInput.file_path ?? toolInput.path;
 if (typeof filePath !== 'string') process.exit(0);
 
 const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd ?? process.cwd();
@@ -57,14 +58,20 @@ const guarded = PROTECTED.find(({ re }) => re.test(rel));
 if (guarded) deny(`Do not edit ${rel}: ${guarded.why}.`);
 
 if (!CODE_FILE.test(rel)) process.exit(0);
+// A truncated payload can hide a forbidden token past the cut. Fail closed.
+if (input.toolInputTruncated === true) {
+  deny(`The edit to ${rel} was truncated before the guard could read it. Split the change.`);
+}
 
 let before = '';
 let after = '';
-if (input.tool_name === 'Write') {
+// Claude calls this Write. Grok calls it write and sends the whole file in content.
+const fullWrite = toolName === 'Write' || toolName === 'write';
+if (fullWrite) {
   before = existsSync(filePath) ? readFileSync(filePath, 'utf8') : '';
-  after = toolInput.content ?? '';
+  after = toolInput.content ?? toolInput.contents ?? '';
 } else {
-  const edits = input.tool_name === 'MultiEdit' ? (toolInput.edits ?? []) : [toolInput];
+  const edits = toolName === 'MultiEdit' ? (toolInput.edits ?? []) : [toolInput];
   before = edits.map(e => e.old_string ?? '').join('\n');
   after = edits.map(e => e.new_string ?? '').join('\n');
 }

@@ -1,6 +1,6 @@
 # Spec templates
 
-Copy a template, fill it, and delete the HTML comments. The agents in `.claude/agents/` read these files as they are. There is one filled block below. Do not copy a living feature spec as the pattern. Several of them predate this shape.
+Copy a template, fill it, and delete the HTML comments. The agents in `.claude/agents/` read these files as they are. The Grok adapters in `.grok/agents/` point at those same agents. There is one filled block below. Do not copy a living feature spec as the pattern. Several of them predate this shape.
 
 | Template                                         | Produces                                | Written by                              |
 | ------------------------------------------------ | --------------------------------------- | --------------------------------------- |

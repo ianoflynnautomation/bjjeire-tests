@@ -1,9 +1,6 @@
 # Test agents
 
-Eight Claude Code subagents explore the app, measure the tests, and plan, write, heal and review this suite's tests. Their
-definitions live in [`.claude/agents/`](../.claude/agents/); the conventions they
-follow are in [`AGENTS.md`](../AGENTS.md) and the
-[`suite-conventions`](../.agents/skills/suite-conventions/SKILL.md) skill.
+Eight test agents explore the app, measure the tests, and plan, write, heal and review this suite's tests. The procedure for each one lives in [`.claude/agents/`](../.claude/agents/). Grok runs the same name from [`.grok/agents/`](../.grok/agents/), which only translates the harness. The conventions they follow are in [`AGENTS.md`](../AGENTS.md) and the [`suite-conventions`](../.agents/skills/suite-conventions/SKILL.md) skill.
 
 | Agent                           | Use it to                                                                    | Browser |
 | ------------------------------- | ---------------------------------------------------------------------------- | ------- |
@@ -16,11 +13,7 @@ follow are in [`AGENTS.md`](../AGENTS.md) and the
 | `playwright-flake-hunter`       | Measure a flaky test with `--repeat-each`, find the cause, fix it            | none    |
 | `playwright-test-reviewer`      | Review test changes before you commit (read-only)                            | none    |
 
-**Models.** Agents whose output is judgement run on `opus`: the reviewer (a missed
-defect ships), the flake-hunter (root cause from noisy evidence) and the explorer
-(deciding what is suspicious). Agents that follow a tight procedure run on `sonnet`:
-planner, generator, healer, API tester and mutation auditor. To change one, edit the
-`model:` line in the agent's frontmatter.
+**Models.** In Claude Code, agents whose output is judgement run on `opus`: the reviewer (a missed defect ships), the flake-hunter (root cause from noisy evidence) and the explorer (deciding what is suspicious). Agents that follow a tight procedure run on `sonnet`: planner, generator, healer, API tester and mutation auditor. To change one, edit the `model:` line in `.claude/agents/`. Grok agents set `model: inherit`, so they use the session model. Pin a stronger model for the reviewer, flake-hunter and explorer when you spawn them.
 
 The usual flow is **planner → generator (UI) or api-tester (API) → reviewer**, which
 `/cover-feature <feature>` runs for you. Run the
@@ -67,12 +60,26 @@ the agents' browser will start in the right state.
 
 ## Running an agent
 
-Ask for it in plain language and Claude Code delegates to the matching agent, or name
-it to be explicit. `@`-mention it (type `@agent-` and pick one) or say
-"use the playwright-test-planner agent to …". `/agents` lists them.
+Ask for it in plain language and the session delegates to the matching agent, or name it. In Claude Code, `@`-mention it (type `@agent-` and pick one) or say "use the playwright-test-planner agent to …". `/agents` lists them. In Grok, ask the same way. The parent spawns `.grok/agents/<name>.md`.
 
 Each agent works in its own context and reports back to the main conversation, which
 then tells you what changed. Nothing is committed; review the working tree yourself.
+
+## Grok
+
+Each file in `.grok/agents/` is a harness adapter. It tells the agent to read the matching `.claude/agents/` file and follow that procedure. Tool names differ, so the adapter translates them:
+
+| In the procedure                         | In Grok                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------ |
+| Read, Grep, Glob, Bash                   | `read_file`, `grep`, `list_dir`, `run_terminal_command`                  |
+| Edit, Write                              | `search_replace`, `write`                                                |
+| `mcp__playwright-test__browser_snapshot` | `use_tool` with `playwright-test__browser_snapshot`, after `search_tool` |
+
+The planner and generator need `playwright-test` connected in the parent session. They inherit that server and no other. Do not call `planner_submit_plan`, `planner_save_plan` or `generator_write_test`. The living spec is the plan. The generator writes the test into the feature slice from the rehearsal.
+
+The healer and the explorer drive `npx playwright cli` from the repo root. They do not use the MCP server.
+
+`.claude/settings.json` loads in Grok when the folder is trusted (`/hooks-trust`). The hook scripts accept both harnesses' tool names. A reviewer cannot edit. A planner write outside `specs/` is denied.
 
 ### Plan coverage
 
@@ -237,26 +244,26 @@ The healer gets the same state another way: it runs the failing test itself with
 
 The "Never" lists in the agent files are backed by hooks in
 [`.claude/settings.json`](../.claude/settings.json), so an agent cannot talk itself past
-them. `guard-edit.mjs` denies the edit and tells the agent why. That covers generated
+them. Grok runs the same hooks when the folder is trusted. `guard-edit.mjs` denies the edit and tells the agent why. That covers generated
 files, baselines, compiled workflows, auth caches, and adding `@quarantine`, `.fixme(`,
 `.only(`, `waitForTimeout(`, `networkidle` or `force: true` to test code. The check
 compares counts before and after, so editing a line that already contains one is
 allowed. `lint-edited.mjs` runs `eslint --fix` after each `.ts` edit and feeds the
 remaining errors back, so lint failures are fixed as the agent goes. To quarantine a
-test, edit it yourself; the hooks bind Claude Code only.
+test, edit it yourself. The hooks do not apply to a shell that writes a file, or to a person.
 
 ## Troubleshooting
 
-| Symptom                                                            | Fix                                                                                                                                                                       |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Planner or generator says it has no `mcp__playwright-test__` tools | The server isn't connected. Run `/mcp`, enable `playwright-test`, or restart Claude Code from the repo root                                                               |
-| Seed test fails or the page is empty                               | App not reachable or `.env` points at the wrong URL. `curl -I $BASE_URL` and run the seed check above                                                                     |
-| Every feature page redirects to `/about`                           | The feature-flag fetch is being rate limited (429). Raise or disable the limit (`suite-environments` skill)                                                               |
-| `project "agent-seed" not found`                                   | `PW_AGENT_SEED` isn't set. Only the MCP server sets it; set it yourself for manual seed runs                                                                              |
-| Healer CLI: `The browser 'default' is not open`                    | After `attach`, every command needs the session: `npx playwright cli -s=tw-XXXX …`                                                                                        |
-| Healer CLI: `pause-at` runs straight to the end                    | That line has no Playwright call (a `test.step` or page-object call). Pause on the `click`/`expect` line inside `src/ui/pages/**`                                         |
-| A browser is left open after an agent stops                        | `npx playwright cli list`, then `npx playwright cli close-all`; stop any background `npx playwright test --debug=cli`                                                     |
-| Agent output mentions `specs/*.plan.md` or `tests/seed.spec.ts`    | It's following the bundled playwright-cli skill instead of its own file. Remind it that `.claude/agents/<name>.md` and AGENTS.md win; the plan lives in `specs/features/` |
+| Symptom                                                            | Fix                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planner or generator says it has no `mcp__playwright-test__` tools | The server isn't connected. In Claude Code run `/mcp` and enable `playwright-test`. In Grok the parent session must already have it; the agent calls `playwright-test__*` through `search_tool` and `use_tool` |
+| Seed test fails or the page is empty                               | App not reachable or `.env` points at the wrong URL. `curl -I $BASE_URL` and run the seed check above                                                                                                          |
+| Every feature page redirects to `/about`                           | The feature-flag fetch is being rate limited (429). Raise or disable the limit (`suite-environments` skill)                                                                                                    |
+| `project "agent-seed" not found`                                   | `PW_AGENT_SEED` isn't set. Only the MCP server sets it; set it yourself for manual seed runs                                                                                                                   |
+| Healer CLI: `The browser 'default' is not open`                    | After `attach`, every command needs the session: `npx playwright cli -s=tw-XXXX …`                                                                                                                             |
+| Healer CLI: `pause-at` runs straight to the end                    | That line has no Playwright call (a `test.step` or page-object call). Pause on the `click`/`expect` line inside `src/ui/pages/**`                                                                              |
+| A browser is left open after an agent stops                        | `npx playwright cli list`, then `npx playwright cli close-all`; stop any background `npx playwright test --debug=cli`                                                                                          |
+| Agent output mentions `specs/*.plan.md` or `tests/seed.spec.ts`    | It's following the bundled playwright-cli skill instead of its own file. Remind it that `.claude/agents/<name>.md` and AGENTS.md win; the plan lives in `specs/features/`                                      |
 
 ## Diagnostics the agents share
 
@@ -283,4 +290,6 @@ The planner, generator and healer started from Playwright's own agents
 (`npx playwright init-agents --loop=claude`). After a Playwright upgrade, run that
 command in a scratch directory, compare its output with `.claude/agents/`, and carry
 over new or renamed tool names only. Don't overwrite these files: they hold this suite's
-rules. Keep this page, the table in AGENTS.md, and the agent files in step.
+rules. If a tool name changed, update the translation table in `.grok/agents/` and in
+the Grok section above. Keep this page, the table in AGENTS.md, and both agent
+directories in step.

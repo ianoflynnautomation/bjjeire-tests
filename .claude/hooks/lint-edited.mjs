@@ -7,7 +7,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const input = JSON.parse(readFileSync(0, 'utf8'));
-const filePath = input.tool_input?.file_path;
+const toolInput = input.tool_input ?? input.toolInput ?? {};
+const filePath = toolInput.file_path ?? toolInput.path;
 if (typeof filePath !== 'string' || !/\.(ts|mts)$/.test(filePath)) process.exit(0);
 
 const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd ?? process.cwd();
