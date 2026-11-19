@@ -39,6 +39,11 @@ const args = process.argv.slice(2);
 const featureFlagIndex = args.indexOf('--feature');
 const onlyFeature = featureFlagIndex >= 0 ? args[featureFlagIndex + 1] : null;
 
+if (featureFlagIndex >= 0 && !onlyFeature) {
+  console.error('spec:check: --feature requires a feature name');
+  process.exit(1);
+}
+
 const normalise = title =>
   title
     .replace(/`/g, '')
@@ -99,7 +104,7 @@ function plannedBlocks(md) {
       const steps = [...(body.split(/^- Expected results:\s*$/m)[0] ?? '').matchAll(/^\s+\d+\.\s+(.+)$/gm)].map(m =>
         m[1].trim(),
       );
-      const expectedSection = body.split(/^- Expected results:\s*$/m)[1]?.split(/^- [A-Za-z]/)[0] ?? '';
+      const expectedSection = body.split(/^- Expected results:\s*$/m)[1]?.split(/^- [A-Za-z]/m)[0] ?? '';
       const expected = [...expectedSection.matchAll(/^\s+- (.+)$/gm)].map(m => m[1].trim());
       return { title, covers, oracle, steps, expected };
     });
@@ -117,7 +122,7 @@ function readTests(files) {
   const dynamic = [];
   for (const file of files) {
     const src = fs.readFileSync(file, 'utf8');
-    const headers = [...src.matchAll(/\btest\(\s*(['"`])([\s\S]+?)\1/g)];
+    const headers = [...src.matchAll(/(?<![.\w])test\(\s*(['"`])([\s\S]+?)\1/g)];
     for (let i = 0; i < headers.length; i++) {
       const header = headers[i];
       const end = i + 1 < headers.length ? headers[i + 1].index : src.length;
@@ -127,7 +132,9 @@ function readTests(files) {
       );
       tests.push({ title: header[2].replace(/\s+/g, ' ').trim(), steps, file: rel(file) });
     }
-    for (const m of src.matchAll(/\btest\(\s*([A-Za-z_$][\w$.]*)\s*,/g)) dynamic.push(`${rel(file)}: test(${m[1]}, …)`);
+    for (const m of src.matchAll(/(?<![.\w])test\(\s*([A-Za-z_$][\w$.]*)\s*,/g)) {
+      dynamic.push(`${rel(file)}: test(${m[1]}, …)`);
+    }
   }
   return { tests, dynamic };
 }
@@ -205,16 +212,26 @@ for (const specFile of specFiles) {
     const { tests, dynamic } = readTests(files);
     for (const d of dynamic) problems.push(`title is a variable, so it cannot be checked: ${d}`);
 
-    const specSet = new Map(specTitles.map(t => [normalise(t), t]));
-    const testSet = new Map(tests.map(t => [normalise(t.title), t.title]));
-    const seen = new Set();
+    const specSet = new Map();
     for (const t of specTitles) {
       const key = normalise(t);
-      if (seen.has(key)) problems.push(`listed twice in the spec: "${t}"`);
-      seen.add(key);
+      if (specSet.has(key)) problems.push(`listed twice in the spec: "${t}"`);
+      specSet.set(key, t);
     }
-    for (const [key, title] of testSet) if (!specSet.has(key)) problems.push(`test has no spec title: "${title}"`);
-    for (const [key, title] of specSet) if (!testSet.has(key)) problems.push(`spec title has no test: "${title}"`);
+
+    const testSet = new Map();
+    for (const t of tests) {
+      const key = normalise(t.title);
+      if (testSet.has(key)) problems.push(`listed twice in tests (${t.file}): "${t.title}"`);
+      testSet.set(key, t.title);
+    }
+
+    for (const [key, title] of testSet) {
+      if (!specSet.has(key)) problems.push(`test has no spec title: "${title}"`);
+    }
+    for (const [key, title] of specSet) {
+      if (!testSet.has(key)) problems.push(`spec title has no test: "${title}"`);
+    }
     problems.push(...blockProblems(blocks, tests));
   }
 

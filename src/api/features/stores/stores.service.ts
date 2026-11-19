@@ -23,6 +23,27 @@ export async function getStores(
   return expectSchema(schema, body);
 }
 
+const DIRECTORY_WALK_PAGE_SIZE = 100;
+const DIRECTORY_WALK_MAX_PAGES = 50;
+
+/** Every store the directory lists, walked page by page (`pageSize` 100) while `hasNextPage` holds, with the `totalItems` the first page reported. Fails if the walk exceeds its page bound. */
+export async function getAllStores(
+  request: APIRequestContext,
+  schema: ZodType<PaginatedResponse<StoreDto>>,
+): Promise<{ stores: StoreDto[]; reportedTotal: number }> {
+  const stores: StoreDto[] = [];
+  let reportedTotal = 0;
+  for (let page = 1; page <= DIRECTORY_WALK_MAX_PAGES; page++) {
+    const result = await getStores(request, schema, { page, pageSize: DIRECTORY_WALK_PAGE_SIZE });
+    if (page === 1) reportedTotal = result.pagination.totalItems;
+    stores.push(...result.data);
+    if (!result.pagination.hasNextPage) return { stores, reportedTotal };
+  }
+  throw new Error(
+    `Store directory still reports a next page after ${DIRECTORY_WALK_MAX_PAGES} pages of ${DIRECTORY_WALK_PAGE_SIZE}; the walk was stopped`,
+  );
+}
+
 const MAX_CODE_POINT = 0x10ffff;
 const XML_COMMENT = /<!--[\s\S]*?-->/g;
 // Only an unprefixed `loc` or the sitemap `sm:` prefix is a page address; `image:loc` and the like are not.

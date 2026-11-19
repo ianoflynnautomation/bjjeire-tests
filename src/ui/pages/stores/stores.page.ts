@@ -3,7 +3,7 @@ import { expectNoDataState } from '../common/empty.page';
 import { expectAddress, gotoRoute } from '@ui/support';
 import { ListPage } from '../common/list-page';
 import { getStoreCardData } from './stores.card.page';
-import { NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, SHOP_NAV, TEST_IDS } from './stores.constants';
+import { NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, SHOP_NAV, TEST_IDS, websiteLinkName } from './stores.constants';
 import type { StoreCard } from './stores.types';
 
 export class StoresPage extends ListPage<StoreCard> {
@@ -27,6 +27,33 @@ export class StoresPage extends ListPage<StoreCard> {
 
   async expectOnShopPage(): Promise<void> {
     await expectAddress(this.page, SHOP_NAV.path);
+  }
+
+  /** Exactly one card is listed and it is named `name`. */
+  async expectOnlyCardNamed(name: string): Promise<void> {
+    await this.expectResultCount(1);
+    await expect(this.card(name).getByTestId(TEST_IDS.cardName)).toHaveText(name);
+  }
+
+  async expectCardWebsiteLink(name: string, url: string): Promise<void> {
+    await expect(this.card(name).getByRole('link', { name: websiteLinkName(name) })).toHaveAttribute('href', url);
+  }
+
+  async expectCardWithoutDescription(name: string): Promise<void> {
+    await expect(this.card(name)).toBeVisible();
+    await expect(this.card(name).getByTestId(TEST_IDS.description)).toHaveCount(0);
+  }
+
+  /** The card shows the placeholder tile and no logo image. */
+  async expectCardLogoFallback(name: string): Promise<void> {
+    const card = this.card(name);
+    await expect(card).toBeVisible();
+    await expect(card.getByTestId(TEST_IDS.logoFallback)).toBeVisible();
+    await expect(card.getByTestId(TEST_IDS.logo)).toHaveCount(0);
+  }
+
+  async expectNoResultsMessage(): Promise<void> {
+    await expectNoDataState(this.page, NO_SEARCH_RESULTS_COPY);
   }
 
   override async expectNoResults(): Promise<void> {

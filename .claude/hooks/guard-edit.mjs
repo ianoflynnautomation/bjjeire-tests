@@ -1,32 +1,38 @@
 #!/usr/bin/env node
-// PreToolUse guard for Edit / MultiEdit / Write. Turns the AGENTS.md guardrails that
-// lint cannot see into hard denials, for the main session and every subagent:
-//   1. Generated or recorded files are never hand-edited.
-//   2. Test code never gains a quarantine tag, a fixme, or a known flake pattern.
-// Pattern checks compare counts before and after, so editing a file that already
-// contains a pattern (e.g. QUARANTINE_TAG's definition) is still allowed.
-import { existsSync, readFileSync } from 'node:fs';
+// PreToolUse guard for file edits across all agents and harnesses:
+//   1. Blocks edits to generated, baseline, auth, env, or report artifacts.
+//   2. Blocks adding flake/shortcut patterns or Playwright slice anti-patterns.
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 
 const PROTECTED = [
-  { re: /^src\/api\/generated\//, why: 'generated from the OpenAPI contract; run `npm run gen:api-schemas`' },
-  { re: /\/__screenshots__\//, why: 'screenshot baselines; regenerate with /update-snapshots on request' },
-  { re: /\/__aria__\//, why: 'aria baselines; regenerate with /update-snapshots on request' },
-  { re: /^\.github\/workflows\/.*\.lock\.yml$/, why: 'compiled; edit the .md source and run `gh aw compile`' },
-  { re: /^playwright\/\.auth\//, why: 'auth caches; delete them to force a fresh sign-in, never write them' },
-  { re: /^\.env(?!.*\.example$)/, why: 'local configuration and credentials; a person changes them' },
-  { re: /^(test-results|playwright-report|blob-report)\//, why: 'run output, not source' },
+  { re: /^src\/api\/generated\//, why: 'generated from OpenAPI; run `npm run gen:api-schemas`' },
+  { re: /\/__(screenshots|aria)__\//, why: 'snapshot baseline; regenerate with /update-snapshots' },
+  { re: /^\.github\/workflows\/.*\.lock\.yml$/, why: 'compiled workflow; edit the .md source and run `gh aw compile`' },
+  { re: /^playwright\/\.auth\//, why: 'auth state cache; delete to force fresh sign-in, never write' },
+  { re: /^\.env(?!.*\.example$)/, why: 'local env/secrets; update manually' },
+  { re: /^(test-results|playwright-report|blob-report)\//, why: 'test output artifact, not source' },
 ];
 
 const CODE_FILE = /^(tests|src)\/.*\.(ts|mts|js|mjs)$/;
+
 const FORBIDDEN = [
-  { label: '@quarantine', re: /@quarantine/g, why: 'quarantine is a human decision; recommend it to the user instead' },
-  { label: '.fixme(', re: /\.fixme\s*\(/g, why: 'never park a test; fix it or report the app bug' },
-  { label: '.skip(', re: /\.skip\s*\(/g, why: 'skipping is a human decision; recommend it to the user instead' },
-  { label: '.only(', re: /\.only\s*\(/g, why: 'focused tests must not be left in the suite' },
-  { label: 'waitForTimeout(', re: /waitForTimeout\s*\(/g, why: 'wait on a user-visible condition, not a time' },
-  { label: 'networkidle', re: /networkidle/g, why: 'wait on a route anchor or web-first assertion instead' },
-  { label: 'force: true', re: /force:\s*true/g, why: 'a forced action hides an actionability bug; fix the wait' },
+  { label: '@quarantine', re: /@quarantine/g, why: 'quarantine is a human decision; recommend it to the user' },
+  { label: '.fixme(', re: /\.fixme\s*\(/g, why: 'fix the test or file an app issue instead of parking it' },
+  { label: '.skip(', re: /\.skip\s*\(/g, why: 'skipping is a human decision; recommend it to the user' },
+  { label: '.only(', re: /\.only\s*\(/g, why: 'remove focused test markers before finishing' },
+  {
+    label: 'waitForTimeout(',
+    re: /waitForTimeout\s*\(/g,
+    why: 'wait on a web-first assertion or UI state, not a fixed delay',
+  },
+  { label: 'networkidle', re: /networkidle/g, why: 'wait on a specific route/element instead of networkidle' },
+  { label: 'force: true', re: /force:\s*true/g, why: 'avoid force: true; fix actionability/waiting instead' },
+  {
+    label: 'large timeout (>= 30s)',
+    re: /\btimeout\s*:\s*(30000|[4-9]\d{4}|\d{6,})\b/g,
+    why: 'fix slow selectors or web-first waits instead of inflating timeouts',
+  },
 ];
 
 const deny = reason => {
@@ -42,39 +48,103 @@ const deny = reason => {
   process.exit(0);
 };
 
-const count = (text, re) => (text.match(re) ?? []).length;
+const countMatches = (text, re) => {
+  const flags = re.flags.includes('g') ? re.flags : `${re.flags}g`;
+  return (text.match(new RegExp(re.source, flags)) ?? []).length;
+};
 
-const input = JSON.parse(readFileSync(0, 'utf8'));
+function computeNextContent(currentText, toolName, toolInput) {
+  if (toolName === 'Write' || toolName === 'write') {
+    return String(toolInput.content ?? toolInput.contents ?? '');
+  }
+  const edits = toolName === 'MultiEdit' ? (toolInput.edits ?? []) : [toolInput];
+  let next = currentText;
+  for (const edit of edits) {
+    const oldStr = edit?.old_string;
+    const newStr = edit?.new_string;
+    if (typeof oldStr === 'string' && typeof newStr === 'string') {
+      next = next.includes(oldStr) ? next.replace(oldStr, newStr) : `${next}\n${newStr}`;
+    } else if (typeof newStr === 'string') {
+      next = `${next}\n${newStr}`;
+    }
+  }
+  return next;
+}
+
+let input;
+try {
+  input = JSON.parse(readFileSync(0, 'utf8'));
+} catch {
+  process.exit(0);
+}
+
 const toolName = input.tool_name ?? input.toolName ?? '';
 const toolInput = input.tool_input ?? input.toolInput ?? {};
-const filePath = toolInput.file_path ?? toolInput.path;
-if (typeof filePath !== 'string') process.exit(0);
+const rawPath = toolInput.file_path ?? toolInput.path ?? toolInput.notebook_path;
+if (typeof rawPath !== 'string') process.exit(0);
 
-const root = process.env.CLAUDE_PROJECT_DIR ?? input.cwd ?? process.cwd();
-const rel = path.relative(root, path.resolve(root, filePath)).split(path.sep).join('/');
-if (rel.startsWith('..')) process.exit(0);
+const root = realpathSync(process.env.CLAUDE_PROJECT_DIR ?? input.cwd ?? process.cwd());
+const absPath = path.resolve(root, rawPath);
+const parentDir = path.dirname(absPath);
+const realParent = existsSync(parentDir) ? realpathSync(parentDir) : parentDir;
+const realPath = path.join(realParent, path.basename(absPath));
+const rel = path.relative(root, realPath).split(path.sep).join('/');
 
-const guarded = PROTECTED.find(({ re }) => re.test(rel));
-if (guarded) deny(`Do not edit ${rel}: ${guarded.why}.`);
+if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) process.exit(0);
+
+const protectedMatch = PROTECTED.find(({ re }) => re.test(rel));
+if (protectedMatch) {
+  deny(`Do not edit ${rel}: ${protectedMatch.why}.`);
+}
 
 if (!CODE_FILE.test(rel)) process.exit(0);
-// A truncated payload can hide a forbidden token past the cut. Fail closed.
+
 if (input.toolInputTruncated === true) {
-  deny(`The edit to ${rel} was truncated before the guard could read it. Split the change.`);
+  deny(`Edit to ${rel} was truncated before inspection; split into smaller changes.`);
 }
 
-let before = '';
-let after = '';
-// Claude calls this Write. Grok calls it write and sends the whole file in content.
-const fullWrite = toolName === 'Write' || toolName === 'write';
-if (fullWrite) {
-  before = existsSync(filePath) ? readFileSync(filePath, 'utf8') : '';
-  after = toolInput.content ?? toolInput.contents ?? '';
-} else {
-  const edits = toolName === 'MultiEdit' ? (toolInput.edits ?? []) : [toolInput];
-  before = edits.map(e => e.old_string ?? '').join('\n');
-  after = edits.map(e => e.new_string ?? '').join('\n');
+const beforeText = existsSync(realPath) ? readFileSync(realPath, 'utf8') : '';
+const afterText = computeNextContent(beforeText, toolName, toolInput);
+
+const added = FORBIDDEN.find(({ re }) => countMatches(afterText, re) > countMatches(beforeText, re));
+if (added) {
+  deny(`Adding \`${added.label}\` to ${rel}: ${added.why}.`);
 }
 
-const added = FORBIDDEN.find(({ re }) => count(after, re) > count(before, re));
-if (added) deny(`Adding \`${added.label}\` to ${rel}: ${added.why}.`);
+// Disallow bare page.goto() outside snapshot specs (named *.snapshot.acceptance.spec.ts) and
+// the navigation helpers in src/ui/support/ that implement gotoRoute/gotoAppShell.
+const gotoAllowed = /\.snapshot\.(acceptance\.)?spec\.[cm]?[jt]s$/.test(rel) || rel.startsWith('src/ui/support/');
+if (!gotoAllowed && countMatches(afterText, /\bpage\.goto\s*\(/g) > countMatches(beforeText, /\bpage\.goto\s*\(/g)) {
+  deny(`Avoid bare \`page.goto(\` in ${rel}; use \`gotoRoute\` or \`gotoAppShell\` from @ui/support.`);
+}
+
+// Enforce feature-slice isolation. A slice is tests/features/<f>/, src/ui/pages/<f>/ and
+// src/api/features/<f>/; it must not import another slice, by relative path or by alias.
+// Shared folders (common, sections, support, _template) are not slices.
+const SHARED_SLICES = new Set(['common', 'sections', 'support', '_template']);
+const sliceOf = relPath =>
+  relPath.match(/^(?:tests\/features|src\/ui\/pages|src\/api\/features)\/([^/]+)\//)?.[1] ?? null;
+const currentSlice = sliceOf(rel);
+if (currentSlice && !SHARED_SLICES.has(currentSlice)) {
+  const ALIASES = { '@ui/': 'src/ui/', '@api/': 'src/api/', '@shared/': 'src/shared/' };
+  const importedSlices = text => {
+    const slices = [];
+    for (const [, spec] of text.matchAll(/(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"]([^'"]+)['"]/g)) {
+      let target = null;
+      if (spec.startsWith('.')) {
+        target = path.posix.normalize(path.posix.join(path.posix.dirname(rel), spec));
+      } else {
+        const alias = Object.keys(ALIASES).find(a => spec.startsWith(a));
+        if (alias) target = ALIASES[alias] + spec.slice(alias.length);
+      }
+      const slice = target ? sliceOf(`${target}/`) : null;
+      if (slice && slice !== currentSlice && !SHARED_SLICES.has(slice)) slices.push(slice);
+    }
+    return slices;
+  };
+  const before = importedSlices(beforeText);
+  const added = importedSlices(afterText).find(s => before.filter(b => b === s).length === 0);
+  if (added) {
+    deny(`Feature slice \`${currentSlice}\` must not import the \`${added}\` slice.`);
+  }
+}

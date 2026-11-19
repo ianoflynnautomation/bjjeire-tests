@@ -1,4 +1,5 @@
-import { mockBjjEvents, mockMapTiles, EVENTS_ROUTE } from './mocks';
+import type { BjjEventDto } from '@api/features/events/events.types';
+import { mockBjjEvents, mockBjjEventsPaged, mockMapTiles, abortMapTiles, EVENTS_ROUTE } from './mocks';
 import { EventsMapPage } from '@ui/pages/events/events-map.page';
 import { EventsPage } from '@ui/pages/events/events.page';
 import { test as core } from '@ui/fixtures';
@@ -10,14 +11,18 @@ export type EventsUiFixtures = FailureMocks & {
   eventsPage: EventsPage;
   eventsMapPage: EventsMapPage;
   mockMapTiles: () => Promise<void>;
+  abortMapTiles: () => Promise<void>;
   mockBjjEvents: (body: unknown) => Promise<void>;
+  mockBjjEventsPaged: (events: readonly BjjEventDto[]) => Promise<void>;
 };
 
 export const test = core.extend<EventsUiFixtures>({
   eventsPage: pageFixture(EventsPage),
   eventsMapPage: pageFixture(EventsMapPage),
   mockMapTiles: mockFixture(mockMapTiles),
+  abortMapTiles: mockFixture(abortMapTiles),
   mockBjjEvents: mockFixture(mockBjjEvents),
+  mockBjjEventsPaged: mockFixture(mockBjjEventsPaged),
   ...failureMockFixtures(EVENTS_ROUTE),
 });
 

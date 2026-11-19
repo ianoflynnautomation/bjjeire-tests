@@ -90,6 +90,28 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
   );
 
   test(
+    'visitor should find a store when searching in a different letter case',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ storesPage }) => {
+      await test.step('When a visitor opens Shop', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step("And the visitor searches for the seeded store's name in upper case", async () => {
+        await storesPage.searchFor(seededStore.name.toUpperCase());
+      });
+
+      await test.step('Then only that store is listed', async () => {
+        await storesPage.expectResultCount(1);
+        await storesPage.expectCardData(seededStoreCard);
+      });
+    },
+  );
+
+  test(
     'visitor should find a store by part of its name',
     {
       tag: '@acceptance',
@@ -305,6 +327,67 @@ test.describe('Stores UI acceptance', { tag: ['@stores', '@ui', '@desktop', '@sq
       });
     },
   );
+
+  test(
+    'visitor should see the search applied when opening a Shop link that carries a search term',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ storesPage }) => {
+      await test.step("When a visitor opens a Shop link that already searches for the seeded store's name", async () => {
+        await storesPage.goToWithQuery(`q=${encodeURIComponent(seededStore.name)}`);
+      });
+
+      await test.step('Then the search box holds that name', async () => {
+        await storesPage.expectSearchValue(seededStore.name);
+      });
+
+      await test.step('And only that store is listed', async () => {
+        await storesPage.expectResultCount(1);
+        await storesPage.expectCardData(seededStoreCard);
+      });
+    },
+  );
+});
+
+test.describe('Stores UI acceptance: clearing the search', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
+  test(
+    'visitor should see the full list again when clearing the search',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ storesPage }) => {
+      await test.step('When a visitor opens Shop', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step("And the visitor searches for the seeded store's name", async () => {
+        await storesPage.searchFor(seededStore.name);
+      });
+
+      await test.step('And only that store is listed', async () => {
+        await storesPage.expectResultCount(1);
+      });
+
+      await test.step('And the visitor clears the search', async () => {
+        await storesPage.clearSearchWithButton();
+      });
+
+      await test.step('Then the search box is empty', async () => {
+        await storesPage.expectSearchValue('');
+      });
+
+      await test.step('And more than one store is listed', async () => {
+        await storesPage.expectMoreThanOneResult();
+      });
+
+      await test.step('And the address carries no search term', async () => {
+        await storesPage.expectNoSearchTermInAddress();
+      });
+    },
+  );
 });
 
 test.describe('Stores UI acceptance: on a phone', { tag: ['@stores', '@ui', '@desktop', '@squash'] }, () => {
@@ -327,6 +410,41 @@ test.describe('Stores UI acceptance: on a phone', { tag: ['@stores', '@ui', '@de
       });
 
       await test.step('Then the page fits the screen', async () => {
+        await expectNoSidewaysScroll(page);
+      });
+    },
+  );
+});
+
+test.describe('Stores UI acceptance: store list on a phone', { tag: ['@stores', '@ui', '@mobile', '@squash'] }, () => {
+  test(
+    'visitor should see the store list on a phone',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ storesPage, page }) => {
+      await test.step('When a visitor opens Shop on a phone', async () => {
+        await storesPage.goTo();
+      });
+
+      await test.step("And the visitor searches for the seeded store's name", async () => {
+        await storesPage.searchFor(seededStore.name);
+      });
+
+      await test.step('Then the store list is displayed', async () => {
+        await storesPage.expectListNotEmpty();
+      });
+
+      await test.step('And only that store is listed', async () => {
+        await storesPage.expectResultCount(1);
+      });
+
+      await test.step("And the seeded store's card shows its name, description and website link", async () => {
+        await storesPage.expectCardData(seededStoreCard);
+      });
+
+      await test.step('And the page fits the screen', async () => {
         await expectNoSidewaysScroll(page);
       });
     },

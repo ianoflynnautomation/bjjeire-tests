@@ -5,5 +5,6 @@ export function storeCardFromDto(store: StoreDto): StoreCard {
   return {
     name: store.name,
     description: store.description ?? null,
+    websiteUrl: store.websiteUrl,
   };
 }

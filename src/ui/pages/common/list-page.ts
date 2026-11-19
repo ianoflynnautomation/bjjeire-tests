@@ -167,6 +167,10 @@ export abstract class ListPage<TCard extends { name: string }> {
     await expect(this.searchInput).toHaveValue(term);
   }
 
+  async expectNoSearchTermInAddress(): Promise<void> {
+    await expect(this.page).toHaveURL(url => !url.searchParams.has('q'));
+  }
+
   async expectResultCount(count: number): Promise<void> {
     await expect(this.listItems).toHaveCount(count);
   }
@@ -187,6 +191,12 @@ export abstract class ListPage<TCard extends { name: string }> {
   async expectListNotEmpty(): Promise<void> {
     await expectNoError(this.page);
     await expect(this.listItems).not.toHaveCount(0);
+  }
+
+  /** More than one card is listed, whatever the environment's total. */
+  async expectMoreThanOneResult(): Promise<void> {
+    await expectNoError(this.page);
+    await expect(this.listItems.nth(1)).toBeVisible();
   }
 
   async expectCardAbsent(name: string): Promise<void> {

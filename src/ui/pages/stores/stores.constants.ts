@@ -18,6 +18,8 @@ export const TEST_IDS = {
   emptyState: 'no-data-state',
   header: 'stores-page-header',
   headerTitle: 'stores-page-header-title',
+  logo: 'store-card-logo',
+  logoFallback: 'store-card-logo-fallback',
   listItem: 'stores-list-item',
   search: 'stores-page-search',
   searchInput: 'search-input',
@@ -25,3 +27,6 @@ export const TEST_IDS = {
 
 /** The section's name and address in the navigation (`#4005`); the old name is the one that must be gone. */
 export const SHOP_NAV = { ...SHOP_NAV_LINK, retiredName: 'Stores' } as const;
+
+/** Accessible name of a card's website link: "Visit Website for <store>". */
+export const websiteLinkName = (storeName: string): string => `Visit Website for ${storeName}`;

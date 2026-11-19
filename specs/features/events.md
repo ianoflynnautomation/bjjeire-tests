@@ -55,12 +55,27 @@ this suite proves what the visitor sees against real data.
 36. visitor should be told to filter when more events match than the map can show · `#2008`
 37. visitor should switch between list and map using only the keyboard · `#2016`
 38. visitor should see the map fit the screen on a phone · `#2016`
+39. visitor should see the map with the shared filters when opening a shared map link · `#2007`
+40. visitor should reach the next page of events · `#2005`
+41. visitor should return to the first page when changing a filter on a later page · `#2005`
+42. visitor should find an event on a later page by searching · `#2003`
+43. visitor should stay on the same page of events when reloading Events · `#2005`
+44. visitor should see the events after retrying a failed load · `#2005`
+45. visitor should be able to filter and search events using only the keyboard · none (no requirement issue for list keyboard use)
+46. visitor should see event cards fit the screen on a phone · none (no requirement issue for phone list cards)
+47. visitor should return to the event list with Back after switching to the map · `#2007`
+48. visitor should see pins only for the chosen county when filtering the map by county · `#2008`
+49. visitor should see pins only for the chosen type when filtering the map by type · `#2008`
+50. visitor should see only the searched event's pin when searching on the map · `#2008`, `#2012`
+51. visitor should see events in their real locations on the map · `#2009`
+52. visitor should see an event's details and links when opening its pin · `#2011`
+53. visitor should keep the pins and be offered the list when map tiles fail to load · `#2014`
+54. visitor should see the event list when opening a map link while the events map is off · `#2015`
+55. Events map should have no WCAG 2.1 A/AA violations in the `<theme>` theme · `#2016`
 
-Scenarios 1–16 are in `events.ui.acceptance.spec.ts`; 17–28 in
-`events-filters.ui.acceptance.spec.ts`; 29 in `events-dates.ui.acceptance.spec.ts` (mocked,
-fixed date, timezone set with `test.use`); 30–38 in `events-map.ui.acceptance.spec.ts`
-(tiles fulfilled with a blank image). Scenario 22 is data-driven over address, organiser and
-county. Design notes for 17–38 are in [Planned](#planned).
+Scenarios 1–16 are in `events.ui.acceptance.spec.ts`; 17–28 in `events-filters.ui.acceptance.spec.ts`; 29 in `events-dates.ui.acceptance.spec.ts` (mocked,
+fixed date, timezone set with `test.use`); 30–38, 47 and 51 in `events-map.ui.acceptance.spec.ts` (tiles fulfilled with a blank image); 39 and 48–50 in `events-map-filters.ui.acceptance.spec.ts` (map filter scenarios join it); 52 in `events-map-pins.ui.acceptance.spec.ts` (pin popup scenarios join it); 53–54 in `events-map-states.ui.acceptance.spec.ts` (53 with tiles aborted, 54 with the map off; error and off states join it); 55 in `events-map.a11y.acceptance.spec.ts` (three themes); 40–43 in `events-paging.ui.acceptance.spec.ts` (mocked, paged helper); 44 in `events-errors.ui.acceptance.spec.ts`; 45 in `events-keyboard.ui.acceptance.spec.ts`; 46 in `events-phone.ui.acceptance.spec.ts`. Scenario 22 is data-driven over address, organiser and
+county. Design notes for 17–55 are in [Planned](#planned).
 
 ### API
 
@@ -93,60 +108,81 @@ asserted as RFC 9457 problem documents (`expectProblem`). Get-by-id has no requi
 ## Planned
 
 A block whose title is in the numbered list above is implemented; the rest are open.
-Open as of 2026-11-10: the six list scenarios below (next page, first page after a filter
-change, later-page search, retry, keyboard, phone cards) and twelve of the map-view
-scenarios (shared map link, Back, county and type pins, searched pin, real locations, pin
-details, every event at a venue, map a11y, tile failure, map off, no map download).
+Open as of 2026-11-19: `visitor should not download the map when staying on the event list` (`#2017`, needs a built image). `visitor should see every event at a venue when opening that venue's pin` is **rejected as a duplicate**: scenario 32 already opens the shared Leinster pin and checks both events with `mapPopupFromDtos`.
 Scenarios 17–29 predate the convention and have no block.
+
+**Paging mock (2026-11-19).** The app asks for `?page=N&pageSize=20`; a search or the map asks for `page=1&pageSize=100` (`useListPage`, `loadAll`/search). `firstPageOfManyEvents` serves one fixed body, so the three paging scenarios need one new helper in `tests/features/events/testdata/multi-page.ts` plus a `mockBjjEventsPaged` fixture: a route handler that reads `page` and `pageSize` from the request and answers with `paginatePages(events, pageSize, API_ROUTES.bjjEvents)[page]` over 45 derived events. Parse bodies with `parseMockBody`. Name each derived event neutrally and distinctively (`Paged Event 01` to `Paged Event 45`; `Paged Event 45` matches only the last).
 
 Explored live on 2026-10-31 (`APP_ENV=docker`, `http://localhost:3000`, five seeded events).
 UI only; the API suite already owns the county and type rules, finished events and paging.
 
 #### visitor should reach the next page of events
 
-- Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no requirement issue yet)
-- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
+- Covers: `#2005`
+- Oracle: the fixed 45-event mock body (page 1 holds events 1 to 20, page 2 holds 21 to 40).
 - Steps:
-  1. Given there are more events than fit on one page
+  1. Given there are 45 events, more than fit on one page
   2. When a visitor opens Events
   3. And the visitor goes to the next page
 - Expected results:
-  - Then the next events are listed instead of the first ones
+  - Then events 21 to 40 are listed
+  - And event 1 is not listed
+  - And the page indicator shows page 2 of 3
 - Why: the current paging test stops at the header total and never moves page.
+
+Test design: UI · @acceptance · mocked (multi-page, paged helper) · `events-paging.ui.acceptance.spec.ts` (`events.ui` is at the 400-line lint limit) · built. Next button and indicator are `PaginationTestIds`. The URL gains `page=2`. No existing test covers it.
 
 #### visitor should return to the first page when changing a filter on a later page
 
-- Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no requirement issue yet)
-- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
+- Covers: `#2005`
+- Oracle: the fixed mock body. The handler also filters by the request's `county` and `types`, so the county's 25 events are the expected set (page 1 holds the first 20).
 - Steps:
-  1. Given there are more events than fit on one page
+  1. Given there are 45 events, 25 of them in Cork
   2. When a visitor opens Events
   3. And the visitor goes to the next page
-  4. And the visitor filters by county
+  4. And the visitor filters by Cork
 - Expected results:
-  - Then the first page of that county's events is listed
+  - Then the first page of Cork's events is listed
+  - And the page indicator shows page 1 of 2
 - Why: stale page state is a likely regression and would strand the visitor on an empty page.
+
+Test design: UI · @acceptance · mocked (multi-page; the paged helper must honour `county`, so derive events with two counties) · `events-paging.ui.acceptance.spec.ts` · built. The filter change drops `page` from the URL. Apart from county, `types` is the other filter that would do the same; one is enough.
 
 #### visitor should find an event on a later page by searching
 
-- Layer: UI · Tags: @acceptance · Data: firstPageOfManyEvents, extended to serve later pages · Mocked: yes (multi-page)
-- Covers: none (no requirement issue yet)
-- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
+- Covers: `#2003`
+- Oracle: the fixed 45-event mock body. Event 45 is on page 3 and its name is unique (`Paged Event 45`).
 - Steps:
-  1. Given there are more events than fit on one page
+  1. Given there are 45 events, more than fit on one page
   2. When a visitor opens Events
-  3. And the visitor searches for an event that is not on the first page
+  3. And the visitor searches for the name of the 45th event
 - Expected results:
-  - Then only that event is listed
+  - Then only the 45th event is listed
+  - And the header count says one event was found
 - Why: search reaches beyond the loaded page, and no test proves it.
+
+Test design: UI · @acceptance · mocked (multi-page, paged helper) · `events-paging.ui.acceptance.spec.ts` · built. Verified live: a search requests `page=1&pageSize=100`, so the helper must serve all 45 on that request (a fixed page-1 body would pass for the wrong reason). Note this contradicts the Summary line "search is client-side on the loaded page": it loads up to 100 events, then filters them (finding F8).
+
+#### visitor should stay on the same page of events when reloading Events
+
+- Covers: `#2005`
+- Oracle: the fixed 45-event mock body (page 2 holds events 21 to 40).
+- Steps:
+  1. Given there are 45 events, more than fit on one page
+  2. When a visitor opens Events
+  3. And the visitor goes to the next page
+  4. And the visitor reloads the page
+- Expected results:
+  - Then events 21 to 40 are listed
+  - And the page indicator shows page 2 of 3
+- Why: page is URL state (FR-006 sibling behaviour in `useListPage`), so a shared or reloaded page-2 link must not fall back to page 1.
+
+Test design: UI · @acceptance · mocked (multi-page, paged helper) · `events-paging.ui.acceptance.spec.ts` · built (added by the planner 2026-11-19). Route mocks survive `page.reload()`. Alternative with one fewer step: open `?page=2` directly.
 
 #### visitor should see the events after retrying a failed load
 
-- Layer: UI · Tags: @acceptance · Data: seeded listing after recovery · Mocked: yes (first response fails)
-- Covers: none (no requirement issue yet)
-- Oracle: the fixed mock body named on the test-design line. The expected value is that body, not a calculation shared with the app.
+- Covers: `#2005`
+- Oracle: the real listing after the one injected failure: the list is not empty and no error state is shown (environments hold full datasets, so no seeded event is assumed on page 1).
 - Steps:
   1. Given the event service is unavailable
   2. When a visitor opens Events
@@ -156,29 +192,37 @@ UI only; the API suite already owns the county and type rules, finished events a
   - Then the event list is displayed
 - Why: the error tests stop at the message, and retry is the visitor's only way out.
 
+Test design: UI · @acceptance · mocked (`mockServerErrorOnce`, then the real service) · `events-errors.ui.acceptance.spec.ts` (`events.ui` is at the 400-line lint limit) · built. No new helper: the map retry scenario already uses `mockServerErrorOnce` and `eventsPage.retryAfterError`. Reuse them. The map copy of this is scenario 34.
+
+#### visitor should see event cards fit the screen on a phone
+
+- Covers: none (exploration 2026-10-31, F2; no requirement issue for phone list cards)
+- Oracle: the seeded Rebel County Submission Seminar, as the visitor sees it.
+- Steps:
+  1. When a visitor opens Events on a phone
+  2. And the visitor finds the seminar
+- Expected results:
+  - Then only that event is listed
+  - And the event card, including its type badge, fits within the screen
+  - And the page does not scroll sideways
+- Why: Events has no `@mobile` scenario. Expected to fail at 360px until finding F2 is fixed.
+
+Test design: UI · @acceptance, @mobile · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` · not mocked · phone viewport (`mobile-galaxy` is 360px; `mobile-iphone` is wider) · `events-phone.ui.acceptance.spec.ts` (`events.ui` is near the file-length limit), own `describe` tagged `@mobile` like the map phone test, found by searching · built and run. It measures each card's `left >= 0` and `right <= innerWidth`, and that the type badge lies inside its own card. At 360px the list has two columns, so one searched card is about 174px wide, and the badge-inside-card check is what would catch F2.
+
 #### visitor should be able to filter and search events using only the keyboard
 
-- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
-- Covers: none (no requirement issue yet)
-- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
+- Covers: none (no requirement issue for list keyboard use; #2016 covers the map switch only)
+- Oracle: the seeded Rebel County Submission Seminar, as the visitor sees it.
 - Steps:
   1. When a visitor opens Events
   2. And the visitor chooses Seminar using the keyboard
   3. And the visitor searches for the seminar using the keyboard
 - Expected results:
   - Then only that event is listed
+  - And the type chosen is Seminar
 - Why: the a11y sweep checks rules on a static page, not that the controls can be operated.
 
-#### visitor should see event cards fit the screen on a phone
-
-- Layer: UI · Tags: @acceptance, @mobile · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: no
-- Covers: `#2007`, `#2017`
-- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
-- Steps:
-  1. When a visitor opens Events on a phone
-- Expected results:
-  - Then each event card, including its type badge, fits within the screen
-- Why: Events has no `@mobile` scenario. Expected to fail at 360px until finding F2 is fixed.
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` · not mocked · `events-keyboard.ui.acceptance.spec.ts` · built (`events-filters` is at the function-length lint limit). Type is a native button group (Enter or Space), search a native searchbox, so use `keyboard.press`; do not use `click` or `fill`. Verified live: Seminar plus `q=Rebel` gives one card and `Found 1 event.` The county select is a native combobox; leave it out. If #2016 is judged map-only, use `none (no requirement issue for list keyboard use)`.
 
 ### Map view
 
@@ -214,6 +258,7 @@ same tile rules.
   - Tile failure: not run (the MCP browser cannot block requests).
   - Map off: not run (the seed pins flags on).
   - No map download on the list: not run.
+- **Planner check 2026-11-19 (local stack, six events; the map was not opened in the MCP browser, which cannot block tile traffic).** `?types=Seminar` and `?county=` are the URL forms. Built since: the map scenarios 39 and 47–55 are all UI, with tiles fulfilled blank (aborted for 53) and no other mock, in `events-map-filters`, `events-map-pins`, `events-map-states`, `events-map.a11y` and `events-map.ui.acceptance.spec.ts`. Not built: no map download (`#2017`), only against a built image; the local stack serves hashed chunks (`/assets/EventsPage-*.js`) and the list page loaded none named `event-map-` or `leaflet-`, so the asserted absence holds today, but the chunk names for the "then switching requests them" half were not observed.
 - **Data gap:** `seeded.ts` needs `SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR`, mirroring the new
   `bjjeire-java/seeder/data-test/bjj-events/dublin-no-gi-seminar.json`. It shares Leinster
   Grappling HQ's coordinates with `SEEDED_EVENT_LEINSTER_OPEN_MAT`. Its address, name and
@@ -234,6 +279,8 @@ same tile rules.
   - And the Cork seminar has a pin and the Dublin events do not
 - Why: `#2007`, SC-004. The app's page tests prove this against mocks only.
 
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` and the Leinster venue · not mocked beyond tiles · `events-map-filters.ui.acceptance.spec.ts`. The link is `?view=map&county=Cork&types=Seminar`; both filters narrow the map, so the Cork pin is among at most a few seminars.
+
 #### visitor should return to the event list with Back after switching to the map
 
 - Layer: UI · Tags: @acceptance · Data: seeded · Mocked: tiles only
@@ -244,21 +291,28 @@ same tile rules.
   2. When the visitor switches to the map
   3. And the visitor goes back
 - Expected results:
-  - Then the event list for Dublin is displayed
+  - Then the list is marked as the current view
+  - And the address no longer has the map view
+  - And the event list shows events
+  - And every event listed is in Dublin
 - Why: `#2007`. Start on the list: a directly opened link has no earlier page.
+
+Test design: UI · @acceptance · `County.Dublin`, no named seeded event · not mocked beyond tiles · `events-map.ui.acceptance.spec.ts`. Starts on `/events?county=Dublin`, so the list assertion does not depend on page 1 (`expectListNotEmpty` and `expectOnlyCountyListed`). Back is `page.goBack`, wrapped by `goBackToList`.
 
 #### visitor should see pins only for the chosen county when filtering the map by county
 
-- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR, SEEDED_EVENT_LEINSTER_OPEN_MAT (seeded) · Mocked: tiles only
+- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR, SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded) · Mocked: tiles only
 - Covers: `#2008`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given a visitor is on the map
+  1. Given a visitor is on the map of seminars
   2. When the visitor filters by Cork
 - Expected results:
-  - Then the Cork seminar has a pin and Leinster Grappling HQ does not
+  - Then the Cork seminar has a pin and the Dublin No-Gi Seminar does not
   - And the map has moved closer to Cork
 - Why: `#2008`, SC-003. Assert named pins, not totals.
+
+Test design: UI · @acceptance · not mocked beyond tiles · `events-map-filters.ui.acceptance.spec.ts`. Starts on `?view=map&types=Seminar` so both seeded seminars are single-event pins and no hard-coded count is used. The baseline zoom is read with `settledTileZoom` (a finite number two reads agree on); "closer" means the zoom rose and the Cork pin's box lies inside the map's box (`expectZoomedInOnPin`).
 
 #### visitor should see pins only for the chosen type when filtering the map by type
 
@@ -272,29 +326,35 @@ same tile rules.
   - Then the Galway camp has a pin and the Cork seminar does not
 - Why: `#2008`. Type is a server filter, and only this proves it reaches the map on real data.
 
+Test design: UI · @acceptance · not mocked beyond tiles · `events-map-filters.ui.acceptance.spec.ts`. Starts on the unfiltered map and asserts only the Cork pin beforehand, the one whose absence the test proves. Camp splits the seeded events: Galway camp stays, the Cork seminar goes (the Leinster venue holds no camp).
+
 #### visitor should see only the searched event's pin when searching on the map
 
 - Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
 - Covers: `#2008`, `#2012`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given a visitor is on the map
+  1. Given a visitor is on the map of seminars
   2. When the visitor searches for an event by name
 - Expected results:
   - Then only that event has a pin
   - And the map has zoomed to it
-- Why: `#2008`, `#2012`. Exactly one pin; check the tile zoom level, as the gym scenario does.
+- Why: `#2008`, `#2012`. Exactly one pin, and the map zooms in on it.
+
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR`, `SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR` · not mocked beyond tiles · `events-map-filters.ui.acceptance.spec.ts`. Starts on `?view=map&types=Seminar` (two single-event pins), searches the Cork seminar's name, then `expectOnlyPin` (exactly one `event-map-pin`, named for the venue). Zoom as for the county scenario, as the gym scenario does.
 
 #### visitor should see events in their real locations on the map
 
-- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
+- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR, SEEDED_EVENT_REBEL_COUNTY_SEMINAR (seeded) · Mocked: tiles only
 - Covers: `#2009`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. When a visitor opens the map of all events
+  1. When a visitor opens the map of seminars
 - Expected results:
   - Then the Dublin venue is north-east of the Cork venue, at the right angle
-- Why: `#2009`, SC-003. Dublin is right of and above Cork, and vertical distance divided by horizontal distance is between 0.95 and 1.2. The true geography gives about 1.09; swapped latitude and longitude gives about 1.53 with the same directions.
+- Why: `#2009`, SC-003. Dublin is right of and above Cork, at the angle the real coordinates give.
+
+Test design: UI · @acceptance · not mocked beyond tiles · `events-map.ui.acceptance.spec.ts`. Opens `?view=map&types=Seminar` (one Cork and one Dublin No-Gi pin, both single-event). The expected vertical / horizontal ratio is computed from the two seeded coordinates in Web Mercator (`onScreenRatioBounds`, plus or minus 10%): about 1.09 (band 0.98 to 1.20); swapped latitude and longitude gives about 1.53 with the same directions, which the band rejects. The Galway/Westport check (scenario 30) uses the same helper (about 2.05, band 1.85 to 2.26).
 
 #### visitor should see an event's details and links when opening its pin
 
@@ -308,20 +368,9 @@ same tile rules.
   - Then the venue and address are shown
   - And the event's name, type and dates are shown
   - And its event and directions links match its card
-- Why: `#2011`. Dates are seeded relative to seed time, so compare them with the card, not a fixed date. Directions use `query=lat,lng` from GeoJSON `[lng, lat]`.
+- Why: `#2011`. A visitor opening a pin needs the venue, the event and a way to reach both.
 
-#### visitor should see every event at a venue when opening that venue's pin
-
-- Layer: UI · Tags: @acceptance · Data: SEEDED_EVENT_LEINSTER_OPEN_MAT, SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR (seeded, see data gap) · Mocked: tiles only
-- Covers: `#2010`
-- Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
-- Steps:
-  1. Given two upcoming events at Leinster Grappling HQ
-  2. When a visitor opens that venue's pin on the map
-- Expected results:
-  - Then both events are listed, earliest first
-  - And the venue is shown once
-- Why: `#2010`, SC-005. The pin is named `Leinster Grappling HQ, 2 events`. The open mat starts first.
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` · not mocked beyond tiles · `events-map-pins.ui.acceptance.spec.ts`. Expected venue, address, name, types and links come from `mapPopupFromDtos` and `eventCardFromDto`. Dates are seeded relative to seed time, so the card's days (`readScheduledDays`, read from the list first) are the expectation. Directions use `query=lat,lng` from GeoJSON `[lng, lat]`.
 
 #### Events map should have no WCAG 2.1 A/AA violations in the `<theme>` theme
 
@@ -329,10 +378,12 @@ same tile rules.
 - Covers: `#2016`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given a visitor has the map open with the shared-venue popup open, in each of the light, dark and competition themes
+  1. Given a visitor has the map open with the Leinster open mat's popup open, in the <theme> theme
 - Expected results:
   - Then no accessibility violations are found
-- Why: `#2016`. Use `expectNoWcagViolations`, in `events-map.a11y.acceptance.spec.ts` so `npm run test:a11y` selects it. Make the tiles readable by axe first, as the gym map scenario does. Axe does not judge focus indicators or pin contrast on tiles; the app's browser tests own those.
+- Why: `#2016`. A map popup that fails contrast or naming is unusable with a screen reader.
+
+Test design: UI · @acceptance, @a11y · `SEEDED_EVENT_LEINSTER_OPEN_MAT` · not mocked beyond tiles · `events-map.a11y.acceptance.spec.ts`, so `npm run test:a11y` selects it. Opens `?view=map&q=<open mat name>` (one single-event pin), opens the popup and waits for it to be opaque, then sets tiles to a normal blend so axe's colour rules run (`makeTilesReadableByAxe`; nothing is excluded). Uses `expectNoWcagViolations`. Axe does not judge focus indicators or pin contrast on tiles; the app's browser tests own those.
 
 #### visitor should keep the pins and be offered the list when map tiles fail to load
 
@@ -342,11 +393,14 @@ same tile rules.
 - Steps:
   1. Given map tiles cannot be loaded
   2. When a visitor opens the map for Cork
+  3. Then a notice offers the event list and the map stays open
+  4. And the Cork seminar's pin can still be opened
+  5. When the visitor follows the notice
 - Expected results:
-  - Then a notice offers the event list and the map stays open
-  - And the Cork seminar's pin can still be opened
-  - And following the notice shows the event list for Cork
-- Why: `#2014`.
+  - Then the event list for Cork is shown
+- Why: `#2014`. A failed map background must not leave the visitor without the pins or a way to the list.
+
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` · tiles aborted (`abortMapTiles`) · `events-map-states.ui.acceptance.spec.ts`. The link is `?view=map&county=Cork&q=<seminar name>`, so the list that follows is one card whatever else the environment holds. Notice copy is `TILES_FAILED_COPY`.
 
 #### visitor should see the event list when opening a map link while the events map is off
 
@@ -354,12 +408,15 @@ same tile rules.
 - Covers: `#2015`
 - Oracle: the seeded record named on the test-design line, as the visitor sees it. Not a calculation shared with the app.
 - Steps:
-  1. Given the events map is off
-  2. When a visitor opens a link to the map
+  1. When a visitor opens a link to the map while the events map is off
 - Expected results:
   - Then the event list is displayed on the Events page
+  - And the address stays on the Events page
+  - And no map is displayed
   - And the visitor is not offered a choice of view
-- Why: `#2015`, SC-006. Needs `EventsMap: false`. Assert the path stays `/events`.
+- Why: `#2015`, SC-006. A map link must not break the page when the feature is off.
+
+Test design: UI · @acceptance · `SEEDED_EVENT_REBEL_COUNTY_SEMINAR` · tiles fulfilled blank (a leaked map must not reach OpenStreetMap) · `events-map-states.ui.acceptance.spec.ts`, own `describe` pinning `EventsMap: false` with `test.use`. The flag is pinned, never asserted. The link is `?view=map&county=Cork&q=<seminar name>`; the path must stay `/events`.
 
 #### visitor should not download the map when staying on the event list
 
@@ -371,11 +428,13 @@ same tile rules.
 - Expected results:
   - Then no map code or tiles are requested
   - And switching to the map then requests them
-- Why: `#2017`. Record request URLs from before navigation and match `tile.openstreetmap.org`, `/assets/event-map-` and `/assets/leaflet-`. Both maps now share a separate Leaflet chunk. Run against a built image.
+- Why: `#2017`. Visitors who never open the map should not pay for it. Run against a built image.
 
 ### Additional map scenarios (planner, 2026-11-05)
 
 Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-016, FR-017, which the twelve above leave out. Same setup (tiles fulfilled with a blank image). Explored 2026-11-05 where stated in each Why.
+
+Test design: UI · @acceptance · not built · record request URLs from before navigation and match `tile.openstreetmap.org`, `/assets/event-map-` and `/assets/leaflet-` (both maps now share a separate Leaflet chunk).
 
 #### visitor should see pins for the current results when switching from the event list to the map
 
@@ -389,7 +448,7 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
   - Then the map is displayed and marked as the current view
   - And the Galway and Westport camps have pins and the Cork seminar does not
   - And the Galway pin is south-east of the Westport pin
-- Why: `#2007` (User Story 4, scenario 1). The map's critical journey; the shared-link scenario starts on the map and never uses the switch. Narrowed by the Camp type, which gives two seeded events at different venues (Tribes in Galway, Atlantic Coast in Westport) and does not depend on the Dublin seminar, so the results are a real set the map must match: a pin for each, none for a non-camp venue, and the pins placed the right way round (mutation audit 2026-11-05, gap 2 and the smoke test that proved too little). Galway lies south-east of Westport; the check is tolerant (ratio 1.5 to 2.7, Mercator gives about 2.05).
+- Why: `#2007` (User Story 4, scenario 1). The map's critical journey; the shared-link scenario starts on the map and never uses the switch. Narrowed by the Camp type, which gives two seeded events at different venues (Tribes in Galway, Atlantic Coast in Westport) and does not depend on the Dublin seminar, so the results are a real set the map must match: a pin for each, none for a non-camp venue, and the pins placed the right way round (mutation audit 2026-11-05, gap 2 and the smoke test that proved too little). Galway lies south-east of Westport, at the angle the seeded coordinates give (band derived from them, see scenario 51).
 
 #### visitor should keep the search, county and type when switching from the map back to the list
 
@@ -517,11 +576,14 @@ Added for User Story 4 acceptance scenarios 1, 2, 9, 10 and FR-007, FR-008, FR-0
 
 Do not implement these until the question is answered.
 
-- Per-day price (finding F1): `visitor should see the daily rate of a camp priced per day`.
+- Per-day price (finding F1, now apparently fixed, see Findings): `visitor should see the daily rate of a camp priced per day` is scenario 24. Nothing is held once a run confirms it.
 
 ## Findings
 
-- **F1: a per-day price is multiplied by the number of days but still labelled per day.** Tribes No-Gi Camp is seeded at EUR 55 per day for 3 days and shows `EUR 165.00 per day`. No UI test reads this card, and `eventCardFromDto` copies the same calculation, so a test built on it would pass with the wrong price. Reproduced twice. Expected a daily rate of EUR 55.00, or a total without "per day".
+- **F8: the Summary says search is client-side on the loaded page, but search requests `page=1&pageSize=100`.** Observed: typing a term refetches up to 100 events and filters them in the browser, so search reaches beyond page 1 but not beyond 100 events. No product-spec line states either; the later-page search scenario encodes the observed reach only up to 100 events.
+
+- **F9 (low): fast typing in the events search box drops characters.** Observed 2026-11-19 (local): typing `Rebel County` with no delay between keys left `r` or `y`; at 20 ms it left `yRebel County`; at 80 ms it was reliable. Each key rewrites the input from `?q=`, so a faster key overtakes the update. Humans rarely type that fast, so severity is low. The keyboard scenario (45) types at 80 ms (`KEY_DELAY_MS` in `events.page.ts`); remove the delay once this is fixed. No GitHub issue filed: the product owner decides.
+- **F1: a per-day price is multiplied by the number of days but still labelled per day.** Tribes No-Gi Camp is seeded at EUR 55 per day for 3 days and shows `EUR 165.00 per day`. No UI test reads this card, and `eventCardFromDto` copies the same calculation, so a test built on it would pass with the wrong price. Reproduced twice. Expected a daily rate of EUR 55.00, or a total without "per day". **Update 2026-11-19 (live check): fixed.** Tribes No-Gi Camp now shows `EUR 55.00 per day`, and Atlantic Coast shows `Open mat day pass: EUR 20.00 per day` unmultiplied. Scenario 24 should now pass; remove "expected to fail until fixed" from its line and the Held entry once a run confirms it.
 - **F2: the type badge overflows the card at 360px.** The Seminar badge on the Rebel County card ends at 366px, 6px past the screen edge. The page does not scroll sideways. Reproduced twice by measurement; not checked visually.
 - **F3 (question): a per-session fee is shown as a weekly total.** Shannonside's mat fee is seeded at EUR 10 per session and shows `Mat fee: EUR 20.00 per week` for two weekly sessions. The sum is consistent, but a visitor attending once may read it as the price. `eventCardFromDto` copies this calculation too.
 - **F5 (fixed 2026-10-31): the card showed the organiser's website host instead of their name.** The product owner confirmed it should show `organiser.name`. Fixed in `formatOrganiserDisplay` in `bjjeire-java` (`src/bjjeire-app/src/utils/format-event-details.ts`) and checked on a local rebuild; not yet committed. `expectCardData` now guards the name, so these tests fail against any build without the fix.

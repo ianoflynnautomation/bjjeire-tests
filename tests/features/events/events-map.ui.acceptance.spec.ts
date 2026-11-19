@@ -2,6 +2,7 @@
 // seed: tests/agents/seed.spec.ts
 import { test, expect, eventsTestConfig } from './fixtures';
 import { BjjEventType } from '@api/features/events/events.types';
+import { County } from '@api/support';
 import { faker } from '@faker-js/faker';
 import { MAP_EVENT_LIMIT } from '@ui/pages/events/events.constants';
 import { firstPageOfManyEvents } from './testdata/multi-page';
@@ -9,11 +10,13 @@ import { listingWithoutCoordinates, pinsFor } from './testdata/unmapped-location
 import { ALL_FEATURES_ENABLED } from '@ui/fixtures/feature-flags.fixture';
 import {
   SEEDED_EVENT_ATLANTIC_COAST_CAMP,
+  SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR,
   SEEDED_EVENT_REBEL_COUNTY_SEMINAR,
   SEEDED_EVENT_TRIBES_NO_GI_CAMP,
 } from './seeded';
 import { expectNoSidewaysScroll } from '@ui/support';
 import { seededMapViews } from './testdata/map-views';
+import { onScreenRatioBounds } from '@ui/pages/events/events.geo';
 import { mapPopupFromDtos } from '@ui/pages/events/events.card.mapper';
 import { seededDateProblems } from './testdata/seeded-dates';
 import { squash } from '@squash/annotations';
@@ -27,6 +30,7 @@ const EVENTS_OVER_MAP_LIMIT = 30;
 const MATCHING_EVENTS = MAP_EVENT_LIMIT + EVENTS_OVER_MAP_LIMIT;
 const corkSeminar = SEEDED_EVENT_REBEL_COUNTY_SEMINAR;
 const galwayCamp = SEEDED_EVENT_TRIBES_NO_GI_CAMP;
+const dublinSeminar = SEEDED_EVENT_DUBLIN_NO_GI_SEMINAR;
 const westportCamp = SEEDED_EVENT_ATLANTIC_COAST_CAMP;
 
 test.describe('Events map UI acceptance', { tag: ['@bjj-events', '@events', '@ui', '@desktop', '@squash'] }, () => {
@@ -62,7 +66,11 @@ test.describe('Events map UI acceptance', { tag: ['@bjj-events', '@events', '@ui
       });
 
       await test.step('And the Galway pin is south-east of the Westport pin', async () => {
-        await eventsMapPage.expectPinSouthEastOf(galwayCamp.location.venue, westportCamp.location.venue);
+        await eventsMapPage.expectPinSouthEastOf(
+          galwayCamp.location.venue,
+          westportCamp.location.venue,
+          onScreenRatioBounds(galwayCamp.location.coordinates, westportCamp.location.coordinates),
+        );
       });
     },
   );
@@ -94,6 +102,64 @@ test.describe('Events map UI acceptance', { tag: ['@bjj-events', '@events', '@ui
       await test.step('And only the Cork seminar is listed', async () => {
         await eventsPage.expectResultCount(1);
         await eventsPage.expectCardData({ name: corkSeminar.name });
+      });
+    },
+  );
+
+  test(
+    'visitor should return to the event list with Back after switching to the map',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ eventsPage, eventsMapPage }) => {
+      await test.step('Given a visitor is on the event list for Dublin', async () => {
+        await eventsPage.goToWithQuery(`county=${County.Dublin}`);
+      });
+
+      await test.step('When the visitor switches to the map', async () => {
+        await eventsMapPage.switchToMap();
+      });
+
+      await test.step('And the visitor goes back', async () => {
+        await eventsMapPage.goBackToList();
+      });
+
+      await test.step('Then the list is marked as the current view', async () => {
+        await eventsMapPage.expectListIsCurrentView();
+      });
+
+      await test.step('And the address no longer has the map view', async () => {
+        await eventsMapPage.expectAddressWithoutMapView();
+      });
+
+      await test.step('And the event list shows events', async () => {
+        await eventsPage.expectListNotEmpty();
+      });
+
+      await test.step('And every event listed is in Dublin', async () => {
+        await eventsPage.expectOnlyCountyListed(County.Dublin);
+      });
+    },
+  );
+
+  test(
+    'visitor should see events in their real locations on the map',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ eventsMapPage }) => {
+      await test.step('When a visitor opens the map of seminars', async () => {
+        await eventsMapPage.goToMapWithQuery(`types=${BjjEventType.Seminar}`);
+      });
+
+      await test.step('Then the Dublin venue is north-east of the Cork venue, at the right angle', async () => {
+        await eventsMapPage.expectPinNorthEastOf(
+          dublinSeminar.location.venue,
+          corkSeminar.location.venue,
+          onScreenRatioBounds(dublinSeminar.location.coordinates, corkSeminar.location.coordinates),
+        );
       });
     },
   );

@@ -30,8 +30,26 @@ export const SEEDED_STORE_EMERALD_KIMONOS: StoreDto = {
   isActive: true,
 };
 
+/** Published, with no description and no logo. The seed holds nulls; the API omits them, so the fixture leaves both out. */
+export const SEEDED_STORE_BURREN_MATS: StoreDto = {
+  id: storeId('acce77500000000000000005'),
+  name: 'Burren Mats',
+  websiteUrl: 'https://burren-mats.example.ie/',
+  isActive: true,
+};
+
+/** Unpublished (`isActive: false`): the directory must never list it, so it stays out of `SEEDED_STORES_BY_NAME`. */
+export const SEEDED_STORE_FASTNET_GRAPPLING_CO: StoreDto = {
+  id: storeId('acce77500000000000000004'),
+  name: 'Fastnet Grappling Co',
+  description: 'Acceptance-test fixture store. Unpublished: the directory must never list it (#4001).',
+  websiteUrl: 'https://fastnet-grappling-co.example.ie/',
+  isActive: false,
+};
+
 export const SEEDED_STORES_BY_NAME: readonly StoreDto[] = [
   SEEDED_STORE_ARAN_FIGHT_GEAR,
+  SEEDED_STORE_BURREN_MATS,
   SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY,
   SEEDED_STORE_EMERALD_KIMONOS,
 ];

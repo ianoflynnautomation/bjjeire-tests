@@ -1,7 +1,7 @@
 // spec: specs/features/shop.md
 import { test, expect } from '@api/fixtures';
 import { storesPageSchema } from '@api/features/stores/stores.schemas';
-import { getSitemapPaths, getStores } from '@api/features/stores/stores.service';
+import { getAllStores, getSitemapPaths, getStores } from '@api/features/stores/stores.service';
 import {
   API_ROUTES,
   expectConsecutivePagePagination,
@@ -13,11 +13,13 @@ import {
   ValidationErrorCode,
 } from '@api/support';
 import { INVALID_INTEGER_QUERY_VALUES, OUT_OF_RANGE_PAGING_VALUES } from '../common/testdata/invalid-values';
-import { SEEDED_STORES_BY_NAME } from './seeded';
+import { SEEDED_STORE_BURREN_MATS, SEEDED_STORE_FASTNET_GRAPPLING_CO, SEEDED_STORES_BY_NAME } from './seeded';
 import { squash } from '@squash/annotations';
 
 const FULL_PAGE_SIZE = 100;
 const SMALL_PAGE_SIZE = 2;
+const PAGE_PAST_THE_END = 10000;
+const PAST_THE_END_PAGE_SIZE = 20;
 
 test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, () => {
   test(
@@ -83,6 +85,30 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
   );
 
   test(
+    'client should receive an empty page when asking past the last page of the directory',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const pastTheEnd = await test.step('When a client requests a page far past the last one', () =>
+        getStores(request, storesPageSchema, { page: PAGE_PAST_THE_END, pageSize: PAST_THE_END_PAGE_SIZE }));
+
+      await test.step('Then the page has no stores', () => {
+        expect(pastTheEnd.data).toHaveLength(0);
+      });
+
+      await test.step('And it reports no next page', () => {
+        expect(pastTheEnd.pagination.hasNextPage).toBe(false);
+      });
+
+      await test.step('And it reports a previous page', () => {
+        expect(pastTheEnd.pagination.hasPreviousPage).toBe(true);
+      });
+    },
+  );
+
+  test(
     'client should find the Shop address and no Stores address in the site map',
     {
       tag: '@acceptance',
@@ -97,6 +123,35 @@ test.describe('Stores API acceptance', { tag: ['@stores', '@api', '@squash'] }, 
 
       await test.step('And it lists no address under the old Stores one', () => {
         expect(paths.filter(path => path === '/stores' || path.startsWith('/stores/'))).toEqual([]);
+      });
+    },
+  );
+
+  test(
+    'client should not receive an unpublished store in the directory',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const { stores, reportedTotal } =
+        await test.step('When a client requests the store directory, page by page to the end', () =>
+          getAllStores(request, storesPageSchema));
+
+      await test.step('Then no store has the unpublished store id', () => {
+        expect(stores.map(store => store.id)).not.toContain(SEEDED_STORE_FASTNET_GRAPPLING_CO.id);
+      });
+
+      await test.step('And no store has the unpublished store name', () => {
+        expect(stores.map(store => store.name)).not.toContain(SEEDED_STORE_FASTNET_GRAPPLING_CO.name);
+      });
+
+      await test.step('And every store the directory reported was received', () => {
+        expect(stores).toHaveLength(reportedTotal);
+      });
+
+      await test.step('And the published store seeded alongside it is listed', () => {
+        expect(stores.map(store => store.id)).toContain(SEEDED_STORE_BURREN_MATS.id);
       });
     },
   );

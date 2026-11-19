@@ -50,6 +50,15 @@ export const TEST_IDS = {
   searchInput: 'search-input',
 } as const;
 
+/** Leaflet's tile images, which publish no test id. */
+export const MAP_TILE_SELECTOR = 'img.leaflet-tile';
+
+/** Leaflet's popup container, which publishes no test id. */
+export const MAP_POPUP_CONTAINER_SELECTOR = '.leaflet-popup';
+
+/** The key the app reads the chosen theme from on boot. */
+export const THEME_STORAGE_KEY = 'bjjeire-theme';
+
 export const MAP_TEST_IDS = {
   map: 'event-map',
   pin: 'event-map-pin',
@@ -63,6 +72,12 @@ export const MAP_REGION_NAME = 'Map of Brazilian Jiu-Jitsu events in Ireland';
 export const MAP_NOTICE_TEST_IDS = {
   truncated: 'event-map-notice-truncated',
   unmapped: 'event-map-notice-unmapped',
+  tilesFailed: 'event-map-notice-tiles-failed',
+} as const;
+
+export const TILES_FAILED_COPY = {
+  message: 'The map background could not be loaded. The pins are still available.',
+  listLink: 'View the event list',
 } as const;
 
 export const UNMAPPED_NOTICE_COPY = {
@@ -89,13 +104,6 @@ export const POPUP_TEST_IDS = {
   eventLink: 'event-map-popup-event-link',
   close: 'event-map-popup-close',
 } as const;
-
-/**
- * Galway against Westport on screen: south-east, with the vertical distance about twice the horizontal one
- * (Mercator at 53.5 degrees north gives about 2.05). Wide bounds: any real position passes, swapped
- * latitude and longitude (about 0.5) does not.
- */
-export const SOUTH_EAST_RATIO_BOUNDS = { min: 1.5, max: 2.7 } as const;
 
 /** The events list endpoint, with or without a query string. */
 export const EVENTS_LIST_API_ROUTE = /\/api\/v[12]\/bjjevent(?:\?|$)/i;
