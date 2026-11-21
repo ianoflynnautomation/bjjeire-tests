@@ -7,8 +7,8 @@ live in the app repository (`~/Sources/bjjeire-java`, `/workspaces/bjjeire-java`
 
 ## Stack
 
-- **Runtime**: Node 24 (the Playwright image), TypeScript 7.0, CommonJS (`"type": "commonjs"`)
-- **Test framework**: `@playwright/test` 1.64.1 (pinned; must match the CI runner image)
+- **Runtime**: Node 26 (the Playwright image), TypeScript 7.0, CommonJS (`"type": "commonjs"`)
+- **Test framework**: `@playwright/test` 1.65.1 (pinned; must match the CI runner image)
 - **Validation**: Zod v4 generated from the published OpenAPI contract (`npm run contract:pull` → `npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema. `gen:api-schemas` links TypeScript 6.0.3 for `openapi-ts`, because 7.0 has no compiler API. `tsc` stays on 7.
 - **A11y**: `@axe-core/playwright`
 - **Lint**: Oxlint (type-aware via `oxlint-tsgolint`) + Prettier 3. Playwright rules run as the `eslint-plugin-playwright` JS plugin. Husky pre-commit runs lint-staged

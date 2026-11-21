@@ -19,7 +19,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  // Node 24 + TypeScript + the browsers come from the base image, and git is
+  // Node 26 + TypeScript + the browsers come from the base image, and git is
   // already on it — installing the node/typescript/git Features on top would
   // only add build time. `upgradePackages` stays false on purpose: an apt
   // upgrade can pull new font packages and shift every screenshot baseline.

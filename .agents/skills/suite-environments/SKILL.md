@@ -33,7 +33,7 @@ kubectl rollout restart deploy/bjj-api -n bjjeire-app
 ## Dev container
 
 `.devcontainer/` builds on the **pinned CI image**
-(`mcr.microsoft.com/playwright:v1.64.1-noble`), not a generic Node image: browsers
+(`mcr.microsoft.com/playwright:v1.65.1-noble`), not a generic Node image: browsers
 come pre-installed, and `-linux.png` baselines regenerated inside it match what CI
 compares. The tag must track `@playwright/test` — Renovate's `playwright` group
 covers this Dockerfile too.
