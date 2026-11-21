@@ -2,12 +2,7 @@ import type { FullConfig, FullResult, Reporter, Suite, TestCase, TestResult } fr
 import { SpanStatusCode, type Attributes, type Span, type Tracer } from '@opentelemetry/api';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
-import {
-  BasicTracerProvider,
-  BatchSpanProcessor,
-  RandomIdGenerator,
-  type IdGenerator,
-} from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor, RandomIdGenerator, TracerProvider, type IdGenerator } from '@opentelemetry/sdk-trace';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { resolveRunId } from '@shared/config/run-id';
 import { testTraceContext } from './trace-context';
@@ -62,7 +57,7 @@ class DeterministicIdGenerator implements IdGenerator {
  * each shard is its own process and exports its own trace.
  */
 export default class OtelReporter implements Reporter {
-  private provider: BasicTracerProvider | undefined;
+  private provider: TracerProvider | undefined;
   private tracer: Tracer | undefined;
   private rootSpan: Span | undefined;
   private readonly idGenerator = new DeterministicIdGenerator();
@@ -81,10 +76,10 @@ export default class OtelReporter implements Reporter {
         'cicd.pipeline.run.url.full': ciRunUrl(),
       }),
     });
-    this.provider = new BasicTracerProvider({
+    this.provider = new TracerProvider({
       resource,
       idGenerator: this.idGenerator,
-      spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+      spanProcessors: [new BatchSpanProcessor({ exporter: new OTLPTraceExporter() })],
     });
     this.tracer = this.provider.getTracer(TRACER_NAME);
     this.rootSpan = this.tracer.startSpan(shard ? `test run (shard ${shard.current}/${shard.total})` : 'test run', {

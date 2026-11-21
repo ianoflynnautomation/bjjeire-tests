@@ -112,7 +112,7 @@
         // --- Testing ---
         "ms-playwright.playwright",
         // --- TypeScript / lint / format ---
-        "dbaeumer.vscode-eslint",
+        "oxc.oxc-vscode",
         "esbenp.prettier-vscode",
         "ms-vscode.vscode-typescript-next",
         // --- Editor quality-of-life ---
@@ -145,19 +145,16 @@
         "[markdown]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
-        // ── ESLint ──────────────────────────────────────────────────────────
-        "eslint.enable": true,
-        "eslint.useFlatConfig": true,
-        "eslint.validate": ["typescript"],
+        // ── Oxlint ──────────────────────────────────────────────────────────
+        "oxc.enable": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
+          "source.fixAll.oxc": "explicit"
         },
         // ── Playwright test explorer ────────────────────────────────────────
         "playwright.reuseBrowser": false,
         "playwright.showTrace": true,
-        // ── TypeScript: use the workspace TS, not the bundled one ───────────
-        "js/ts.tsdk.path": "node_modules/typescript/lib",
-        "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+        // TypeScript 7 ships a native tsc and no language service under
+        // node_modules/typescript/lib. The TypeScript Next extension supplies the editor.
         // ── Noise reduction: generated output is not source ─────────────────
         "files.watcherExclude": {
           "**/node_modules/**": true,
@@ -183,7 +180,7 @@
           "bjjeire",
           "buildkit",
           "davidanson",
-          "dbaeumer",
+          "oxc",
           "devcontainer",
           "dotenv",
           "eamodio",

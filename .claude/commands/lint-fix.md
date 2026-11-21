@@ -4,7 +4,7 @@ description: Run lint and typecheck, auto-fix what's possible, and report remain
 
 Steps:
 
-1. Run `npx eslint . --fix` to auto-fix lint errors (Prettier runs via the plugin).
+1. Run `npx oxlint . --fix`, then `npx prettier --write .` (formatting stays in Prettier).
 2. Run `npx tsc --noEmit` to typecheck.
 3. If either step has remaining errors, list them with file paths and line numbers,
    then fix what has an unambiguous fix and re-run.

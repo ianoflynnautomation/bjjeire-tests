@@ -19,7 +19,7 @@ Both hosts sit behind **Cloudflare Access**. A browser with no session gets a 30
 
 ## One-time setup
 
-Prerequisites: Node 22, npm, Playwright browsers, and a `terraform` that can read state for `bjjeire-terraform-azurerm-aks` (dev backend).
+Prerequisites: Node 24, npm, Playwright browsers, and a `terraform` that can read state for `bjjeire-terraform-azurerm-aks` (dev backend).
 
 ```sh
 npm ci

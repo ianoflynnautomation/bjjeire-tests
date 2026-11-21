@@ -52,7 +52,7 @@ const SHELL_PROFILES = {
   readonly: [
     /^git (status|diff|log|show|ls-files|rev-parse|merge-base|blame)\b/,
     /^npm run (lint|typecheck|spec:check)\b/,
-    /^npx (tsc --noEmit|eslint)\b/,
+    /^npx (tsc --noEmit|oxlint)\b/,
     /^npx playwright test\b.*\s--list\b/,
     READ_COMMANDS,
   ],

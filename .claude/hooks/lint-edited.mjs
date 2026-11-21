@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PostToolUse: runs ESLint --fix on edited .ts/.mts files and spec:check on edited feature specs.
+// PostToolUse: runs Oxlint --fix on edited .ts/.mts files and spec:check on edited feature specs.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -34,15 +34,18 @@ const specTargets = absPaths.filter(abs => {
 
 const failures = [];
 
-const eslint = path.join(root, 'node_modules', '.bin', 'eslint');
-if (tsTargets.length > 0 && existsSync(eslint)) {
-  const run = spawnSync(eslint, ['--fix', '--no-warn-ignored', '--format', 'stylish', ...tsTargets], {
+const oxlint = path.join(root, 'node_modules', '.bin', 'oxlint');
+if (tsTargets.length > 0 && existsSync(oxlint)) {
+  const run = spawnSync(oxlint, ['--fix', '--no-error-on-unmatched-pattern', ...tsTargets], {
     cwd: root,
     encoding: 'utf8',
   });
-  if (run.status !== 0) {
+  const output = `${run.stdout ?? ''}${run.stderr ?? ''}`;
+  // node_modules in this repo is the Linux dev-container volume. On the Mac the
+  // binary can be present without its native binding; skip, as with a missing tool.
+  if (run.status !== 0 && !output.includes('Cannot find native binding')) {
     const relTargets = tsTargets.map(t => path.relative(root, t)).join(', ');
-    failures.push(`ESLint found problems in ${relTargets} after --fix:\n${run.stdout}${run.stderr}`.trim());
+    failures.push(`Oxlint found problems in ${relTargets} after --fix:\n${output}`.trim());
   }
 }
 

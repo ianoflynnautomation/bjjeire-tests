@@ -13,6 +13,6 @@ test('explore', async ({ page, headerSection }) => {
   test.setTimeout(0);
   await gotoAppShell(page, readEnv('PW_EXPLORE_PATH') ?? '/');
   await headerSection.expectVisible();
-  // eslint-disable-next-line playwright/no-page-pause -- the pause is the hand-off to the agent
+  // oxlint-disable-next-line playwright/no-page-pause -- the pause is the hand-off to the agent
   await page.pause();
 });

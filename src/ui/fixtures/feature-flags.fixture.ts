@@ -2,9 +2,8 @@ import type { Page } from '@playwright/test';
 
 const TEST_FLAG_OVERRIDES_GLOBAL = '__BJJEIRE_TEST_FLAG_OVERRIDES__';
 
-/* eslint-disable @typescript-eslint/naming-convention --
-   Flag names are the backend's wire contract (`/api/v1/featureflag`) and the
-   app's `FeatureFlagName` union; renaming them here would stop them matching. */
+// Flag names are the backend's wire contract (`/api/v1/featureflag`) and the
+// app's `FeatureFlagName` union; renaming them here would stop them matching.
 export type FeatureFlagOverrides = {
   BjjEvents: boolean;
   Gyms: boolean;
@@ -24,7 +23,6 @@ export const ALL_FEATURES_ENABLED: FeatureFlagOverrides = {
   // same on every environment.
   BjjEireCompetitions: false,
 };
-/* eslint-enable @typescript-eslint/naming-convention */
 
 export async function stubFeatureFlags(page: Page, flags: FeatureFlagOverrides = ALL_FEATURES_ENABLED): Promise<void> {
   // addInitScript runs before any page script on every navigation, so the

@@ -42,7 +42,7 @@ tools:
   bash:
     - 'npx playwright test:*'
     - 'npx playwright cli:*'
-    - 'npx eslint:*'
+    - 'npx oxlint:*'
     - 'npx prettier:*'
     - 'npm run typecheck'
     - 'npm run trace:correlate:*'
@@ -61,7 +61,7 @@ steps:
   - name: Set up Node
     uses: actions/setup-node@v7
     with:
-      node-version: 22
+      node-version: 24
       cache: npm
   - name: Install test dependencies
     run: npm ci

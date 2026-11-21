@@ -71,7 +71,7 @@ The failure must name this scenario. If the broken assertion still passes, stop:
 test does not prove the block. Restore the assertion. Then:
 
 ```sh
-npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck && npm run spec:check -- --feature <feature>
+npx prettier --write <changed files> && npx oxlint <changed files> && npm run typecheck && npm run spec:check -- --feature <feature>
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=chromium-desktop -g "<title>"
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=chromium-desktop -g "<title>" --repeat-each=5
 ```

@@ -46,7 +46,7 @@ workflow) and `.agents/skills/suite-conventions/SKILL.md` § Assertions. For `@s
 ## Verify
 
 ```sh
-npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck
+npx prettier --write <changed files> && npx oxlint <changed files> && npm run typecheck
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.api.config.ts <spec>
 SQUASH_TM_MODE=dry-run npm run squash:sync   # only when titles in a @squash describe changed
 ```

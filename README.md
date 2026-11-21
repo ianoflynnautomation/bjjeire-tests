@@ -1,9 +1,9 @@
 # bjjeire-tests
 
 [![CI](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ianoflynnautomation/bjjeire-tests/actions/workflows/ci.yml)
-![Playwright](https://img.shields.io/badge/Playwright-1.63-2EAD33?logo=playwright&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
-![Node](https://img.shields.io/badge/Node-22-339933?logo=nodedotjs&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-1.64-2EAD33?logo=playwright&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)
+![Node](https://img.shields.io/badge/Node-24-339933?logo=nodedotjs&logoColor=white)
 
 Acceptance test suite for **[BjjEire](https://github.com/ianoflynnautomation/BjjEire)** — a
 read-only directory of BJJ gyms, events, competitions, and stores across Ireland.
@@ -14,7 +14,7 @@ S24) — against real seeded data in local, Docker, and remote (dev / staging) e
 
 ## Quick start
 
-**Prerequisites:** Node 22, npm, and a running BjjEire instance (local
+**Prerequisites:** Node 24, npm, and a running BjjEire instance (local
 [minikube](https://github.com/ianoflynnautomation/bjjeire-deploy), Docker Compose, or a
 remote environment URL).
 

@@ -11,8 +11,8 @@ A visitor opens Shop (called Stores until the merch shop's slice 1) at `/shop` a
 searches and pages a directory of published BJJ equipment stores. The old `/stores`
 address redirects to `/shop`. Only the visible name and the address changed: the API
 (`/api/v1/store`), the `Stores` flag and the `stores-*` / `store-card-*` test ids keep their
-names. BJJ Éire's own merch will sit above the directory, behind the `Merch` flag; it is not
-built yet. There is no county and no type: search matches the name only, on the
+names. BJJ Éire's own merch sits above the directory, behind the `Merch` flag (app slice 2: the
+catalogue, product pages and the organiser's product admin). There is no county and no type: search matches the name only, on the
 loaded page. The app repo's page integration tests own the search-to-cards mechanics
 once (`#4002` T4); this suite proves the visitor sees it against real data.
 
@@ -206,7 +206,7 @@ Behaviour: `bjjeire-java/specs/stc/shop/spec.md` § `#6026` and ADR-0016. The `M
 (`FEATURE_MERCH=false`). Production and the default Compose stack run it off until the shop launches, but a local
 `.env` may switch it on, as a stack with every flag on does. While it is off, every product and order route answers
 404 before sign-in, whatever token is sent. No merch screen exists yet, so the visitor-facing half of `#6026` (no
-merch section, basket, product page or merch admin screen) gets its blocks with slice 2. No test claims this
+merch section, basket, product page or merch admin screen) has its block under "BJJ Éire merch on Shop" below. No test claims this
 block yet.
 
 #### client should not reach the merch shop while merch is switched off <route>
@@ -222,7 +222,183 @@ block yet.
   - And it is not a 401: the route is absent, not protected
 - Why: a switched-off shop that answered 401 instead would tell anyone probing the API that order and product routes exist, and a 200 would mean guest checkout is open before launch.
 
-Test design: API · @acceptance · data-driven over `the catalogue` (`GET /api/v1/product`), `the delivery fee` (`GET /api/v1/order/delivery`), `checkout` (`POST /api/v1/order`), `the organiser's orders` (`GET /api/v1/order/admin`) and `the shop webhook` (`POST /api/v1/order/stripe-webhook`) · not mocked · no data. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: true`, as `tests/features/competitions/switched-on-ui.ts` does for its flag. A stack with every flag on skips it by design; run it against one started with `FEATURE_MERCH=false` (or the default). With `Merch` on, these routes answer 404 only because no controller exists yet, so a 404 there proves nothing about the switch. Assert with `expectProblem` (status and `type`), never on the `detail` wording.
+Test design: API · @acceptance · data-driven over `the catalogue` (`GET /api/v1/product`), `the delivery fee` (`GET /api/v1/order/delivery`), `checkout` (`POST /api/v1/order`), `the organiser's orders` (`GET /api/v1/order/admin`) and `the shop webhook` (`POST /api/v1/order/stripe-webhook`) · not mocked · no data. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: true`, as `tests/features/competitions/switched-on-ui.ts` does for its flag. A stack with every flag on skips it by design; run it against one started with `FEATURE_MERCH=false` (or the default). With `Merch` on, the catalogue answers 200 (app slice 2) and the order routes still answer 404 only because no controller exists yet, so a 404 there proves nothing about the switch. Assert with `expectProblem` (status and `type`), never on the `detail` wording.
+
+### BJJ Éire merch on Shop (`#6001`–`#6004`, `#6026`, planned 2026-11-19, slice 2)
+
+Behaviour: `bjjeire-java/specs/features/shop.md` Part 2 (User Story 5) and `specs/stc/shop/spec.md` § `#6001`–`#6004`.
+With the `Merch` switch on, Shop shows a "BJJ Éire merch" section above the directory search, and each product has a
+page at `/shop/products/<slug>`. The app's test dataset (`seeder/data-test/products/`) seeds three published products
+with one photo each: `Harp Rashguard` (`harp-rashguard`, €45.00; S, M, L in stock, XL `stock: 0`), `Competition Shorts`
+(`competition-shorts`, €35.00; M only, 4 in stock) and `Logo T-Shirt` (`logo-t-shirt`, €25.00; S, M, L). No seeded
+product is wholly sold out, so the card's "Out of stock" mark is owned at T4 by the app's
+`shop-page-merch.integration.test.tsx`. Test ids: `merch-featured*`, `merch-card-*`, `product-page-*`
+(`src/constants/merchDataTestIds.ts`). No test claims these blocks yet.
+
+#### visitor should see BJJ Éire merch above the store directory when opening Shop
+
+- Covers: `#6001`
+- Oracle: the app's product test seed (names, kinds, prices). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens Shop
+- Expected results:
+  - Then a "BJJ Éire merch" section is shown above the directory search
+  - And it lists the seeded rashguard, shorts and t-shirt, in that order
+  - And the seeded rashguard's card shows its photo, its name, "Rashguard" and "€45.00"
+  - And the seeded rashguard's card has no "Out of stock" mark
+  - And a seeded store's card is still listed below
+- Why: the merch is the reason for the feature; placing it at the top of Shop was the owner's request.
+
+Test design: UI · @acceptance @merch-on · seeded products · not mocked · default seed. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: false`. The environment may hold more products than the seed: assert the seeded three are present and in kind order relative to each other, never that the section holds exactly three. The photo is checked as loaded (`naturalWidth > 0`), not by its address.
+
+#### visitor should see a product's photos, description, price and sizes with sold-out sizes marked
+
+- Covers: `#6002`
+- Oracle: the seed file `acceptance-products.json` (`harp-rashguard`: S, M, L in stock; XL `stock: 0`). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens Shop
+  3. And the visitor opens the seeded rashguard
+- Expected results:
+  - Then the product page shows its name, "Rashguard", "€45.00", its description and its photo
+  - And it offers the sizes S, M, L and XL, in that order
+  - And XL is marked sold out and cannot be chosen
+  - And M can be chosen
+- Why: a shopper who picks a size that is gone would only find out at payment.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked · default seed. Open it from its card, not by address, so the card link is proved too. The sizes are radio buttons; the sold-out one is named "XL, sold out".
+
+#### visitor should see "Product not found" with a way back to Shop when opening a product that is not on sale
+
+- Covers: `#6002`
+- Oracle: the app's STC overlay `#6002` (a draft, hidden or unknown product answers 404 and the page says "Product not found"). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens the address of a product that does not exist
+- Expected results:
+  - Then the page says "Product not found"
+  - And it offers a link back to Shop, which leads to `/shop`
+- Why: an old or mistyped link must not leave a visitor on an error screen with nowhere to go.
+
+Test design: UI · @acceptance @merch-on · no data (a slug that is never seeded, such as `no-such-product-<unique>`) · not mocked.
+
+#### visitor should see no merch section on Shop when no product is on sale
+
+- Covers: `#6003`
+- Oracle: the app's STC overlay `#6003` (an empty catalogue means no section and no placeholder). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And no product is on sale
+  3. When a visitor opens Shop
+- Expected results:
+  - Then there is no "BJJ Éire merch" section and no placeholder for one
+  - And a seeded store's card is listed
+- Why: an empty "BJJ Éire merch" heading would look like the shop is broken rather than not yet stocked.
+
+Test design: UI · @acceptance @merch-on · mocked catalogue (route `GET /api/v1/product` answered with an empty page), because the test dataset always seeds products and the suite never hides the seeded ones · directory not mocked · default seed. The API half (an empty page) is owned at T2 by the app's `ProductIT`.
+
+#### visitor should keep seeing the merch while searching the store directory
+
+- Covers: `#6004`
+- Oracle: the seeded rashguard and a store name that matches nothing.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens Shop
+  3. And the visitor searches the directory for a name no store has
+- Expected results:
+  - Then the directory shows its no-match message
+  - And the "BJJ Éire merch" section still lists the seeded rashguard
+- Why: search belongs to the directory; a merch section that vanished while searching would look like the shop closed.
+
+Test design: UI · @acceptance @merch-on · seeded products · not mocked · default seed. Use a unique nonsense term. The app's page test owns the "fetched once" half (`#6004` T4).
+
+#### client should receive the published merch without stock counts
+
+- Covers: `#6001`, `#6002`
+- Oracle: the seed file `acceptance-products.json` and the app's STC contract (sizes carry `available` and `soldOut`, never `stock` or `held`). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests the merch catalogue and the seeded rashguard's page
+- Expected results:
+  - Then the catalogue includes the three seeded products with their kind and price
+  - And the rashguard's sizes are S, M, L and XL, with XL sold out
+  - And no size carries a stock count or a held count
+- Why: stock counts are the organiser's business data; exposing them tells competitors and scrapers what sells.
+
+Test design: API · @acceptance @merch-on · seeded products · not mocked · default seed. Needs Zod schemas for `ProductSummaryDto` and `ProductDto` in `src/api/features/shop/` (not written yet; a follow-up issue is still to be opened, constitution III). Assert the absence of `stock` and `held` on the raw JSON, not after schema parsing, which would strip them.
+
+#### visitor should see only the store directory on Shop while merch is switched off
+
+- Covers: `#6026`
+- Oracle: ADR-0016 and the app's STC overlay `#6026`. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched off
+  2. When a visitor opens Shop
+  3. And the visitor opens the seeded rashguard's product address
+- Expected results:
+  - Then Shop shows the store directory and no "BJJ Éire merch" section
+  - And the product address does not show the product
+- Why: the owner launches merch when stock and photos are ready; a half-visible shop before then would take orders it cannot fill.
+
+Test design: UI · @acceptance · not mocked. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: true` (same rule as the API block above). The product address falls back to the app's default page while the switch is off; assert the product name is absent rather than a particular landing page.
+
+### Organiser manages merch (`#6013`, `#6014`, `#6016`, planned 2026-11-19, slice 2)
+
+Behaviour: `bjjeire-java/specs/features/shop.md` Part 2 (User Story 6). The organiser signs in with the existing
+organiser sign-in and manages products at `/admin/shop` and `/admin/shop/products/<id>`. No navigation entry leads
+there. Test ids: `merch-admin-*`. Every block here creates its own product with a unique slug and deletes or hides
+it afterwards (only a draft can be deleted; a published one is hidden). They never edit the three seeded products.
+No test claims these blocks yet.
+
+#### organiser should save a new product as a draft that visitors cannot see
+
+- Covers: `#6013`
+- Oracle: the product the test creates, with a unique name and slug.
+- Steps:
+  1. Given the organiser is signed in with the local organiser sign-in
+  2. When the organiser adds a rashguard with a price and stock in three sizes
+  3. And adds a photo to it
+- Expected results:
+  - Then the shop admin lists it as a draft
+  - And its photo is shown in the editor
+  - And a visitor opening Shop does not see it in the merch section
+  - And a visitor opening its product address sees "Product not found"
+- Why: the organiser prepares products before launch; a draft that leaked onto Shop could be bought before it is ready.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · creates its own draft (unique slug), deletes it afterwards · not mocked · local and docker only. Upload a small PNG fixture (under 5 MB). Check the visitor half in a second, signed-out browser context.
+
+#### organiser should publish a product so visitors see it, and hide it so they no longer do
+
+- Covers: `#6014`
+- Oracle: the product the test creates.
+- Steps:
+  1. Given the organiser is signed in with the local organiser sign-in
+  2. And has a draft product with a photo
+  3. When the organiser publishes it
+  4. And later hides it
+- Expected results:
+  - Then after publishing, a visitor sees it in the merch section and can open its page
+  - And after hiding, a visitor no longer sees it in the merch section and its page says "Product not found"
+- Why: publishing and hiding are how the organiser launches and withdraws merch.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · creates its own product, hides it at the end · not mocked · local and docker only. A write evicts the catalogue cache on the API replica that served it; the other replicas' copy expires within 30 seconds, and the SPA refetches a merch read older than 30 seconds (SC-006: within a minute). On a single-replica stack the next read shows the change. On a multi-replica environment, poll the visitor page for up to 60 seconds rather than asserting on the first read.
+
+#### organiser should see a size the shop shows as sold out straight after setting its stock to zero
+
+- Covers: `#6016`
+- Oracle: the product the test creates, published with stock in three sizes.
+- Steps:
+  1. Given the organiser is signed in with the local organiser sign-in
+  2. And has published a product with stock in sizes S, M and L
+  3. When the organiser sets the stock of M to 0
+- Expected results:
+  - Then the stock table shows M with 0 available
+  - And a visitor opening the product sees M marked sold out and cannot choose it
+  - And S and L can still be chosen
+- Why: SC-006 (the shop reflects a stock change within a minute); a size shown in stock after it ran out is a sale the organiser cannot fill.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · creates its own product, hides it at the end · not mocked · local and docker only. Same caching note as the block above.
 
 ### Directory search behaviour (planned 2026-11-18)
 

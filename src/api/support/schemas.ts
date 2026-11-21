@@ -3,7 +3,7 @@ import { z, type ZodType } from 'zod';
 import { fromError } from 'zod-validation-error';
 import type { Pagination, PaginatedResponse } from './types';
 
-/* eslint-disable @typescript-eslint/no-namespace, @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars -- Playwright merges custom matchers into PlaywrightTest.Matchers */
+/* oxlint-disable typescript/no-namespace, typescript/consistent-type-definitions, no-unused-vars -- Playwright merges custom matchers into PlaywrightTest.Matchers */
 declare global {
   namespace PlaywrightTest {
     interface Matchers<R, T = unknown> {
@@ -11,7 +11,7 @@ declare global {
     }
   }
 }
-/* eslint-enable @typescript-eslint/no-namespace, @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-unused-vars */
+/* oxlint-enable typescript/no-namespace, typescript/consistent-type-definitions, no-unused-vars */
 
 expect.extend({
   toMatchSchema(received: unknown, schema: ZodType) {

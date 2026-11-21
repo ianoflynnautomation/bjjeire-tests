@@ -248,7 +248,7 @@ them. Grok runs the same hooks when the folder is trusted. `guard-edit.mjs` deni
 files, baselines, compiled workflows, auth caches, and adding `@quarantine`, `.fixme(`,
 `.only(`, `waitForTimeout(`, `networkidle` or `force: true` to test code. The check
 compares counts before and after, so editing a line that already contains one is
-allowed. `lint-edited.mjs` runs `eslint --fix` after each `.ts` edit and feeds the
+allowed. `lint-edited.mjs` runs `oxlint --fix` after each `.ts` edit and feeds the
 remaining errors back, so lint failures are fixed as the agent goes. To quarantine a
 test, edit it yourself. The hooks do not apply to a shell that writes a file, or to a person.
 

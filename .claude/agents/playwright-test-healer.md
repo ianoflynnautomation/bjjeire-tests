@@ -80,7 +80,7 @@ renaming orphans its Squash case, so keep any `@Squash_<id>` pin.
 ## 3. Verify
 
 ```sh
-npx prettier --write <changed files> && npx eslint <changed files> && npm run typecheck
+npx prettier --write <changed files> && npx oxlint <changed files> && npm run typecheck
 PLAYWRIGHT_HTML_OPEN=never npx playwright test -c playwright.ui.config.ts <spec> --project=<project> -g "<title>" --repeat-each=5
 ```
 

@@ -16,7 +16,7 @@ conventions (AGENTS.md, local skills) win where they are more specific.
    `exactOptionalPropertyTypes` where the codebase allows. No `any`; use `unknown`
    and narrow it.
 2. **No floating promises.** Every Playwright call is `await`ed. Turn on
-   `@typescript-eslint/no-floating-promises` and `playwright/missing-playwright-await`.
+   `typescript/no-floating-promises` (Oxlint) and `playwright/missing-playwright-await`.
 3. **Web-first assertions only.** `await expect(locator).toBeVisible()`, never
    `expect(await locator.isVisible()).toBe(true)`. No `waitForTimeout`, no polling loops.
 4. **Data is typed records, not loose strings.** Test inputs are interfaces / types,

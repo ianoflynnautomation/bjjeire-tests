@@ -7,11 +7,11 @@ live in the app repository (`~/Sources/bjjeire-java`, `/workspaces/bjjeire-java`
 
 ## Stack
 
-- **Runtime**: Node 22, TypeScript 6.0, CommonJS (`"type": "commonjs"`)
+- **Runtime**: Node 24 (the Playwright image), TypeScript 7.0, CommonJS (`"type": "commonjs"`)
 - **Test framework**: `@playwright/test` 1.64.1 (pinned; must match the CI runner image)
-- **Validation**: Zod v4 generated from the published OpenAPI contract (`npm run contract:pull` → `npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema.
+- **Validation**: Zod v4 generated from the published OpenAPI contract (`npm run contract:pull` → `npm run gen:api-schemas` → `src/api/generated/zod.gen.ts`). Feature `*.schemas.ts` files re-export the page schema. `gen:api-schemas` links TypeScript 6.0.3 for `openapi-ts`, because 7.0 has no compiler API. `tsc` stays on 7.
 - **A11y**: `@axe-core/playwright`
-- **Lint**: ESLint v9 flat config + Prettier 3, Husky pre-commit runs lint-staged
+- **Lint**: Oxlint (type-aware via `oxlint-tsgolint`) + Prettier 3. Playwright rules run as the `eslint-plugin-playwright` JS plugin. Husky pre-commit runs lint-staged
 
 ## Quick commands
 
@@ -24,7 +24,7 @@ npm run test:mobile       # @mobile tests (mobile-iphone + mobile-galaxy project
 npm run test:perf         # Opt-in boot budgets per route, desktop + slow 4G (PW_PERF, 1 worker)
 npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentication.md)
 npm run test:dev:api      # Live AKS dev API
-npm run lint              # ESLint (+ Prettier via plugin)
+npm run lint              # Oxlint, then Prettier check
 npm run typecheck         # tsc --noEmit
 npm run spec:check        # Titles, // spec:, Covers, Oracle and step wording (lint-staged + CI)
 npm run mutation:audit -- --feature <f>   # Do the feature's UI specs catch wrong data? (local/docker)
@@ -95,7 +95,7 @@ One instruction file, one skill tree. Harness folders are links, not copies.
   - `guard-edit.mjs` (PreToolUse, edits) denies edits to generated or recorded files (`src/api/generated/`, `__screenshots__/`, `__aria__/`, `*.lock.yml`, `.env` files, `playwright/.auth/`, run output). In `tests/` and `src/` code it denies adding `@quarantine`, `.fixme(`, `.skip(`, `.only(`, `waitForTimeout(`, `networkidle`, `force: true`, a timeout of 30 s or more, a bare `page.goto(` (allowed in snapshot specs and `src/ui/support/`), or an import of another feature slice.
   - `guard-command.mjs` (PreToolUse, shell and reads) denies running `git commit` or `git push`, test runs aimed at production, and reading `.env.<name>` files (except `.env.example`) or `playwright/.auth/`. Plain `.env` holds only `APP_ENV` and URLs and stays readable.
   - `agent-scope.mjs` (PreToolUse) enforces what each agent may touch. The planner, explorer and mutation auditor edit only their `specs/` folder; the reviewer may not edit. Shell is per agent: none for the planner; read-only commands for the reviewer; the CLI, explore seed, GET `curl` and `gh issue` for the explorer; the audit, CLI and test runner for the auditor. Chaining, redirects and secret paths are refused.
-  - `lint-edited.mjs` (PostToolUse) runs `eslint --fix` on an edited `.ts` file and `spec:check` on an edited `specs/features/` file, and returns what remains.
+  - `lint-edited.mjs` (PostToolUse) runs `oxlint --fix` on an edited `.ts` file and `spec:check` on an edited `specs/features/` file, and returns what remains.
   - `stop-check.mjs` (Stop) runs `typecheck`, and `spec:check` when specs changed, whenever the working tree holds uncommitted code or spec changes. A red check blocks the end of the turn once.
 
   The settings also deny `git commit`, `git push`, and reads of `.env.*.local` and `playwright/.auth/`. Keep these hooks in project settings, because hooks in agent frontmatter did not fire in headless runs. Humans are not blocked. Other skills are deliberately limited to this suite: generic engineering packs belong in user-level skills, not here.
@@ -168,4 +168,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-19.
+script, project, or workflow it documents. Last reviewed: 2026-11-21.
