@@ -18,6 +18,13 @@ export type ProfileDefaults = Readonly<{
    * (`bjjeire.local-sign-in.enabled`, local profile only). On for local and Docker stacks, off for dev and staging.
    */
   localSignIn: FlagState;
+  /**
+   * Whether the environment's API serves the BJJ Éire merch shop (`FEATURE_MERCH`, flag `Merch`). `undefined` = unknown,
+   * so `@merch-on` specs are skipped until `MERCH_FLAG` says. Local and Docker: on, because both compose files default
+   * `FEATURE_MERCH` to true (a stack started with it off needs MERCH_FLAG=off). Dev and staging: off until the shop
+   * launches.
+   */
+  merch: FlagState | undefined;
 }>;
 
 export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
@@ -26,15 +33,17 @@ export const PROFILE_DEFAULTS: Readonly<Record<Profile, ProfileDefaults>> = {
     apiUrl: 'http://localhost:5000',
     bjjEireCompetitions: 'on',
     localSignIn: 'on',
+    merch: 'on',
   },
   docker: {
     baseUrl: 'http://localhost:3000',
     apiUrl: 'http://localhost:5003',
     bjjEireCompetitions: 'on',
     localSignIn: 'on',
+    merch: 'on',
   },
-  dev: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off' },
-  staging: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off' },
+  dev: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off', merch: 'off' },
+  staging: { baseUrl: '', apiUrl: '', bjjEireCompetitions: 'off', localSignIn: 'off', merch: 'off' },
 };
 
 const REMOTE_PROFILES: readonly Profile[] = ['dev', 'staging'];

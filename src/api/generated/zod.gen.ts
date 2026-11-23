@@ -2,6 +2,133 @@
 
 import * as z from 'zod';
 
+export const zChangeDivisionCommand = z.object({
+    divisionId: z.string().regex(/^[0-9a-fA-F]{24}$/)
+});
+
+export const zDivisionDto = z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    discipline: z.enum(['GI', 'NO_GI']),
+    gender: z.enum(['MALE', 'FEMALE']),
+    ageCategory: z.enum([
+        'ADULT',
+        'MASTER_1',
+        'MASTER_2',
+        'MASTER_3',
+        'MASTER_4',
+        'MASTER_5'
+    ]),
+    belt: z.enum([
+        'WHITE',
+        'BLUE',
+        'PURPLE',
+        'BROWN',
+        'BLACK'
+    ]),
+    weightClass: z.string().min(0).max(40)
+});
+
+export const zRegistrationDto = z.object({
+    id: z.string().optional(),
+    competitionId: z.string().optional(),
+    competitionSlug: z.string().optional(),
+    competitionName: z.string().optional(),
+    competitionDate: z.iso.date().optional(),
+    division: zDivisionDto.optional(),
+    status: z.enum([
+        'AWAITING_PAYMENT',
+        'CONFIRMED',
+        'CANCELLED',
+        'EXPIRED'
+    ]).optional(),
+    amountCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    paymentStatus: z.enum([
+        'PENDING',
+        'PAID',
+        'FAILED'
+    ]).optional(),
+    refundStatus: z.enum([
+        'PENDING',
+        'REFUNDED',
+        'FAILED'
+    ]).optional(),
+    holdExpiresAt: z.iso.datetime({ offset: true }).optional(),
+    refundableUntil: z.iso.datetime({ offset: true }).optional(),
+    createdAt: z.iso.datetime({ offset: true }).optional()
+});
+
+export const zSizeStockDto = z.object({
+    id: z.enum([
+        'XS',
+        'S',
+        'M',
+        'L',
+        'XL',
+        'XXL'
+    ]),
+    stock: z.int().gte(0).lte(100000)
+});
+
+export const zUpdateProductCommand = z.object({
+    slug: z.string().min(3).max(60).regex(/^(?!(?:admin|photo)$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(80),
+    kind: z.enum([
+        'RASHGUARD',
+        'SHORTS',
+        'T_SHIRT'
+    ]),
+    description: z.string().min(0).max(2000),
+    priceCents: z.int().gte(100).lte(100000),
+    sizes: z.array(zSizeStockDto).min(1).max(6),
+    photos: z.array(z.string().regex(/^[0-9a-f]{64}$/)).min(0).max(6),
+    version: z.number()
+});
+
+export const zAdminProductSizeDto = z.object({
+    id: z.enum([
+        'XS',
+        'S',
+        'M',
+        'L',
+        'XL',
+        'XXL'
+    ]).optional(),
+    stock: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    held: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    available: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    soldOut: z.boolean().optional()
+});
+
+export const zAdminProductDto = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    kind: z.enum([
+        'RASHGUARD',
+        'SHORTS',
+        'T_SHIRT'
+    ]).optional(),
+    description: z.string().optional(),
+    priceCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    photos: z.array(z.string()).optional(),
+    sizes: z.array(zAdminProductSizeDto).optional(),
+    status: z.enum([
+        'DRAFT',
+        'PUBLISHED',
+        'HIDDEN'
+    ]).optional(),
+    version: z.number().optional(),
+    createdOnUtc: z.iso.datetime({ offset: true }).optional(),
+    updatedOnUtc: z.iso.datetime({ offset: true }).optional()
+});
+
+export const zStockCommand = z.object({
+    sizes: z.array(zSizeStockDto).min(1).max(6),
+    version: z.number()
+});
+
 export const zAffiliation = z.object({
     name: z.string().optional(),
     website: z.string().optional()
@@ -111,7 +238,8 @@ export const zGymDto = z.object({
     website: z.string().optional(),
     timetableUrl: z.string().optional(),
     imageUrl: z.string().optional(),
-    thumbnailUrl: z.string().optional()
+    thumbnailUrl: z.string().optional(),
+    version: z.number().optional()
 });
 
 export const zUpdateGymCommand = z.object({
@@ -120,6 +248,67 @@ export const zUpdateGymCommand = z.object({
 
 export const zUpdateGymResponse = z.object({
     data: zGymDto.optional()
+});
+
+export const zAcademyChoice = z.object({
+    gymId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    name: z.string().min(0).max(80).optional()
+});
+
+export const zPostalAddress = z.object({
+    street: z.string().min(0).max(200).optional(),
+    postcode: z.string().min(0).max(20).optional(),
+    city: z.string().min(0).max(100).optional(),
+    region: z.string().min(0).max(100).optional(),
+    country: z.string().optional()
+});
+
+export const zSaveCompetitorCommand = z.object({
+    firstName: z.string().min(0).max(60),
+    middleName: z.string().min(0).max(60).optional(),
+    lastName: z.string().min(0).max(60),
+    nationality: z.string().optional(),
+    dateOfBirth: z.iso.date(),
+    gender: z.enum(['MALE', 'FEMALE']).optional(),
+    belt: z.enum([
+        'WHITE',
+        'BLUE',
+        'PURPLE',
+        'BROWN',
+        'BLACK'
+    ]).optional(),
+    academy: zAcademyChoice.optional(),
+    affiliation: z.string().min(0).max(80).optional(),
+    phone: z.string().min(0).max(30).regex(/^\+?[0-9][0-9 ()-]{5,28}$/).optional(),
+    address: zPostalAddress.optional()
+});
+
+export const zAcademy = z.object({
+    gymId: z.string().optional(),
+    name: z.string().optional()
+});
+
+export const zCompetitorDto = z.object({
+    email: z.string().optional(),
+    firstName: z.string().optional(),
+    middleName: z.string().optional(),
+    lastName: z.string().optional(),
+    nationality: z.string().optional(),
+    dateOfBirth: z.iso.date().optional(),
+    gender: z.enum(['MALE', 'FEMALE']).optional(),
+    belt: z.enum([
+        'WHITE',
+        'BLUE',
+        'PURPLE',
+        'BROWN',
+        'BLACK'
+    ]).optional(),
+    academy: zAcademy.optional(),
+    affiliation: z.string().optional(),
+    phone: z.string().optional(),
+    address: zPostalAddress.optional(),
+    profileComplete: z.boolean().optional(),
+    saved: z.boolean().optional()
 });
 
 export const zBjjEventSession = z.object({
@@ -257,6 +446,7 @@ export const zBjjEventDto = z.object({
     eventUrl: z.string().optional(),
     imageUrl: z.string().optional(),
     isActive: z.boolean().optional(),
+    version: z.number().optional(),
     calculatedCosts: z.array(zCalculatedCost).readonly().optional()
 });
 
@@ -266,6 +456,156 @@ export const zUpdateBjjEventCommand = z.object({
 
 export const zUpdateBjjEventResponse = z.object({
     data: zBjjEventDto.optional()
+});
+
+export const zUpdateBjjEireCompetitionCommand = z.object({
+    slug: z.string().min(0).max(80).regex(/^(?!admin$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(120),
+    description: z.string().min(0).max(4000).optional(),
+    date: z.iso.date(),
+    venue: zLocation,
+    entryFeeCents: z.int().gte(0).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    registrationOpensAt: z.iso.datetime({ offset: true }),
+    registrationClosesAt: z.iso.datetime({ offset: true }),
+    competitorLimit: z.int().gte(1).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    divisions: z.array(zDivisionDto).min(0).max(500).optional(),
+    version: z.number()
+});
+
+export const zBjjEireCompetitionDto = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    date: z.iso.date().optional(),
+    venue: zLocation.optional(),
+    entryFeeCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    registrationOpensAt: z.iso.datetime({ offset: true }).optional(),
+    registrationClosesAt: z.iso.datetime({ offset: true }).optional(),
+    competitorLimit: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    placesTaken: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    status: z.enum([
+        'DRAFT',
+        'PUBLISHED',
+        'CANCELLED',
+        'FINISHED'
+    ]).optional(),
+    registrationState: z.enum([
+        'NOT_OPEN',
+        'OPEN',
+        'CLOSED',
+        'FULL'
+    ]).optional(),
+    divisions: z.array(zDivisionDto).optional(),
+    version: z.number().optional()
+});
+
+export const zAdminRegistrationDto = z.object({
+    registrationId: z.string().optional(),
+    displayName: z.string().optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    dateOfBirth: z.iso.date().optional(),
+    gender: z.enum(['MALE', 'FEMALE']).optional(),
+    belt: z.enum([
+        'WHITE',
+        'BLUE',
+        'PURPLE',
+        'BROWN',
+        'BLACK'
+    ]).optional(),
+    academy: z.string().optional(),
+    affiliation: z.string().optional(),
+    academyKey: z.string().optional(),
+    affiliationKey: z.string().optional(),
+    division: zDivisionDto.optional(),
+    status: z.enum([
+        'AWAITING_PAYMENT',
+        'CONFIRMED',
+        'CANCELLED',
+        'EXPIRED'
+    ]).optional(),
+    amountCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    paymentStatus: z.enum([
+        'PENDING',
+        'PAID',
+        'FAILED'
+    ]).optional(),
+    refundStatus: z.enum([
+        'PENDING',
+        'REFUNDED',
+        'FAILED'
+    ]).optional(),
+    paymentUnconfirmed: z.boolean().optional(),
+    profileMismatch: z.boolean().optional(),
+    createdAt: z.iso.datetime({ offset: true }).optional()
+});
+
+export const zRecordResultCommand = z.object({
+    goldRegistrationId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+    silverRegistrationId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+    bronzeRegistrationIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).min(0).max(2).optional()
+});
+
+export const zDivisionResultDto = z.object({
+    goldRegistrationId: z.string().optional(),
+    silverRegistrationId: z.string().optional(),
+    bronzeRegistrationIds: z.array(z.string()).optional(),
+    recordedAt: z.iso.datetime({ offset: true }).optional()
+});
+
+export const zResultCompetitorDto = z.object({
+    registrationId: z.string().optional(),
+    displayName: z.string().optional(),
+    academy: z.string().optional(),
+    affiliation: z.string().optional()
+});
+
+export const zAdminDivisionResultDto = z.object({
+    divisionId: z.string().optional(),
+    result: zDivisionResultDto.optional(),
+    competitors: z.array(zResultCompetitorDto).optional()
+});
+
+export const zCreateRegistrationCommand = z.object({
+    competitionId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+    divisionId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+    acceptPublicListing: z.boolean(),
+    acceptTerms: z.boolean()
+});
+
+export const zRegistrationCheckoutDto = z.object({
+    registrationId: z.string().optional(),
+    checkoutUrl: z.string().optional(),
+    holdExpiresAt: z.iso.datetime({ offset: true }).optional()
+});
+
+export const zCancellationDto = z.object({
+    refunded: z.boolean().optional(),
+    refundAmountCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    refundStatus: z.enum([
+        'PENDING',
+        'REFUNDED',
+        'FAILED'
+    ]).optional()
+});
+
+export const zCreateProductCommand = z.object({
+    slug: z.string().min(3).max(60).regex(/^(?!(?:admin|photo)$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(80),
+    kind: z.enum([
+        'RASHGUARD',
+        'SHORTS',
+        'T_SHIRT'
+    ]),
+    description: z.string().min(0).max(2000),
+    priceCents: z.int().gte(100).lte(100000),
+    sizes: z.array(zSizeStockDto).min(1).max(6)
+});
+
+export const zPhotoUploadResponse = z.object({
+    sha256: z.string().optional()
 });
 
 export const zCreateGymCommand = z.object({
@@ -284,6 +624,34 @@ export const zCreateBjjEventResponse = z.object({
     data: zBjjEventDto.optional()
 });
 
+export const zCreateBjjEireCompetitionCommand = z.object({
+    slug: z.string().min(0).max(80).regex(/^(?!admin$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(120),
+    description: z.string().min(0).max(4000).optional(),
+    date: z.iso.date(),
+    venue: zLocation,
+    entryFeeCents: z.int().gte(0).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    registrationOpensAt: z.iso.datetime({ offset: true }),
+    registrationClosesAt: z.iso.datetime({ offset: true }),
+    competitorLimit: z.int().gte(1).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    divisions: z.array(zDivisionDto).min(0).max(500).optional()
+});
+
+export const zMergeTeamsCommand = z.object({
+    kind: z.enum(['ACADEMY', 'AFFILIATION']),
+    fromKeys: z.array(z.string().min(0).max(120)).min(0).max(50),
+    target: z.string().min(0).max(80),
+    targetGymId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional()
+});
+
+export const zTeamMergeDto = z.object({
+    updated: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
+});
+
+export const zAdminCancelCommand = z.object({
+    refund: z.boolean()
+});
+
 export const zHealthDescriptor = z.object({
     description: z.string().optional(),
     status: z.string().optional()
@@ -299,6 +667,8 @@ export const zIndicatedHealthDescriptor = zHealthDescriptor.and(z.object({
 }));
 
 export const zSystemHealthDescriptor = zCompositeHealthDescriptor.and(z.object({
+    description: z.string().optional(),
+    status: z.string().optional(),
     groups: z.array(z.string()).optional()
 }));
 
@@ -309,8 +679,8 @@ export const zPaginationMetadata = z.object({
     totalPages: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
     hasNextPage: z.boolean().optional(),
     hasPreviousPage: z.boolean().optional(),
-    nextPageUrl: z.string().optional(),
-    previousPageUrl: z.string().optional()
+    nextPageUrl: z.string().nullish(),
+    previousPageUrl: z.string().nullish()
 });
 
 export const zStoreDto = z.object({
@@ -327,9 +697,81 @@ export const zPagedResponseStoreDto = z.object({
     pagination: zPaginationMetadata.optional()
 });
 
+export const zProductSummaryDto = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    kind: z.enum([
+        'RASHGUARD',
+        'SHORTS',
+        'T_SHIRT'
+    ]).optional(),
+    priceCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    photo: z.string().optional(),
+    soldOut: z.boolean().optional()
+});
+
+export const zPagedResponseProductSummaryDto = z.object({
+    data: z.array(zProductSummaryDto).optional(),
+    pagination: zPaginationMetadata.optional()
+});
+
+export const zProductSizeDto = z.object({
+    id: z.enum([
+        'XS',
+        'S',
+        'M',
+        'L',
+        'XL',
+        'XXL'
+    ]).optional(),
+    available: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    soldOut: z.boolean().optional()
+});
+
+export const zProductDto = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    kind: z.enum([
+        'RASHGUARD',
+        'SHORTS',
+        'T_SHIRT'
+    ]).optional(),
+    description: z.string().optional(),
+    priceCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    photos: z.array(z.string()).optional(),
+    sizes: z.array(zProductSizeDto).optional(),
+    soldOut: z.boolean().optional()
+});
+
+export const zPagedResponseAdminProductDto = z.object({
+    data: z.array(zAdminProductDto).optional(),
+    pagination: zPaginationMetadata.optional()
+});
+
 export const zPagedResponseGymDto = z.object({
     data: z.array(zGymDto).optional(),
     pagination: zPaginationMetadata.optional()
+});
+
+export const zCompetitionMedalsDto = z.object({
+    competitionId: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    date: z.iso.date().optional(),
+    gold: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    silver: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    bronze: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
+});
+
+export const zCompetitorHistoryDto = z.object({
+    gold: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    silver: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    bronze: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    competitions: z.array(zCompetitionMedalsDto).optional()
 });
 
 export const zCompetitionDto = z.object({
@@ -356,6 +798,89 @@ export const zPagedResponseCompetitionDto = z.object({
 export const zPagedResponseBjjEventDto = z.object({
     data: z.array(zBjjEventDto).optional(),
     pagination: zPaginationMetadata.optional()
+});
+
+export const zBjjEireCompetitionSummaryDto = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    date: z.iso.date().optional(),
+    venue: zLocation.optional(),
+    entryFeeCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    registrationOpensAt: z.iso.datetime({ offset: true }).optional(),
+    registrationClosesAt: z.iso.datetime({ offset: true }).optional(),
+    competitorLimit: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    placesTaken: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    status: z.enum([
+        'DRAFT',
+        'PUBLISHED',
+        'CANCELLED',
+        'FINISHED'
+    ]).optional(),
+    registrationState: z.enum([
+        'NOT_OPEN',
+        'OPEN',
+        'CLOSED',
+        'FULL'
+    ]).optional(),
+    divisionCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
+});
+
+export const zPagedResponseBjjEireCompetitionSummaryDto = z.object({
+    data: z.array(zBjjEireCompetitionSummaryDto).optional(),
+    pagination: zPaginationMetadata.optional()
+});
+
+export const zPagedResponseAdminRegistrationDto = z.object({
+    data: z.array(zAdminRegistrationDto).optional(),
+    pagination: zPaginationMetadata.optional()
+});
+
+export const zMedallistDto = z.object({
+    displayName: z.string().optional(),
+    academy: z.string().optional(),
+    affiliation: z.string().optional()
+});
+
+export const zPodiumDto = z.object({
+    divisionId: z.string().optional(),
+    gold: zMedallistDto.optional(),
+    silver: zMedallistDto.optional(),
+    bronzes: z.array(zMedallistDto).optional(),
+    pointsAwarded: z.boolean().optional()
+});
+
+export const zTeamStandingDto = z.object({
+    rank: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    name: z.string().optional(),
+    points: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    gold: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    silver: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    bronze: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
+});
+
+export const zWinnersDto = z.object({
+    academies: z.array(z.string()).optional(),
+    affiliations: z.array(z.string()).optional()
+});
+
+export const zLeaderboardDto = z.object({
+    podiums: z.array(zPodiumDto).optional(),
+    academyRanking: z.array(zTeamStandingDto).optional(),
+    affiliationRanking: z.array(zTeamStandingDto).optional(),
+    winners: zWinnersDto.optional()
+});
+
+export const zListedCompetitorDto = z.object({
+    displayName: z.string().optional(),
+    academy: z.string().optional(),
+    affiliation: z.string().optional()
+});
+
+export const zDivisionCompetitorsDto = z.object({
+    divisionId: z.string().optional(),
+    competitors: z.array(zListedCompetitorDto).optional()
 });
 
 export const zGeoCoordinatesWritable = z.object({
@@ -446,7 +971,8 @@ export const zGymDtoWritable = z.object({
     website: z.string().optional(),
     timetableUrl: z.string().optional(),
     imageUrl: z.string().optional(),
-    thumbnailUrl: z.string().optional()
+    thumbnailUrl: z.string().optional(),
+    version: z.number().optional()
 });
 
 export const zUpdateGymCommandWritable = z.object({
@@ -519,7 +1045,8 @@ export const zBjjEventDtoWritable = z.object({
     pricingOptions: z.array(zPricingModel).optional(),
     eventUrl: z.string().optional(),
     imageUrl: z.string().optional(),
-    isActive: z.boolean().optional()
+    isActive: z.boolean().optional(),
+    version: z.number().optional()
 });
 
 export const zUpdateBjjEventCommandWritable = z.object({
@@ -528,6 +1055,49 @@ export const zUpdateBjjEventCommandWritable = z.object({
 
 export const zUpdateBjjEventResponseWritable = z.object({
     data: zBjjEventDtoWritable.optional()
+});
+
+export const zUpdateBjjEireCompetitionCommandWritable = z.object({
+    slug: z.string().min(0).max(80).regex(/^(?!admin$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(120),
+    description: z.string().min(0).max(4000).optional(),
+    date: z.iso.date(),
+    venue: zLocationWritable,
+    entryFeeCents: z.int().gte(0).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    registrationOpensAt: z.iso.datetime({ offset: true }),
+    registrationClosesAt: z.iso.datetime({ offset: true }),
+    competitorLimit: z.int().gte(1).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    divisions: z.array(zDivisionDto).min(0).max(500).optional(),
+    version: z.number()
+});
+
+export const zBjjEireCompetitionDtoWritable = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    date: z.iso.date().optional(),
+    venue: zLocationWritable.optional(),
+    entryFeeCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    registrationOpensAt: z.iso.datetime({ offset: true }).optional(),
+    registrationClosesAt: z.iso.datetime({ offset: true }).optional(),
+    competitorLimit: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    placesTaken: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    status: z.enum([
+        'DRAFT',
+        'PUBLISHED',
+        'CANCELLED',
+        'FINISHED'
+    ]).optional(),
+    registrationState: z.enum([
+        'NOT_OPEN',
+        'OPEN',
+        'CLOSED',
+        'FULL'
+    ]).optional(),
+    divisions: z.array(zDivisionDto).optional(),
+    version: z.number().optional()
 });
 
 export const zCreateGymCommandWritable = z.object({
@@ -546,6 +1116,19 @@ export const zCreateBjjEventResponseWritable = z.object({
     data: zBjjEventDtoWritable.optional()
 });
 
+export const zCreateBjjEireCompetitionCommandWritable = z.object({
+    slug: z.string().min(0).max(80).regex(/^(?!admin$)[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: z.string().min(0).max(120),
+    description: z.string().min(0).max(4000).optional(),
+    date: z.iso.date(),
+    venue: zLocationWritable,
+    entryFeeCents: z.int().gte(0).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+    registrationOpensAt: z.iso.datetime({ offset: true }),
+    registrationClosesAt: z.iso.datetime({ offset: true }),
+    competitorLimit: z.int().gte(1).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    divisions: z.array(zDivisionDto).min(0).max(500).optional()
+});
+
 export const zPagedResponseGymDtoWritable = z.object({
     data: z.array(zGymDtoWritable).optional(),
     pagination: zPaginationMetadata.optional()
@@ -553,5 +1136,37 @@ export const zPagedResponseGymDtoWritable = z.object({
 
 export const zPagedResponseBjjEventDtoWritable = z.object({
     data: z.array(zBjjEventDtoWritable).optional(),
+    pagination: zPaginationMetadata.optional()
+});
+
+export const zBjjEireCompetitionSummaryDtoWritable = z.object({
+    id: z.string().optional(),
+    slug: z.string().optional(),
+    name: z.string().optional(),
+    date: z.iso.date().optional(),
+    venue: zLocationWritable.optional(),
+    entryFeeCents: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    currency: z.string().optional(),
+    registrationOpensAt: z.iso.datetime({ offset: true }).optional(),
+    registrationClosesAt: z.iso.datetime({ offset: true }).optional(),
+    competitorLimit: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    placesTaken: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional(),
+    status: z.enum([
+        'DRAFT',
+        'PUBLISHED',
+        'CANCELLED',
+        'FINISHED'
+    ]).optional(),
+    registrationState: z.enum([
+        'NOT_OPEN',
+        'OPEN',
+        'CLOSED',
+        'FULL'
+    ]).optional(),
+    divisionCount: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }).optional()
+});
+
+export const zPagedResponseBjjEireCompetitionSummaryDtoWritable = z.object({
+    data: z.array(zBjjEireCompetitionSummaryDtoWritable).optional(),
     pagination: zPaginationMetadata.optional()
 });

@@ -150,6 +150,12 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
   fails naming `BJJEIRE_COMPETITIONS_FLAG`. A project's own `grepInvert` replaces the config's: use
   `COMMON_GREP_INVERT` (the UI config's `excluding()` does). In the browser the flag is pinned, not read:
   `ALL_FEATURES_ENABLED` pins `BjjEireCompetitions: false` and `competitionsTestConfig` pins it on.
+- **Merch shop.** Specs that need the API's `Merch` flag on carry `@merch-on`. It works like `@bjjeire-competitions-on`:
+  `MERCH_FLAG=on|off` says which state the environment is in, `PROFILE_DEFAULTS.merch` is on for local and docker (both
+  compose files default `FEATURE_MERCH` to true) and off for dev and staging, and `COMMON_GREP_INVERT` excludes the tag
+  unless the value is `on`. Each tagged spec calls `merchSwitchedOnGiven` (`tests/features/stores/merch-switched-on.ts`
+  for API, `merch-switched-on-ui.ts` for UI) in its Given step, so a wrong setting fails naming `MERCH_FLAG`. In the
+  browser `ALL_FEATURES_ENABLED` pins `Merch: false`; `merchTestConfig` pins it on.
 - **Local competitor sign-in.** Specs that need a competitor token carry `@local-sign-in`. The API's
   `POST /api/v1/local-sign-in/competitor` (`LocalSignInController`, local profile only, hidden from the OpenAPI document)
   issues one for any email. `LOCAL_SIGN_IN=on|off` says whether the environment has it; `PROFILE_DEFAULTS.localSignIn`

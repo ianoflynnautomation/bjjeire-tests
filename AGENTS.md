@@ -57,6 +57,7 @@ Two-tier taxonomy:
   `grepInvert` (`QUARANTINE_TAG` in `src/shared/config/playwright.ts`) but kept in
   the repo so they stay greppable. Fix or delete promptly — never let the list grow.
 - `@bjjeire-competitions-on` marks specs that need the environment's real `BjjEireCompetitions` flag (BJJ Éire competitions) on; `BJJEIRE_COMPETITIONS_FLAG=on|off` (on for local and docker, off for dev and staging) excludes them via config unless it is `on`, see `suite-environments`.
+- `@merch-on` marks specs that need the environment's real `Merch` flag (BJJ Éire merch shop) on; `MERCH_FLAG=on|off` (on for local and docker, off for dev and staging) excludes them via config unless it is `on`. In the browser `Merch` is pinned off; `merchTestConfig` (stores fixtures) pins it on.
 - `@local-sign-in` marks specs that need the stack's local competitor sign-in (a token for any email); `LOCAL_SIGN_IN=on|off` (on for local and docker, off for dev and staging) excludes them via config, see `suite-environments`.
 
 ## Spec-driven development

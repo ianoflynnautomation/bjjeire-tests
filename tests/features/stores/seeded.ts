@@ -53,3 +53,38 @@ export const SEEDED_STORES_BY_NAME: readonly StoreDto[] = [
   SEEDED_STORE_CELTIC_GRAPPLING_SUPPLY,
   SEEDED_STORE_EMERALD_KIMONOS,
 ];
+
+type SeededProduct = Readonly<{ slug: string; name: string; priceCents: number; currency: string }>;
+
+/** The merch catalogue seed, in catalogue order (kind: rashguard, shorts, t-shirt). The environment may hold more products. */
+export const SEEDED_PRODUCT_HARP_RASHGUARD: SeededProduct = {
+  slug: 'harp-rashguard',
+  name: 'Harp Rashguard',
+  priceCents: 4500,
+  currency: 'EUR',
+};
+export const SEEDED_PRODUCT_COMPETITION_SHORTS: SeededProduct = {
+  slug: 'competition-shorts',
+  name: 'Competition Shorts',
+  priceCents: 3500,
+  currency: 'EUR',
+};
+export const SEEDED_PRODUCT_LOGO_T_SHIRT: SeededProduct = {
+  slug: 'logo-t-shirt',
+  name: 'Logo T-Shirt',
+  priceCents: 2500,
+  currency: 'EUR',
+};
+
+export const SEEDED_PRODUCTS_BY_CATALOGUE_ORDER: readonly SeededProduct[] = [
+  SEEDED_PRODUCT_HARP_RASHGUARD,
+  SEEDED_PRODUCT_COMPETITION_SHORTS,
+  SEEDED_PRODUCT_LOGO_T_SHIRT,
+];
+
+/** The seeded rashguard as a visitor reads it: price as displayed (oracle: the seed, 4500 cents) and its four sizes. */
+export const SEEDED_RASHGUARD = {
+  name: SEEDED_PRODUCT_HARP_RASHGUARD.name,
+  displayPrice: '€45.00',
+  sizes: ['S', 'M', 'L', 'XL'],
+} as const;

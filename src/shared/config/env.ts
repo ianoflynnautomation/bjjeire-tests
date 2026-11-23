@@ -54,6 +54,8 @@ export type Env = Readonly<{
   bjjEireCompetitionsFlag: FlagState | undefined;
   /** Does the API issue a competitor token to any email? See `LOCAL_SIGN_IN`. */
   localSignIn: FlagState;
+  /** Does the environment's API serve the merch shop? `undefined` = unknown, see `MERCH_FLAG`. */
+  merchFlag: FlagState | undefined;
   isCI: boolean;
   acceptInvalidCerts: boolean;
   context: RuntimeContext;
@@ -139,6 +141,7 @@ export const env: Env = Object.freeze({
   apiUrl,
   bjjEireCompetitionsFlag: readFlagState('BJJEIRE_COMPETITIONS_FLAG', defaults.bjjEireCompetitions),
   localSignIn: readFlagState('LOCAL_SIGN_IN', defaults.localSignIn) ?? defaults.localSignIn,
+  merchFlag: readFlagState('MERCH_FLAG', defaults.merch),
   isCI,
   acceptInvalidCerts: readEnvFlag('ACCEPT_INVALID_CERTS', PROFILE === 'local' || PROFILE === 'docker'),
   context: runtimeContext,

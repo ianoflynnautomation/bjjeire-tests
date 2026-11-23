@@ -1,9 +1,18 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { expectNoDataState } from '../common/empty.page';
-import { expectAddress, gotoRoute } from '@ui/support';
+import { expectAddress, expectImageLoaded, gotoRoute } from '@ui/support';
 import { ListPage } from '../common/list-page';
 import { getStoreCardData } from './stores.card.page';
-import { NO_DATA_COPY, NO_SEARCH_RESULTS_COPY, SHOP_NAV, TEST_IDS, websiteLinkName } from './stores.constants';
+import {
+  MERCH_CARD_TEST_IDS,
+  MERCH_SECTION,
+  NO_DATA_COPY,
+  PRODUCTS_ROUTE,
+  NO_SEARCH_RESULTS_COPY,
+  SHOP_NAV,
+  TEST_IDS,
+  websiteLinkName,
+} from './stores.constants';
 import type { StoreCard } from './stores.types';
 
 export class StoresPage extends ListPage<StoreCard> {
@@ -50,6 +59,55 @@ export class StoresPage extends ListPage<StoreCard> {
     await expect(card).toBeVisible();
     await expect(card.getByTestId(TEST_IDS.logoFallback)).toBeVisible();
     await expect(card.getByTestId(TEST_IDS.logo)).toHaveCount(0);
+  }
+
+  /**
+   * Open Shop and wait until the catalogue request has been answered with `status`, so a later absence check follows a
+   * real failed request, not one still in flight (or never made).
+   */
+  async goToAfterCatalogueAnswers(status: number): Promise<void> {
+    const answered = this.page.waitForResponse(
+      response => PRODUCTS_ROUTE.test(response.url()) && response.status() === status,
+    );
+    await this.goTo();
+    await answered;
+  }
+
+  private get merchSection(): Locator {
+    return this.page.getByTestId(MERCH_SECTION.testId);
+  }
+
+  async expectMerchSection(): Promise<void> {
+    await expect(this.merchSection.getByRole('heading', { name: MERCH_SECTION.heading })).toBeVisible();
+  }
+
+  async expectNoMerchSection(): Promise<void> {
+    await expect(this.merchSection).toHaveCount(0);
+    await expect(this.page.getByRole('heading', { name: MERCH_SECTION.heading })).toHaveCount(0);
+  }
+
+  private merchCard(name: string): Locator {
+    return this.merchSection.getByTestId(MERCH_CARD_TEST_IDS.card).filter({ hasText: name });
+  }
+
+  /** The seeded product's card names it, shows its price, and its photo has loaded. */
+  async expectMerchCard(name: string, price: string): Promise<void> {
+    const card = this.merchCard(name);
+    await expect(card.getByTestId(MERCH_CARD_TEST_IDS.name)).toHaveText(name);
+    await expect(card.getByTestId(MERCH_CARD_TEST_IDS.price)).toHaveText(price);
+    await expectImageLoaded(card.getByTestId(MERCH_CARD_TEST_IDS.image));
+  }
+
+  async openMerchProduct(name: string): Promise<void> {
+    await this.merchCard(name).getByTestId(MERCH_CARD_TEST_IDS.link).click();
+  }
+
+  async expectNoErrorAlert(): Promise<void> {
+    await expect(this.page.getByRole('alert')).toHaveCount(0);
+  }
+
+  async expectCardListed(name: string): Promise<void> {
+    await expect(this.card(name)).toBeVisible();
   }
 
   async expectNoResultsMessage(): Promise<void> {

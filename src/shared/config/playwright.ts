@@ -50,11 +50,27 @@ export function localSignInExclusions(flag: FlagState = env.localSignIn): RegExp
   return [LOCAL_SIGN_IN_TAG];
 }
 
+// Specs that need the environment's API to serve the BJJ Éire merch shop (`Merch` flag on) carry this tag. Where the
+// flag is off, or unknown, they are excluded, so a run on dev or staging before the shop launches is not red.
+export const MERCH_ON_TAG = /@merch-on/;
+
+/** `@merch-on` unless the environment's flag is known to be on. The runner says why. */
+export function merchFlagExclusions(flag: FlagState | undefined = env.merchFlag): RegExp[] {
+  if (flag === 'on') return [];
+  // Workers load this config too; only the runner explains.
+  if (process.env['TEST_WORKER_INDEX'] === undefined)
+    process.stderr.write(
+      `MERCH_FLAG is ${flag ?? `not set and APP_ENV=${env.profile} has no default`}: skipping @merch-on specs. Set MERCH_FLAG=on when the environment runs with FEATURE_MERCH=true.\n`,
+    );
+  return [MERCH_ON_TAG];
+}
+
 /** Every exclusion that applies to every project. A project's own `grepInvert` replaces the config's, so it restates this. */
 export const COMMON_GREP_INVERT: RegExp[] = [
   QUARANTINE_TAG,
   ...bjjEireCompetitionsFlagExclusions(),
   ...localSignInExclusions(),
+  ...merchFlagExclusions(),
 ];
 
 function resolveWorkers(): number | string {

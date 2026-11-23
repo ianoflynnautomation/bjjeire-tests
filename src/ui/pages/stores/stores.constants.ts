@@ -30,3 +30,37 @@ export const SHOP_NAV = { ...SHOP_NAV_LINK, retiredName: 'Stores' } as const;
 
 /** Accessible name of a card's website link: "Visit Website for <store>". */
 export const websiteLinkName = (storeName: string): string => `Visit Website for ${storeName}`;
+
+/** The organiser's shop admin (`/admin/shop`), behind the same organiser sign-in gate as the competition admin. */
+export const SHOP_ADMIN = {
+  route: '/admin/shop',
+  signInTestId: 'bjjeire-competition-admin-sign-in',
+  signInHeading: 'Organiser sign-in',
+  signInButton: 'Sign in',
+  listTestIds: ['merch-admin-list', 'merch-admin-list-item'],
+  controlTestIds: ['merch-admin-product-form', 'merch-admin-product-status'],
+  controlButtons: ['Save draft', 'Publish'],
+  createHeading: 'Add a product',
+} as const;
+
+/** The merch section above the directory on Shop (`#6001`); it renders nothing when the catalogue cannot be loaded. */
+export const MERCH_SECTION = { testId: 'merch-featured', heading: 'BJJ Éire merch' } as const;
+
+export const MERCH_CARD_TEST_IDS = {
+  card: 'merch-featured-card',
+  image: 'merch-card-image',
+  name: 'merch-card-name',
+  price: 'merch-card-price',
+  link: 'merch-card-link',
+} as const;
+
+export const PRODUCT_PAGE_TEST_IDS = {
+  root: 'product-page',
+  photos: 'product-page-photos',
+  photo: 'product-page-photo',
+  sizes: 'product-page-sizes',
+  size: 'product-page-size',
+} as const;
+
+/** The merch catalogue list (`GET /api/v1/product`) only, not `/product/photo` or a product page. */
+export const PRODUCTS_ROUTE = /\/api\/v[12]\/product(?:\?|$)/i;

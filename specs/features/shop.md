@@ -5,7 +5,7 @@
 **Slice**: `tests/features/stores/` · `src/ui/pages/stores/` · `src/api/features/stores/`
 **Agent seed**: `tests/agents/seed.spec.ts` (project `agent-seed`: signed in, flags pinned on, shell mounted)
 **Seeded**: `tests/features/stores/seeded.ts`
-**Status**: living · **Reconciled with tests**: 2026-11-18
+**Status**: living · **Reconciled with tests**: 2026-11-23
 
 A visitor opens Shop (called Stores until the merch shop's slice 1) at `/shop` and scans,
 searches and pages a directory of published BJJ equipment stores. The old `/stores`
@@ -39,8 +39,12 @@ once (`#4002` T4); this suite proves the visitor sees it against real data.
 17. visitor should see the store list on a phone · `#4001`
 18. visitor should see a store with no description or logo as a card with its name and website link · `#4001`, `#4006`
 19. visitor should see no match when searching for an unpublished store by its exact name · `#4001`
+20. visitor should see the organiser sign-in when opening the shop admin without signing in · `#6017`
+21. visitor should still see the store directory when the merch cannot be loaded · none
+22. visitor should see the merch section fit a phone · `#6001`
+23. visitor should see a product page fit a phone · `#6002`
 
-All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-seed-cases.ui.acceptance.spec.ts`; 6–8 are mocked; 12 is data-driven over two old links; 9 runs in its own `describe` at a
+All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-seed-cases.ui.acceptance.spec.ts`, and 20 and 21, which are in `stores-merch.ui.acceptance.spec.ts`, and 22 and 23, which are in `stores-merch-phone.ui.acceptance.spec.ts`; 6–8 are mocked; 12 is data-driven over two old links; 9 runs in its own `describe` at a
 360px viewport on the desktop project; 17 runs in its own `@mobile` describe on the mobile projects only.
 
 ### API
@@ -53,6 +57,10 @@ All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-see
 6. client should find the Shop address and no Stores address in the site map · `#4007`
 7. client should receive an empty page when asking past the last page of the directory · `#4003`
 8. client should not receive an unpublished store in the directory · `#4001`
+9. client should receive the merch catalogue ordered by kind and then name · `#6001`
+10. client should get a validation error on <param> when <param> <value> is out of range for the merch catalogue · `#6001`
+11. client should get not found for <resource> that does not exist · `#6002`
+12. client should be refused <action> in the shop admin without signing in · `#6017`
 
 Scenarios 4 and 5 are data-driven over `tests/features/common/testdata/invalid-values.ts`
 (non-numeric paging values; the paging bounds). Scenario 6 reads `/sitemap.xml` from the app host (`BASE_URL`), not the API, and compares the path of each `<loc>` entry. Errors are asserted as RFC 9457 problem
@@ -250,7 +258,7 @@ product is wholly sold out, so the card's "Out of stock" mark is owned at T4 by 
   - And a seeded store's card is still listed below
 - Why: the merch is the reason for the feature; placing it at the top of Shop was the owner's request.
 
-Test design: UI · @acceptance @merch-on · seeded products · not mocked · default seed. Read `/api/v1/featureflag` first and skip, with the reason, when it reports `Merch: false`. The environment may hold more products than the seed: assert the seeded three are present and in kind order relative to each other, never that the section holds exactly three. The photo is checked as loaded (`naturalWidth > 0`), not by its address.
+Test design: UI · @acceptance @merch-on · seeded products · not mocked · default seed. Config grep-excludes `@merch-on` unless `MERCH_FLAG=on`; the Given step fails naming `MERCH_FLAG` when the real flag disagrees. The environment may hold more products than the seed: assert the seeded three are present and in kind order relative to each other, never that the section holds exactly three. The photo is checked as loaded (`naturalWidth > 0`), not by its address.
 
 #### visitor should see a product's photos, description, price and sizes with sold-out sizes marked
 
@@ -326,7 +334,7 @@ Test design: UI · @acceptance @merch-on · seeded products · not mocked · def
   - And no size carries a stock count or a held count
 - Why: stock counts are the organiser's business data; exposing them tells competitors and scrapers what sells.
 
-Test design: API · @acceptance @merch-on · seeded products · not mocked · default seed. Needs Zod schemas for `ProductSummaryDto` and `ProductDto` in `src/api/features/shop/` (not written yet; a follow-up issue is still to be opened, constitution III). Assert the absence of `stock` and `held` on the raw JSON, not after schema parsing, which would strip them.
+Test design: API · @acceptance @merch-on · seeded products · not mocked · default seed. Use `productsPageSchema` and `productSchema` from `src/api/features/stores/products.schemas.ts` (re-exported from the generated contract). Assert the absence of `stock` and `held` on the raw JSON, not after schema parsing, which would strip them.
 
 #### visitor should see only the store directory on Shop while merch is switched off
 
@@ -477,6 +485,130 @@ Test design: UI · `@mobile` · `@acceptance` (not `@smoke`: smoke scenario 1 al
 - Why: a client paging with a stale total that got an error or repeated entries would loop or crash instead of stopping.
 
 Test design: API · @acceptance · not mocked · default seed. Use `page=10000`, `pageSize=20`; parse with the stores page schema and assert `data` length 0, `hasNextPage` false, `hasPreviousPage` true. Do not assert `totalItems` (the environment holds a full dataset).
+
+### Merch catalogue contract, access and resilience (planned 2026-11-21)
+
+Explored live on the Docker stack (all flags on): `GET /api/v1/product` answers a `PagedResponse` of summaries
+(`slug`, `name`, `kind`, `priceCents`, `currency`, `photo`, `soldOut`), kind then name; `GET /api/v1/product/<slug>`
+adds `description`, `photos` and `sizes` (`id`, `available`, `soldOut`); `GET /api/v1/product/photo/<hash>` serves the
+image; `/api/v1/product/admin` answers 401 without a token; `/admin/shop` shows "Organiser sign-in". Seeded data gaps
+are listed in the report that accompanied this plan (no wholly sold-out product, no product with more than one photo).
+
+#### client should receive the merch catalogue ordered by kind and then name
+
+- Covers: `#6001`
+- Oracle: the app spec Part 2 ("Products are listed by kind (rashguards, shorts, t-shirts), then name") and the seeded kinds `Harp Rashguard` (rashguard), `Competition Shorts` (shorts), `Logo T-Shirt` (t-shirt). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests the merch catalogue
+- Expected results:
+  - Then the seeded rashguard is listed before the seeded shorts
+  - And the seeded shorts are listed before the seeded t-shirt
+  - And each seeded product carries its price in cents and its currency
+- Why: the order is the shop window; a catalogue that put t-shirts before the flagship rashguard would change what a shopper sees first.
+
+Test design: API · @acceptance @merch-on · seeded products · not mocked · default seed. Config grep-excludes `@merch-on` unless `MERCH_FLAG=on`; the Given step fails naming `MERCH_FLAG` when the real flag disagrees (the catalogue answers 404 with Merch off). Request `pageSize=100` and assert only the relative order of the three seeded products (`expectRelativeOrder`), never that they are the only products. Prices: `4500`, `3500`, `2500` cents, `EUR`. Needs the `ProductSummaryDto` Zod schema noted in the stock-count block above. This owns ordering, so the UI merch block asserts presence and relative order once and no more.
+
+#### client should get a validation error on <param> when <param> <value> is out of range for the merch catalogue
+
+- Covers: `#6001`
+- Oracle: the same paging contract as the directory (`page` at least 1, `pageSize` 1 to 100) and the shared `OUT_OF_RANGE_PAGING_VALUES` data. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests the merch catalogue with <param> <value>
+- Expected results:
+  - Then the request is rejected because <param> is out of range
+- Why: an unbounded page size on a public product list is a cheap way to make the shop slow for everyone.
+
+Test design: API · @acceptance @merch-on · data-driven over `OUT_OF_RANGE_PAGING_VALUES` from `tests/features/common/testdata/invalid-values.ts` · not mocked · no data. Config grep-excludes `@merch-on` unless `MERCH_FLAG=on`; the Given step fails naming `MERCH_FLAG` on a mismatch. Observed: `page=0&pageSize=101` answers 400 `urn:bjjeire:validation-error` with `errors` entries `{field: "Page"|"PageSize", errorCode: "VALUE_OUT_OF_RANGE"}`; assert through `expectProblem` with `ValidationErrorCode.ValueOutOfRange`. Add a non-numeric case only if the generator finds the shared `INVALID_INTEGER_QUERY_VALUES` behave the same (not yet probed).
+
+#### client should get not found for <resource> that does not exist
+
+- Covers: `#6002`
+- Oracle: the app's STC overlay `#6002` (a draft, hidden or unknown product answers 404) and the problem-document contract (`urn:bjjeire:not-found`). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests <resource> that does not exist
+- Expected results:
+  - Then the response is a not-found problem document
+  - And it carries a trace id
+- Why: the product page's "Product not found" screen depends on this answer being a clean 404 and not a 500 or an empty 200.
+
+Test design: API · @acceptance @merch-on · data-driven over `a product` (`GET /api/v1/product/no-such-product-<unique>`) and `a photo` (`GET /api/v1/product/photo/` followed by 64 zeros) · not mocked · no data. Config grep-excludes `@merch-on` unless `MERCH_FLAG=on`; the Given step fails naming `MERCH_FLAG` on a mismatch. Assert with `expectProblem` (404, `ProblemType.NotFound`), never the `detail` wording. Observed on 2026-11-21: both answer 404 `urn:bjjeire:not-found` with `traceId`.
+
+#### client should be refused <action> in the shop admin without signing in
+
+- Covers: `#6017`
+- Oracle: the app spec User Story 6 item 5 (a person who is not the organiser is refused) and `urn:bjjeire:unauthorized`. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the seeded rashguard is published
+  3. When a client asks for <action> without a token
+- Expected results:
+  - Then the response is an unauthorised problem document
+- Why: a product admin route that answered without a token would let anyone reprice, publish or hide the shop.
+
+Test design: API · @acceptance @merch-on · data-driven over `listing the organiser's products` (`GET /api/v1/product/admin`), `creating a product` (`POST /api/v1/product/admin` with a valid-looking body and a unique slug; the planned `POST /api/v1/product` does not exist in the contract, create is on the admin path) and `publishing a product` (`POST /api/v1/product/admin/<seeded rashguard id>/publish`) · not mocked · seeded `harp-rashguard` is only the target of a refused call, so it is never changed. Route shapes confirmed against the OpenAPI contract and the app spec `#6017`; the seeded rashguard id comes from a GET by slug. No "unchanged" claim is asserted: the list is a read, the rashguard is already published and a create makes an invisible draft, so only the 401 can prove the refusal. A signed-in non-organiser case needs a second identity and is not planned here (see report).
+
+#### visitor should see the organiser sign-in when opening the shop admin without signing in
+
+- Covers: `#6017`
+- Oracle: the app spec User Story 6 (the organiser signs in to `/admin/shop`) and the observed gate: heading "Organiser sign-in". Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a signed-out visitor opens the shop admin
+- Expected results:
+  - Then the organiser sign-in is shown
+  - And no product is listed
+  - And no product management control is shown
+- Why: the product admin must not render its controls, even disabled, to someone who is not the organiser.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · no data · not mocked · local and docker only (the `@local-sign-in` tag stays for now; the gate's Sign in button renders on every environment and only its message changes with the local sign-in). Use a signed-out context (no storage state from the agent seed). The admin address is `/admin/shop`, opened with `gotoRoute`.
+
+#### visitor should still see the store directory when the merch cannot be loaded
+
+- Covers: none (the app spec's Part 2 prose says Shop shows the directory without the section and without an error when products cannot be loaded; no requirement issue states it)
+- Oracle: a fixed mock body (a server problem document on the catalogue) and a seeded store.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the merch catalogue answers with a server error
+  3. When a visitor opens Shop
+- Expected results:
+  - Then there is no "BJJ Éire merch" section
+  - And no error message is shown
+  - And a seeded store's card is listed
+- Why: a failing optional merch feed must not take down the directory the visitor came for.
+
+Test design: UI · @acceptance @merch-on · mocked (route `GET /api/v1/product` answered with a 500 problem document built with `parseMockBody`; the directory is not mocked) · default seed. This is one of the empty, error and retry states the data policy allows to be mocked. Assert the absence of the error alert by role, not a particular copy, since the directory's own error copy is separate.
+
+#### visitor should see the merch section fit a phone
+
+- Covers: `#6001`
+- Oracle: the seeded rashguard (name, "€45.00") and the app spec ("Product photos are never cropped"). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens Shop on a phone
+- Expected results:
+  - Then the seeded rashguard's card is shown with its photo, name and price
+  - And the page does not scroll sideways
+- Why: most shoppers arrive on a phone, and a product grid that overflows the screen loses the sale.
+
+Test design: UI · `@mobile` · `@acceptance` · `@merch-on` · seeded `harp-rashguard` · not mocked · phone viewport (mobile-iphone and mobile-galaxy projects), in its own `@mobile` describe. Config grep-excludes `@merch-on` unless `MERCH_FLAG=on`; the Given step fails naming `MERCH_FLAG` on a mismatch. The photo counts as shown once it has loaded (natural width above zero). Reuse the page-fits-screen assertion the existing phone scenarios use. No pixel tolerances: check horizontal overflow only. Cropping of photos is a visual rule better held by a snapshot baseline (not planned).
+
+#### visitor should see a product page fit a phone
+
+- Covers: `#6002`
+- Oracle: the seeded rashguard (sizes S, M, L, XL; XL is sold out and still listed) and the app spec ("Product photos are never cropped"). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens Shop on a phone
+  3. And the visitor opens the seeded rashguard
+- Expected results:
+  - Then the product page shows its sizes and its photo
+  - And the page does not scroll sideways
+- Why: a size picker or photo that overflows the phone screen loses the sale.
+
+Test design: UI · `@mobile` · `@acceptance` · `@merch-on` · seeded `harp-rashguard` · not mocked · opened by clicking the card, not by address · in the same `@mobile` describe as the scenario above. Same flag handling and overflow assertion; the photo counts as shown once it has loaded.
 
 ## Held for a product decision
 
