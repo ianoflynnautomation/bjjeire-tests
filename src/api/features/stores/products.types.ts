@@ -29,3 +29,6 @@ export type ProductDto = Readonly<{
   sizes: readonly ProductSizeDto[];
   soldOut: boolean;
 }>;
+
+/** `GET /order/delivery`. The path is not in the published contract, so this mirrors the app's `ShopDeliveryDto`. */
+export type ShopDeliveryDto = Readonly<{ deliveryFeeCents: number; currency: string; countries: string[] }>;

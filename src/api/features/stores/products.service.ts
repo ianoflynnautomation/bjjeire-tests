@@ -9,7 +9,7 @@ import {
   get,
   type PaginatedResponse,
 } from '@api/support';
-import type { GetProductsQuery, ProductDto, ProductSummaryDto } from './products.types';
+import type { GetProductsQuery, ProductDto, ProductSummaryDto, ShopDeliveryDto } from './products.types';
 
 export async function getProducts(
   request: APIRequestContext,
@@ -26,4 +26,11 @@ export async function getProductBySlug(
   slug: string,
 ): Promise<ProductDto> {
   return expectSchema(schema, await get(request, resourcePath(API_ROUTES.products, slug)));
+}
+
+export async function getShopDelivery(
+  request: APIRequestContext,
+  schema: ZodType<ShopDeliveryDto>,
+): Promise<ShopDeliveryDto> {
+  return expectSchema(schema, await get(request, `${API_ROUTES.order}/delivery`));
 }

@@ -10,6 +10,7 @@ export const ProblemType = {
   NotFound: 'urn:bjjeire:not-found',
   MethodNotAllowed: 'urn:bjjeire:method-not-allowed',
   Conflict: 'urn:bjjeire:conflict',
+  BasketTooLarge: 'urn:bjjeire:basket-too-large',
   RegistrationNotOpen: 'urn:bjjeire:registration-not-open',
   Validation: 'urn:bjjeire:validation-error',
   RateLimit: 'urn:bjjeire:rate-limit-exceeded',

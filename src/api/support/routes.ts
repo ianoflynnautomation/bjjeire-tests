@@ -8,6 +8,7 @@ export const API_ROUTES = {
   bjjEireCompetitions: `${API_BASE_PATH}/bjjeire-competition`,
   stores: `${API_BASE_PATH}/store`,
   products: `${API_BASE_PATH}/product`,
+  order: `${API_BASE_PATH}/order`,
   productPhotos: `${API_BASE_PATH}/product/photo`,
   featureFlags: `${API_BASE_PATH}/featureflag`,
   localSignIn: `${API_BASE_PATH}/local-sign-in`,

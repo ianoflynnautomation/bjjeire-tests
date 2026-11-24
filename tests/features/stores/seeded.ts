@@ -87,4 +87,6 @@ export const SEEDED_RASHGUARD = {
   name: SEEDED_PRODUCT_HARP_RASHGUARD.name,
   displayPrice: '€45.00',
   sizes: ['S', 'M', 'L', 'XL'],
+  /** A size the seed holds stock for (S, M and L have 10; XL has none). */
+  inStockSize: 'M',
 } as const;

@@ -43,8 +43,10 @@ once (`#4002` T4); this suite proves the visitor sees it against real data.
 21. visitor should still see the store directory when the merch cannot be loaded · none
 22. visitor should see the merch section fit a phone · `#6001`
 23. visitor should see a product page fit a phone · `#6002`
+24. visitor should still have their basket after reloading the page · `#6005`
+25. visitor should see an empty basket with a way back to Shop when nothing has been added · `#6005`
 
-All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-seed-cases.ui.acceptance.spec.ts`, and 20 and 21, which are in `stores-merch.ui.acceptance.spec.ts`, and 22 and 23, which are in `stores-merch-phone.ui.acceptance.spec.ts`; 6–8 are mocked; 12 is data-driven over two old links; 9 runs in its own `describe` at a
+All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-seed-cases.ui.acceptance.spec.ts`, and 20 and 21, which are in `stores-merch.ui.acceptance.spec.ts`, and 24 and 25 in the same file, and 22 and 23, which are in `stores-merch-phone.ui.acceptance.spec.ts`; 6–8 are mocked; 12 is data-driven over two old links; 9 runs in its own `describe` at a
 360px viewport on the desktop project; 17 runs in its own `@mobile` describe on the mobile projects only.
 
 ### API
@@ -61,6 +63,9 @@ All in `stores.ui.acceptance.spec.ts` except 18 and 19, which are in `stores-see
 10. client should get a validation error on <param> when <param> <value> is out of range for the merch catalogue · `#6001`
 11. client should get not found for <resource> that does not exist · `#6002`
 12. client should be refused <action> in the shop admin without signing in · `#6017`
+13. client should be refused a checkout whose quantities are out of bounds <case> · `#6005`
+14. client should receive the delivery fee and the countries the shop delivers to · `#6006`
+15. client should receive a product photo as a long-lived image · `#6002`
 
 Scenarios 4 and 5 are data-driven over `tests/features/common/testdata/invalid-values.ts`
 (non-numeric paging values; the paging bounds). Scenario 6 reads `/sitemap.xml` from the app host (`BASE_URL`), not the API, and compares the path of each `<loc>` entry. Errors are asserted as RFC 9457 problem
@@ -610,9 +615,276 @@ Test design: UI · `@mobile` · `@acceptance` · `@merch-on` · seeded `harp-ras
 
 Test design: UI · `@mobile` · `@acceptance` · `@merch-on` · seeded `harp-rashguard` · not mocked · opened by clicking the card, not by address · in the same `@mobile` describe as the scenario above. Same flag handling and overflow assertion; the photo counts as shown once it has loaded.
 
+### Basket and guest checkout (`#6005`, `#6006`, `#6010`–`#6012`, `#6026`, planned 2026-11-23, slice 3)
+
+Behaviour: `bjjeire-java/specs/features/shop.md` Part 2 (User Story 7) and `specs/stc/shop/spec.md` § `#6005`–`#6012`.
+The basket lives in the browser (`localStorage` `bjjeire-basket`, product, size and quantity only). Checkout is a guest
+form: name, email and an address in the Republic of Ireland or Northern Ireland (a `BT` postcode). Paying leaves for
+Stripe's hosted Checkout, which the suite cannot drive (`competitions.md` F26), so no block here completes a payment.
+Starting a checkout holds stock for 30 minutes, so any block that reaches the payment page uses a product the test
+creates as the organiser, never the seeded products, and hides it afterwards. Until the organiser's delivery-fee screen
+ships (slice 4), delivery is free (`€0.00`) on every stack. Test ids: `basket-*`, `checkout-*`, `order-*`,
+`product-add-to-basket*`. No test claims these blocks yet.
+
+#### visitor should see the size they chose in the basket with its price and a running total
+
+- Covers: `#6005`
+- Oracle: the seeded rashguard's name, price and an in-stock size. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor chooses an in-stock size of the seeded rashguard and adds it to the basket twice
+  3. And opens the basket
+- Expected results:
+  - Then the basket lists the rashguard in that size with a quantity of 2
+  - And it shows the item price and a line total of twice that price
+  - And the basket total equals the line total
+  - And the basket icon in the navigation shows 2 items
+- Why: the shopper must see what they are about to buy before they pay.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked · nothing reaches the API but reads. Start from an empty basket (clear `localStorage` in the fixture).
+
+#### visitor should see the basket total follow a change of quantity
+
+- Covers: `#6005`
+- Oracle: the seeded rashguard's price.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor's basket holds one of an in-stock size of the seeded rashguard
+  3. When the visitor raises its quantity to 2 in the basket
+- Expected results:
+  - Then the line total and the basket total are twice the price
+- Why: a total that lags behind the quantity misstates what will be charged.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked. Seed the basket through the product page, not by writing `localStorage`.
+
+#### visitor should see an item leave the basket when removing it
+
+- Covers: `#6005`
+- Oracle: the seeded `harp-rashguard` and `logo-t-shirt`.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor's basket holds the seeded rashguard and the seeded t-shirt
+  3. When the visitor removes the t-shirt
+- Expected results:
+  - Then only the rashguard is left in the basket
+  - And the basket total is the rashguard's line total
+- Why: a shopper who changes their mind must not be charged for it.
+
+Test design: UI · @acceptance @merch-on · seeded products · not mocked.
+
+#### visitor should see the items, the delivery fee and the full amount before paying
+
+- Covers: `#6006`
+- Oracle: the seeded rashguard's price and the delivery fee the API reports (`GET /api/v1/order/delivery`; `€0.00` until slice 4).
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor's basket holds one of the seeded rashguard
+  3. When the visitor goes to checkout
+- Expected results:
+  - Then the order summary shows the items total, the delivery fee and their sum
+  - And the pay button names that sum
+  - And the visitor is asked for a name, an email and a delivery address
+- Why: FR-009, the full amount before paying.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked · nothing is submitted.
+
+#### visitor should be asked for a Northern Ireland postcode when choosing Northern Ireland
+
+- Covers: `#6006`
+- Oracle: the app spec (Northern Ireland postcodes start BT).
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor is at checkout with one item in the basket
+  3. When the visitor chooses Northern Ireland and gives the postcode "SW1A 1AA"
+  4. And asks to pay
+- Expected results:
+  - Then the form says a Northern Ireland postcode starting with BT is needed
+  - And the visitor stays on the checkout page
+- Why: FR-017, BJJ Éire delivers only to the Republic of Ireland and Northern Ireland.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked · the form refuses it before any request.
+
+#### client should be refused delivery to an address outside Ireland and Northern Ireland
+
+- Covers: `#6006`
+- Oracle: ADR-0016 and the app's STC overlay `#6006` (`urn:bjjeire:delivery-not-available`).
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client with no token starts a checkout for one seeded rashguard to an address in <country> <postcode>
+- Expected results:
+  - Then the checkout is refused because BJJ Éire does not deliver there
+  - And no payment page is returned
+- Why: an address the shop cannot deliver to must never reach payment.
+
+Test design: API · @acceptance @merch-on · data-driven over `GB` with `SW1A 1AA` and `FR` with no postcode · `409 urn:bjjeire:delivery-not-available` · not mocked · nothing is held (the address is checked before any stock).
+
+#### visitor should leave for the payment page without being asked to sign in
+
+- Covers: `#6012`, `#6006`
+- Oracle: the product the test creates; Stripe's hosted Checkout origin.
+- Steps:
+  1. Given the organiser has published a product with stock (setup)
+  2. And a visitor who is not signed in has one in their basket
+  3. When the visitor gives a name, an email and an Irish address, accepts the terms and asks to pay
+- Expected results:
+  - Then the visitor is taken to Stripe's payment page
+  - And at no point was the visitor asked to sign in or create an account
+- Why: FR-016, anyone can buy as a guest.
+
+Test design: UI · @acceptance @merch-on @local-sign-in @stripe-test · creates its own product (unique slug) as the organiser and hides it afterwards; the order it starts holds that product's stock for 30 minutes and is never paid · not mocked · local and docker only, with Stripe test keys. Stop at the `checkout.stripe.com` navigation; do not interact with Stripe's page.
+
+#### visitor should be told an item sold out before paying
+
+- Covers: `#6010`
+- Oracle: the product the test creates.
+- Steps:
+  1. Given the organiser has published a product with stock in size M (setup)
+  2. And a visitor has one of size M in their basket
+  3. When the organiser sets the stock of M to 0
+  4. And the visitor opens the basket
+- Expected results:
+  - Then the line is marked sold out
+  - And the visitor cannot go on to checkout until they remove it
+- Why: `#6010`, the shopper is told what changed before they pay.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · creates its own product, hides it at the end · not mocked · local and docker only. Same caching note as the organiser blocks above. The checkout-time half (`basket-changed` listing each line) is owned by the app's integration tests (`#6010` T2, T4).
+
+#### visitor should see "Order not found" when opening an order link with a wrong key
+
+- Covers: `#6011`
+- Oracle: the app's STC overlay `#6011` (a wrong, missing or other order's key reads like an unknown order).
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor opens an order address whose link key is wrong
+- Expected results:
+  - Then the page says "Order not found"
+  - And no order detail is shown
+- Why: FR-015, nobody but the holder of the link can see an order.
+
+Test design: UI · @acceptance @merch-on · an order id that exists nowhere and a made-up key · not mocked · creates nothing. The API half (404 for a wrong, missing or other order's key) is owned by `OrderAccessIT` in the app repo.
+
+#### visitor should see no basket while merch is switched off
+
+- Covers: `#6026`
+- Oracle: ADR-0016 and the app's STC overlay `#6026`.
+- Steps:
+  1. Given the merch shop is switched off
+  2. When a visitor opens Shop
+  3. And opens the basket address directly
+- Expected results:
+  - Then the navigation shows no basket
+  - And the basket address does not show a basket
+- Why: no part of the shop is reachable before the owner switches it on.
+
+Test design: UI · @acceptance · the default `Merch` flag (off) · not mocked. Same flag handling as "visitor should see only the store directory on Shop while merch is switched off".
+
+### Basket limits, persistence and delivery contract (planned 2026-11-23, slice 3)
+
+Probed on the Docker stack with every flag on: `GET /api/v1/order/delivery` answers 200 with no token, body
+`{deliveryFeeCents: 0, currency: "EUR", countries: ["IE", "GB-NIR"]}`; `GET /api/v1/product/photo/<hash>` answers 200
+`image/png` with `cache-control: max-age=31536000, public, immutable`; `GET /api/v1/order/admin` answers 401 without a token.
+Rules from `specs/stc/shop/spec.md` § `#6005`: a line holds at most 10, the basket at most 20, never more than is available.
+The seeded rashguard has S 10, M 10, L 8 available. No test claims these blocks yet.
+
+#### visitor should not be able to put more of a size in the basket than is available
+
+- Covers: `#6005`
+- Oracle: the seeded rashguard's size L, 8 available (below the line cap of 10). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor's basket holds one of size L of the seeded rashguard
+  3. When the visitor raises its quantity as far as the basket allows
+- Expected results:
+  - Then the quantity stops at 8
+  - And the control to raise it further is disabled
+  - And the line total is eight times the price
+- Why: a basket that accepts more than is in stock promises a sale the shop cannot fill.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard`, size L · not mocked · default seed. Raise via the quantity control, not by writing `localStorage`; the seeded stock is never changed by any scenario, so 8 is stable. Do not also assert the 10-line cap in the UI; the API block below owns it.
+
+#### visitor should still have their basket after reloading the page
+
+- Covers: `#6005`
+- Oracle: the seeded rashguard and the item the test adds. The basket is kept in this browser.
+- Steps:
+  1. Given the merch shop is switched on
+  2. And the visitor has added an in-stock size of the seeded rashguard to the basket
+  3. When the visitor reloads the page
+  4. And opens the basket
+- Expected results:
+  - Then the basket lists the rashguard in that size with a quantity of 1
+  - And the basket icon in the navigation shows 1 item
+- Why: a shopper who loses the basket when a tab refreshes will not rebuild it.
+
+Test design: UI · @acceptance @merch-on · seeded `harp-rashguard` · not mocked · default seed. Each test has its own browser context, so the stored basket never leaks between tests. Add through the product page.
+
+#### visitor should see an empty basket with a way back to Shop when nothing has been added
+
+- Covers: `#6005`
+- Oracle: the app spec (the basket is empty until something is added). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a visitor with an empty basket opens the basket address
+- Expected results:
+  - Then the page says the basket is empty
+  - And it offers a link back to Shop, which leads to `/shop`
+  - And no checkout control is offered
+- Why: a visitor who follows a stale basket link must not meet a blank page or a pay button with nothing to pay for.
+
+Test design: UI · @acceptance @merch-on · no data · not mocked · default seed. Not probed live (the browser seed pins `Merch` off, so the merch screens redirect); the generator confirms the copy and the test ids (`basket-*`) when rehearsing, and asserts by role and test id, not copy where it varies.
+
+#### client should be refused a checkout whose quantities are out of bounds <case>
+
+- Covers: `#6005`
+- Oracle: the app's STC overlay `#6005` (`POST /api/v1/order` refuses a quantity of 0 with 400 and more than the basket cap with 409 `basket-too-large`). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client with no token starts a checkout for <case> of the seeded rashguard to an Irish address
+- Expected results:
+  - Then the checkout is refused
+  - And no payment page is returned
+- Why: the browser basket is only a convenience; the server must stop an oversized or empty order that someone sends by hand.
+
+Test design: API · @acceptance @merch-on · data-driven over `a quantity of 0` (400 validation error) and `21 of one size` (409 `urn:bjjeire:basket-too-large`) · seeded `harp-rashguard` (id from a GET by slug, size `S`) · not mocked · nothing is held (both are refused before any stock is taken). Assert through `expectProblem` (status and `type`), never on `detail`. The exact `type` for the 400 and the request body shape are not probed live; the generator confirms them against the OpenAPI contract first. If the contract needs a delivery address in the body, use the Irish one from the delivery-refusal block above, which proves the address is accepted first.
+
+#### client should receive the delivery fee and the countries the shop delivers to
+
+- Covers: `#6006`
+- Oracle: the app spec ("The Republic of Ireland and Northern Ireland only, for one flat fee per order") and the slice-3 note that delivery is free until slice 4. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests the delivery fee without a token
+- Expected results:
+  - Then the fee is zero euro
+  - And the shop delivers to the Republic of Ireland and Northern Ireland and nowhere else
+- Why: the checkout page's "free delivery" and its country list both come from this one answer.
+
+Test design: API · @acceptance @merch-on · no data · not mocked · default seed. `GET /api/v1/order/delivery`: assert `currency` `EUR` and `countries` equal to exactly `IE` and `GB-NIR` (as a set). Assert the fee as `0` only while slice 4 has not shipped; when the organiser's fee screen lands, change the oracle to the fee the test sets (it must then create and restore its own value), and never assert a stale `0`. Needs a Zod schema from the generated contract if it exports one; otherwise parse with a local `z.object` in `src/api/features/stores/`.
+
+#### client should receive a product photo as a long-lived image
+
+- Covers: `#6002`
+- Oracle: the seeded rashguard's photo hash read from its product page, and the app spec ("Product photos are never cropped", so served as uploaded). Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client requests the seeded rashguard's photo
+- Expected results:
+  - Then the response is an image
+  - And the image may be cached for a year without revalidating
+- Why: photos are the heaviest thing on Shop; a photo answered without a long cache makes every visit re-download them.
+
+Test design: API · @acceptance @merch-on · seeded `harp-rashguard` (hash taken from `photos[0]` of `GET /api/v1/product/harp-rashguard`, never hard-coded) · not mocked · default seed. Observed: 200, `content-type: image/png`, `cache-control: max-age=31536000, public, immutable`. Assert `content-type` starts `image/` and `cache-control` contains `immutable` and `max-age=31536000`; do not pin the byte length. The not-found photo case is owned by the existing "client should get not found for <resource>" block.
+
 ## Held for a product decision
 
-None.
+Basket and guest checkout (slice 3, planned 2026-11-23). These need a payment completed on Stripe's hosted Checkout,
+which the suite cannot drive (`competitions.md` F26). Lower tiers own them: the app's `OrderWebhookIT`,
+`OrderAccessIT` and `order-page.integration.test.tsx`, with the recording Stripe fake. Unblock with a way to complete a
+test-mode payment from the suite (Stripe's test helpers, or a signed test event sent to the shop webhook).
+
+- **shopper should get a confirmed order and a receipt after paying** (`#6007`): stock of each size goes down by the quantity bought, and one mail lists the items, the amount paid, the delivery address and the order link.
+- **shopper should be charged nothing and see the stock back on sale after leaving the payment page** (`#6008`): the order shows "Not paid" with "Back to basket" once Stripe expires the session; until then "Return to payment" reopens the same page.
+- **shopper should see their order's items, amount paid, delivery details and status from the link in their receipt** (`#6011`): needs a confirmed order and its emailed key.
 
 ## Rejected
 

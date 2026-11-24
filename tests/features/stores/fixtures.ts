@@ -1,4 +1,5 @@
 import { mockProductsServerError, mockStores, STORES_ROUTE } from './mocks';
+import { BasketPage } from '@ui/pages/stores/basket.page';
 import { ProductPage } from '@ui/pages/stores/product.page';
 import { ShopAdminPage } from '@ui/pages/stores/shop-admin.page';
 import { StoresPage } from '@ui/pages/stores/stores.page';
@@ -12,6 +13,7 @@ export type StoresUiFixtures = FailureMocks & {
   storesPage: StoresPage;
   shopAdminPage: ShopAdminPage;
   productPage: ProductPage;
+  basketPage: BasketPage;
   mockStores: (body: unknown) => Promise<void>;
   mockProductsServerError: () => Promise<void>;
 };
@@ -20,6 +22,7 @@ export const test = core.extend<StoresUiFixtures>({
   storesPage: pageFixture(StoresPage),
   shopAdminPage: pageFixture(ShopAdminPage),
   productPage: pageFixture(ProductPage),
+  basketPage: pageFixture(BasketPage),
   mockStores: mockFixture(mockStores),
   mockProductsServerError: mockFixture(mockProductsServerError),
   ...failureMockFixtures(STORES_ROUTE),

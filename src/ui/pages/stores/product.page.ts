@@ -17,4 +17,23 @@ export class ProductPage {
     );
     await expectImageLoaded(this.root.getByTestId(PRODUCT_PAGE_TEST_IDS.photo).first());
   }
+
+  /** Chooses an in-stock size (a sold-out size cannot be chosen). */
+  async chooseSize(size: string): Promise<void> {
+    await this.root
+      .getByTestId(PRODUCT_PAGE_TEST_IDS.sizes)
+      .getByTestId(PRODUCT_PAGE_TEST_IDS.size)
+      .filter({ hasText: new RegExp(`^${size}$`) })
+      .click();
+  }
+
+  /** Puts one of the chosen size in the basket. */
+  async addToBasket(): Promise<void> {
+    await this.root.getByTestId(PRODUCT_PAGE_TEST_IDS.addToBasket).click();
+  }
+
+  async reload(): Promise<void> {
+    await this.page.reload();
+    await expect(this.root).toBeVisible();
+  }
 }

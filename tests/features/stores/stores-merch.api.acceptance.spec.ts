@@ -2,8 +2,8 @@
 // seed: tests/agents/seed.spec.ts
 import { faker } from '@faker-js/faker';
 import { test, expect } from '@api/fixtures';
-import { productSchema, productsPageSchema } from '@api/features/stores/products.schemas';
-import { getProductBySlug, getProducts } from '@api/features/stores/products.service';
+import { productSchema, productsPageSchema, shopDeliverySchema } from '@api/features/stores/products.schemas';
+import { getProductBySlug, getProducts, getShopDelivery } from '@api/features/stores/products.service';
 import {
   API_ROUTES,
   expectListingToInclude,
@@ -46,8 +46,38 @@ const SHOP_ADMIN_ACTIONS = [
   },
 ] as const;
 
+// Both are refused before any stock is taken. The order path is not in the published OpenAPI contract, so the body
+// shape is the app's `CreateOrderCommand`; the price and fee are the ones the shopper was shown (seed: 4500 and free).
+// The basket case keeps every line within the per-line cap (10) so only the basket cap (20) can refuse it; the app
+// checks the limits before stock, so the sizes need not have stock.
+const OUT_OF_BOUNDS_QUANTITIES = [
+  {
+    case: 'a quantity of 0',
+    quantities: [{ sizeId: 'S', quantity: 0 }],
+    status: 400,
+    type: ProblemType.Validation,
+    fields: ['Lines[0].Quantity'],
+  },
+  {
+    case: 'a basket of 21 across three sizes',
+    quantities: [
+      { sizeId: 'S', quantity: 10 },
+      { sizeId: 'M', quantity: 10 },
+      { sizeId: 'L', quantity: 1 },
+    ],
+    status: 409,
+    type: ProblemType.BasketTooLarge,
+    fields: [],
+  },
+] as const;
+const SHOWN_DELIVERY_CENTS = 0;
+// Delivery is free until the organiser's fee screen ships (slice 4); then the oracle becomes the fee the test sets.
+const FREE_DELIVERY_CENTS = 0;
+const DELIVERY_COUNTRIES = ['IE', 'GB-NIR'];
+
 const FULL_PAGE_SIZE = 100;
 const PHOTO_HASH_LENGTH = 64;
+const ONE_YEAR_SECONDS = 31_536_000;
 
 const MISSING_RESOURCES = [
   {
@@ -148,8 +178,116 @@ test.describe('Merch API acceptance', { tag: ['@stores', '@api', '@merch-on', '@
     );
   }
 
+  test(
+    'client should receive a product photo as a long-lived image',
+    {
+      tag: '@acceptance',
+      annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+    },
+    async ({ request }) => {
+      const photoHash = await test.step('Given the merch shop is switched on', async () => {
+        merchSwitchedOn();
+        const rashguard = await getProductBySlug(request, productSchema, SEEDED_PRODUCT_HARP_RASHGUARD.slug);
+        const [hash] = rashguard.photos ?? [];
+        if (!hash) throw new Error('The seeded rashguard has no photo');
+        return hash;
+      });
+
+      const response = await test.step("When a client requests the seeded rashguard's photo", () =>
+        request.get(resourcePath(API_ROUTES.productPhotos, photoHash)));
+
+      await test.step('Then the response is an image', () => {
+        expect(response.ok()).toBe(true);
+        expect(response.headers()['content-type']).toMatch(/^image\//);
+      });
+
+      await test.step('And the image may be cached for a year without revalidating', () => {
+        const cacheControl = response.headers()['cache-control'] ?? '';
+        expect(cacheControl).toContain(`max-age=${ONE_YEAR_SECONDS}`);
+        expect(cacheControl).toContain('immutable');
+      });
+    },
+  );
+
   test.describe('without signing in', () => {
     test.use({ requestAuth: 'none' });
+
+    for (const { case: quantityCase, quantities, status, type, fields } of OUT_OF_BOUNDS_QUANTITIES) {
+      test(
+        `client should be refused a checkout whose quantities are out of bounds ${quantityCase}`,
+        {
+          tag: '@acceptance',
+          annotation: squash({
+            weight: 'medium',
+            status: 'work in progress',
+            nature: 'functional',
+            type: 'regression',
+          }),
+        },
+        async ({ request }) => {
+          await test.step('Given the merch shop is switched on', merchSwitchedOn);
+
+          const rashguard = await getProductBySlug(request, productSchema, SEEDED_PRODUCT_HARP_RASHGUARD.slug);
+
+          const response =
+            await test.step(`When a client with no token starts a checkout for ${quantityCase} of the seeded rashguard to an Irish address`, () =>
+              request.post(API_ROUTES.order, {
+                data: {
+                  lines: quantities.map(({ sizeId, quantity }) => ({
+                    productId: rashguard.id,
+                    sizeId,
+                    quantity,
+                    unitPriceCents: SEEDED_PRODUCT_HARP_RASHGUARD.priceCents,
+                  })),
+                  email: `pw-${faker.string.alphanumeric({ length: 10, casing: 'lower' })}@example.ie`,
+                  address: {
+                    name: 'PW Buyer',
+                    line1: '1 Main Street',
+                    town: 'Dublin',
+                    county: 'Dublin',
+                    country: 'IE',
+                  },
+                  deliveryCents: SHOWN_DELIVERY_CENTS,
+                  acceptTerms: true,
+                },
+              }));
+
+          await test.step('Then the checkout is refused', async () => {
+            const problem = await expectProblem(response, status, type);
+            expect(problem.errors ?? []).toEqual(
+              expect.arrayContaining(fields.map(field => expect.objectContaining({ field }))),
+            );
+          });
+
+          await test.step('And no payment page is returned', async () => {
+            expect(await response.json()).not.toHaveProperty('checkoutUrl');
+          });
+        },
+      );
+    }
+
+    test(
+      'client should receive the delivery fee and the countries the shop delivers to',
+      {
+        tag: '@acceptance',
+        annotation: squash({ weight: 'medium', status: 'work in progress', nature: 'functional', type: 'regression' }),
+      },
+      async ({ request }) => {
+        await test.step('Given the merch shop is switched on', merchSwitchedOn);
+
+        const delivery = await test.step('When a client requests the delivery fee without a token', () =>
+          getShopDelivery(request, shopDeliverySchema));
+
+        await test.step('Then the fee is zero euro', () => {
+          expect(delivery.deliveryFeeCents).toBe(FREE_DELIVERY_CENTS);
+          expect(delivery.currency).toBe('EUR');
+        });
+
+        await test.step('And the shop delivers to the Republic of Ireland and Northern Ireland and nowhere else', () => {
+          expect([...delivery.countries].sort()).toEqual([...DELIVERY_COUNTRIES].sort());
+        });
+      },
+    );
 
     for (const { action, call } of SHOP_ADMIN_ACTIONS) {
       test(

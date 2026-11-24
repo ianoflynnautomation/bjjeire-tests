@@ -60,7 +60,26 @@ export const PRODUCT_PAGE_TEST_IDS = {
   photo: 'product-page-photo',
   sizes: 'product-page-sizes',
   size: 'product-page-size',
+  addToBasket: 'product-add-to-basket',
 } as const;
+
+export const BASKET_TEST_IDS = {
+  badge: 'basket-badge',
+  badgeCount: 'basket-badge-count',
+  root: 'basket-page',
+  line: 'basket-line',
+  lineName: 'basket-line-name',
+  lineSize: 'basket-line-size',
+  lineQuantity: 'basket-line-quantity',
+  empty: 'basket-empty',
+  checkout: 'basket-checkout',
+} as const;
+
+/** The basket address. */
+export const BASKET_ROUTE = '/shop/basket';
+
+/** Where the empty basket's link back to Shop leads. */
+export const SHOP_ROUTE = '/shop';
 
 /** The merch catalogue list (`GET /api/v1/product`) only, not `/product/photo` or a product page. */
 export const PRODUCTS_ROUTE = /\/api\/v[12]\/product(?:\?|$)/i;
