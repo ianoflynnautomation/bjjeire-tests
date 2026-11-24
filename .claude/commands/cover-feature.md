@@ -34,6 +34,7 @@ Stop at the first failed check. Say what failed. Do not start the planner.
    `seed` and `explore` must both pass. If the app does not answer, either test
    fails, or `/featureflag` would return 429, stop. A dead app or a 429 looks
    like a mass test failure.
+
 4. The planner and the generator need the `playwright-test` MCP server
    connected in this session. If it is not, stop.
 
@@ -60,6 +61,7 @@ Stop at the first failed check. Say what failed. Do not start the planner.
    the app disagrees with the block, record expected and observed, leave the
    test as the writer left it, and move to the next block. Do not change the
    block to match the app, and do not send that block to the healer.
+
 4. Spawn `playwright-test-reviewer` on the files this run changed. It is
    read-only. Send its correctness findings back to the writer that owns those
    files, then spawn a new reviewer on the same files. A correctness finding is
