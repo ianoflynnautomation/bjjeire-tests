@@ -88,7 +88,8 @@ The healer and the explorer drive `npx playwright cli` from the repo root. They 
 ```
 
 It reads the existing spec file and tests, explores the page in a browser, and adds
-`####` blocks under `## Planned`. It does not add a numbered title. The generator adds
+`####` blocks under `## Planned` for T6 acceptance only. A rule below T6 is a
+recommendation under `## Rejected` for `bjjeire-java`, not a block. It does not add a numbered title. The generator adds
 that title in the same change as the test, so `spec:check` stays green. The block
 shape is `specs/templates/feature-spec.md`. It edits nothing outside `specs/`. Read
 the plan before generating: delete scenarios you don't want.

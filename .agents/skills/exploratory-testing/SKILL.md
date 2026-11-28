@@ -129,9 +129,9 @@ already covered by a failing test, or an axe `minor` on third-party content.
 Write `specs/exploration/<YYYY-MM-DD>-<charter-slug>.md` using
 [`references/report-template.md`](references/report-template.md). Findings carry repro
 steps, expected (with the claim it comes from), actual, severity and evidence paths.
-**Candidate scenarios** are proposals in `<actor> should <outcome> [when <context>]`
-form, each with the layer (UI or API) and why the suite should own it. The
-`playwright-test-planner` decides whether they enter `specs/features/`. Exploration
+**Candidate scenarios** are T6 proposals in `<actor> should <outcome> [when <context>]`
+form, each with the layer (UI or API) and why a visitor would notice it on the running app. A check at T0–T5 is a recommendation for `bjjeire-java` (tier and suggested test), not a candidate. The pyramid rule in `suite-conventions` is the gate. The
+`playwright-test-planner` decides whether a candidate enters `specs/features/`. Exploration
 never writes spec code.
 
 Each **Findings** item is also one GitHub issue on `ianoflynnautomation/bjjeire`,

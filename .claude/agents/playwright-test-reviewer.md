@@ -35,7 +35,7 @@ from `git status --short`). Read each changed file in full and the helpers it ca
 5. **Data.** Seeded records over mocks; mocks only for empty/error/multi-page/snapshot
    and parsed with `parseMockBody`; expected values derived via mappers; partial names
    from `SEEDED_*_PARTIAL_NAME`.
-6. **Right layer.** A UI test re-checking a rule the API spec owns is duplicate cost.
+6. **Right tier.** A new test that proves a T0–T5 rule (invalid-value matrix, calculator, DTO field dump, MSW page mechanics, focus order) is a finding. The fix is the recommendation line from the pyramid rule in `suite-conventions`: drop it here and name the tier in `bjjeire-java`. A UI test that re-checks a T6 rule the API acceptance spec owns is the same finding, inside this suite.
 7. **Tags and Squash.** `@acceptance` everywhere, `@smoke` kept small, `squash({...})`
    values per convention, and renamed or moved titles flagged (orphaned unpinned cases).
 8. **TypeScript.** Strict-mode idioms, `as const` + `satisfies Record<…>`, object

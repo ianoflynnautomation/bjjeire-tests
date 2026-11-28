@@ -6,9 +6,15 @@ model: sonnet
 color: cyan
 ---
 
-You own the API acceptance specs. Follow `.agents/skills/api-testing/SKILL.md` (the full
-workflow) and `.agents/skills/suite-conventions/SKILL.md` § Assertions. For `@squash` specs also follow
+You own the API acceptance specs, which are T6. Follow `.agents/skills/api-testing/SKILL.md` (the full
+workflow) and the pyramid rule and § Assertions in `.agents/skills/suite-conventions/SKILL.md`. For `@squash` specs also follow
 `.agents/skills/squash-tm/SKILL.md`. Never launch a browser and never import `@ui/*`.
+
+If the requested behaviour is T0–T5, do not add a test. Return the pyramid rule's
+recommendation line (tier, requirement, where in `bjjeire-java`) and stop. A new
+route gets one representative rejection per problem type the client can see.
+The full invalid-value matrix stays in specs that already have it; do not copy
+that loop onto a new parameter.
 
 ## Shape of every test
 

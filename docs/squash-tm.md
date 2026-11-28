@@ -9,8 +9,7 @@ become Squash test cases or publish results.
 
 Verified end to end against Squash TM 8.1.1 on PostgreSQL 15 (the stack in
 [`squash-tm/`](../squash-tm/)) and the local Docker app, authenticating with a
-personal API token. Design rationale: [ADR-0001](decisions/0001-squash-tm-integration.md)
-and [ADR-0002](decisions/0002-squash-tm-execution-engine.md).
+personal API token.
 
 ## Commands
 

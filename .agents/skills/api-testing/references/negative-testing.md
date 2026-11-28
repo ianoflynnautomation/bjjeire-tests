@@ -1,6 +1,6 @@
 # Negative testing — query parameters and path ids
 
-Long-form loops for `api-testing/SKILL.md` Phase 6. The critical rules, the constant table, and the three-tier rule stay in `SKILL.md`. This file is the gyms directory, which the other listings follow.
+Long-form loops for `api-testing/SKILL.md` Phase 6. The critical rules, the constant table, and the three-tier rule stay in `SKILL.md`. This file is the gyms directory, which the other listings follow. Heal a spec that already has the loop. A new parameter takes one representative value; the rest of the set is a T1 recommendation in `bjjeire-java` (the pyramid rule in `suite-conventions`).
 
 Successful calls go through the feature client. These loops use `request.get` because `get()` throws on a non-OK status. `expectProblem` checks the status, the RFC 9457 body, and the problem `type`.
 

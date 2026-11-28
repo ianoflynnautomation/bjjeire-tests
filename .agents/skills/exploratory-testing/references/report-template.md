@@ -34,10 +34,14 @@ Behaviour the specs do not settle. Not bugs.
 
 ## Candidate scenarios
 
-For `playwright-test-planner` to accept or reject. Not yet in `specs/features/`.
+T6 only, for `playwright-test-planner` to accept or reject. Not yet in `specs/features/`. A lower tier is a recommendation, not a candidate.
 
-- `visitor should … when …` · Layer: UI · Why: covers F1; no test owns this today
+- `visitor should … when …` · Layer: UI · Why: covers F1; no T6 test owns this today
 - `client should … when …` · Layer: API · Why: …
+
+## Recommend for the app repo
+
+- <what to prove> · T4 · #142 · `gyms-page.integration.test.tsx` · Why not T6: the page test already owns the query string
 
 ## Follow-up charters
 

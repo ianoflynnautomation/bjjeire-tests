@@ -1,7 +1,7 @@
 # Repository overlay — gh-aw (bjjeire-tests)
 
-Loaded by the agentic-workflows skill when present. Overrides upstream
-defaults where they conflict.
+Loaded by `spec-review` and `playwright-fix` after the constitution. Overrides
+upstream defaults where they conflict.
 
 ## Engine and writes
 

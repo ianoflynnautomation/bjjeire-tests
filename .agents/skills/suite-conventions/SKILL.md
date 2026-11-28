@@ -1,11 +1,44 @@
 ---
 name: suite-conventions
-description: Detailed test conventions for this suite. Covers file naming and titles, the feature slice layout, the data policy (seeded data first, when to mock), assertions, navigation with gotoRoute, API spec shape, negative inputs, page objects, fixtures, pinned feature flags, the mutation fixture and snapshot baselines. Use when writing, healing or reviewing a spec, page object, fixture or mock. For environments, projects and CI use suite-environments.
+description: Detailed test conventions for this suite. Covers the pyramid (this suite adds only T6 acceptance; lower tiers are recommended for bjjeire-java), file naming and titles, the feature slice layout, the data policy (seeded data first, when to mock), assertions, navigation with gotoRoute, API spec shape, negative inputs, page objects, fixtures, pinned feature flags, the mutation fixture and snapshot baselines. Use when writing, healing or reviewing a spec, page object, fixture or mock, or when deciding whether a scenario belongs in this suite. For environments, projects and CI use suite-environments.
 ---
 
 # Suite conventions
 
 These are the detailed rules behind the summary in `AGENTS.md`.
+
+### Pyramid
+
+This suite adds tests only at the top of the pyramid: **T6 acceptance** against a running app. The tier table is `bjjeire-java/docs/testing-strategy.md` §2. A Spec Kit `Acceptance Coverage` list is the feature's T6 set. An issue that list places below T6, and a Coverage row marked `App repo`, already has an owner. Leave it there.
+
+Add a scenario here when a visitor or an API client would notice the failure on the running product, and one journey proves it:
+
+- One critical journey per feature (`@smoke`): open the page, find one seeded record, filter once.
+- The visitor sees a result an API acceptance scenario already proved, once.
+- Empty, error, and retry, once, with a mock.
+- Axe on that journey, and a snapshot of a critical view.
+- One representative client-visible rejection (one bad query, one unknown id) when no T6 test owns that problem type yet.
+
+Anything else is a recommendation for `bjjeire-java`. Write the line. Do not write the test, and do not edit that repo.
+
+| The check | Tier | Where in `bjjeire-java` |
+| --- | --- | --- |
+| Pure function, mapper, validator, MockMvc status, every invalid value | T1 | `src/bjjeire-api` `*Test` |
+| Mongo query, index, full HTTP + Mongo, flag-off, unpublished rows | T2 | `*IT` extending `MongoIntegrationTest` |
+| Component or hook given a DTO, calculator, debounce | T3 | `*.unit.test.tsx` |
+| Page + MSW: loading, empty, the query string, fetched once, paging mechanics | T4 | `*.integration.test.tsx` |
+| `:focus-visible`, real Tab order | T5 | `*.browser.test.tsx` |
+| OpenAPI or Pact field shape | T0 | the contract jobs |
+
+Inside T6, a UI scenario does not repeat an API acceptance scenario. That split is not a reason to pull a T0–T5 matrix up into this suite. A card scenario names the seeded record the visitor came for. Field-by-field rendering of a DTO is T3. Filter combinations, every county, and every invalid token are T1, T2, or T4.
+
+Recommendation line, one per rule, under `## Rejected`:
+
+```markdown
+- <what to prove> · T2 · #142 · `GymMongoRepositoryIT` · Why not T6: the visitor journey already filters one seeded county
+```
+
+Use the tier, the requirement id or `none`, and the test class or file to add. Existing numbered scenarios stay. Do not delete one to enforce this rule, and do not add another like it.
 
 ### File naming
 
@@ -112,7 +145,8 @@ See `tests/features/_template/README.md`; scaffold with `/add-feature`.
 - Negative inputs are data-driven. Shared invalid sets (malformed integer, boolean, enum
   and ObjectId values, the paging bounds, and an unpublished id) live in
   `tests/features/common/testdata/invalid-values.ts`. A set used by only one field stays
-  inline. Every API test is top-level Given/When/Then `test.step`s (its Squash Gherkin
+  inline. A new parameter follows the pyramid rule above: one representative value.
+  A spec that already loops the shared set keeps that loop. Every API test is top-level Given/When/Then `test.step`s (its Squash Gherkin
   scenario): each call is a `When`/`And` step, the assertions a `Then` step.
   The `api-testing` skill has the full workflow.
 - **Calling the API unauthenticated** — `requestAuth` is an option on

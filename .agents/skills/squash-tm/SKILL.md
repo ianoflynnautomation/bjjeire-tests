@@ -10,8 +10,7 @@ The running client is the npm package `@playwright-squash/playwright-squash`.
 Specs import `@squash/annotations`, which resolves through
 `src/squash-package/annotations.ts` to the package. Nothing loads unless
 `SQUASH_TM_MODE` is set or `squash:run` is used, and only tests tagged
-`@squash` take part. Full reference: `docs/squash-tm.md`. Design:
-`docs/decisions/0001-squash-tm-integration.md`, `0002-squash-tm-execution-engine.md`.
+`@squash` take part. Full reference: `docs/squash-tm.md`.
 
 ## Critical
 

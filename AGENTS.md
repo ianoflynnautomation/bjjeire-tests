@@ -2,8 +2,7 @@
 
 Playwright + TypeScript acceptance test suite for the BjjEire web application (read-only
 BJJ directory: gyms, events, competitions, stores). Tests run against local (minikube),
-Docker, and remote (dev / staging) environments. Acceptance-level tests only — unit/integration tests
-live in the app repository (`~/Sources/bjjeire-java`, `/workspaces/bjjeire-java` in the dev container). Against live AKS **dev**: [docs/dev-env.md](docs/dev-env.md). Auth for `.env.dev.local`: [docs/authentication.md](docs/authentication.md).
+Docker, and remote (dev / staging) environments. This suite adds only T6 acceptance, the top of the pyramid in `bjjeire-java/docs/testing-strategy.md`. A rule at T0–T5 is a recommendation for the app repository (`~/Sources/bjjeire-java`, `/workspaces/bjjeire-java` in the dev container), not a test here. The pyramid rule is in the `suite-conventions` skill. Live AKS **dev** (origins, Cloudflare Access, when a Bearer is sent) is in the `suite-environments` skill.
 
 ## Stack
 
@@ -22,7 +21,7 @@ npm run test:snapshots    # Snapshot project (screenshots + aria)
 npm run test:a11y         # Axe WCAG 2.1 A/AA sweep per route
 npm run test:mobile       # @mobile tests (mobile-iphone + mobile-galaxy projects)
 npm run test:perf         # Opt-in boot budgets per route, desktop + slow 4G (PW_PERF, 1 worker)
-npm run test:dev          # Live AKS dev UI (see docs/dev-env.md, docs/authentication.md)
+npm run test:dev          # Live AKS dev UI (suite-environments skill)
 npm run test:dev:api      # Live AKS dev API
 npm run lint              # Oxlint, then Prettier check
 npm run typecheck         # tsc --noEmit
@@ -89,7 +88,7 @@ One instruction file, one skill tree. Harness folders are links, not copies.
 
 - **Instructions.** This file is the single source of agent instructions, same pattern as `bjjeire-java`. `CLAUDE.md` is an `@AGENTS.md` import so Claude Code loads this file. Edit this file only.
 - **Skills.** Each skill is `.agents/skills/<name>/SKILL.md` (Agent Skills layout: optional `scripts/`, `references/`, `assets/` beside that file). That directory is the copy you edit. `.claude/skills` and `.grok/skills` are symlinks to it, because Claude Code reads `.claude/skills` and Grok also reads `.grok/skills`. Codex, Cursor, and Copilot read `.agents/skills`. Grok keeps one skill per name. Do not add a root `skills/` directory, and do not replace the symlinks with copies or with a Markdown pointer.
-- **Copilot / gh-aw.** `.github/skills/<name>` is a per-skill symlink to `../../.agents/skills/<name>` when that tool must see the skill at its own path. Today that is `agentic-workflows`.
+- **Copilot.** `.github/skills` is a symlink to `../.agents/skills`, so Copilot reads the same skill tree. `spec-review` and `playwright-fix` read `.github/aw/instructions.md` after the constitution.
 - **Commands.** Slash commands live once in `.claude/commands/`. Claude Code and Grok both read that directory. Do not add `.grok/commands`.
 - **Subagents.** The procedure for each test agent lives in `.claude/agents/`. Grok runs the same name from `.grok/agents/<name>.md`, a harness adapter that points at that procedure. See [docs/agents.md](docs/agents.md).
 - **Hooks.** `.claude/settings.json` runs five hooks in `.claude/hooks/`, including inside subagents and the `playwright-fix` job. Grok loads that file when the folder is trusted, and the scripts accept Claude tool names and Grok's (`search_replace`, `write`, `run_terminal_command`, `subagentType`).
@@ -129,20 +128,22 @@ To cover a feature end to end, run `/cover-feature <feature>`.
 Pipeline: planner → generator (UI) or api-tester (API) → reviewer. Healer and
 flake-hunter run on failures. The exploratory tester feeds the planner: its report's
 candidate scenarios enter `specs/features/` only once the planner (or you) accepts them.
-The mutation auditor measures the suite: survivors it classifies as gaps become
-assertions or scenarios for the generator. No agent adds `test.fixme`, `test.skip` or
+The mutation auditor measures the suite: a T6 gap becomes an assertion or a
+scenario for the generator. A gap below T6 is a recommendation for the app
+repository. No agent adds `test.fixme`, `test.skip` or
 `@quarantine`; quarantine is a human decision.
 
 ## Test conventions
 
 The detailed rules, with their reasons, are in the `suite-conventions` skill. Read it before writing or healing a test. The rules that matter most:
 
+- **Pyramid:** add a test only when a visitor or API client would notice the failure on the running app, and one journey proves it. `/cover-feature` reviews the spec first. Anything below T6 is recommended for `bjjeire-java` and is not generated here.
 - **Files:** `<feature>.ui.acceptance.spec.ts`, `.api.`, `.snapshot.`, `.a11y.`. Titles are `<actor> should <outcome> [when <context>]`, with Given/When/Then in top-level `test.step` titles.
 - **Slices:** a feature is exactly `tests/features/<f>/`, `src/ui/pages/<f>/` and `src/api/features/<f>/`. Scaffold with `/add-feature`. A feature never imports another feature.
 - **Data:** assert real seeded data from `seeded.ts`. Environments hold full datasets, so never assert a fixture is on page 1 of an unfiltered list. Mock with `route.fulfill()` only for empty, error, multi-page and snapshot states, parsed with `parseMockBody`. Read-only data is shared; a test that updates or deletes creates its own record in a fixture and deletes it afterwards, so every test is isolated and parallel-safe.
 - **Assertions:** web-first only, with no `waitForTimeout()` or polling loops. After `searchFor`, assert `expectResultCount(1)`.
 - **Navigation:** never a bare `page.goto` for an app route. Use `gotoRoute` or `gotoAppShell` from `@ui/support`. Snapshot specs are the exception.
-- **API specs:** call the feature client with the generated schema, then assert business values. Error paths use `expectProblem`. Negative inputs are data-driven.
+- **API specs:** call the feature client with the generated schema, then assert business values. Error paths use `expectProblem`. A new parameter gets one representative rejection. The invalid-value loop stays in specs that already have it.
 - **Page objects:** only they hold locators, and specs never construct them. Specs import `test` and `expect` from `./fixtures`, `./fixtures.api` (a feature's API test-data fixtures), `@ui/fixtures` or `@api/fixtures`. UI and API chains stay separate.
 - **Feature flags:** pinned on by a fixture, never asserted.
 - **Snapshots:** baselines are per platform. Regenerate both with `/update-snapshots`.
@@ -169,4 +170,4 @@ The detailed rules, with their reasons, are in the `suite-conventions` skill. Re
 Maintenance: this file is the single source of truth for agent instructions
 (`CLAUDE.md` imports it). Keep it under 200 lines: detail belongs in the `suite-conventions`
 and `suite-environments` skills. Update it in the same change that alters a convention,
-script, project, or workflow it documents. Last reviewed: 2026-11-21.
+script, project, or workflow it documents. Last reviewed: 2026-11-28.

@@ -43,16 +43,16 @@ failure by design; CI runs the whole suite.
 
 ## Running tests
 
-| Command                              | What it runs                                                                                                              |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `npm run test:smoke`                 | Critical subset (`@smoke`)                                                                                                |
-| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)                                                                                   |
-| `npm run test:snapshots`             | Visual + aria snapshots                                                                                                   |
-| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route                                                                                         |
-| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)                                                                                   |
-| `npm run test:docker`                | Full suite against the Docker Compose profile                                                                             |
-| `npm run test:dev` / `test:dev:api`  | Live AKS **dev** cluster — see [docs/dev-env.md](docs/dev-env.md). Auth: [docs/authentication.md](docs/authentication.md) |
-| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`                                                                                        |
+| Command                              | What it runs                                                                                         |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `npm run test:smoke`                 | Critical subset (`@smoke`)                                                                           |
+| `npm run test:acceptance`            | Full suite (`@acceptance` — every test)                                                              |
+| `npm run test:snapshots`             | Visual + aria snapshots                                                                              |
+| `npm run test:a11y`                  | Axe WCAG 2.1 A/AA sweep per route                                                                    |
+| `npm run test:mobile`                | Mobile devices (iPhone 16 + Galaxy S24)                                                              |
+| `npm run test:docker`                | Full suite against the Docker Compose profile                                                        |
+| `npm run test:dev` / `test:dev:api`  | Live AKS **dev**. Origins, Cloudflare Access, and Bearer rules are in the `suite-environments` skill |
+| `npm run lint` / `npm run typecheck` | ESLint + Prettier / `tsc --noEmit`                                                                   |
 
 Handy filters (any Playwright flag works):
 

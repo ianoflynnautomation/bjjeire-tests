@@ -622,8 +622,9 @@ The basket lives in the browser (`localStorage` `bjjeire-basket`, product, size 
 form: name, email and an address in the Republic of Ireland or Northern Ireland (a `BT` postcode). Paying leaves for
 Stripe's hosted Checkout, which the suite cannot drive (`competitions.md` F26), so no block here completes a payment.
 Starting a checkout holds stock for 30 minutes, so any block that reaches the payment page uses a product the test
-creates as the organiser, never the seeded products, and hides it afterwards. Until the organiser's delivery-fee screen
-ships (slice 4), delivery is free (`€0.00`) on every stack. Test ids: `basket-*`, `checkout-*`, `order-*`,
+creates as the organiser, never the seeded products, and hides it afterwards. Delivery is free (`€0.00`) until the
+organiser sets a fee on the shop admin's Settings tab (slice 4); read the fee from `GET /api/v1/order/delivery`, never
+assume it. Test ids: `basket-*`, `checkout-*`, `order-*`,
 `product-add-to-basket*`. No test claims these blocks yet.
 
 #### visitor should see the size they chose in the basket with its price and a running total
@@ -778,6 +779,103 @@ Test design: UI · @acceptance @merch-on · an order id that exists nowhere and 
 
 Test design: UI · @acceptance · the default `Merch` flag (off) · not mocked. Same flag handling as "visitor should see only the store directory on Shop while merch is switched off".
 
+### Organiser fulfils orders (`#6018`–`#6020`, `#6025`, planned 2026-11-28, slice 4)
+
+Behaviour: `bjjeire-java/specs/features/shop.md` Part 2 (User Story 8) and `specs/stc/shop/spec.md` § `#6018`–`#6021`.
+The organiser's Orders and Settings tabs are at `/admin/shop?tab=orders` and `/admin/shop?tab=settings`, behind the
+organiser sign-in. The suite cannot complete a Stripe payment (`competitions.md` F26), so no block here has a paid
+order: the blocks use an order the test starts and leaves unpaid ("Waiting for payment"), which holds its product's
+stock for 30 minutes. Each block creates its own product with a unique slug as the organiser and hides it afterwards.
+The paid-order scenarios are under Held. Test ids: `merch-admin-tabs`, `merch-admin-orders*`, `merch-admin-order-*`,
+`merch-admin-settings*`. No test claims these blocks yet.
+
+#### organiser should see a started order in the orders list with its items, amount and shopper
+
+- Covers: `#6018`
+- Oracle: the order the test starts: its product, size, quantity, the email and address it gives, and the total the checkout showed. Not a calculation shared with the app.
+- Steps:
+  1. Given the organiser has published a product with stock (setup)
+  2. And a visitor has started a checkout for one of it with a unique email, and left it unpaid
+  3. When the organiser opens the shop admin's Orders tab
+- Expected results:
+  - Then the order is listed, newest first, as "Waiting for payment"
+  - And it shows the product, size and quantity, the total, the shopper's name and email, and the delivery address
+  - And it offers neither "Mark dispatched" nor "Cancel and refund"
+- Why: the organiser fulfils orders from this list; an order missing from it, or shown with the wrong address, is a parcel that never arrives.
+
+Test design: UI · @acceptance @merch-on @local-sign-in @stripe-test · creates its own product and an unpaid order (the checkout is started through the API, `POST /api/v1/order`, so no browser reaches Stripe) · not mocked · local and docker only, with Stripe test keys. Find the row by the order's number or the unique email; the environment may hold other orders, so never assert the list's length or its first row.
+
+#### organiser should see only the orders of the status they filter by
+
+- Covers: `#6018`
+- Oracle: the unpaid order the test started.
+- Steps:
+  1. Given a visitor has started a checkout and left it unpaid (setup)
+  2. When the organiser shows only "Paid, to send" orders
+  3. And then shows only "Waiting for payment" orders
+- Expected results:
+  - Then the started order is not listed among the paid ones
+  - And it is listed among those waiting for payment
+- Why: the organiser works through what is paid and waiting to be sent; an unpaid order there would be posted without payment.
+
+Test design: UI · @acceptance @merch-on @local-sign-in @stripe-test · creates its own product and an unpaid order · not mocked · local and docker only. Use the "Show" select (`merch-admin-orders-filter`).
+
+#### organiser should download the orders as a CSV file that lists the started order
+
+- Covers: `#6018`
+- Oracle: the unpaid order the test started (its number and unique email), and the export's name `order-<today's Irish date>.csv`. Not a calculation shared with the app.
+- Steps:
+  1. Given a visitor has started a checkout with a unique email and left it unpaid (setup)
+  2. When the organiser exports the orders from the Orders tab
+- Expected results:
+  - Then a file named for today's date is downloaded
+  - And its first line names the columns
+  - And a row holds the order's number and the shopper's email
+- Why: the organiser keeps the export for bookkeeping and posting; a file that drops orders or columns is a lost sale.
+
+Test design: UI · @acceptance @merch-on @local-sign-in @stripe-test · creates its own product and an unpaid order · not mocked · local and docker only. Capture the download (`page.waitForEvent('download')`) and read its text; assert the header contains `number` and `email`, never the full column list (the app owns it, `OrderCsv.COLUMNS`). The SPA names the file by the browser's date, the API by the Irish date; they differ only between midnight UTC and midnight in Ireland, so accept either.
+
+#### client should be refused dispatching or refunding an order that was never paid <action>
+
+- Covers: `#6019`, `#6020`
+- Oracle: the app's STC overlay (`order-not-confirmed` for a dispatch, `order-not-refundable` for a refund of an unpaid order). Not a calculation shared with the app.
+- Steps:
+  1. Given a visitor has started a checkout and left it unpaid (setup)
+  2. When the organiser asks to <action> it
+- Expected results:
+  - Then the response is a conflict problem document of the matching type
+  - And the order is still waiting for payment
+- Why: dispatching an unpaid order gives the goods away; "refunding" one would tell the shopper money is coming that was never taken.
+
+Test design: API · @acceptance @merch-on @local-sign-in @stripe-test · data-driven over `dispatch` (`POST /api/v1/order/admin/<id>/dispatch`, `{}`, expect `urn:bjjeire:order-not-confirmed`) and `refund` (`POST /api/v1/order/admin/<id>/refund`, `{"confirmDispatched":false}`, expect `urn:bjjeire:order-not-refundable`) · organiser token from the local sign-in · creates its own product and an unpaid order · not mocked. Assert with `expectProblem` (409 and `type`), never the `detail` wording. "Still waiting" is read back from `GET /api/v1/order/admin?status=AWAITING_PAYMENT`.
+
+#### client should be refused <action> in the orders admin without signing in
+
+- Covers: `#6025`
+- Oracle: the app spec (only the organiser sees and changes orders) and `urn:bjjeire:unauthorized`. Not a calculation shared with the app.
+- Steps:
+  1. Given the merch shop is switched on
+  2. When a client asks for <action> without a token
+- Expected results:
+  - Then the response is an unauthorised problem document
+- Why: the orders list holds every shopper's name, email and address; a route that answered without a token would leak them.
+
+Test design: API · @acceptance @merch-on · data-driven over `the orders list` (`GET /api/v1/order/admin`), `the orders export` (`GET /api/v1/order/admin?format=csv`), `the shop settings` (`GET /api/v1/order/admin/settings`) and `changing the delivery fee` (`PUT /api/v1/order/admin/settings`, `{"deliveryFeeCents":0,"version":0}`) · not mocked · no data. Assert with `expectProblem` (401, `ProblemType.Unauthorized`). Dispatch and refund need an order id; the block above covers them for the organiser, and the app's `OrderAdminIT` owns the refusals by role.
+
+#### visitor should pay the delivery fee the organiser set
+
+- Covers: `#6006`
+- Oracle: the fee the test sets, and the price of the product it creates.
+- Steps:
+  1. Given the organiser has published a product with stock (setup)
+  2. And the organiser sets the delivery fee to a value different from the current one on the Settings tab
+  3. When a visitor with that product in their basket goes to checkout
+- Expected results:
+  - Then the order summary shows the new delivery fee and the items total plus that fee
+- Why: FR-017, one flat fee per order that the organiser sets; a checkout that showed an old fee would charge a different amount than the shopper agreed to.
+
+Test design: UI · @acceptance @merch-on @local-sign-in · creates its own product; reads the fee and its version from `GET /api/v1/order/admin/settings` first and puts the original fee back afterwards (data policy rule 5), because the fee is shared by every checkout on the stack · not mocked · local and docker only. Do not run in parallel with other checkout blocks: they read the same fee. Nothing is submitted to Stripe.
+
 ### Basket limits, persistence and delivery contract (planned 2026-11-23, slice 3)
 
 Probed on the Docker stack with every flag on: `GET /api/v1/order/delivery` answers 200 with no token, body
@@ -885,6 +983,14 @@ test-mode payment from the suite (Stripe's test helpers, or a signed test event 
 - **shopper should get a confirmed order and a receipt after paying** (`#6007`): stock of each size goes down by the quantity bought, and one mail lists the items, the amount paid, the delivery address and the order link.
 - **shopper should be charged nothing and see the stock back on sale after leaving the payment page** (`#6008`): the order shows "Not paid" with "Back to basket" once Stripe expires the session; until then "Return to payment" reopens the same page.
 - **shopper should see their order's items, amount paid, delivery details and status from the link in their receipt** (`#6011`): needs a confirmed order and its emailed key.
+
+Organiser fulfils orders (slice 4, planned 2026-11-28). These need a paid order, so the same blocker applies. Lower
+tiers own them: the app's `OrderAdminIT`, `OrderRefundWebhookIT` and `admin-shop-orders.integration.test.tsx`.
+
+- **organiser should mark a paid order dispatched with a tracking reference and the shopper should be emailed** (`#6019`): the order shows "Dispatched" with the tracking reference, and one mail with it reaches the shopper (Mailpit on the local stack).
+- **organiser should cancel a paid order with a full refund, see its stock back on sale, and the shopper should be emailed** (`#6020`): needs Stripe test mode to refund a real test payment.
+- **organiser should be warned that the goods left before refunding a dispatched order, and its stock should stay out** (`#6020`).
+- **organiser should see a refund Stripe could not complete as "refund pending" and retry it** (`#6021`): needs Stripe to fail a refund; owned by `OrderAdminIT` and `OrderRefundWebhookIT` with the recording Stripe fake.
 
 ## Rejected
 

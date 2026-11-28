@@ -35,7 +35,7 @@ flowchart TD
 
   planner --> kind{"What is it?"}
   kind -->|open question| held["Held. Name the question and stop."]
-  kind -->|not this suite| rejected["Rejected. Say why and stop."]
+  kind -->|below T6| rejected["Rejected. Recommend the tier in the app repo."]
   kind -->|behaviour to prove| block["Planned block. No numbered title yet."]
 
   block --> author["Generator, API tester, or you"]
@@ -109,7 +109,7 @@ Skip a new block when the spec already says the thing:
 
 - A typo in a step title is an edit to that line.
 - A behaviour that is already a numbered scenario needs no second block.
-- A rule the Coverage table marks `App repo` is not re-proved here.
+- A rule the Coverage table marks `App repo`, or that sits below T6, is not re-proved here. Recommend the tier and the test to add in `bjjeire-java` (the pyramid rule in the `suite-conventions` skill). `/cover-feature` stops on that recommendation and does not generate a Playwright test.
 
 | Temptation                                                           | What to do                                                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |

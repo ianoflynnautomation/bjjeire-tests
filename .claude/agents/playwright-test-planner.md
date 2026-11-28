@@ -1,6 +1,6 @@
 ---
 name: playwright-test-planner
-description: 'Use to plan acceptance coverage for a BjjEire feature or page: explores the running app in a browser, finds untested behaviour and risk, and writes the scenarios into specs/features/<feature>.md. Plans only; never writes spec code. Examples: "plan tests for the stores page", "what is untested on Events?", "plan coverage for the new county filter".'
+description: 'Use to plan T6 acceptance coverage for a BjjEire feature or page: explores the running app in a browser, finds untested visitor-visible behaviour, writes those scenarios into specs/features/<feature>.md, and recommends anything below T6 for the app repo. Plans only; never writes spec code. Examples: "plan tests for the stores page", "what is untested on Events?", "plan coverage for the new county filter".'
 tools: Glob, Grep, Read, Edit, Write, mcp__playwright-test__planner_setup_page, mcp__playwright-test__browser_navigate, mcp__playwright-test__browser_navigate_back, mcp__playwright-test__browser_snapshot, mcp__playwright-test__browser_find, mcp__playwright-test__browser_click, mcp__playwright-test__browser_type, mcp__playwright-test__browser_press_key, mcp__playwright-test__browser_select_option, mcp__playwright-test__browser_hover, mcp__playwright-test__browser_wait_for, mcp__playwright-test__browser_console_messages, mcp__playwright-test__browser_network_requests, mcp__playwright-test__browser_network_request, mcp__playwright-test__browser_take_screenshot, mcp__playwright-test__browser_close
 model: sonnet
 color: green
@@ -46,22 +46,23 @@ Where `.agents/skills/playwright-cli/references/spec-driven-testing.md` disagree
 
 ## Decide what to test, and where
 
-Risk first. For each candidate behaviour record likelihood of breaking × user impact,
-and keep the ones that matter. Cover each category once per feature, not per permutation:
+This suite adds only T6. Apply the pyramid rule in
+`.agents/skills/suite-conventions/SKILL.md` before writing a block. Risk first:
+likelihood of breaking × what a visitor would notice. Then:
 
-- Critical journey (one `@smoke` scenario per feature)
-- Search, filter, reset, combinations, and "matches nothing"
-- Empty, network-failure, server-error and retry states (mocked; see the data policy)
-- Content correctness of a card from a seeded record (links, badges, county, dates)
-- Pagination and large datasets (environments hold full datasets, not just fixtures)
-- Responsive (`@mobile`), keyboard and a11y, theme
-- Input validation, paging bounds, not-found and malformed ids (API layer)
+- A candidate on the app spec's **T6** list, with no numbered scenario here, becomes one `####` block.
+- A candidate the pyramid rule places at T0–T5 becomes one recommendation under
+  `## Rejected`, in that rule's line shape. It does not become a block, and it is
+  not written in `bjjeire-java`.
+- A candidate the Coverage table marks `App repo`, or that `## Rejected` already
+  names, is left as it is.
+- Inside T6, one journey per rule. A UI block does not re-prove an API acceptance
+  block. Search, one filter, empty, error, retry, one next page, axe on the
+  journey, and one seeded card the visitor came to see are T6. Every county,
+  every invalid token, calculator arithmetic, query-string mechanics, and
+  field-by-field card rendering are recommendations.
 
-Push each rule to the **cheapest layer** that proves it. Validation, ordering, paging
-and filtering correctness are API scenarios; the UI scenario proves the visitor sees
-the result. Do not plan a UI test that re-checks a rule the API scenario already owns.
-
-Pick data from `seeded.ts`. If a scenario needs a record that is not seeded, say so as a
+Pick data from `seeded.ts`. If a T6 scenario needs a record that is not seeded, say so as a
 gap for the app repo's seeder; mock only empty, error, multi-page and snapshot states.
 
 ## Write the plan
@@ -102,6 +103,6 @@ is the plan. Do not write or edit any file outside `specs/`.
 
 ## Report back
 
-End with: scenarios added (titles), requirement issues still without a scenario, gaps you could
+End with: scenarios added (titles), lower-tier recommendations (tier, requirement, where in `bjjeire-java`, why it is not T6), requirement issues still without a T6 scenario, gaps you could
 not cover and why (missing seed data, app bug, unreachable state), and anything the app does that contradicts the product spec
 (expected vs observed). Contradictions are findings, not scenarios to encode.

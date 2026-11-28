@@ -116,7 +116,9 @@ is still a result.
 ## Never
 
 - Write or edit spec code, page objects, fixtures, mocks or `specs/features/`. Candidate
-  scenarios go to `playwright-test-planner`, and test fixes go to the healer.
+  scenarios go to `playwright-test-planner`, and test fixes go to the healer. A candidate
+  is T6 only (the pyramid rule in `suite-conventions`). A check at T0–T5 is a one-line
+  recommendation for `bjjeire-java`, not a candidate.
 - Report a suspicion as a bug without two reproductions, or an environment fault as a
   product bug.
 - File a GitHub issue for a suspicion seen once, an environment note, or a question

@@ -15,8 +15,8 @@ Acceptance specs for the directory API (gyms, events, competitions, stores: read
 - **ALWAYS** assert an error status in a feature spec with `request.get` and `expectProblem(response, status, ProblemType.X)`. `get()` throws unless `response.ok()`, so it cannot assert an error.
 - **ALWAYS** write the test as top-level Given/When/Then `test.step`s, even for a single call. Each API call is its own `When` / `And` step, and the assertions sit in a `Then` step. A publishing Squash run copies these titles into the case's Gherkin script (see the `squash-tm` skill).
 - **NEVER** change the expected status, problem type, or schema to match a bug. **NEVER** hide a contract mismatch with unconditional `test.skip`, `test.fixme`, or `@quarantine`. Conditional `test.skip(condition, reason)` is only an environment gate.
-- **NEVER** stop at one invalid value. Every query parameter and every path id uses the shared invalid set for its type.
-- **ALWAYS** fuzz a path id with `INVALID_OBJECT_ID_VALUES` when the route has an `{id}`. A malformed id is `400` and `ProblemType.Validation` (`INVALID_FORMAT` on `Id`). `404` is only `UNPUBLISHED_OBJECT_ID`.
+- **A new route or parameter gets one representative rejection** per problem type the client can see (one bad query, one out-of-range page, one malformed id, one unknown id). The full invalid-value matrix is T1 or T2 in `bjjeire-java`. Recommend it with the pyramid rule in `suite-conventions`. Specs that already loop the shared set keep that loop when you heal them. Do not copy the loop onto a new parameter.
+- A malformed id is `400` and `ProblemType.Validation` (`INVALID_FORMAT` on `Id`). `404` is only `UNPUBLISHED_OBJECT_ID`.
 - **ALWAYS** call the API from the spec, through the feature client or `request.get`. Assertion helpers take values the spec already fetched. Promote a shared helper only when a second feature would copy it.
 
 This suite does not acceptance-test POST, PUT, or DELETE. Do not add write-method tests from this skill.
@@ -169,9 +169,9 @@ test(
 
 Each step still passes `gymsPageSchema`, so each page is parsed. The events spec uses the same rule inside `client should receive an event with several types when filtering by any one of them`: each loop iteration is a `When a client requests the event listing filtered by ${type}` step followed by its `Then` step. A call or assertion outside a Given/When/Then step is forbidden. That shape is in `references/test-step-patterns.md`.
 
-### Phase 5: Cover the full status-code matrix
+### Phase 5: Cover the status codes a client can see
 
-For each list or get-by-id route this suite covers, assert the rows below. The published OpenAPI document lists the 200. The 400 and 404 rows stay required: the handler returns them and `problem.ts` is their contract. Add a 403, 405, 409, or 422 test only when a living spec in `specs/features/` asks for that behaviour.
+The rows below are what the existing feature specs assert. When you heal one of those specs, keep its loop. A new route follows the pyramid rule in `suite-conventions`: one representative rejection per problem type, and a recommendation for the rest. The published OpenAPI document lists the 200. `problem.ts` is the contract for an error row a T6 test does assert. Add a 403, 405, 409, or 422 test only when a living spec asks for that behaviour.
 
 | Scenario                                                         | Status | What to assert                                                                                                                   |
 | ---------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -188,11 +188,11 @@ For each list or get-by-id route this suite covers, assert the rows below. The p
 
 Rows come from the app seeder and `tests/features/<feature>/seeded.ts`. Do not create or delete them in `beforeAll` or `afterAll`. Request a page size that covers the seeded rows, or pass a filter, then assert with `expectListingToInclude`. A full environment has more rows than the acceptance fixtures.
 
-### Phase 6: Add per-field negative / validation coverage
+### Phase 6: Per-field negative coverage already in the suite
 
-One bad value is not coverage. These routes take query parameters and, for gyms and events, a path id. This suite has no request body.
+These loops are how the current listings reject a bad query. Keep them when you heal that spec. A new parameter does not get a new loop: one representative value, then a T1 recommendation (`*Test` / standalone MockMvc) for the rest of the set. The pyramid rule in `suite-conventions` is the gate. These routes take query parameters and, for gyms and events, a path id. This suite has no request body.
 
-**Checklist for a list route:**
+**Checklist when the spec already loops the shared set.** A new parameter is one value from the matching set, not this list.
 
 1. Each query parameter, with the shared invalid set for its type (integer, boolean, or enum).
 2. `page` and `pageSize` bounds from `OUT_OF_RANGE_PAGING_VALUES` (`page >= 1`, `1 <= pageSize <= 100`).

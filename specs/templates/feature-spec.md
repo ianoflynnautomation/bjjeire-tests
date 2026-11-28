@@ -74,7 +74,7 @@ Test design: UI · @acceptance · `SEEDED_*` · not mocked · default seed
 
 ## Rejected
 
-- `<title>` · Why not: <covered at a cheaper layer, duplicate, or not visitor-observable>
+- `<what to prove>` · T2 · `#142` · `GymMongoRepositoryIT` · Why not T6: <one sentence>
 
 ## Findings
 

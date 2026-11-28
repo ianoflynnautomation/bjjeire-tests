@@ -8,9 +8,11 @@ this constitution governs how those contracts are proven from the outside.
 
 ### I. Acceptance-level only
 
-This suite proves observable product behaviour against a running app. Unit,
-integration, Pact, and OpenAPI tests live in `bjjeire-java`. Do not duplicate
-them here. Do not assert DTO field names, CSS selectors, or HTTP status
+This suite proves observable product behaviour against a running app. That is
+T6, the top of the pyramid in `bjjeire-java/docs/testing-strategy.md`. Unit,
+integration, Pact, and OpenAPI tests (T0–T5) live in `bjjeire-java`. When a
+rule belongs there, recommend the tier and the test to add. Do not add it
+here. Do not assert DTO field names, CSS selectors, or HTTP status
 integers as the story — assert the business outcome. Each rule has one owning
 layer; a UI scenario does not re-prove a rule an API scenario owns.
 
@@ -91,7 +93,9 @@ This constitution supersedes local convenience for tests. Agentic reviews
 (`spec-review`, `playwright-fix`) must check it. Amendments land in the same
 PR as the convention change, and `AGENTS.md` is updated in that PR.
 
-**Version**: 1.2.1 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-11
+**Version**: 1.2.2 | **Ratified**: 2026-09-18 | **Last Amended**: 2026-11-28
+
+Amendment 1.2.2 (2026-11-28): I names T6 as the only tier this suite adds. A rule at T0–T5 is a recommendation for `bjjeire-java`, not a Playwright test.
 
 Amendment 1.2.1 (2026-11-11): II names the GitLab requirement issue as `Covers`. The epic stays on the spec's Requirements line. Requirement ids in the living specs are placeholders until the GitLab issues exist.
 

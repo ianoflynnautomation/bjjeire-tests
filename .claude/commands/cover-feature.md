@@ -40,14 +40,21 @@ Stop at the first failed check. Say what failed. Do not start the planner.
 
 ## Steps
 
-1. Spawn `playwright-test-planner` on `$ARGUMENTS`. It adds `####` blocks under
-   `## Planned` in `specs/features/$ARGUMENTS.md`. It does not add a numbered
-   title, and it does not write a test.
-2. Stop and show the plan. List each new `####` title, anything the planner
-   placed in Held or Rejected, and any contradiction with the product spec. A
-   contradiction is a finding: leave it out of the plan. Continue only with the
-   blocks named in the reply. "Continue with all of them" means every block
-   from this run, and no older `## Planned` block.
+1. Spawn `playwright-test-planner` on `$ARGUMENTS`. It reads the feature spec
+   and the app repo's Acceptance Coverage, then adds `####` blocks under
+   `## Planned` only for T6 acceptance (the pyramid rule in
+   `.agents/skills/suite-conventions/SKILL.md`). A rule below T6 is a
+   recommendation for `bjjeire-java`, written under `## Rejected`. It does not
+   add a numbered title, and it does not write a test. It does not edit
+   `bjjeire-java`.
+2. Stop and show the plan. List each new `####` title, every lower-tier
+   recommendation (tier, requirement, where in `bjjeire-java`, why it is not
+   T6), anything else in Held or Rejected, and any contradiction with the
+   product spec. A contradiction is a finding: leave it out of the plan. A
+   recommendation is not a block: do not spawn a writer for it, and do not add
+   the test in this repo. Continue only with the T6 blocks named in the reply.
+   "Continue with all of them" means every T6 block from this run, and no
+   recommendation and no older `## Planned` block.
 3. Implement one accepted block at a time. Wait for that agent to finish
    before you spawn the next. Two writers edit the same spec and the same test
    file.
@@ -57,16 +64,20 @@ Stop at the first failed check. Say what failed. Do not start the planner.
    - It names neither: ask. Do not guess the layer.
 
    Pass the exact `####` title and `specs/features/$ARGUMENTS.md`. The writer
-   owns the red run, `spec:check`, and `--repeat-each=5`. If it reports that
-   the app disagrees with the block, record expected and observed, leave the
-   test as the writer left it, and move to the next block. Do not change the
+   owns the red run, `spec:check`, and `--repeat-each=5`. If the writer reports
+   that the block is below T6, record the recommendation, leave the test
+   unwritten, and move on. Do not send it to the other writer. If it reports
+   that the app disagrees with the block, record expected and observed, leave
+   the test as the writer left it, and move to the next block. Do not change the
    block to match the app, and do not send that block to the healer.
 
 4. Spawn `playwright-test-reviewer` on the files this run changed. It is
    read-only. Send its correctness findings back to the writer that owns those
    files, then spawn a new reviewer on the same files. A correctness finding is
    a test that would still pass if the behaviour broke, a step that does not
-   match the block, an assertion copied from the app, or a determinism break.
+   match the block, an assertion copied from the app, a determinism break, or a
+   test below T6. A below-T6 finding is removed here and recorded as a
+   recommendation. It is not rewritten into a different Playwright test.
    Review at most twice. If the second review still reports a finding, stop
    and ask. Do not start a third review.
 5. Spawn `playwright-test-healer` only for a UI test that fails on every run
@@ -85,6 +96,8 @@ When the run stops, include each of these. If a writer did not report the
 repeat run, write "unverified". Do not invent a pass.
 
 - Scenarios added, by `####` title.
+- Lower-tier recommendations: tier, requirement, where in `bjjeire-java`, and
+  why it is not T6. These tests are not added in this repo.
 - Blocks held back, and why.
 - Test files changed.
 - For each implemented scenario, the writer's `--repeat-each=5` result.

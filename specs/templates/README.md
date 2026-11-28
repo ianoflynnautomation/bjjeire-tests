@@ -69,14 +69,14 @@ That is the life of one block. The full loop is the [diagram in the spec guide](
 
 A numbered scenario with no block is grandfathered. 133 scenarios predate the convention. New scenarios get a block first. The reviewer rejects a changed test that has no block.
 
-The reviewer, not the script, judges oracle quality, declarative wording, and whether the scenario sits at the cheapest layer.
+The reviewer, not the script, judges oracle quality, declarative wording, and whether the scenario is T6. A rule below T6 is a recommendation for `bjjeire-java`.
 
 ## Rules that keep a spec honest
 
 1. **Titles are the contract.** `<actor> should <outcome> [when <context>]`. The actor is `visitor` for UI and `client` for API. A data-driven title writes `<value>` in the spec for each `${}` in the test.
 2. **Steps are declarative.** No selectors, test ids, URLs, status codes or field names. The `playwright-bdd` skill is the wording reference.
 3. **Name the oracle.** "The seeded record and the spec's rule" is an oracle. A mapper that repeats the app's formula is not.
-4. **The cheapest layer wins.** Validation, ordering, paging and filter correctness are API scenarios. The UI scenario proves the visitor sees the result once.
+4. **T6 only.** This suite adds acceptance against the running app. A rule at T0–T5 is a recommendation for `bjjeire-java`, under `## Rejected`, in the line the pyramid rule in `suite-conventions` gives. Inside T6, a UI scenario does not re-prove an API acceptance scenario. The visitor sees the result once.
 5. **Mock only what cannot be seeded.** Empty, error, multi-page and snapshot states. Say so on `Test design`.
 6. **A finding is evidence, not a scenario.** Link it from `## Findings`. Do not encode a bug as the expected result.
 7. **Rename or delete a test in the same change as its title.** If the test is `@squash`, the Squash skill says how to keep the case history.

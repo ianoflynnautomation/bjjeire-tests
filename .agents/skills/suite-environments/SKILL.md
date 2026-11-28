@@ -1,6 +1,6 @@
 ---
 name: suite-environments
-description: How this suite runs. Covers local targets, the API rate limit, the dev container, Playwright projects and their filters, auth artefacts, APP_ENV profiles, CI workflows and runners, AKS environments, agentic workflows, Squash TM publishing, OpenTelemetry tracing and the MCP versus CLI browser tooling. Use when a run cannot reach the app, every feature route redirects to /about, a project or filter is in question, or you are changing CI, environments, Squash or tracing. For how to write tests use suite-conventions.
+description: How this suite runs. Covers local targets, the API rate limit, the dev container, live AKS dev (origins, Cloudflare Access, when an Entra Bearer is attached), Playwright projects and their filters, auth artefacts, APP_ENV profiles, CI workflows and runners, AKS environments, agentic workflows, Squash TM publishing, OpenTelemetry tracing and the MCP versus CLI browser tooling. Use when a run cannot reach the app, every feature route redirects to /about, a dev run returns 401 or a Cloudflare login, a project or filter is in question, or you are changing CI, environments, Squash or tracing. For how to write tests use suite-conventions.
 ---
 
 # Suite environments
@@ -48,6 +48,20 @@ kills. `node_modules` is a named volume — the host tree holds darwin-arm64 bin
 The host's `~/Sources/bjjeire-java` is bind-mounted read-write at
 `/workspaces/bjjeire-java`; the folder must exist or the container will not start.
 Details in `.devcontainer/README.md`.
+
+## Live AKS dev
+
+`npm run test:dev` and `npm run test:dev:api` set `APP_ENV=dev` and call the long-lived cluster. Set origins only: `BASE_URL=https://dev.bjjeire.com`, `API_URL=https://api-dev.bjjeire.com`. Specs add the path. A path already on `BASE_URL` is appended twice.
+
+`scripts/refresh-env.sh dev` writes gitignored `.env.dev.local` (mode 0600) from Terraform outputs. Load order is `.env.dev.local`, `.env.dev`, `.env.local`, `.env`, and the first definition of a variable wins. Staging uses `scripts/refresh-env.sh staging` and the same rules, and only as an explicit task. Do not point the suite at production. Ephemeral and PR preview jobs live in `bjjeire-java` and `bjjeire-ci-templates`.
+
+Cloudflare Access sits in front of both hosts. When `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET` are set, every request sends `CF-Access-Client-Id` and `CF-Access-Client-Secret`. Without that pair the edge redirects to `bjjeire.cloudflareaccess.com`.
+
+A laptop (no `CI`, no `AZURE_FEDERATED_TOKEN_FILE`, no `KUBERNETES_SERVICE_HOST`) leaves the Entra Bearer off. Listing GETs are `permitAll`. An Entra v2 client-credentials token uses the API app client id as `aud`, and Spring on dev expects `api://bjjeire-api-dev`, so a Bearer on a laptop is a 401 (`WWW-Authenticate: Bearer … aud claim is not valid`). Leave `PW_UI_ENTRA_AUTH` unset. `api-setup` still runs: it checks the Cloudflare pair and mints a token only when API auth is required. The cache is `playwright/.auth/api-token.json`.
+
+The Bearer is attached when the process is CI or in-cluster and `APP_ENV` is `dev` or `staging`. Docker stays unauthenticated, including in CI. After the API accepts `api://bjjeire-api-dev`, a laptop can force the Bearer with `API_AUTH_REQUIRED=true npm run test:dev:api`.
+
+A 401 with an empty body is the edge or a rejected JWT. A request that sends only the Cloudflare pair to `https://api-dev.bjjeire.com/api/v1/bjjevent?page=1&pageSize=2`, and the same pair to `https://dev.bjjeire.com/events`, returns 200.
 
 ## Playwright projects
 
@@ -137,7 +151,8 @@ Engine is Claude Code (`engine: claude`); the jobs need repository secret
 ## Environments & CI
 
 - `APP_ENV` selects the profile: `local` (minikube), `docker`, `dev`, `staging`.
-  `.env` (gitignored) supplies `BASE_URL`/`API_URL`.
+  `.env` (gitignored) supplies `BASE_URL`/`API_URL` for local and docker. Dev and
+  staging use `.env.<profile>.local` from `scripts/refresh-env.sh` (Live AKS dev).
 - `ci.yml`: lint + typecheck on every push/PR.
 - **Flag-dependent specs.** Specs that need the API's `BjjEireCompetitions` flag (BJJ Éire competitions, competitor
   accounts and registration) on carry `@bjjeire-competitions-on`; there is no `-off` set (the app's API integration

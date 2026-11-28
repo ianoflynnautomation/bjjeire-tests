@@ -70,6 +70,10 @@ the DTO alone. A mutant that should have been killed by a test whose title claim
 behaviour (e.g. "card shows the county") is the most serious finding: the test does not
 prove its title.
 
+A candidate scenario is T6 only: the visitor would see the wrong value on the running
+page, and no acceptance test asserts it (the pyramid rule in `suite-conventions`). A
+rule T0–T5 can prove is a recommendation for `bjjeire-java`, not a scenario.
+
 Score adjusted for equivalents: killed / (killed + gaps + owned-by-API). Report both the
 raw and adjusted scores.
 

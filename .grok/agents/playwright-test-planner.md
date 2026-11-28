@@ -1,11 +1,12 @@
 ---
 name: playwright-test-planner
 description: >
-  Use to plan acceptance coverage for a BjjEire feature or page: explores the
-  running app in a browser, finds untested behaviour and risk, and writes the
-  scenarios into specs/features/<feature>.md. Plans only; never writes spec
-  code. Examples: "plan tests for the stores page", "what is untested on
-  Events?", "plan coverage for the new county filter".
+  Use to plan T6 acceptance coverage for a BjjEire feature or page: explores the
+  running app in a browser, finds untested visitor-visible behaviour, writes
+  those scenarios into specs/features/<feature>.md, and recommends anything
+  below T6 for the app repo. Plans only; never writes spec code. Examples:
+  "plan tests for the stores page", "what is untested on Events?", "plan
+  coverage for the new county filter".
 prompt_mode: full
 model: inherit
 permission_mode: default

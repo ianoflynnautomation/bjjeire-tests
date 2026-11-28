@@ -80,7 +80,9 @@ consults before deciding whether the app or the test is wrong.
   judge wording and layer choice, but it must not be the only thing that notices a
   renamed test.
 - **Cheapest layer per rule.** Record which layer owns each rule (unit, API, UI) so
-  two layers do not both pay for it and no layer assumes another has it.
+  two layers do not both pay for it and no layer assumes another has it. A suite
+  that owns only the top tier names the cheaper tier and the repository that
+  owns it. It does not add that test.
 
 ## What lives where
 
@@ -234,7 +236,9 @@ for (const { label, value } of invalidPageSizes) {
 - Shard in CI; keep worker count sized to what the system under test can serve, not to
   the CI machine's cores.
 - Run the cheapest layer that proves the behaviour: unit < API < UI. A UI spec should
-  not re-verify every validation rule the API spec already covers.
+  not re-verify every validation rule the API spec already covers. When this
+  repository is the top tier only, the cheaper test is a recommendation for the
+  other repository.
 - Budget suite time (e.g. a CI SLA) and spend cross-browser and cross-device runs on a
   smoke subset rather than the full suite.
 
@@ -354,6 +358,6 @@ audit is the most valuable review input there is.
 - [ ] Mocks exist only for hard-to-reproduce states and are schema-validated.
 - [ ] Tags place the test in the right tier; no `test.only` / unconditional `test.skip`.
 - [ ] Failure output (step titles, messages, attachments) identifies the broken behaviour.
-- [ ] The behaviour isn't already covered at a cheaper layer.
+- [ ] The behaviour isn't already covered at a cheaper layer. A suite that owns only the top tier recommends that layer for the other repository.
 - [ ] If an agent wrote it: the report shows the failing-then-passing run and the
       `--repeat-each` output, and a different context reviewed the diff.

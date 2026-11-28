@@ -19,6 +19,13 @@ Input: a scenario title from `specs/features/<feature>.md` and its `## Planned` 
 No scenario → ask for one; do not invent behaviour. API scenarios go to
 `playwright-api-tester`.
 
+## 0. Stay at T6
+
+Read the pyramid rule in `.agents/skills/suite-conventions/SKILL.md`. If this block
+proves a T0–T5 rule, do not rehearse and do not write a test. Return that rule's
+recommendation line and stop. `Test design: UI` does not make a component,
+calculator, or page-integration matrix into acceptance.
+
 ## 1. Rehearse in the browser
 
 - `generator_setup_page` with seed `tests/agents/seed.spec.ts`, project `agent-seed`
