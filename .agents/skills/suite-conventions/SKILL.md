@@ -21,14 +21,14 @@ Add a scenario here when a visitor or an API client would notice the failure on 
 
 Anything else is a recommendation for `bjjeire-java`. Write the line. Do not write the test, and do not edit that repo.
 
-| The check | Tier | Where in `bjjeire-java` |
-| --- | --- | --- |
-| Pure function, mapper, validator, MockMvc status, every invalid value | T1 | `src/bjjeire-api` `*Test` |
-| Mongo query, index, full HTTP + Mongo, flag-off, unpublished rows | T2 | `*IT` extending `MongoIntegrationTest` |
-| Component or hook given a DTO, calculator, debounce | T3 | `*.unit.test.tsx` |
-| Page + MSW: loading, empty, the query string, fetched once, paging mechanics | T4 | `*.integration.test.tsx` |
-| `:focus-visible`, real Tab order | T5 | `*.browser.test.tsx` |
-| OpenAPI or Pact field shape | T0 | the contract jobs |
+| The check                                                                    | Tier | Where in `bjjeire-java`                |
+| ---------------------------------------------------------------------------- | ---- | -------------------------------------- |
+| Pure function, mapper, validator, MockMvc status, every invalid value        | T1   | `src/bjjeire-api` `*Test`              |
+| Mongo query, index, full HTTP + Mongo, flag-off, unpublished rows            | T2   | `*IT` extending `MongoIntegrationTest` |
+| Component or hook given a DTO, calculator, debounce                          | T3   | `*.unit.test.tsx`                      |
+| Page + MSW: loading, empty, the query string, fetched once, paging mechanics | T4   | `*.integration.test.tsx`               |
+| `:focus-visible`, real Tab order                                             | T5   | `*.browser.test.tsx`                   |
+| OpenAPI or Pact field shape                                                  | T0   | the contract jobs                      |
 
 Inside T6, a UI scenario does not repeat an API acceptance scenario. That split is not a reason to pull a T0–T5 matrix up into this suite. A card scenario names the seeded record the visitor came for. Field-by-field rendering of a DTO is T3. Filter combinations, every county, and every invalid token are T1, T2, or T4.
 

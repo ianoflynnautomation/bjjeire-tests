@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// PostToolUse: runs Oxlint --fix on edited .ts/.mts files and spec:check on edited feature specs.
+// PostToolUse: formats an edited file with Prettier, runs Oxlint --fix on .ts/.mts,
+// and spec:check on an edited feature spec. Reports whatever those cannot fix.
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -27,12 +28,26 @@ const absPaths = uniquePaths.map(p => path.resolve(root, p)).filter(abs => exist
 if (absPaths.length === 0) process.exit(0);
 
 const tsTargets = absPaths.filter(abs => /\.(ts|mts)$/.test(abs));
+const prettierTargets = absPaths.filter(abs => /\.(ts|mts|cts|js|mjs|cjs|json|md|yml|yaml)$/.test(abs));
 const specTargets = absPaths.filter(abs => {
   const rel = path.relative(root, abs).split(path.sep).join('/');
   return /^specs\/features\/.*\.md$/.test(rel);
 });
 
 const failures = [];
+
+const prettier = path.join(root, 'node_modules', '.bin', 'prettier');
+if (prettierTargets.length > 0 && existsSync(prettier)) {
+  const run = spawnSync(prettier, ['--write', '--ignore-unknown', ...prettierTargets], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  // A missing or wrong-platform binary fails to spawn (status null). Skip, as with Oxlint.
+  if (run.status !== 0 && run.status !== null) {
+    const relTargets = prettierTargets.map(t => path.relative(root, t)).join(', ');
+    failures.push(`Prettier failed on ${relTargets}:\n${run.stdout ?? ''}${run.stderr ?? ''}`.trim());
+  }
+}
 
 const oxlint = path.join(root, 'node_modules', '.bin', 'oxlint');
 if (tsTargets.length > 0 && existsSync(oxlint)) {
