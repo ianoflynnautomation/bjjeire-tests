@@ -12,13 +12,13 @@ devcontainer exec --workspace-folder . npm run test:smoke
 
 ## What it is built on
 
-| Piece          | Choice                                                              |
-| -------------- | ------------------------------------------------------------------- |
-| Base image     | `mcr.microsoft.com/playwright:v1.65.1-noble` — the image CI runs in |
-| User           | `vscode` (uid 1000, passwordless sudo), never root                  |
-| Browsers       | Pre-baked at `/ms-playwright`; nothing to download on first start   |
-| Features       | common-utils (zsh), github-cli, docker-in-docker, claude-code       |
-| `node_modules` | Named volume — the host tree holds darwin-arm64 binaries            |
+| Piece          | Choice                                                                 |
+| -------------- | ---------------------------------------------------------------------- |
+| Base image     | `mcr.microsoft.com/playwright:v1.65.1-noble` — the image CI runs in    |
+| User           | `vscode` (uid 1000, passwordless sudo), never root                     |
+| Browsers       | Pre-baked at `/ms-playwright`; nothing to download on first start      |
+| Features       | common-utils (zsh), github-cli, kubectl, docker-in-docker, claude-code |
+| `node_modules` | Named volume — the host tree holds darwin-arm64 binaries               |
 
 Using the CI image as the dev base is deliberate. Screenshot baselines are
 per-platform and CI compares the `-linux.png` set, so a Linux container that
@@ -32,12 +32,16 @@ workflow default image, so all four move in one PR.
 
 ## Reaching the app under test
 
-The app runs on your **host** — minikube, the app repo's compose stack, or a
-remote environment. Start it there as usual:
+The compose stack runs on your **Mac**. Minikube is started in the
+bjjeire-deploy dev container, which has minikube, kubectl, and Helm. From
+that container:
 
 ```sh
-host$ kubectl port-forward -n bjjeire-app service/bjj-frontend 8080:80
+kubectl port-forward -n bjjeire-app service/bjj-frontend 8080:80
 ```
+
+That container forwards port 8080 to the Mac. `kubectl` and `kubelogin` are
+also installed here, for a kubeconfig this container can reach.
 
 Inside the container, `localhost` still works: `host-relay.cjs` listens on the
 container loopback and forwards to `host.docker.internal`. Ports come from

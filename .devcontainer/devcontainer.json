@@ -36,6 +36,13 @@
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"
     },
+    // kubectl only. Helm and minikube live in the bjjeire-deploy container.
+    // A static binary: it does not apt-upgrade the image, so screenshot baselines stay put.
+    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+      "version": "latest",
+      "helm": "none",
+      "minikube": "none"
+    },
     // Lets you run docker-compose.yml / the CI runner image from inside the
     // container. Paths resolve against the container filesystem, so the
     // `./playwright-report`-style bind mounts in docker-compose.yml still work.

@@ -25,7 +25,7 @@ The whole loop is drawn in [docs/spec-guide.md](spec-guide.md#end-to-end).
 
 1. **A running app.** The agents run tests and open a browser against it. Either:
    - Docker: the app's compose stack on `http://localhost:3000` (API on `:5003`), or
-   - minikube: `kubectl port-forward -n bjjeire-app service/bjj-frontend 8080:80`.
+   - minikube: in the bjjeire-deploy dev container, `kubectl port-forward -n bjjeire-app service/bjj-frontend 8080:80`.
 
    Never point an agent at production. Staging only as an explicit task.
 
